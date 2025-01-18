@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\RM\PasienRujukanController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,5 +32,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/updateStudent/{id}', [StudentController::class, 'update'])->name('updateStudent.update');
     Route::delete('/deleteStudent/{id}', [StudentController::class, 'destroy'])->name('deleteStudent.destroy');
 });
+
+Route::middleware('auth')->prefix('pasien-rujukan')->group(function () {
+    Route::get('/', [PasienRujukanController::class, 'index'])->name('pasien-rujukan.list');
+    Route::post('/add', [PasienRujukanController::class, 'store'])->name('pasien-rujukan.store');
+    Route::patch('/update/{id}', [PasienRujukanController::class, 'update'])->name('pasien-rujukan.update');
+    Route::delete('/delete/{id}', [PasienRujukanController::class, 'destroy'])->name('pasien-rujukan.destroy');
+});
+
 
 require __DIR__.'/auth.php';
