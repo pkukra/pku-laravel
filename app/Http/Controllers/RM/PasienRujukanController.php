@@ -6,17 +6,44 @@ use App\Models\PasienRujukan;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class PasienRujukanController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(PasienRujukan $pasien_rujukan)
+    public function index(Request $request)
     {
-        return Inertia::render('PasienRujukan/PasienRujukansList', [
-            'pasien_rujukans' => $pasien_rujukan->orderBy('FRPTGL', 'desc')->take(10)->get(),
-            'count' => $pasien_rujukan->count(),
+        // Ambil parameter pencarian dari request
+        $search = $request->input('search');
+
+        $query = DB::connection('sqlsrv')
+            ->table('PASIEN_RUJUKAN')
+            ->join('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
+            ->join('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+            ->orderBy('FRPTGL', 'desc')
+            ->select(
+                'PASIEN_RUJUKAN.*',
+                'DOKTER.FMDDOKTERN',
+                'POLIKLINIK.FMPKLINIKN'
+            );
+
+        if ($search) {
+            $query->where('PASIEN_RUJUKAN.FRPPASIEN_ID', $search);
+        } else {
+            $query->take(10);
+        }
+
+        $pasien_rujukans = $query->get();
+
+        $count = DB::connection('sqlsrv')
+            ->table('PASIEN_RUJUKAN')
+            ->count();
+
+        return Inertia::render('RM/PasienRujukan/PasienRujukansList', [
+            'pasien_rujukans' => $pasien_rujukans,
+            'count' => $count,
         ]);
     }
 
