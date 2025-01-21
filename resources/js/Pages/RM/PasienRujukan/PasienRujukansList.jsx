@@ -3,28 +3,33 @@ import { Head } from "@inertiajs/react";
 import moment from "moment";
 
 export default function PasienRujukansList({ auth, pasien_rujukans, count }) {
-    // Fungsi untuk memformat tanggal dan jam
-    const formatDateTime = (date, time) => {
-        const formattedDate = new Date(date).toLocaleDateString("en-GB"); // Format dd/mm/yyyy
-        const formattedTime = new Date(`1970-01-01T${time}`).toLocaleTimeString(
-            "en-GB",
-            { hour: "2-digit", minute: "2-digit" }
-        ); // Format HH:mm
-        return `${formattedDate} ${formattedTime}`;
-    };
-
     return (
         <AuthenticatedLayout
             user={auth.user}
             header={
                 <p className="font-semibold text-xl text-gray-800 leading-tight">
-                    Pasien Rujukan List
+                    List Kunjungan Pasien
                 </p>
             }
         >
             <Head title="Pasien Rujukan List" />
             <div className="flex justify-center py-2">
                 <div className="overflow-x-auto">
+                    <div className="card">
+                        <div className="card-body">
+                            <div className="form-control">
+                                <div className="input-group">
+                                    <input
+                                        type="text"
+                                        placeholder="No RM"
+                                        className="input input-bordered input-sm w-full max-w-xs mr-1"
+                                    />
+                                    <button className="btn btn-sm btn-primary">Cari</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <table class="table table-md table-pin-rows table-pin-cols">
                         <thead>
                             <tr>
@@ -63,6 +68,7 @@ export default function PasienRujukansList({ auth, pasien_rujukans, count }) {
                                         <td>{data.FRPNOTRANSAKSIKJ}</td>
                                         <td>
                                             <button
+                                                className="btn btn-primary btn-sm inline-flex"
                                                 onClick={() => {
                                                     return document
                                                         .getElementById(
@@ -70,7 +76,6 @@ export default function PasienRujukansList({ auth, pasien_rujukans, count }) {
                                                         )
                                                         .showModal();
                                                 }}
-                                                className={`inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 focus:bg-blue-800 active:bg-blue-900 border border-transparent rounded-md font-medium text-sm text-white uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-offset-2 transition ease-in-out duration-150`}
                                             >
                                                 Tampilkan
                                             </button>
