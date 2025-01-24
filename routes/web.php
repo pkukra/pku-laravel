@@ -32,12 +32,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/updateStudent/{id}', [StudentController::class, 'update'])->name('updateStudent.update');
     Route::delete('/deleteStudent/{id}', [StudentController::class, 'destroy'])->name('deleteStudent.destroy');
 });
-
-Route::middleware('auth')->prefix('pasien-rujukan')->group(function () {
-    Route::get('/', [PasienRujukanController::class, 'index'])->name('pasien-rujukan.list');
-    Route::post('/add', [PasienRujukanController::class, 'store'])->name('pasien-rujukan.store');
-    Route::patch('/update/{id}', [PasienRujukanController::class, 'update'])->name('pasien-rujukan.update');
-    Route::delete('/delete/{id}', [PasienRujukanController::class, 'destroy'])->name('pasien-rujukan.destroy');
+Route::prefix('rm')->group(function(){
+    Route::middleware('auth')->prefix('pasien-rujukan')->group(function () {
+        Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.pasien-rujukan.index');
+        Route::get('/list/{no_rm}', [PasienRujukanController::class, 'index_data'])->name('rm.pasien-rujukan.list');
+        Route::get('/detail/{no_rm}', [PasienRujukanController::class, 'index_data'])->name('rm.pasien-rujukan.list');
+        Route::post('/add', [PasienRujukanController::class, 'store'])->name('rm.pasien-rujukan.store');
+        Route::patch('/update/{id}', [PasienRujukanController::class, 'update'])->name('rm.pasien-rujukan.update');
+        Route::delete('/delete/{id}', [PasienRujukanController::class, 'destroy'])->name('rm.pasien-rujukan.destroy');
+    });
 });
 
 

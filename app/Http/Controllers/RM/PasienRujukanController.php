@@ -15,9 +15,10 @@ class PasienRujukanController extends Controller
      */
     public function index(Request $request)
     {
-        // Ambil parameter pencarian dari request
-        $search = $request->input('search');
-
+        return Inertia::render('RM/PasienRujukan/PasienRujukansList');
+    }
+    public function index_data(Request $request, $no_rm)
+    {
         $query = DB::connection('sqlsrv')
             ->table('PASIEN_RUJUKAN')
             ->join('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
@@ -28,12 +29,7 @@ class PasienRujukanController extends Controller
                 'DOKTER.FMDDOKTERN',
                 'POLIKLINIK.FMPKLINIKN'
             );
-
-        if ($search) {
-            $query->where('PASIEN_RUJUKAN.FRPPASIEN_ID', $search);
-        } else {
-            $query->take(10);
-        }
+        $query->where('PASIEN_RUJUKAN.FRPPASIEN_ID', $no_rm);
 
         $pasien_rujukans = $query->get();
 
@@ -41,7 +37,7 @@ class PasienRujukanController extends Controller
             ->table('PASIEN_RUJUKAN')
             ->count();
 
-        return Inertia::render('RM/PasienRujukan/PasienRujukansList', [
+        return response()->json([
             'pasien_rujukans' => $pasien_rujukans,
             'count' => $count,
         ]);
