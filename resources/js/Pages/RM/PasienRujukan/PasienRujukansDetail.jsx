@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-
 // import axios from "axios"; // Import axios untuk mengambil data
 import moment from "moment";
-import { Fragment } from "react";
+
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import DiagnosaAddBtn from "./DiagnosaAddBtn";
 
 export default function PasienRujukansDetail({ auth, pasien }) {
     console.log(pasien);
@@ -163,7 +163,15 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 <div className="">
                     <div className="card bg-base-100">
                         <div className="card-body">
-                            <strong>Diagnosa</strong>
+                            <div class="grid grid-cols-5 gap-4">
+                                <div class="col-span-3">
+                                    <strong>Diagnosa</strong>
+                                </div>
+                                <div class="col-span-2">
+                                    <DiagnosaAddBtn className="float-end" />
+                                </div>
+                            </div>
+
                             <table
                                 className="table table-xs"
                                 style={{ width: "100%" }}
