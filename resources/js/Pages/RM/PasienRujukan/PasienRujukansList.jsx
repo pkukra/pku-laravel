@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+
 import { Table } from "antd";
 import axios from "axios"; // Import axios untuk mengambil data
 import moment from "moment";
@@ -68,7 +69,16 @@ const columns = [
         dataIndex: "action",
         key: "action",
         render: (_, record) => {
-            return <button className="btn btn-primary btn-xs">Tampilkan</button>;
+            return (
+                <a
+                    href={route("rm.pasien-rujukan.detail", {
+                        kode_reg: record.FRPNOTRANSAKSIKJ,
+                    })}
+                    className="btn btn-primary btn-xs"
+                >
+                    Tampilkan
+                </a>
+            );
         },
     },
 ];
@@ -90,11 +100,12 @@ export default function PasienRujukansList({ auth }) {
         setLoading(true); // Mulai loading sebelum melakukan fetch
 
         try {
-            const response = await axios.get(route("rm.pasien-rujukan.list", { no_rm: noRm }));
+            const response = await axios.get(
+                route("rm.pasien-rujukan.list", { no_rm: noRm })
+            );
             const data = response?.data?.pasien_rujukans;
             setDataSource(data || []); // Simpan data ke state dataSource
             console.log(data);
-            
         } catch (error) {
             console.error("Error fetching data: ", error);
         } finally {

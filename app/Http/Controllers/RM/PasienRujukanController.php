@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\RM;
 
-use App\Models\PasienRujukan;
+// use App\Models\PasienRujukan;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,12 +11,18 @@ use Illuminate\Support\Facades\DB;
 class PasienRujukanController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * index
+     * Load jsx page
      */
     public function index(Request $request)
     {
         return Inertia::render('RM/PasienRujukan/PasienRujukansList');
     }
+
+    /**
+     * index_data
+     * Listing JSON data
+     */
     public function index_data(Request $request, $no_rm)
     {
         $query = DB::connection('sqlsrv')
@@ -44,50 +50,34 @@ class PasienRujukanController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * show
+     * Load jsx page
      */
-    public function create()
+    public function show($kode_reg)
     {
-        //
-    }
+        $query = DB::connection('sqlsrv')
+            ->table('PASIEN_RUJUKAN')
+            ->join('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->join('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
+            ->join('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+            ->orderBy('FRPTGL', 'desc')
+            ->select(
+                'PASIEN.NAMAPASIEN','PASIEN.TGL_LAHIR','PASIEN.GOL_DARAH','PASIEN.JENIS_KELAMIN','PASIEN.ALAMAT',
+                'PASIEN_RUJUKAN.*',
+                'DOKTER.FMDDOKTERN',
+                'POLIKLINIK.FMPKLINIKN'
+            );
+        $query->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $pasien_rujukans = $query->first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(PasienRujukan $pasien_rujukan)
-    {
-        //
-    }
+        $count = DB::connection('sqlsrv')
+            ->table('PASIEN_RUJUKAN')
+            ->count();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(PasienRujukan $pasien_rujukan)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, PasienRujukan $pasien_rujukan)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(PasienRujukan $pasien_rujukan)
-    {
-        //
+        return Inertia::render('RM/PasienRujukan/PasienRujukansDetail', [
+            'pasien' => $pasien_rujukans,
+            'count' => $count,
+        ]);
     }
 }
