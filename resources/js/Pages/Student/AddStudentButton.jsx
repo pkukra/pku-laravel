@@ -20,7 +20,7 @@ export default function AddStudentButton({ className = "", disabled }) {
                 // Reset form
                 reset();
                 // Close the modal
-                document.getElementById("my_modal_2").close();
+                // document.getElementById("my_modal_2").close();
             },
         });
     };

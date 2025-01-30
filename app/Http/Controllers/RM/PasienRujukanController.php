@@ -80,4 +80,27 @@ class PasienRujukanController extends Controller
             'count' => $count,
         ]);
     }
+
+    /**
+     * list_diagnosa
+     * Listing penyakit/diagnosa dari setiap pasien rujukan berdasar kode transaksi (rrj)
+     */
+    public function list_diagnosa(Request $request, $no_transaksi)
+    {
+        $query = DB::connection('sqlsrv')
+            ->table('MR_PENYAKIT')
+            ->join('PENYAKIT', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'PENYAKIT.KD_PENYAKIT')
+            ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
+            ->select(
+                'MR_PENYAKIT.*',
+                'PENYAKIT.PENYAKIT',
+            );
+        $query->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi);
+
+        $data = $query->get();
+
+        return response()->json([
+            'data' => $data,
+        ]);
+    }
 }

@@ -1,13 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
-// import axios from "axios"; // Import axios untuk mengambil data
+import axios from "axios"; // Import axios untuk mengambil data
 import moment from "moment";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import DiagnosaAddBtn from "./DiagnosaAddBtn";
 
 export default function PasienRujukansDetail({ auth, pasien }) {
-    console.log(pasien);
+    const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
+    const [loading, setLoading] = useState(true); // Loading state
+
+    // Memanggil endpoint untuk mendapatkan data diagnosa
+    useEffect(() => {
+        // Gantilah URL ini dengan endpoint API Anda
+        axios
+            .get(route("rm.pasien-rujukan.list_diagnosa", { kode_reg: pasien.FRPNOTRANSAKSIKJ }))
+            .then((response) => {
+                setDiagnosa(response.data.data); // Simpan data yang diterima ke dalam state
+                setLoading(false); // Set loading ke false setelah data diterima
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+                setLoading(false); // Set loading ke false jika ada error
+            });
+    }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
+
+    console.log(diagnosa);
+    
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -163,11 +183,11 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 <div className="">
                     <div className="card bg-base-100">
                         <div className="card-body">
-                            <div class="grid grid-cols-5 gap-5">
-                                <div class="col-span-4">
+                            <div className="grid grid-cols-5 gap-5">
+                                <div className="col-span-4">
                                     <strong>Diagnosa</strong>
                                 </div>
-                                <div class="col-span-1">
+                                <div className="col-span-1">
                                     <DiagnosaAddBtn className="float-end" />
                                 </div>
                             </div>
@@ -181,19 +201,29 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                         <th style={{ width: "5%" }}>NO</th>
                                         <th style={{ width: "15%" }}>Kode</th>
                                         <th>Penyakit</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>A16.9</td>
-                                        <td>
-                                            Respiratory tuberculosis, not
-                                            confirmed bacteriologically or
-                                            histologically. Respiratory
-                                            tuberculosis, not confirm...
-                                        </td>
-                                    </tr>
+                                    {loading ? (
+                                        <tr>
+                                            <td
+                                                colSpan="3"
+                                                className="text-center"
+                                            >
+                                                Loading...
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        diagnosa.map((item, index) => (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.MRPKD_PENYAKIT}</td>
+                                                <td>{item.PENYAKIT}</td>
+                                                <td><button className="btn btn-xs btn-outline btn-error">hapus</button></td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
