@@ -38,11 +38,22 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
             </button>
 
             <dialog id="modal_add_diadnosa" className="modal">
-                <div className="modal-box w-11/12 max-w-5xl ">
+                <div className="modal-box w-11/12 max-w-5xl">
+                    <form method="dialog">
+                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                            ✕
+                        </button>
+                    </form>
                     <h3 className="font-bold text-lg">Hello!</h3>
-                    <p className="py-4">Click the button below to close</p>
+                    <p className="py-4">
+                        Press ESC key or click outside to close
+                    </p>
                 </div>
+                <form method="dialog" className="modal-backdrop">
+                    <button>close</button>
+                </form>
             </dialog>
+
         </>
     );
 }

@@ -163,11 +163,11 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 <div className="">
                     <div className="card bg-base-100">
                         <div className="card-body">
-                            <div class="grid grid-cols-5 gap-4">
-                                <div class="col-span-3">
+                            <div class="grid grid-cols-5 gap-5">
+                                <div class="col-span-4">
                                     <strong>Diagnosa</strong>
                                 </div>
-                                <div class="col-span-2">
+                                <div class="col-span-1">
                                     <DiagnosaAddBtn className="float-end" />
                                 </div>
                             </div>
