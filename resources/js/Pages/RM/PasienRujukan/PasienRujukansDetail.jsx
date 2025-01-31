@@ -85,7 +85,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                     </th>
                                                     <td>
                                                         {pasien.NAMAPASIEN} /{" "}
-                                                        {pasien.JENIS_KELAMIN}
+                                                        {pasien.JENIS_KELAMIN=="1"?"Laki-laki":"Perempuan"}
                                                     </td>
                                                 </tr>
                                                 <tr>

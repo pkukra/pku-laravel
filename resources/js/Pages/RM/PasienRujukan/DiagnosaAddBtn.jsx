@@ -13,8 +13,8 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
         const value = event.target.value;
         setQuery(value);
 
-        // If input has 2 or more characters, trigger the search after debounce
-        if (value.length >= 2) {
+        // If input has 1 or more characters, trigger the search after debounce
+        if (value.length > 0) {
             // Reset states to start fresh search when query changes
             setDiagnosaCari([]); // Clear previous search results
             setPage(1); // Start from the first page
