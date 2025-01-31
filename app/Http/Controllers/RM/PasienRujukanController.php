@@ -120,7 +120,7 @@ class PasienRujukanController extends Controller
         $query = DB::connection('sqlsrv')
             ->table('PENYAKIT')
             ->select('PENYAKIT.*')
-            ->limit(100)
+            // ->limit(100)
             ->when($searchTerm, function ($q) use ($searchTerm) {
                 $q->where(function ($q) use ($searchTerm) {
                     $q->where('PENYAKIT.KD_PENYAKIT', 'like', '%' . $searchTerm . '%')

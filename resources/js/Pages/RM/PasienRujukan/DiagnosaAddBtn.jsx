@@ -13,17 +13,11 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
         const value = event.target.value;
         setQuery(value);
 
-        // If input has 1 or more characters, trigger the search after debounce
-        if (value.length > 0) {
-            // Reset states to start fresh search when query changes
-            setDiagnosaCari([]); // Clear previous search results
-            setPage(1); // Start from the first page
-            setHasMore(true); // Ensure more data can be fetched
-            fetchDiagnosa(value, 1); // Start fetching from the first page
-        } else {
-            setDiagnosaCari([]); // Clear results if input is less than 2 characters
-            setHasMore(true); // Reset hasMore to true when query is cleared
-        }
+        // Reset states to start fresh search when query changes
+        setDiagnosaCari([]); // Clear previous search results
+        setPage(1); // Start from the first page
+        setHasMore(true); // Ensure more data can be fetched
+        fetchDiagnosa(value, 1); // Start fetching from the first page
     };
 
     // Function to fetch data from API using axios
@@ -65,18 +59,13 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
         }
     };
 
-    useEffect(() => {
-        if (query.length >= 2) {
-            fetchDiagnosa(query, 1); // Start the search when the query is updated
-        }
-    }, [query]);
-
     return (
         <>
             <button
-                onClick={() =>
-                    document.getElementById("modal_add_diadnosa").showModal()
-                }
+                onClick={() => {
+                    document.getElementById("modal_add_diadnosa").showModal();
+                    fetchDiagnosa(query, 1);
+                }}
                 className="btn btn-xs btn-primary"
                 disabled={disabled}
             >
@@ -111,8 +100,8 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
                             <thead>
                                 <tr>
                                     <th style={{ width: "15%" }}>Kode</th>
-                                    <th>Penyakit</th>
-                                    <th style={{ width: "15%" }}>Action</th>
+                                    <th style={{ width: "76%" }}>Penyakit</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -138,7 +127,7 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
                                 {loading && (
                                     <tr>
                                         <td colSpan="3" className="text-center">
-                                            <span className="loading loading-lg"></span>
+                                            <span className="loading loading-md"></span>
                                         </td>
                                     </tr>
                                 )}
