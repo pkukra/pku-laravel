@@ -62,7 +62,11 @@ class PasienRujukanController extends Controller
             ->join('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
             ->orderBy('FRPTGL', 'desc')
             ->select(
-                'PASIEN.NAMAPASIEN','PASIEN.TGL_LAHIR','PASIEN.GOL_DARAH','PASIEN.JENIS_KELAMIN','PASIEN.ALAMAT',
+                'PASIEN.NAMAPASIEN',
+                'PASIEN.TGL_LAHIR',
+                'PASIEN.GOL_DARAH',
+                'PASIEN.JENIS_KELAMIN',
+                'PASIEN.ALAMAT',
                 'PASIEN_RUJUKAN.*',
                 'DOKTER.FMDDOKTERN',
                 'POLIKLINIK.FMPKLINIKN'
@@ -101,6 +105,37 @@ class PasienRujukanController extends Controller
 
         return response()->json([
             'data' => $data,
+        ]);
+    }
+
+    /**
+     * cari_penyakit
+     * Listing penyakit/diagnosa dari database penyakit (icd)
+     */
+    public function cari_penyakit(Request $request)
+    {
+        $searchTerm = $request->input('query');
+        $page = $request->input('page', 1); // Get the current page number (default is 1)
+
+        $query = DB::connection('sqlsrv')
+            ->table('PENYAKIT')
+            ->select('PENYAKIT.*')
+            ->limit(100)
+            ->when($searchTerm, function ($q) use ($searchTerm) {
+                $q->where(function ($q) use ($searchTerm) {
+                    $q->where('PENYAKIT.KD_PENYAKIT', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('PENYAKIT.PENYAKIT', 'like', '%' . $searchTerm . '%');
+                });
+            });
+
+        // Paginate the results, 20 items per page
+        $data = $query->offset(($page - 1) * 20) // Skip based on current page
+            ->limit(20) // Limit the results per page
+            ->get();
+
+        return response()->json([
+            'data' => $data,
+            'page' => $page,
         ]);
     }
 }

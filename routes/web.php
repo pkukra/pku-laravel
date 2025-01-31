@@ -39,6 +39,7 @@ Route::prefix('rm')->group(function(){
         Route::get('/detail/{kode_reg}', [PasienRujukanController::class, 'show'])->name('rm.pasien-rujukan.detail');
 
         Route::get('/list_diagnosa/{kode_reg}', [PasienRujukanController::class, 'list_diagnosa'])->name('rm.pasien-rujukan.list_diagnosa');
+        Route::post('/cari_penyakit', [PasienRujukanController::class, 'cari_penyakit'])->name('rm.pasien-rujukan.cari_penyakit');
         
         Route::post('/add', [PasienRujukanController::class, 'store'])->name('rm.pasien-rujukan.store');
         Route::patch('/update/{id}', [PasienRujukanController::class, 'update'])->name('rm.pasien-rujukan.update');

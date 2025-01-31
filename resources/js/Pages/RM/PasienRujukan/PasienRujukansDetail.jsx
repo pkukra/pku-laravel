@@ -14,7 +14,11 @@ export default function PasienRujukansDetail({ auth, pasien }) {
     useEffect(() => {
         // Gantilah URL ini dengan endpoint API Anda
         axios
-            .get(route("rm.pasien-rujukan.list_diagnosa", { kode_reg: pasien.FRPNOTRANSAKSIKJ }))
+            .get(
+                route("rm.pasien-rujukan.list_diagnosa", {
+                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                })
+            )
             .then((response) => {
                 setDiagnosa(response.data.data); // Simpan data yang diterima ke dalam state
                 setLoading(false); // Set loading ke false setelah data diterima
@@ -24,9 +28,6 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 setLoading(false); // Set loading ke false jika ada error
             });
     }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
-
-    console.log(diagnosa);
-    
 
     return (
         <AuthenticatedLayout
@@ -183,49 +184,60 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 <div className="">
                     <div className="card bg-base-100">
                         <div className="card-body">
-                            <div className="grid grid-cols-5 gap-5">
-                                <div className="col-span-4">
-                                    <strong>Diagnosa</strong>
-                                </div>
-                                <div className="col-span-1">
-                                    <DiagnosaAddBtn className="float-end" />
-                                </div>
-                            </div>
+                            {loading ? (
+                                <>
+                                    <div className="skeleton h-4 w-full"></div>
+                                    <div className="skeleton h-4 w-full"></div>
+                                    <div className="skeleton h-4 w-full"></div>
+                                    <div className="skeleton h-4 w-full"></div>
+                                    <div className="skeleton h-4 w-full"></div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-5 gap-5">
+                                        <div className="col-span-4">
+                                            <strong>Diagnosa</strong>
+                                        </div>
+                                        <div className="col-span-1">
+                                            <DiagnosaAddBtn className="float-end" />
+                                        </div>
+                                    </div>
 
-                            <table
-                                className="table table-xs"
-                                style={{ width: "100%" }}
-                            >
-                                <thead>
-                                    <tr>
-                                        <th style={{ width: "5%" }}>NO</th>
-                                        <th style={{ width: "15%" }}>Kode</th>
-                                        <th>Penyakit</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {loading ? (
-                                        <tr>
-                                            <td
-                                                colSpan="3"
-                                                className="text-center"
-                                            >
-                                                Loading...
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        diagnosa.map((item, index) => (
-                                            <tr key={index}>
-                                                <td>{index + 1}</td>
-                                                <td>{item.MRPKD_PENYAKIT}</td>
-                                                <td>{item.PENYAKIT}</td>
-                                                <td><button className="btn btn-xs btn-outline btn-error">hapus</button></td>
+                                    <table
+                                        className="table table-xs"
+                                        style={{ width: "100%" }}
+                                    >
+                                        <thead>
+                                            <tr>
+                                                <th style={{ width: "5%" }}>
+                                                    NO
+                                                </th>
+                                                <th style={{ width: "15%" }}>
+                                                    Kode
+                                                </th>
+                                                <th>Penyakit</th>
+                                                <th>Action</th>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                        </thead>
+                                        <tbody>
+                                            {diagnosa.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td>{index + 1}</td>
+                                                    <td>
+                                                        {item.MRPKD_PENYAKIT}
+                                                    </td>
+                                                    <td>{item.PENYAKIT}</td>
+                                                    <td>
+                                                        <button className="btn btn-xs btn-outline btn-error">
+                                                            hapus
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
