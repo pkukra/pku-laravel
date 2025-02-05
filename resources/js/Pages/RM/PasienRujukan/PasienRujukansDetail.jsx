@@ -12,7 +12,11 @@ export default function PasienRujukansDetail({ auth, pasien }) {
 
     // Memanggil endpoint untuk mendapatkan data diagnosa
     useEffect(() => {
-        // Gantilah URL ini dengan endpoint API Anda
+        fetchDiagnosa(); // Panggil fungsi fetchDiagnosa saat komponen di-mount
+    }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
+
+    // Fungsi untuk mengambil data diagnosa
+    const fetchDiagnosa = () => {
         axios
             .get(
                 route("rm.pasien-rujukan.list_diagnosa", {
@@ -27,7 +31,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 console.error("Error fetching diagnosa data:", error);
                 setLoading(false); // Set loading ke false jika ada error
             });
-    }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
+    };
 
     return (
         <AuthenticatedLayout
@@ -85,7 +89,10 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                     </th>
                                                     <td>
                                                         {pasien.NAMAPASIEN} /{" "}
-                                                        {pasien.JENIS_KELAMIN=="1"?"Laki-laki":"Perempuan"}
+                                                        {pasien.JENIS_KELAMIN ==
+                                                        "1"
+                                                            ? "Laki-laki"
+                                                            : "Perempuan"}
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -170,6 +177,14 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                         {pasien.FRPCUSTOMER_ID}
                                                     </td>
                                                 </tr>
+                                                <tr>
+                                                    <th>Id transakasi</th>
+                                                    <td>
+                                                        {
+                                                            pasien.FRPNOTRANSAKSIKJ
+                                                        }
+                                                    </td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </td>
@@ -199,7 +214,12 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                             <strong>Diagnosa</strong>
                                         </div>
                                         <div className="col-span-1">
-                                            <DiagnosaAddBtn className="float-end" />
+                                            <DiagnosaAddBtn
+                                                className="float-end"
+                                                pasien={pasien}
+                                                refreshDiagnosa={fetchDiagnosa}
+                                                selectedDiagnosaProps={diagnosa.map(item => item.MRPKD_PENYAKIT)}
+                                            />
                                         </div>
                                     </div>
 
@@ -238,37 +258,6 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                     </table>
                                 </>
                             )}
-                        </div>
-                    </div>
-                </div>
-                <div className="">
-                    <div className="card bg-base-100">
-                        <div className="card-body">
-                            <strong>Procedure</strong>
-                            <table
-                                className="table table-xs"
-                                style={{ width: "100%" }}
-                            >
-                                <thead>
-                                    <tr>
-                                        <th style={{ width: "5%" }}>NO</th>
-                                        <th style={{ width: "15%" }}>Kode</th>
-                                        <th>Procedure</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>A16.9</td>
-                                        <td>
-                                            Respiratory tuberculosis, not
-                                            confirmed bacteriologically or
-                                            histologically. Respiratory
-                                            tuberculosis, not confirm...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>

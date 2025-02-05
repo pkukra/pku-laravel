@@ -1,12 +1,26 @@
 import React, { useState, useEffect } from "react";
+import Button from "@/Components/Button";
 import axios from "axios";
+import { notification } from "antd";
 
-export default function DiagnosaAddBtn({ className = "", disabled }) {
+export default function DiagnosaAddBtn({
+    className = "",
+    disabled,
+    pasien,
+    refreshDiagnosa,
+    selectedDiagnosaProps,
+}) {
     const [diagnosaCari, setDiagnosaCari] = useState([]); // State to store search results
-    const [loading, setLoading] = useState(false); // Loading state
+    const [loading, setLoading] = useState(false); // Loading state for fetching data
+    const [loadingSaveDiag, setLoadingSaveDiag] = useState({}); // Loading state for each diagnosa
     const [query, setQuery] = useState(""); // State for input value
     const [page, setPage] = useState(1); // Current page number
     const [hasMore, setHasMore] = useState(true); // Flag to check if more data exists
+    const [selectedDiagnosa, setSelectedDiagnosa] = useState([]);
+
+    useEffect(() => {
+        setSelectedDiagnosa(selectedDiagnosaProps); // Panggil fungsi fetchDiagnosa saat komponen di-mount
+    }, []);
 
     // Function to handle input changes
     const handleInputChange = (event) => {
@@ -20,7 +34,7 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
         fetchDiagnosa(value, 1); // Start fetching from the first page
     };
 
-    // Function to fetch data from API using axios
+    // Function to fetch data from API
     const fetchDiagnosa = async (query, pageNumber) => {
         setLoading(true);
         try {
@@ -29,6 +43,7 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
                 {
                     query,
                     page: pageNumber,
+                    selected_diagnosa: selectedDiagnosa, // Pass selected diagnosa to the server
                 }
             );
             // If no results, mark hasMore as false
@@ -46,6 +61,51 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
             console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Function to save kode diagnosa
+    const saveDiagnosa = async (icd10_code) => {
+        setLoadingSaveDiag((prev) => ({
+            ...prev,
+            [icd10_code]: true, // Set loading to true for the selected diagnosa
+        }));
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.save_diagnosa"),
+                {
+                    icd10_code,
+                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
+                    no_rm: pasien.FRPPASIEN_ID,
+                    kd_unit: pasien.FRPUNIT,
+                    tgl_masuk: pasien.FRPTGL,
+                }
+            );
+
+            if (response?.data?.status === "ok") {
+                notification.success({
+                    placement: "bottomRight",
+                    message: "Sukses!",
+                    description: "Diagnosa berhasil ditambhakan.",
+                });
+
+                // Update the selectedDiagnosa state to include the newly saved diagnosa
+                setSelectedDiagnosa((prevSelected) => [
+                    ...prevSelected,
+                    icd10_code,
+                ]);
+
+                // Refresh diagnosa list and reset loading for that diagnosa
+                refreshDiagnosa();
+                fetchDiagnosa(query, page);
+            }
+        } catch (error) {
+            console.error("Error saving diagnosa:", error);
+        } finally {
+            setLoadingSaveDiag((prev) => ({
+                ...prev,
+                [icd10_code]: false, // Set loading to false for the selected diagnosa
+            }));
         }
     };
 
@@ -117,9 +177,24 @@ export default function DiagnosaAddBtn({ className = "", disabled }) {
                                             <td>{item.KD_PENYAKIT}</td>
                                             <td>{item.PENYAKIT}</td>
                                             <td>
-                                                <button className="btn btn-xs btn-primary">
+                                                <Button
+                                                    className="btn btn-xs btn-primary"
+                                                    onClick={() =>
+                                                        saveDiagnosa(
+                                                            item.KD_PENYAKIT
+                                                        )
+                                                    }
+                                                    loading={
+                                                        loadingSaveDiag[
+                                                            item.KD_PENYAKIT
+                                                        ]
+                                                    } // Check if this diagnosa is loading
+                                                    disabled={selectedDiagnosa.includes(
+                                                        item.KD_PENYAKIT
+                                                    )}
+                                                >
                                                     Pilih
-                                                </button>
+                                                </Button>
                                             </td>
                                         </tr>
                                     ))
