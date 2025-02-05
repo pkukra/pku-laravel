@@ -84,7 +84,6 @@ class PasienRujukanController extends Controller
     {
         $searchTerm = $request->input('query');
         $page = $request->input('page', 1); // Halaman saat ini (default 1)
-        $selectedDiagnosa = $request->input('selected_diagnosa', []); // Diagnosa yang dipilih
 
         // Mendapatkan data penyakit berdasarkan pencarian
         $penyakit = $this->pasienRujukanRepo->searchPenyakit($searchTerm, $page);
