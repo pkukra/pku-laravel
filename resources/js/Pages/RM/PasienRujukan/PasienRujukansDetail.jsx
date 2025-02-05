@@ -218,7 +218,10 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                 className="float-end"
                                                 pasien={pasien}
                                                 refreshDiagnosa={fetchDiagnosa}
-                                                selectedDiagnosaProps={diagnosa.map(item => item.MRPKD_PENYAKIT)}
+                                                selectedDiagnosaProps={diagnosa.map(
+                                                    (item) =>
+                                                        item.MRPKD_PENYAKIT
+                                                )}
                                             />
                                         </div>
                                     </div>
@@ -258,6 +261,58 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                     </table>
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="">
+                    <div className="card bg-base-100">
+                        <div className="card-body">
+                            <strong>Procedure</strong>
+                            <table
+                                className="table table-xs"
+                                style={{ width: "100%" }}
+                            >
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: "5%" }}>NO</th>
+                                        <th style={{ width: "15%" }}>Kode</th>
+                                        <th>Procedure</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>A16.9</td>
+                                        <td>
+                                            Respiratory tuberculosis, not
+                                            confirmed bacteriologically or
+                                            histologically. Respiratory
+                                            tuberculosis, not confirm...
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>A16.9</td>
+                                        <td>
+                                            Respiratory tuberculosis, not
+                                            confirmed bacteriologically or
+                                            histologically. Respiratory
+                                            tuberculosis, not confirm...
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>A16.9</td>
+                                        <td>
+                                            Respiratory tuberculosis, not
+                                            confirmed bacteriologically or
+                                            histologically. Respiratory
+                                            tuberculosis, not confirm...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

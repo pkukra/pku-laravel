@@ -188,7 +188,8 @@ export default function DiagnosaAddBtn({
                                                         loadingSaveDiag[
                                                             item.KD_PENYAKIT
                                                         ]
-                                                    } // Check if this diagnosa is loading
+                                                    }
+                                                    // Check if this diagnosa is loading
                                                     disabled={selectedDiagnosa.includes(
                                                         item.KD_PENYAKIT
                                                     )}
