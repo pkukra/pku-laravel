@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios"; // Import axios untuk mengambil data
 import moment from "moment";
+import { Popconfirm } from "antd";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import DiagnosaAddBtn from "./DiagnosaAddBtn";
@@ -26,6 +27,23 @@ export default function PasienRujukansDetail({ auth, pasien }) {
             .then((response) => {
                 setDiagnosa(response.data.data); // Simpan data yang diterima ke dalam state
                 setLoading(false); // Set loading ke false setelah data diterima
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+                setLoading(false); // Set loading ke false jika ada error
+            });
+    };
+
+    // Fungsi untuk menhapus diagnosa setia detail pasien by id
+    const deleteDiagnosa = (id, kode) => {
+        axios
+            .delete(
+                route("rm.pasien-rujukan.delete_diagnosa", {
+                    id: id,
+                })
+            )
+            .then((response) => {
+                fetchDiagnosa();
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
@@ -238,7 +256,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                 <th style={{ width: "15%" }}>
                                                     Kode
                                                 </th>
-                                                <th>Penyakit</th>
+                                                <th style={{ width: "67%" }}>Penyakit</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -251,9 +269,19 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                     </td>
                                                     <td>{item.PENYAKIT}</td>
                                                     <td>
-                                                        <button className="btn btn-xs btn-outline btn-error">
-                                                            hapus
-                                                        </button>
+                                                        <Popconfirm
+                                                            title="Hapus Diagnosa"
+                                                            description="Apakah anda yakin menhapus diagnosa ini?"
+                                                            onConfirm={()=>deleteDiagnosa(item.ID, item.MRPKD_PENYAKIT)}
+                                                            okText="Ya"
+                                                            cancelText="Tidak"
+                                                        >
+                                                            <button
+                                                                className="btn btn-xs btn-outline btn-error"
+                                                            >
+                                                                hapus
+                                                            </button>
+                                                        </Popconfirm>
                                                     </td>
                                                 </tr>
                                             ))}

@@ -4,7 +4,6 @@ import axios from "axios";
 import { notification } from "antd";
 
 export default function DiagnosaAddBtn({
-    className = "",
     disabled,
     pasien,
     refreshDiagnosa,

@@ -135,4 +135,26 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
         ], 500);
     }
+
+    /**
+     * delete_diagnosa
+     * Hapus diagnosa berdasarkan ID
+     */
+    public function delete_diagnosa($id)
+    {
+        // Hapus diagnosa berdasarkan ID dari tabel MR_PENYAKIT
+        $deleted = $this->pasienRujukanRepo->deleteDiagnosaById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus diagnosa',
+        ], 500);
+    }
 }
