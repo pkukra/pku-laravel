@@ -141,7 +141,6 @@ export default function DiagnosaAddBtn({
                     <h3 className="font-bold text-lg">
                         Pencarian diagnosa/penyakit
                     </h3>
-                    {JSON.stringify(selectedDiagnosa)}
                     <input
                         type="text"
                         value={query}

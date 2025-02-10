@@ -10,7 +10,7 @@ import DiagnosaAddBtn from "./DiagnosaAddBtn";
 
 export default function PasienRujukansDetail({ auth, pasien }) {
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
-    const [loading, setLoading] = useState(true); // Loading state
+    const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]);
 
@@ -32,11 +32,11 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                     response.data.data.map((item) => item.MRPKD_PENYAKIT)
                 );
                 setDiagnosa(response.data.data); // Simpan data yang diterima ke dalam state
-                setLoading(false); // Set loading ke false setelah data diterima
+                setLoadingFetchDiagnosa(false); // Set loading ke false setelah data diterima
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
-                setLoading(false); // Set loading ke false jika ada error
+                setLoadingFetchDiagnosa(false); // Set loading ke false jika ada error
             });
     };
 
@@ -226,10 +226,10 @@ export default function PasienRujukansDetail({ auth, pasien }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <div className="">
+                <div className="diagnosa-list">
                     <div className="card bg-base-100">
                         <div className="card-body">
-                            {loading ? (
+                            {loadingFetchDiagnosa ? (
                                 <>
                                     <div className="skeleton h-4 w-full"></div>
                                     <div className="skeleton h-4 w-full"></div>
@@ -257,7 +257,6 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                             />
                                         </div>
                                     </div>
-
                                     <table
                                         className="table table-xs"
                                         style={{ width: "100%" }}
@@ -317,58 +316,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                         </div>
                     </div>
                 </div>
-
-                <div className="">
-                    <div className="card bg-base-100">
-                        <div className="card-body">
-                            <strong>Procedure</strong>
-                            <table
-                                className="table table-xs"
-                                style={{ width: "100%" }}
-                            >
-                                <thead>
-                                    <tr>
-                                        <th style={{ width: "5%" }}>NO</th>
-                                        <th style={{ width: "15%" }}>Kode</th>
-                                        <th>Procedure</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>A16.9</td>
-                                        <td>
-                                            Respiratory tuberculosis, not
-                                            confirmed bacteriologically or
-                                            histologically. Respiratory
-                                            tuberculosis, not confirm...
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>A16.9</td>
-                                        <td>
-                                            Respiratory tuberculosis, not
-                                            confirmed bacteriologically or
-                                            histologically. Respiratory
-                                            tuberculosis, not confirm...
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>A16.9</td>
-                                        <td>
-                                            Respiratory tuberculosis, not
-                                            confirmed bacteriologically or
-                                            histologically. Respiratory
-                                            tuberculosis, not confirm...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                
             </div>
         </AuthenticatedLayout>
     );
