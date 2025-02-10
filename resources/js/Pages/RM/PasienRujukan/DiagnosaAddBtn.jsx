@@ -85,7 +85,7 @@ export default function DiagnosaAddBtn({
                 notification.success({
                     placement: "bottomRight",
                     message: "Sukses!",
-                    description: "Diagnosa berhasil ditambhakan.",
+                    description: "Diagnosa berhasil ditambahkan.",
                 });
 
                 // Update the selectedDiagnosa state to include the newly saved diagnosa

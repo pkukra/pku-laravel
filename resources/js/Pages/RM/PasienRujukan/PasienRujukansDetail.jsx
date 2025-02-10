@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios"; // Import axios untuk mengambil data
-import { Popconfirm } from "antd";
+import { Modal } from "antd"; // Import Modal
 import Button from "@/Components/Button";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -13,6 +13,8 @@ export default function PasienRujukansDetail({ auth, pasien }) {
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]);
+    const [isModalHapusDiagnosaOpen, setIsModalHapusDianosaOpen] = useState(false); // Modal visibility
+    const [currentDiagnosa, setCurrentDiagnosa] = useState(null); // Track current diagnosa for deletion
 
     // Memanggil endpoint untuk mendapatkan data diagnosa
     useEffect(() => {
@@ -56,11 +58,24 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 );
                 setDeleteDiagnosaId(null); // Reset deleteDiagnosaId after deletion
                 fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
+                setIsModalHapusDianosaOpen(false); // Close the modal after deletion
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
                 setDeleteDiagnosaId(null); // Reset deleteDiagnosaId if error occurs
+                setIsModalHapusDianosaOpen(false); // Close the modal if an error occurs
             });
+    };
+
+    // Function to show the modal with the diagnosa info for deletion
+    const showDeleteConfirm = (item) => {
+        setCurrentDiagnosa(item); // Set the current diagnosa to be deleted
+        setIsModalHapusDianosaOpen(true); // Show the modal
+    };
+
+    // Function to handle cancel (closing the modal)
+    const handleCancel = () => {
+        setIsModalHapusDianosaOpen(false); // Close the modal
     };
 
     return (
@@ -73,9 +88,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
             }
         >
             <Head title="Pasien Rujukan List" />
-            <PasienRujukansDetailProfile
-                pasien={pasien}
-            />
+            <PasienRujukansDetailProfile pasien={pasien} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <div className="diagnosa-list">
@@ -136,28 +149,20 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                     </td>
                                                     <td>{item.PENYAKIT}</td>
                                                     <td>
-                                                        <Popconfirm
-                                                            title="Hapus Diagnosa"
-                                                            description="Apakah anda yakin menhapus diagnosa ini?"
-                                                            onConfirm={() =>
-                                                                deleteDiagnosa(
-                                                                    item.ID,
-                                                                    item.MRPKD_PENYAKIT
+                                                        <Button
+                                                            loading={
+                                                                deleteDiagnosaId ===
+                                                                item.ID
+                                                            }
+                                                            className="btn btn-xs btn-outline btn-error"
+                                                            onClick={() =>
+                                                                showDeleteConfirm(
+                                                                    item
                                                                 )
                                                             }
-                                                            okText="Ya"
-                                                            cancelText="Tidak"
                                                         >
-                                                            <Button
-                                                                loading={
-                                                                    deleteDiagnosaId ===
-                                                                    item.ID
-                                                                }
-                                                                className="btn btn-xs btn-outline btn-error"
-                                                            >
-                                                                hapus
-                                                            </Button>
-                                                        </Popconfirm>
+                                                            hapus
+                                                        </Button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -168,8 +173,26 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                         </div>
                     </div>
                 </div>
-                
             </div>
+
+            {/* Modal for Confirming Deletion */}
+            <Modal
+                title="Hapus Diagnosa"
+                open={isModalHapusDiagnosaOpen}
+                onOk={() =>
+                    currentDiagnosa &&
+                    deleteDiagnosa(
+                        currentDiagnosa.ID,
+                        currentDiagnosa.MRPKD_PENYAKIT
+                    )
+                }
+                onCancel={handleCancel}
+                okText="Ya"
+                cancelText="Tidak"
+                okButtonProps={{ danger: true }} // Make "Ya" button a danger button
+            >
+                <p>Apakah anda yakin ingin menghapus diagnosa ini?</p>
+            </Modal>
         </AuthenticatedLayout>
     );
 }
