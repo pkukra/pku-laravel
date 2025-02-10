@@ -7,7 +7,8 @@ export default function DiagnosaAddBtn({
     disabled,
     pasien,
     refreshDiagnosa,
-    selectedDiagnosaProps,
+    selectedDiagnosa,
+    setSelectedDiagnosa,
 }) {
     const [diagnosaCari, setDiagnosaCari] = useState([]); // State to store search results
     const [loading, setLoading] = useState(false); // Loading state for fetching data
@@ -15,11 +16,10 @@ export default function DiagnosaAddBtn({
     const [query, setQuery] = useState(""); // State for input value
     const [page, setPage] = useState(1); // Current page number
     const [hasMore, setHasMore] = useState(true); // Flag to check if more data exists
-    const [selectedDiagnosa, setSelectedDiagnosa] = useState([]);
 
-    useEffect(() => {
-        setSelectedDiagnosa(selectedDiagnosaProps); // Panggil fungsi fetchDiagnosa saat komponen di-mount
-    }, []);
+    // useEffect(() => {
+    //     setSelectedDiagnosa(selectedDiagnosaProps); // Panggil fungsi fetchDiagnosa saat komponen di-mount
+    // }, []);
 
     // Function to handle input changes
     const handleInputChange = (event) => {
@@ -141,6 +141,7 @@ export default function DiagnosaAddBtn({
                     <h3 className="font-bold text-lg">
                         Pencarian diagnosa/penyakit
                     </h3>
+                    {JSON.stringify(selectedDiagnosa)}
                     <input
                         type="text"
                         value={query}

@@ -3,6 +3,7 @@ import { Head } from "@inertiajs/react";
 import axios from "axios"; // Import axios untuk mengambil data
 import moment from "moment";
 import { Popconfirm } from "antd";
+import Button from "@/Components/Button";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import DiagnosaAddBtn from "./DiagnosaAddBtn";
@@ -10,6 +11,8 @@ import DiagnosaAddBtn from "./DiagnosaAddBtn";
 export default function PasienRujukansDetail({ auth, pasien }) {
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loading, setLoading] = useState(true); // Loading state
+    const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
+    const [selectedDiagnosa, setSelectedDiagnosa] = useState([]);
 
     // Memanggil endpoint untuk mendapatkan data diagnosa
     useEffect(() => {
@@ -25,6 +28,9 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 })
             )
             .then((response) => {
+                setSelectedDiagnosa(
+                    response.data.data.map((item) => item.MRPKD_PENYAKIT)
+                );
                 setDiagnosa(response.data.data); // Simpan data yang diterima ke dalam state
                 setLoading(false); // Set loading ke false setelah data diterima
             })
@@ -36,6 +42,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
 
     // Fungsi untuk menhapus diagnosa setia detail pasien by id
     const deleteDiagnosa = (id, kode) => {
+        setDeleteDiagnosaId(id); // Set loading for the specific diagnosa being deleted
         axios
             .delete(
                 route("rm.pasien-rujukan.delete_diagnosa", {
@@ -43,11 +50,16 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                 })
             )
             .then((response) => {
-                fetchDiagnosa();
+                // Menghapus kode diagnosa dari selectedDiagnosa setelah berhasil dihapus
+                setSelectedDiagnosa((prevSelectedDiagnosa) =>
+                    prevSelectedDiagnosa.filter((item) => item !== kode)
+                );
+                setDeleteDiagnosaId(null); // Reset deleteDiagnosaId after deletion
+                fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
-                setLoading(false); // Set loading ke false jika ada error
+                setDeleteDiagnosaId(null); // Reset deleteDiagnosaId if error occurs
             });
     };
 
@@ -236,10 +248,12 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                 className="float-end"
                                                 pasien={pasien}
                                                 refreshDiagnosa={fetchDiagnosa}
-                                                selectedDiagnosaProps={diagnosa.map(
-                                                    (item) =>
-                                                        item.MRPKD_PENYAKIT
-                                                )}
+                                                selectedDiagnosa={
+                                                    selectedDiagnosa
+                                                }
+                                                setSelectedDiagnosa={
+                                                    setSelectedDiagnosa
+                                                }
                                             />
                                         </div>
                                     </div>
@@ -253,10 +267,12 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                 <th style={{ width: "5%" }}>
                                                     NO
                                                 </th>
-                                                <th style={{ width: "15%" }}>
+                                                <th style={{ width: "10%" }}>
                                                     Kode
                                                 </th>
-                                                <th style={{ width: "67%" }}>Penyakit</th>
+                                                <th style={{ width: "72%" }}>
+                                                    Penyakit
+                                                </th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -272,15 +288,24 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                                                         <Popconfirm
                                                             title="Hapus Diagnosa"
                                                             description="Apakah anda yakin menhapus diagnosa ini?"
-                                                            onConfirm={()=>deleteDiagnosa(item.ID, item.MRPKD_PENYAKIT)}
+                                                            onConfirm={() =>
+                                                                deleteDiagnosa(
+                                                                    item.ID,
+                                                                    item.MRPKD_PENYAKIT
+                                                                )
+                                                            }
                                                             okText="Ya"
                                                             cancelText="Tidak"
                                                         >
-                                                            <button
+                                                            <Button
+                                                                loading={
+                                                                    deleteDiagnosaId ===
+                                                                    item.ID
+                                                                }
                                                                 className="btn btn-xs btn-outline btn-error"
                                                             >
                                                                 hapus
-                                                            </button>
+                                                            </Button>
                                                         </Popconfirm>
                                                     </td>
                                                 </tr>
