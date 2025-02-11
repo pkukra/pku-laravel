@@ -16,32 +16,30 @@ export default function Index({
         <div className="diagnosa-list">
             <div className="card bg-base-100">
                 <div className="card-body">
-                    {loadingFetchDiagnosa ? (
-                        <>
-                            <div className="skeleton h-4 w-full"></div>
-                            <div className="skeleton h-4 w-full"></div>
-                            <div className="skeleton h-4 w-full"></div>
-                            <div className="skeleton h-4 w-full"></div>
-                            <div className="skeleton h-4 w-full"></div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-5 gap-5">
-                                <div className="col-span-4">
-                                    <strong>Diagnosa</strong>
-                                </div>
-                                <div className="col-span-1">
-                                    <PasienRujukansDetailDiagnosaAdd
-                                        pasien={pasien}
-                                        className="float-end"
-                                        refreshDiagnosa={fetchDiagnosa}
-                                        selectedDiagnosa={selectedDiagnosa}
-                                        setSelectedDiagnosa={
-                                            setSelectedDiagnosa
-                                        }
-                                    />
-                                </div>
+                    <>
+                        <div className="grid grid-cols-5 gap-5">
+                            <div className="col-span-4">
+                                <strong>Diagnosa</strong>
                             </div>
+                            <div className="col-span-1">
+                                <PasienRujukansDetailDiagnosaAdd
+                                    pasien={pasien}
+                                    className="float-end"
+                                    refreshDiagnosa={fetchDiagnosa}
+                                    selectedDiagnosa={selectedDiagnosa}
+                                    setSelectedDiagnosa={setSelectedDiagnosa}
+                                />
+                            </div>
+                        </div>
+                        {loadingFetchDiagnosa ? (
+                            <>
+                                <div className="skeleton h-4 w-full"></div>
+                                <div className="skeleton h-4 w-full"></div>
+                                <div className="skeleton h-4 w-full"></div>
+                                <div className="skeleton h-4 w-full"></div>
+                                <div className="skeleton h-4 w-full"></div>
+                            </>
+                        ) : (
                             <table
                                 className="table table-xs"
                                 style={{ width: "100%" }}
@@ -80,8 +78,8 @@ export default function Index({
                                     ))}
                                 </tbody>
                             </table>
-                        </>
-                    )}
+                        )}
+                    </>
                 </div>
             </div>
         </div>

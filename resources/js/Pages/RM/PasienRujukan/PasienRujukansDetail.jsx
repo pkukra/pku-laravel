@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
-import axios from "axios"; // Import axios untuk mengambil data
-import { Modal } from "antd"; // Import Modal
-import Button from "@/Components/Button";
+import axios from "axios";
+import { Modal } from "antd";
+
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukansDetailProfile from "./PasienRujukansDetailProfile";
 import DiagnosaList from "./PasienRujukansDetailDiagnosaList";
@@ -12,7 +12,8 @@ export default function PasienRujukansDetail({ auth, pasien }) {
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
-    const [isModalHapusDiagnosaOpen, setIsModalHapusDiagnosaOpen] = useState(false); // Modal visibility
+    const [isModalHapusDiagnosaOpen, setIsModalHapusDiagnosaOpen] =
+        useState(false); // Modal visibility
     const [currentDiagnosa, setCurrentDiagnosa] = useState(null); // Track current diagnosa for deletion
 
     // Memanggil endpoint untuk mendapatkan data diagnosa
