@@ -174,4 +174,21 @@ class PasienRujukanRepository
             return false;
         }
     }
+
+    /**
+     * Get procedure penyakit by transaksi (MR_TINDAKAN)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getProcedureByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_TINDAKAN')
+            ->select('MR_TINDAKAN.*', 'MR_ICD9.FMI9KETERANGAN')
+            ->join('MR_ICD9', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'MR_ICD9.FMI9KODE')
+            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC')
+            ->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi)
+            ->get();
+    }
 }

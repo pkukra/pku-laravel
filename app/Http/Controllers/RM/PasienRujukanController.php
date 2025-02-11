@@ -157,4 +157,19 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menghapus diagnosa',
         ], 500);
     }
+
+    /**
+     * list_procedure
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function list_procedure($kode_reg)
+    {
+        // Mendapatkan procedure berdasarkan kode transaksi
+        $procedure = $this->pasienRujukanRepo->getProcedureByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+        ]);
+    }
 }
