@@ -5,6 +5,7 @@ import PasienRujukanDetailDiagnosaAdd from "./PasienRujukanDetailDiagnosaAdd";
 import Button from "@/Components/Button";
 
 export default function Index({
+    pasien,
     diagnosa,
     loadingFetchDiagnosa,
     deleteDiagnosaId,
@@ -12,7 +13,6 @@ export default function Index({
     selectedDiagnosa,
     setSelectedDiagnosa,
     fetchDiagnosa,
-    pasien,
     isModalHapusDiagnosaOpen,
     handleCancelDelDiagnosa,
     currentDiagnosa,
