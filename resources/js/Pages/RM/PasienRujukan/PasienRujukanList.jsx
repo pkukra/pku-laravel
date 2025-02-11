@@ -83,7 +83,7 @@ const columns = [
     },
 ];
 
-export default function PasienRujukansList({ auth }) {
+export default function PasienRujukanList({ auth }) {
     const [dataSource, setDataSource] = useState([]); // State untuk data tabel
     const [loading, setLoading] = useState(false); // State untuk menandakan loading
     const [noRm, setNoRm] = useState(""); // State untuk menyimpan No RM dari input

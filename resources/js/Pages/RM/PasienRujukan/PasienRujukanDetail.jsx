@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
-import { Modal } from "antd";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import PasienRujukansDetailProfile from "./PasienRujukansDetailProfile";
-import DiagnosaList from "./PasienRujukansDetailDiagnosaList";
+import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
+import DiagnosaList from "./PasienRujukanDetailDiagnosaList";
 
-export default function PasienRujukansDetail({ auth, pasien }) {
+export default function PasienRujukanDetail({ auth, pasien }) {
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
@@ -74,7 +73,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
     };
 
     // Function to handle cancel (closing the modal)
-    const handleCancel = () => {
+    const handleCancelDelDiagnosa = () => {
         setIsModalHapusDiagnosaOpen(false); // Close the modal
     };
 
@@ -88,7 +87,7 @@ export default function PasienRujukansDetail({ auth, pasien }) {
             }
         >
             <Head title="Pasien Rujukan List" />
-            <PasienRujukansDetailProfile pasien={pasien} />
+            <PasienRujukanDetailProfile pasien={pasien} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                 <DiagnosaList
@@ -100,27 +99,12 @@ export default function PasienRujukansDetail({ auth, pasien }) {
                     selectedDiagnosa={selectedDiagnosa}
                     setSelectedDiagnosa={setSelectedDiagnosa}
                     fetchDiagnosa={fetchDiagnosa}
+                    isModalHapusDiagnosaOpen={isModalHapusDiagnosaOpen}
+                    currentDiagnosa={currentDiagnosa}
+                    deleteDiagnosa={deleteDiagnosa}
+                    handleCancelDelDiagnosa={handleCancelDelDiagnosa}
                 />
             </div>
-
-            {/* Modal for Confirming Deletion */}
-            <Modal
-                title="Hapus Diagnosa"
-                open={isModalHapusDiagnosaOpen}
-                onOk={() =>
-                    currentDiagnosa &&
-                    deleteDiagnosa(
-                        currentDiagnosa.ID,
-                        currentDiagnosa.MRPKD_PENYAKIT
-                    )
-                }
-                onCancel={handleCancel}
-                okText="Ya"
-                cancelText="Tidak"
-                okButtonProps={{ danger: true }} // Make "Ya" button a danger button
-            >
-                <p>Apakah anda yakin ingin menghapus diagnosa ini?</p>
-            </Modal>
         </AuthenticatedLayout>
     );
 }

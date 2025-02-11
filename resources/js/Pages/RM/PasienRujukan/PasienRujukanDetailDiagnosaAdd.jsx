@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Button from "@/Components/Button";
 import axios from "axios";
 import { notification } from "antd";
 
 export default function DiagnosaAddBtn({
-    disabled,
     pasien,
     refreshDiagnosa,
     selectedDiagnosa,
@@ -16,10 +15,6 @@ export default function DiagnosaAddBtn({
     const [query, setQuery] = useState(""); // State for input value
     const [page, setPage] = useState(1); // Current page number
     const [hasMore, setHasMore] = useState(true); // Flag to check if more data exists
-
-    // useEffect(() => {
-    //     setSelectedDiagnosa(selectedDiagnosaProps); // Panggil fungsi fetchDiagnosa saat komponen di-mount
-    // }, []);
 
     // Function to handle input changes
     const handleInputChange = (event) => {
@@ -120,23 +115,22 @@ export default function DiagnosaAddBtn({
 
     return (
         <>
-            <button
+            <Button
                 onClick={() => {
                     document.getElementById("modal_add_diadnosa").showModal();
                     fetchDiagnosa(query, 1);
                 }}
                 className="btn btn-xs btn-primary"
-                disabled={disabled}
             >
                 Add Diagnosa
-            </button>
+            </Button>
 
             <dialog id="modal_add_diadnosa" className="modal">
                 <div className="modal-box w-10/11 max-w-3xl h-[550px]">
                     <form method="dialog">
-                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                        <Button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
                             ✕
-                        </button>
+                        </Button>
                     </form>
                     <h3 className="font-bold text-lg">
                         Pencarian diagnosa/penyakit
@@ -211,7 +205,7 @@ export default function DiagnosaAddBtn({
                     </div>
                 </div>
                 <form method="dialog" className="modal-backdrop">
-                    <button>close</button>
+                    <Button>close</Button>
                 </form>
             </dialog>
         </>

@@ -25,7 +25,7 @@ class PasienRujukanController extends Controller
      */
     public function index(Request $request)
     {
-        return Inertia::render('RM/PasienRujukan/PasienRujukansList');
+        return Inertia::render('RM/PasienRujukan/PasienRujukanList');
     }
 
     /**
@@ -55,7 +55,7 @@ class PasienRujukanController extends Controller
         $pasien_rujukans = $this->pasienRujukanRepo->getPasienRujukanDetail($kode_reg);
         $count = $this->pasienRujukanRepo->countPasienRujukan();
 
-        return Inertia::render('RM/PasienRujukan/PasienRujukansDetail', [
+        return Inertia::render('RM/PasienRujukan/PasienRujukanDetail', [
             'pasien' => $pasien_rujukans,
             'count' => $count,
         ]);
