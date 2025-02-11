@@ -21,7 +21,7 @@ export default function Index({
     return (
         <>
             <div className="diagnosa-list">
-                <div className="card bg-base-100">
+                <div className="card bg-base-100 min-h-[200px]">
                     <div className="card-body">
                         <>
                             <div className="grid grid-cols-5 gap-5">
