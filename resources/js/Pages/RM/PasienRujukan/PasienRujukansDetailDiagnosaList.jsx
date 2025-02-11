@@ -1,5 +1,5 @@
 import React from "react";
-import DiagnosaAddBtn from "./DiagnosaAddBtn";
+import PasienRujukansDetailDiagnosaAdd from "./PasienRujukansDetailDiagnosaAdd";
 import Button from "@/Components/Button";
 
 export default function Index({
@@ -31,7 +31,7 @@ export default function Index({
                                     <strong>Diagnosa</strong>
                                 </div>
                                 <div className="col-span-1">
-                                    <DiagnosaAddBtn
+                                    <PasienRujukansDetailDiagnosaAdd
                                         pasien={pasien}
                                         className="float-end"
                                         refreshDiagnosa={fetchDiagnosa}
