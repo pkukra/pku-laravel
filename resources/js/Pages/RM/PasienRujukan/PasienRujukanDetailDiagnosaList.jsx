@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal } from "antd";
 
 import PasienRujukanDetailDiagnosaAdd from "./PasienRujukanDetailDiagnosaAdd";
 import Button from "@/Components/Button";
+import SelectSearch from "@/Components/SelectSearch";
 
 export default function Index({
     pasien,
@@ -18,6 +19,14 @@ export default function Index({
     currentDiagnosa,
     deleteDiagnosa,
 }) {
+    const [selectedOption, setSelectedOption] = useState(null);
+
+    const options = ["Opsi 1", "Opsi 2", "Opsi 3", "Opsi 4", "Opsi 5"];
+
+    const handleOptionChange = (value) => {
+        setSelectedOption(value);
+    };
+
     return (
         <>
             <div className="diagnosa-list">
@@ -93,6 +102,20 @@ export default function Index({
                                 </table>
                             )}
                         </>
+                        <SelectSearch
+                            options={options}
+                            value={selectedOption}
+                            onChange={handleOptionChange}
+                            className="max-w-xs sm:max-w-md lg:max-w-lg"
+                            size="xs" // You can use "xs", "sm", or "lg" to adjust the size
+                            placeholder="Cari Opsi..."
+                        />
+                        {selectedOption && (
+                            <div className="mt-3">
+                                <strong>Opsi yang dipilih: </strong>{" "}
+                                {selectedOption}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
