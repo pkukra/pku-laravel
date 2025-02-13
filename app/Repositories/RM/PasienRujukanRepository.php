@@ -139,10 +139,10 @@ class PasienRujukanRepository
                     'MRPTGL_MASUK' => $tgl_masuk,
                     'MRPURUT_MASUK' => $no_urut_masuk,
                     'MRPJENIS' => 'RJ',
-                    'MRPSTAT_DIAG' => 1,
-                    'MRPKASUS' => 1,
-                    'STATUS_IMUN' => 1,
-                    'MRPIMUNKE' => 1,
+                    'MRPSTAT_DIAG' => $data['status_diagnosa'],
+                    'MRPKASUS' => $data['kasus'],
+                    // 'STATUS_IMUN' => 1,
+                    // 'MRPIMUNKE' => 1,
                     'USER_ID' => $data['user_id'], // Assuming user ID is passed
                     'UPDATE_DT' => $now,
                 ]);

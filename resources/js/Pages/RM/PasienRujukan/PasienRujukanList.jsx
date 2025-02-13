@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import { Card, Input, Button, Space } from "antd";
 
 import { Table } from "antd";
 import axios from "axios"; // Import axios untuk mengambil data
@@ -70,14 +71,18 @@ const columns = [
         key: "action",
         render: (_, record) => {
             return (
-                <a
-                    href={route("rm.pasien-rujukan.detail", {
-                        kode_reg: record.FRPNOTRANSAKSIKJ,
-                    })}
-                    className="btn btn-primary btn-xs"
-                >
-                    Tampilkan
-                </a>
+                <>
+                    <Button type="primary" size="small">
+                        <a
+                            href={route("rm.pasien-rujukan.detail", {
+                                kode_reg: record.FRPNOTRANSAKSIKJ,
+                            })}
+                            className="btn btn-primary btn-xs"
+                        >
+                            Tampilkan
+                        </a>
+                    </Button>
+                </>
             );
         },
     },
@@ -130,34 +135,36 @@ export default function PasienRujukanList({ auth }) {
             }
         >
             <Head title="Pasien Rujukan List" />
-            <div className="form-control mb-2">
-                <div className="input-group">
-                    <input
-                        type="text"
+            <Card style={{ marginBottom: 10 }}>
+                <Space direction="horizontal">
+                    <Input
                         placeholder="No RM"
-                        className="input input-bordered input-sm w-full max-w-xs mr-1"
                         value={noRm} // Mengikat input ke state noRm
                         onChange={handleInputChange} // Update state ketika input berubah
                         onKeyDown={handleKeyDown} // Menangani event keydown untuk enter
                     />
-                    <button
-                        className="btn btn-sm btn-primary"
+                    <Button
+                        style={{ width: 80 }}
                         onClick={handleSearch} // Pencarian berdasarkan noRm
+                        type="primary"
                     >
                         Cari
-                    </button>
-                </div>
-            </div>
-            <Table
-                dataSource={dataSource}
-                columns={columns}
-                size="small"
-                loading={loading} // Menampilkan indikator loading saat data sedang diambil
-                rowKey="FRPNOTRANSAKSIKJ" // Pastikan menggunakan properti unik untuk key baris
-                scroll={{
-                    x: "max-content",
-                }}
-            />
+                    </Button>
+                </Space>
+            </Card>
+            <Card title="pasien rawat jalan">
+                <Table
+                    dataSource={dataSource}
+                    columns={columns}
+                    size="small"
+                    loading={loading} // Menampilkan indikator loading saat data sedang diambil
+                    rowKey="FRPNOTRANSAKSIKJ" // Pastikan menggunakan properti unik untuk key baris
+                    scroll={{
+                        x: "max-content",
+                    }}
+                />
+            </Card>
+
         </AuthenticatedLayout>
     );
 }

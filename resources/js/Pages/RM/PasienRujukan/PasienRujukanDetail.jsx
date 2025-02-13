@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
+import { Col, Row } from "antd";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
@@ -8,7 +9,7 @@ import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
 import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 
 export default function PasienRujukanDetail({ auth, pasien }) {
-    const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa 
+    const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
@@ -16,7 +17,7 @@ export default function PasienRujukanDetail({ auth, pasien }) {
         useState(false); // Modal visibility
     const [currentDiagnosa, setCurrentDiagnosa] = useState(null); // Track current diagnosa for deletion
 
-    const [procedure, setProcedure] = useState([]); // State untuk menyimpan data procedure  
+    const [procedure, setProcedure] = useState([]); // State untuk menyimpan data procedure
     const [loadingFetchProcedure, setLoadingFetchProcedure] = useState(true); // Loading state
     const [deleteProcedureId, setDeleteProcedureId] = useState(null); // Track which procedure is being deleted
     const [selectedProcedure, setSelectedProcedure] = useState([]); // untuk disable procedure terpiluh, agar saat menampilkan list procedure tidak terpilih 2 kali
@@ -26,7 +27,7 @@ export default function PasienRujukanDetail({ auth, pasien }) {
 
     // Memanggil endpoint untuk mendapatkan data diagnosa
     useEffect(() => {
-        fetchDiagnosa(); 
+        fetchDiagnosa();
         fetchProcedure();
     }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
 
@@ -97,7 +98,7 @@ export default function PasienRujukanDetail({ auth, pasien }) {
             });
     };
 
-    // Fungsi untuk menhapus procedure setia detail pasien by id
+    // Fungsi untuk menhapus procedure setiap detail pasien by id
     const deleteProcedure = (id, kode) => {
         setDeleteProcedureId(id); // Set loading for the specific procedure being deleted
         axios
@@ -150,37 +151,40 @@ export default function PasienRujukanDetail({ auth, pasien }) {
             <Head title="Pasien Rujukan List" />
             <PasienRujukanDetailProfile pasien={pasien} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <PasienRujukanDetailDiagnosaList
-                    pasien={pasien}
-                    diagnosa={diagnosa}
-                    loadingFetchDiagnosa={loadingFetchDiagnosa}
-                    deleteDiagnosaId={deleteDiagnosaId}
-                    showDeleteConfirm={showDeleteConfirm}
-                    selectedDiagnosa={selectedDiagnosa}
-                    setSelectedDiagnosa={setSelectedDiagnosa}
-                    fetchDiagnosa={fetchDiagnosa}
-                    isModalHapusDiagnosaOpen={isModalHapusDiagnosaOpen}
-                    currentDiagnosa={currentDiagnosa}
-                    deleteDiagnosa={deleteDiagnosa}
-                    handleCancelDelDiagnosa={handleCancelDelDiagnosa}
-                />
-
-                <PasienRujukanDetailProcedureList
-                    pasien={pasien}
-                    procedure={procedure}
-                    loadingFetchProcedure={loadingFetchProcedure}
-                    deleteProcedureId={deleteProcedureId}
-                    showDeleteConfirm={showDeleteConfirm}
-                    selectedProcedure={selectedProcedure}
-                    setSelectedProcedure={setSelectedProcedure}
-                    fetchProcedure={fetchProcedure}
-                    isModalHapusProcedureOpen={isModalHapusProcedureOpen}
-                    currentProcedure={currentProcedure}
-                    deleteProcedure={deleteProcedure}
-                    handleCancelDelProcedure={handleCancelDelProcedure}
-                />
-            </div>
+            <Row>
+                <Col span={12}>
+                    <PasienRujukanDetailDiagnosaList
+                        pasien={pasien}
+                        diagnosa={diagnosa}
+                        loadingFetchDiagnosa={loadingFetchDiagnosa}
+                        deleteDiagnosaId={deleteDiagnosaId}
+                        showDeleteConfirm={showDeleteConfirm}
+                        selectedDiagnosa={selectedDiagnosa}
+                        setSelectedDiagnosa={setSelectedDiagnosa}
+                        fetchDiagnosa={fetchDiagnosa}
+                        isModalHapusDiagnosaOpen={isModalHapusDiagnosaOpen}
+                        currentDiagnosa={currentDiagnosa}
+                        deleteDiagnosa={deleteDiagnosa}
+                        handleCancelDelDiagnosa={handleCancelDelDiagnosa}
+                    />
+                </Col>
+                <Col span={12}>
+                    {/* <PasienRujukanDetailProcedureList
+                        pasien={pasien}
+                        procedure={procedure}
+                        loadingFetchProcedure={loadingFetchProcedure}
+                        deleteProcedureId={deleteProcedureId}
+                        showDeleteConfirm={showDeleteConfirm}
+                        selectedProcedure={selectedProcedure}
+                        setSelectedProcedure={setSelectedProcedure}
+                        fetchProcedure={fetchProcedure}
+                        isModalHapusProcedureOpen={isModalHapusProcedureOpen}
+                        currentProcedure={currentProcedure}
+                        deleteProcedure={deleteProcedure}
+                        handleCancelDelProcedure={handleCancelDelProcedure}
+                    /> */}
+                </Col>
+            </Row>
         </AuthenticatedLayout>
     );
 }

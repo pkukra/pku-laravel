@@ -108,6 +108,8 @@ class PasienRujukanController extends Controller
             'no_rm' => 'required|string|max:20',
             'kd_unit' => 'required|string|max:20',
             'tgl_masuk' => 'required|date',
+            'status_diagnosa' => 'required|string',
+            'kasus' => 'required|string',
         ]);
 
         // Mengambil data yang diperlukan untuk penyimpanan
@@ -116,6 +118,8 @@ class PasienRujukanController extends Controller
             'no_transaksikj' => $validated['no_transaksikj'],
             'no_rm' => $validated['no_rm'],
             'kd_unit' => $validated['kd_unit'],
+            'status_diagnosa' => $validated['status_diagnosa'],
+            'kasus' => $validated['kasus'],
             'tgl_masuk' => Carbon::parse($validated['tgl_masuk']),
             'user_id' => Auth::id(),
         ];

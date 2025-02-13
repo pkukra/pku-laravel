@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Button from "@/Components/Button";
+import { Button, Modal } from "antd";
 import axios from "axios";
 import { notification } from "antd";
 
@@ -125,13 +125,9 @@ export default function DiagnosaAddBtn({
                 Add Diagnosa
             </Button>
 
-            <dialog id="modal_add_diadnosa" className="modal">
+            <Modal>
                 <div className="modal-box w-10/11 max-w-3xl h-[550px]">
-                    <form method="dialog">
-                        <Button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                            ✕
-                        </Button>
-                    </form>
+                    
                     <h3 className="font-bold text-lg">
                         Pencarian diagnosa/penyakit
                     </h3>
@@ -207,7 +203,7 @@ export default function DiagnosaAddBtn({
                 <form method="dialog" className="modal-backdrop">
                     <Button>close</Button>
                 </form>
-            </dialog>
+            </Modal>
         </>
     );
 }

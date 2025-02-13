@@ -87,20 +87,9 @@ const App = ({children}) => {
                         style={{
                             margin: "16px 0",
                         }}
-                    >
-                        <Breadcrumb.Item>User</Breadcrumb.Item>
-                        <Breadcrumb.Item>Bill</Breadcrumb.Item>
-                    </Breadcrumb>
-                    <div
-                        style={{
-                            padding: 24,
-                            minHeight: 360,
-                            background: colorBgContainer,
-                            borderRadius: borderRadiusLG,
-                        }}
-                    >
-                        {children}
-                    </div>
+                        items={[{ title: 'halaman 1' }, { title: 'halaman 2' }]}
+                    />
+                    {children}
                 </Content>
                 <Footer
                     style={{
