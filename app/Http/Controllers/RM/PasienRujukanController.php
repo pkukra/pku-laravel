@@ -236,4 +236,26 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan procedure',
         ], 500);
     }
+
+    /**
+     * delete_procedure
+     * Hapus procedure berdasarkan ID
+     */
+    public function delete_procedure($id)
+    {
+        // Hapus procedure berdasarkan ID dari tabel MR_TINDAKAN
+        $deleted = $this->pasienRujukanRepo->deleteProcedureById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus procedure',
+        ], 500);
+    }
 }

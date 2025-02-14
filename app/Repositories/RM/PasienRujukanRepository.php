@@ -166,7 +166,7 @@ class PasienRujukanRepository
         try {
             $deleted = DB::connection('sqlsrv')
                 ->table('MR_PENYAKIT')
-                ->where('ID', $id) // assuming 'MRPKEY' is the column identifier
+                ->where('ID', $id)
                 ->delete();
 
             return $deleted > 0;
@@ -256,5 +256,28 @@ class PasienRujukanRepository
         }
 
         return true;
+    }
+
+    // 
+
+    /**
+     * Delete procedure by ID from MR_TINDAKAN table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteProcedureById($id)
+    {
+        try {
+            $deleted = DB::connection('sqlsrv')
+                ->table('MR_TINDAKAN')
+                ->where('ID', $id)
+                ->delete();
+
+            return $deleted > 0;
+        } catch (\Exception $e) {
+            // Handle exception (logging, etc.)
+            return false;
+        }
     }
 }

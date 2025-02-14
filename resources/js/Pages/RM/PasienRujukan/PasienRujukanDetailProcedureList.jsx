@@ -72,7 +72,7 @@ export default function Index({ pasien }) {
             )
             .then((response) => {
                 setSelectedProcedure(
-                    response.data.data.map((item) => item.MRPFMI9KODE)
+                    response.data.data.map((item) => item.MRTKD_TINDAKAN)
                 );
                 setProcedure(response.data.data); // Simpan data yang diterima ke dalam state
                 setLoadingFetchProcedure(false); // Set loading ke false setelah data diterima
