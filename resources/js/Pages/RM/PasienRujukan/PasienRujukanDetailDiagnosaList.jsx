@@ -264,11 +264,16 @@ export default function Index({ pasien }) {
                         options={anotherOptions.map((item) => ({
                             value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`, // Display both code and name
                             label: (
-                                <div style={{ wordBreak: "break-word" }}>
+                                <div
+                                    style={{
+                                        wordBreak: "break-word", // Ensure text wraps
+                                        whiteSpace: "normal", // Allow wrapping long words
+                                        overflowWrap: "break-word", // Break long words if necessary
+                                        display: "block", // Ensure block level behavior for wrapping
+                                    }}
+                                >
                                     <strong>{item.KD_PENYAKIT}</strong> -{" "}
-                                    <span style={{ wordBreak: "break-word" }}>
-                                        {item.PENYAKIT}
-                                    </span>
+                                    <span>{item.PENYAKIT}</span>
                                 </div>
                             ),
                             disabled: selectedDiagnosa.includes(
