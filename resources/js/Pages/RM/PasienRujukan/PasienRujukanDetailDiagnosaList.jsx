@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Card, Select, AutoComplete, Row, Col } from "antd";
 import { notification } from "antd";
-import { Table, Skeleton, Button } from "antd";
+import { Table, Button } from "antd";
 import axios from "axios";
 
-export default function Index({
-    pasien,
-    diagnosa,
-    fetchDiagnosa,
-    loadingFetchDiagnosa,
-    showDeleteConfirm,
-    selectedDiagnosa, //diagnosa yang sudah disimpan di database
-    setSelectedDiagnosa,
-    isModalHapusDiagnosaOpen,
-    handleCancelDelDiagnosa,
-    currentDiagnosa,
-    deleteDiagnosa,
-}) {
+export default function Index({ pasien }) {
     const columns = [
         {
             title: "Status",
@@ -43,6 +31,9 @@ export default function Index({
             key: "action",
             render: (_, record) => (
                 <Button
+                    disabled={
+                        loadingDeleteDiagnosa && record.ID === deleteDiagnosaId
+                    }
                     size="small"
                     variant="outlined"
                     color="danger"
@@ -62,6 +53,35 @@ export default function Index({
     const [selectedStatusDiagForm, setSelectedStatusDiagForm] = useState(null);
     const [selectedKasusForm, setSelectedKasusForm] = useState(null);
     const [loadingSaveDiag, setLoadingSaveDiag] = useState(false); // Loading state for each diagnosa
+    const [selectedDiagnosaDisplay, setSelectedDiagnosaDisplay] = useState(""); // Stores the full value for display
+    const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
+    const [isModalHapusDiagnosaOpen, setIsModalHapusDiagnosaOpen] =
+        useState(false); // Modal visibility state
+    const [loadingDeleteDiagnosa, setLoadingDeleteDiagnosa] = useState(false); // State loading untuk penghapusan diagnosa
+    const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
+    const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
+    const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
+
+    // Fungsi untuk mengambil data diagnosa
+    const fetchDiagnosa = () => {
+        axios
+            .get(
+                route("rm.pasien-rujukan.list_diagnosa", {
+                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                })
+            )
+            .then((response) => {
+                setSelectedDiagnosa(
+                    response.data.data.map((item) => item.MRPKD_PENYAKIT)
+                );
+                setDiagnosa(response.data.data); // Simpan data yang diterima ke dalam state
+                setLoadingFetchDiagnosa(false); // Set loading ke false setelah data diterima
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+                setLoadingFetchDiagnosa(false); // Set loading ke false jika ada error
+            });
+    };
 
     // Fetch diagnosa with lazy loading support
     const fetchSugetDiagnosa = async (query, pageNumber) => {
@@ -103,7 +123,7 @@ export default function Index({
         }
     };
 
-    // Function to save kode diagnosa
+    // Function to save diagnosa
     const saveDiagnosa = async () => {
         setLoadingSaveDiag(true);
         try {
@@ -121,13 +141,17 @@ export default function Index({
             );
 
             if (response?.data?.status === "ok") {
-                notification.success({
+                return notification.success({
                     placement: "bottomRight",
                     message: "Sukses!",
                     description: "Diagnosa berhasil ditambahkan.",
                 });
             }
-            return
+            return notification.error({
+                placement: "bottomRight",
+                message: "Terjadi Kesalahan!",
+                description: "Diagnosa gagal ditambahkan.",
+            });
         } catch (error) {
             console.error("Error saving diagnosa:", error);
         } finally {
@@ -136,9 +160,52 @@ export default function Index({
             setSelectedDiagnosaForm(null);
             setSelectedStatusDiagForm(null);
             setSelectedKasusForm(null);
+            setSelectedDiagnosaDisplay(null);
         }
-        return
+        return;
     };
+
+    // Function to show the modal with the diagnosa info for deletion
+    const showDeleteConfirm = (item) => {
+        setDeleteDiagnosaId(item.ID); // Set the current diagnosa to be deleted
+        setIsModalHapusDiagnosaOpen(true); // Show the modal
+    };
+
+    // Function to handle cancel (closing the modal)
+    const handleCancelDelDiagnosa = () => {
+        setIsModalHapusDiagnosaOpen(false); // Close the modal
+    };
+
+    // Fungsi untuk menhapus diagnosa setia detail pasien by id
+    const deleteDiagnosa = (id, kode) => {
+        setLoadingDeleteDiagnosa(true); // Set loading true saat mulai menghapus
+        axios
+            .delete(
+                route("rm.pasien-rujukan.delete_diagnosa", {
+                    id: id,
+                })
+            )
+            .then((response) => {
+                // Menghapus kode diagnosa dari selectedDiagnosa setelah berhasil dihapus
+                setSelectedDiagnosa((prevSelectedDiagnosa) =>
+                    prevSelectedDiagnosa.filter((item) => item !== kode)
+                );
+                fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setLoadingDeleteDiagnosa(false);
+                setIsModalHapusDiagnosaOpen(false);
+            });
+    };
+
+    // Memanggil endpoint untuk mendapatkan data diagnosa
+    useEffect(() => {
+        fetchDiagnosa();
+        // fetchProcedure();
+    }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
 
     return (
         <Card title={`Diagnosa`}>
@@ -164,6 +231,7 @@ export default function Index({
                         onChange={(value) => {
                             setSelectedStatusDiagForm(value);
                         }}
+                        value={selectedStatusDiagForm}
                     />
                 </Col>
                 <Col span={3}>
@@ -183,14 +251,18 @@ export default function Index({
                         onChange={(value) => {
                             setSelectedKasusForm(value);
                         }}
+                        value={selectedKasusForm}
                     />
                 </Col>
                 <Col span={12}>
                     <AutoComplete
                         allowClear
-                        onChange={() => setSelectedDiagnosaForm(null)}
+                        onChange={() => {
+                            setSelectedDiagnosaForm(null); // Clear the stored code
+                            setSelectedDiagnosaDisplay(""); // Clear the display value
+                        }}
                         options={anotherOptions.map((item) => ({
-                            value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`, // Display kode penyakit and nama penyakit
+                            value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`, // Display both code and name
                             label: (
                                 <div style={{ wordBreak: "break-word" }}>
                                     <strong>{item.KD_PENYAKIT}</strong> -{" "}
@@ -205,12 +277,18 @@ export default function Index({
                         }))}
                         style={{ width: "100%" }}
                         onSelect={(value) => {
-                            const kdPenyakit = value.split(" - ")[0]; // Extract KD_PENYAKIT from "KD_PENYAKIT - PENYAKIT"
-                            setSelectedDiagnosaForm(kdPenyakit); // Pass the KD_PENYAKIT to your onSelect handler
+                            const kdPenyakit = value.split(" - ")[0]; // Extract KD_PENYAKIT
+                            const displayValue = value; // Full display value with name and code
+                            setSelectedDiagnosaForm(kdPenyakit); // Store only the code
+                            setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
                         }}
-                        onSearch={(text) => fetchSugetDiagnosa(text, 1)}
+                        onSearch={(text) => {
+                            setSelectedDiagnosaDisplay(text); // Update the display value during search
+                            fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
+                        }}
                         placeholder="Control mode"
                         onScroll={onScroll} // Attach scroll event for lazy loading
+                        value={selectedDiagnosaDisplay} // Show both code and name in the input
                     />
                 </Col>
                 <Col span={4}>
@@ -221,42 +299,31 @@ export default function Index({
                         style={{ width: "100%" }}
                         onClick={saveDiagnosa}
                         disabled={
-                            loadingSaveDiag ||
                             selectedKasusForm === null ||
                             selectedStatusDiagForm === null ||
                             selectedDiagnosaForm === null
                         }
                     >
-                        Tambah Penyakit
+                        Tambahkan
                     </Button>
                 </Col>
             </Row>
             <>
-                {loadingFetchDiagnosa ? (
-                    <>
-                        <Skeleton />
-                    </>
-                ) : (
-                    <>
-                        <Table
-                            pagination={false}
-                            columns={columns}
-                            dataSource={diagnosa}
-                            size="small"
-                        />
-                    </>
-                )}
+                <Table
+                    pagination={false}
+                    columns={columns}
+                    dataSource={diagnosa}
+                    size="small"
+                    loading={loadingFetchDiagnosa}
+                />
             </>
             {/* Modal for Confirming Deletion */}
             <Modal
                 title="Hapus Diagnosa"
                 open={isModalHapusDiagnosaOpen}
                 onOk={() => {
-                    currentDiagnosa &&
-                        deleteDiagnosa(
-                            currentDiagnosa.ID,
-                            currentDiagnosa.MRPKD_PENYAKIT
-                        );
+                    deleteDiagnosaId &&
+                        deleteDiagnosa(deleteDiagnosaId, selectedDiagnosaForm);
                 }}
                 onCancel={handleCancelDelDiagnosa}
                 okText="Ya"
