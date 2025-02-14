@@ -280,4 +280,20 @@ class PasienRujukanRepository
             return false;
         }
     }
+
+
+    /**
+     * Get procedure penyakit by transaksi (MR_DIAGNOSA)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getMrDiagnosaByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_DIAGNOSA')
+            ->select('MR_DIAGNOSA.*')
+            ->where('MR_DIAGNOSA.MRDNO_TRANSAKSI', $no_transaksi)
+            ->first();
+    }
 }
