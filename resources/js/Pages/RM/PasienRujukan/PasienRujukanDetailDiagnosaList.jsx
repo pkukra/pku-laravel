@@ -329,6 +329,7 @@ export default function Index({ pasien }) {
                     dataSource={diagnosa}
                     size="small"
                     loading={loadingFetchDiagnosa}
+                    rowKey="ID"
                 />
             </>
             {/* Modal for Confirming Deletion */}
