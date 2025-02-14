@@ -6,6 +6,7 @@ import { Col, Row } from "antd";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
 import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
+import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 
 export default function PasienRujukanDetail({ auth, pasien }) {
     return (
@@ -22,10 +23,10 @@ export default function PasienRujukanDetail({ auth, pasien }) {
 
             <Row>
                 <Col span={12} style={{padding:2}}>
-                    <PasienRujukanDetailDiagnosaList pasien={pasien} />
+                    {/* <PasienRujukanDetailDiagnosaList pasien={pasien} /> */}
                 </Col>
                 <Col span={12} style={{padding:2}}>
-                    <PasienRujukanDetailDiagnosaList pasien={pasien} />
+                    <PasienRujukanDetailProcedureList pasien={pasien} />
                 </Col>
             </Row>
         </AuthenticatedLayout>

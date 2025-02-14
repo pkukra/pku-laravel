@@ -3,6 +3,7 @@
 // app/Repositories/PasienRujukanRepository.php
 namespace App\Repositories\RM;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class PasienRujukanRepository
@@ -190,5 +191,70 @@ class PasienRujukanRepository
             ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC')
             ->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi)
             ->get();
+    }
+
+    /**
+     * Search procedure in MR_ICD9 table with a query
+     * 
+     * @param string $searchTerm
+     * @param int $page
+     * @return \Illuminate\Support\Collection
+     */
+    public function searchProcedure($searchTerm, $page)
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_ICD9')
+            ->select('MR_ICD9.*')
+            ->when($searchTerm, function ($query) use ($searchTerm) {
+                return $query->where('MR_ICD9.FMI9KODE', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('MR_ICD9.FMI9KETERANGAN', 'like', '%' . $searchTerm . '%');
+            })
+            ->skip(($page - 1) * 20) // Skip based on current page
+            ->take(20) // Limit results per page
+            ->get();
+    }
+
+    /**
+     * Save procedure for pasien rujukan
+     * 
+     * @param array $data
+     * @return boolean
+     */
+    public function saveProcedure($data)
+    {
+        $no_transaksikj = $data['no_transaksikj'];
+        $now = now();
+        $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
+
+        // Get the latest MRTURUT_MASUK value to generate next
+        $lastUrutMasuk = DB::connection('sqlsrv')
+            ->table('MR_TINDAKAN')
+            ->where('MRTNOTRANSAKSI', $no_transaksikj)
+            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'desc')
+            ->limit(1)
+            ->value('MRTURUT_MASUK');
+
+        $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
+
+        try {
+            DB::connection('sqlsrv')
+                ->table('MR_TINDAKAN')
+                ->insert([
+                    'MRTKD_TINDAKAN' => $data['icd9_code'],
+                    'MRTNOTRANSAKSI' => $no_transaksikj,
+                    'MRTKD_PASIEN' => $data['no_rm'],
+                    'MRTKD_UNIT' => $data['kd_unit'],
+                    'MRTTGL_MASUK' => $tgl_masuk,
+                    'MRTURUT_MASUK' => $no_urut_masuk,
+                    // 'USER_ID' => $data['user_id'], // Assuming user ID is passed
+                    'MRTTGL_TINDAKAN' => $now,
+                ]);
+        } catch (\Exception $e) {
+            Log::error("Error while saving procedure: " . $e->getMessage());
+
+            return false;
+        }
+
+        return true;
     }
 }

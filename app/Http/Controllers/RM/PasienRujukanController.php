@@ -176,4 +176,64 @@ class PasienRujukanController extends Controller
             'data' => $procedure,
         ]);
     }
+
+    /**
+     * cari_procedure
+     * Pencarian procedure/diagnosa di database berdasarkan input
+     */
+    public function cari_procedure(Request $request)
+    {
+        $searchTerm = $request->input('query');
+        $page = $request->input('page', 1); // Halaman saat ini (default 1)
+
+        // Mendapatkan data procedure berdasarkan pencarian
+        $procedure = $this->pasienRujukanRepo->searchProcedure($searchTerm, $page);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+            'page' => $page,
+        ]);
+    }
+
+    /**
+     * save_diagnosa
+     * Menyimpan data diagnosa untuk pasien rujukan
+     */
+    public function save_procedure(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'icd9_code' => 'required|string|max:10',
+            'no_transaksikj' => 'required|string|max:20',
+            'no_rm' => 'required|string|max:20',
+            'kd_unit' => 'required|string|max:20',
+            'tgl_masuk' => 'required|date',
+        ]);
+
+        // Mengambil data yang diperlukan untuk penyimpanan
+        $data = [
+            'icd9_code' => $validated['icd9_code'],
+            'no_transaksikj' => $validated['no_transaksikj'],
+            'no_rm' => $validated['no_rm'],
+            'kd_unit' => $validated['kd_unit'],
+            'tgl_masuk' => Carbon::parse($validated['tgl_masuk']),
+            'user_id' => Auth::id(),
+        ];
+
+        // Menyimpan data procedure melalui repository
+        $isSaved = $this->pasienRujukanRepo->saveProcedure($data);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan procedure',
+        ], 500);
+    }
 }
