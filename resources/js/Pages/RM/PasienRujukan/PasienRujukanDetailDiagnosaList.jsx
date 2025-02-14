@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Card, Select, AutoComplete, Row, Col } from "antd";
-import { notification } from "antd";
-import { Table, Button } from "antd";
+import {
+    Modal, Spin,
+    Card,
+    Select,
+    AutoComplete,
+    Row,
+    Col,
+    notification,
+    Table,
+    Button,
+} from "antd";
+import { PlusOutlined, LoadingOutlined  } from "@ant-design/icons";
 import axios from "axios";
 
 export default function Index({ pasien }) {
@@ -298,18 +307,18 @@ export default function Index({ pasien }) {
                 </Col>
                 <Col span={4}>
                     <Button
-                        loading={loadingSaveDiag}
                         type="primary"
                         size="medium"
                         style={{ width: "100%" }}
                         onClick={saveDiagnosa}
                         disabled={
+                            loadingSaveDiag ||
                             selectedKasusForm === null ||
                             selectedStatusDiagForm === null ||
                             selectedDiagnosaForm === null
                         }
                     >
-                        Tambahkan
+                        {loadingSaveDiag ? <Spin indicator={<LoadingOutlined spin />} size="small" /> : <PlusOutlined />}
                     </Button>
                 </Col>
             </Row>
