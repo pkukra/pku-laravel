@@ -213,7 +213,6 @@ export default function Index({ pasien }) {
     // Memanggil endpoint untuk mendapatkan data diagnosa
     useEffect(() => {
         fetchDiagnosa();
-        // fetchProcedure();
     }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
 
     return (
