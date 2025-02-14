@@ -38,6 +38,7 @@ export default function Index({ pasien }) {
         {
             title: "Action",
             key: "action",
+            align:"center",
             render: (_, record) => (
                 <Button
                     disabled={
@@ -299,7 +300,7 @@ export default function Index({ pasien }) {
                             setSelectedDiagnosaDisplay(text); // Update the display value during search
                             fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
                         }}
-                        placeholder="Control mode"
+                        placeholder="Cari Diagnosa/Penyakit"
                         onScroll={onScroll} // Attach scroll event for lazy loading
                         value={selectedDiagnosaDisplay} // Show both code and name in the input
                     />
