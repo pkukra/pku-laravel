@@ -217,7 +217,7 @@ export default function Index({ pasien }) {
     }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
 
     return (
-        <Card title={`Diagnosa`}>
+        <Card title={`Diagnosa`} style={{marginBottom:10}}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={5}>
                     <Select
