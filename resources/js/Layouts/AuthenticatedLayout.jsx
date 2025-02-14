@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     AppstoreOutlined,
     BarChartOutlined,
@@ -12,6 +12,7 @@ import {
 import { Breadcrumb, Layout, Menu, theme, Card } from "antd";
 const { Header, Content, Footer, Sider } = Layout;
 const { Meta } = Card;
+
 function getItem(label, key, icon, children) {
     return {
         key,
@@ -46,11 +47,29 @@ const items = [
     icon: React.createElement(icon),
     label: `nav ${index + 1}`,
 }));
-const App = ({children}) => {
+
+const App = ({ children }) => {
+    // Menyimpan status collapsed di state
     const [collapsed, setCollapsed] = useState(false);
+
+    // Mengambil nilai collapsed dari localStorage saat pertama kali render
+    useEffect(() => {
+        const savedCollapsed = localStorage.getItem("collapsed");
+        if (savedCollapsed !== null) {
+            setCollapsed(JSON.parse(savedCollapsed)); // Menetapkan nilai yang disimpan
+        }
+    }, []);
+
+    // Menyimpan status collapsed ke localStorage setiap kali terjadi perubahan
+    const handleCollapseChange = (value) => {
+        setCollapsed(value);
+        localStorage.setItem("collapsed", JSON.stringify(value)); // Simpan status ke localStorage
+    };
+
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
+
     return (
         <Layout
             style={{
@@ -61,7 +80,7 @@ const App = ({children}) => {
                 style={siderStyle}
                 collapsible
                 collapsed={collapsed}
-                onCollapse={(value) => setCollapsed(value)}
+                onCollapse={handleCollapseChange} // Menggunakan handleCollapseChange untuk perubahan
             >
                 <div className="demo-logo-vertical" />
                 <Menu
@@ -87,7 +106,7 @@ const App = ({children}) => {
                         style={{
                             margin: "16px 0",
                         }}
-                        items={[{ title: 'halaman 1' }, { title: 'halaman 2' }]}
+                        items={[{ title: "halaman 1" }, { title: "halaman 2" }]}
                     />
                     {children}
                 </Content>
@@ -102,4 +121,5 @@ const App = ({children}) => {
         </Layout>
     );
 };
+
 export default App;
