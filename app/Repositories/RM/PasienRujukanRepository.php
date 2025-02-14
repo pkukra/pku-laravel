@@ -296,4 +296,43 @@ class PasienRujukanRepository
             ->where('MR_DIAGNOSA.MRDNO_TRANSAKSI', $no_transaksi)
             ->first();
     }
+
+    /**
+     * Update catatan khusus in MR_DIAGNOSA table based on no_transaksi
+     *
+     * @param string $no_transaksi
+     * @param string $catatan_khusus
+     * @return \Illuminate\Http\Response
+     */
+    public function updateCatatanKhususByTransaksi($no_transaksi, $catatan_khusus)
+    {
+        try {
+            // Update the MRCATATANKHUSUS field for the given no_transaksi
+            $updated = DB::connection('sqlsrv')
+                ->table('MR_DIAGNOSA')
+                ->where('MRDNO_TRANSAKSI', $no_transaksi)
+                ->update(['MRCATATANKHUSUS' => $catatan_khusus]);
+
+            if ($updated) {
+                return response()->json([
+                    'status' => 'ok',
+                    'message' => 'Catatan Khusus berhasil diperbarui',
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'nok',
+                    'message' => 'Tidak ada data yang diubah. Pastikan no_transaksi valid.',
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            // Log the error if any exception occurs
+            Log::error('Error updating Catatan Khusus: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'nok',
+                'message' => 'Terjadi kesalahan saat memperbarui catatan khusus.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -273,4 +273,28 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
+
+    public function update_catatan_khusus(Request $request, $no_transaksi)
+    {
+        // Validate the input
+        $validated = $request->validate([
+            'catatan_khusus' => 'required|string|max:255',
+        ]);
+        // Get the validated catatan_khusus value
+        $catatanKhusus = $validated['catatan_khusus'];
+
+        $isUpdated = $this->pasienRujukanRepo->updateCatatanKhususByTransaksi($no_transaksi, $catatanKhusus);
+
+        if ($isUpdated) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Cat khusus berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan Cat khusus',
+        ], 500);
+    }
 }
