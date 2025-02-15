@@ -19,16 +19,18 @@ export default function Index({ pasien }) {
             title: "Kode",
             dataIndex: "MRTKD_TINDAKAN",
             key: "MRTKD_TINDAKAN",
+            width: "10%",
         },
         {
             title: "Tindakan",
             dataIndex: "FMI9KETERANGAN",
             key: "FMI9KETERANGAN",
+            width: "70%",
         },
         {
             title: "Action",
             key: "action",
-            align:"center",
+            align: "center",
             render: (_, record) => (
                 <Button
                     disabled={
@@ -64,6 +66,7 @@ export default function Index({ pasien }) {
 
     // Fungsi untuk mengambil data procedure
     const fetchProcedure = () => {
+        setLoadingFetchProcedure(true);
         axios
             .get(
                 route("rm.pasien-rujukan.list_procedure", {
@@ -74,13 +77,14 @@ export default function Index({ pasien }) {
                 setSelectedProcedure(
                     response.data.data.map((item) => item.MRTKD_TINDAKAN)
                 );
-                setProcedure(response.data.data); // Simpan data yang diterima ke dalam state
-                setLoadingFetchProcedure(false); // Set loading ke false setelah data diterima
+                setProcedure(response?.data?.data || []); // Simpan data yang diterima ke dalam state
             })
             .catch((error) => {
                 console.error("Error fetching procedure data:", error);
-                setLoadingFetchProcedure(false); // Set loading ke false jika ada error
-            });
+            })
+            .finally(()=>{
+                setLoadingFetchProcedure(false);
+            })
     };
 
     // Fetch procedure with lazy loading support
@@ -134,7 +138,7 @@ export default function Index({ pasien }) {
                     no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
                     no_rm: pasien.FRPPASIEN_ID,
                     kd_unit: pasien.FRPUNIT,
-                    tgl_masuk: pasien.FRPTGL
+                    tgl_masuk: pasien.FRPTGL,
                 }
             );
 
@@ -227,9 +231,7 @@ export default function Index({ pasien }) {
                                     <span>{item.FMI9KETERANGAN}</span>
                                 </div>
                             ),
-                            disabled: selectedProcedure.includes(
-                                item.FMI9KODE
-                            ), // Disable if already selected
+                            disabled: selectedProcedure.includes(item.FMI9KODE), // Disable if already selected
                         }))}
                         style={{ width: "100%" }}
                         onSelect={(value) => {
@@ -254,8 +256,7 @@ export default function Index({ pasien }) {
                         style={{ width: "100%" }}
                         onClick={saveProcedure}
                         disabled={
-                            loadingSaveDiag ||
-                            selectedProcedureForm === null
+                            loadingSaveDiag || selectedProcedureForm === null
                         }
                     >
                         {loadingSaveDiag ? (

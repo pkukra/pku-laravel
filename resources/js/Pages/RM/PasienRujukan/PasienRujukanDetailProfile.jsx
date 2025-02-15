@@ -6,7 +6,7 @@ export default function Index({ pasien }) {
     return (
         <>
             <Card title="Profil Pasien" style={{ marginBottom: 10 }}>
-                <table style={{ width: "100%" }}>
+                <table className="tw-table tw-table-xs" style={{ width: "100%" }}>
                     <tbody>
                         <tr>
                             <td
@@ -16,14 +16,14 @@ export default function Index({ pasien }) {
                                 }}
                             >
                                 <table
-                                    className="table table-xs"
+                                    className="tw-table-zebra tw-table-xs"
                                     style={{ width: "100%", textAlign: "left" }}
                                 >
                                     <tbody>
                                         <tr>
                                             <th
                                                 style={{
-                                                    width: "30%"
+                                                    width: "30%",
                                                 }}
                                             >
                                                 Tanggal Periksa
@@ -52,7 +52,9 @@ export default function Index({ pasien }) {
                                         </tr>
                                         <tr>
                                             <th>Tanggal Lahir (Umur)</th>
-                                            <td style={{verticalAlign:"top"}}>
+                                            <td
+                                                style={{ verticalAlign: "top" }}
+                                            >
                                                 {moment(
                                                     pasien.TGL_LAHIR
                                                 ).format("DD/MM/YYYY")}{" "}
@@ -76,7 +78,11 @@ export default function Index({ pasien }) {
                                         </tr>
                                         <tr>
                                             <th>Alamat</th>
-                                            <td style={{verticalAlign:"top"}}>{pasien.ALAMAT}</td>
+                                            <td
+                                                style={{ verticalAlign: "top" }}
+                                            >
+                                                {pasien.ALAMAT}
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -89,6 +95,7 @@ export default function Index({ pasien }) {
                                 }}
                             >
                                 <table
+                                    className="tw-table-zebra tw-table-xs"
                                     style={{ width: "100%", textAlign: "left" }}
                                 >
                                     <tbody>
@@ -96,7 +103,9 @@ export default function Index({ pasien }) {
                                             <th style={{ width: "25%" }}>
                                                 Unit
                                             </th>
-                                            <td style={{verticalAlign:"top"}}>
+                                            <td
+                                                style={{ verticalAlign: "top" }}
+                                            >
                                                 {pasien.FRPUNIT} -{" "}
                                                 {pasien.FMPKLINIKN}
                                             </td>
@@ -108,7 +117,9 @@ export default function Index({ pasien }) {
 
                                         <tr>
                                             <th>Dokter</th>
-                                            <td style={{verticalAlign:"top"}}>
+                                            <td
+                                                style={{ verticalAlign: "top" }}
+                                            >
                                                 {pasien.FRPDOKTER_ID} -{" "}
                                                 {pasien.FMDDOKTERN}
                                             </td>

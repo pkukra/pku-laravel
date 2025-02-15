@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-    Modal, Spin,
+    Modal,
+    Spin,
     Card,
     Select,
     AutoComplete,
@@ -10,7 +11,7 @@ import {
     Table,
     Button,
 } from "antd";
-import { PlusOutlined, LoadingOutlined  } from "@ant-design/icons";
+import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 export default function Index({ pasien }) {
@@ -38,7 +39,7 @@ export default function Index({ pasien }) {
         {
             title: "Action",
             key: "action",
-            align:"center",
+            align: "center",
             render: (_, record) => (
                 <Button
                     disabled={
@@ -74,6 +75,7 @@ export default function Index({ pasien }) {
 
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {
+        setLoadingFetchDiagnosa(true);
         axios
             .get(
                 route("rm.pasien-rujukan.list_diagnosa", {
@@ -84,12 +86,13 @@ export default function Index({ pasien }) {
                 setSelectedDiagnosa(
                     response.data.data.map((item) => item.MRPKD_PENYAKIT)
                 );
-                setDiagnosa(response.data.data); // Simpan data yang diterima ke dalam state
-                setLoadingFetchDiagnosa(false); // Set loading ke false setelah data diterima
+                setDiagnosa(response?.data?.data || []); // Simpan data yang diterima ke dalam state
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
-                setLoadingFetchDiagnosa(false); // Set loading ke false jika ada error
+            })
+            .finally(() => {
+                setLoadingFetchDiagnosa(false);
             });
     };
 
@@ -217,7 +220,7 @@ export default function Index({ pasien }) {
     }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
 
     return (
-        <Card title={`Diagnosa`} style={{marginBottom:10}}>
+        <Card title={`Diagnosa`} style={{ marginBottom: 10 }}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={5}>
                     <Select
@@ -318,7 +321,14 @@ export default function Index({ pasien }) {
                             selectedDiagnosaForm === null
                         }
                     >
-                        {loadingSaveDiag ? <Spin indicator={<LoadingOutlined spin />} size="small" /> : <PlusOutlined />}
+                        {loadingSaveDiag ? (
+                            <Spin
+                                indicator={<LoadingOutlined spin />}
+                                size="small"
+                            />
+                        ) : (
+                            <PlusOutlined />
+                        )}
                     </Button>
                 </Col>
             </Row>

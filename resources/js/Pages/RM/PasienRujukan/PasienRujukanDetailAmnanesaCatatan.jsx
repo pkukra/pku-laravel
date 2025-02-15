@@ -57,30 +57,27 @@ export default function Index({ pasien }) {
                         message: "Gagal",
                         description: "Catatan Khusus gagal disimpan",
                     });
-                }else{
+                } else {
                     notification.success({
                         message: "Success",
                         description: "Catatan Khusus berhasil disimpan",
                     });
                 }
 
-                
-
+                setLoadingSaveCatKhusus(true);
                 fetchMRDiagnosa(); // Refresh the data to reflect changes
                 setModalCatatatnOpen(false); // Close modal after saving
+                setFetchMrDiagnosaLoading(false);
 
-                
+                return;
             })
             .catch((error) => {
                 console.error("Error saving Catatan Khusus:", error);
-                notification.error({
+                return notification.error({
                     message: "Error",
                     description:
                         "Terjadi kesalahan saat menyimpan Catatan Khusus",
                 });
-            })
-            .finally(() => {
-                setFetchMrDiagnosaLoading(false);
             });
     };
 
@@ -96,15 +93,15 @@ export default function Index({ pasien }) {
                 </p>
                 <p>
                     {dataMrDiagnosa?.MRCATATANKHUSUS} {"   "}
-                    <Button
-                        type="primary"
-                        icon={<EditOutlined />}
-                        size="small"
-                        onClick={() => setModalCatatatnOpen(true)}
-                    >
-                        Add/Edit
-                    </Button>
                 </p>
+                <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    size="small"
+                    onClick={() => setModalCatatatnOpen(true)}
+                >
+                    Add/Edit Catatan
+                </Button>
             </Card>
 
             <Modal

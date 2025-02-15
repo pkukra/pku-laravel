@@ -278,7 +278,7 @@ class PasienRujukanController extends Controller
     {
         // Validate the input
         $validated = $request->validate([
-            'catatan_khusus' => 'required|string|max:255',
+            'catatan_khusus' => 'max:255',
         ]);
         // Get the validated catatan_khusus value
         $catatanKhusus = $validated['catatan_khusus'];

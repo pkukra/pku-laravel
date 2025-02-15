@@ -77,7 +77,6 @@ const columns = [
                             href={route("rm.pasien-rujukan.detail", {
                                 kode_reg: record.FRPNOTRANSAKSIKJ,
                             })}
-                            className="btn btn-primary btn-xs"
                         >
                             Tampilkan
                         </a>
@@ -138,6 +137,7 @@ export default function PasienRujukanList({ auth }) {
             <Card style={{ marginBottom: 10 }}>
                 <Space direction="horizontal">
                     <Input
+                        className="input input-bordered w-full max-w-xs input-sm"
                         placeholder="No RM"
                         value={noRm} // Mengikat input ke state noRm
                         onChange={handleInputChange} // Update state ketika input berubah
@@ -164,7 +164,6 @@ export default function PasienRujukanList({ auth }) {
                     }}
                 />
             </Card>
-
         </AuthenticatedLayout>
     );
 }
