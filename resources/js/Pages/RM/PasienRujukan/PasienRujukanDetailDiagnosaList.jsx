@@ -97,7 +97,7 @@ export default function Index({ pasien }) {
     };
 
     // Fetch diagnosa with lazy loading support
-    const fetchSugetDiagnosa = async (query, pageNumber) => {
+    const fetchSugetDiagnosa = async (query="a", pageNumber) => {
         setLoading(true);
         try {
             const response = await axios.post(
@@ -302,6 +302,9 @@ export default function Index({ pasien }) {
                         onSearch={(text) => {
                             setSelectedDiagnosaDisplay(text); // Update the display value during search
                             fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
+                        }}
+                        onClick={(text) => {
+                            fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
                         }}
                         placeholder="Cari Diagnosa/Penyakit"
                         onScroll={onScroll} // Attach scroll event for lazy loading

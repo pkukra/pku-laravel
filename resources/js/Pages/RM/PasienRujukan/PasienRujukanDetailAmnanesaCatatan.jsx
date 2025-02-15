@@ -64,7 +64,7 @@ export default function Index({ pasien }) {
                     });
                 }
 
-                setLoadingSaveCatKhusus(true);
+                setLoadingSaveCatKhusus(false);
                 fetchMRDiagnosa(); // Refresh the data to reflect changes
                 setModalCatatatnOpen(false); // Close modal after saving
                 setFetchMrDiagnosaLoading(false);
