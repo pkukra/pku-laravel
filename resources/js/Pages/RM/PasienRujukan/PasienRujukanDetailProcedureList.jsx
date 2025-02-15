@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Modal,
     Spin,
@@ -9,6 +9,7 @@ import {
     notification,
     Table,
     Button,
+    Tooltip,
 } from "antd";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -82,9 +83,9 @@ export default function Index({ pasien }) {
             .catch((error) => {
                 console.error("Error fetching procedure data:", error);
             })
-            .finally(()=>{
+            .finally(() => {
                 setLoadingFetchProcedure(false);
-            })
+            });
     };
 
     // Fetch procedure with lazy loading support
@@ -201,53 +202,73 @@ export default function Index({ pasien }) {
             });
     };
 
-    // Memanggil endpoint untuk mendapatkan data procedure
+    const inputRefStatusProcedure = useRef(null);
+
     useEffect(() => {
         fetchProcedure();
-    }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
+
+        const handleKeyDown = (event) => {
+            // Jika Shift + F2 ditekan, fokus ke input Autocomplete Procedure
+            if (event.key === "F2") {
+                inputRefStatusProcedure.current?.focus();
+            }
+        };
+
+        // Menambahkan event listener untuk keydown saat komponen mount
+        window.addEventListener("keydown", handleKeyDown);
+        // Membersihkan event listener saat komponen unmount
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
 
     return (
         <Card title={`Procedure`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={20}>
-                    <AutoComplete
-                        allowClear
-                        onChange={() => {
-                            setSelectedProcedureForm(null); // Clear the stored code
-                            setSelectedProcedureDisplay(""); // Clear the display value
-                        }}
-                        options={anotherOptions.map((item) => ({
-                            value: `${item.FMI9KODE} - ${item.FMI9KETERANGAN}`, // Display both code and name
-                            label: (
-                                <div
-                                    style={{
-                                        wordBreak: "break-word", // Ensure text wraps
-                                        whiteSpace: "normal", // Allow wrapping long words
-                                        overflowWrap: "break-word", // Break long words if necessary
-                                        display: "block", // Ensure block level behavior for wrapping
-                                    }}
-                                >
-                                    <strong>{item.FMI9KODE}</strong> -{" "}
-                                    <span>{item.FMI9KETERANGAN}</span>
-                                </div>
-                            ),
-                            disabled: selectedProcedure.includes(item.FMI9KODE), // Disable if already selected
-                        }))}
-                        style={{ width: "100%" }}
-                        onSelect={(value) => {
-                            const kdPenyakit = value.split(" - ")[0]; // Extract FMI9KODE
-                            const displayValue = value; // Full display value with name and code
-                            setSelectedProcedureForm(kdPenyakit); // Store only the code
-                            setSelectedProcedureDisplay(displayValue); // Display both the code and name
-                        }}
-                        onSearch={(text) => {
-                            setSelectedProcedureDisplay(text); // Update the display value during search
-                            fetchSugetProcedure(text, 1); // Trigger the fetch for suggestions
-                        }}
-                        placeholder="Cari procedure/tindakan"
-                        onScroll={onScroll} // Attach scroll event for lazy loading
-                        value={selectedProcedureDisplay} // Show both code and name in the input
-                    />
+                    <Tooltip title={"F2 untuk shortcut"} placement="topLeft">
+                        <AutoComplete
+                            ref={inputRefStatusProcedure}
+                            allowClear
+                            onChange={() => {
+                                setSelectedProcedureForm(null); // Clear the stored code
+                                setSelectedProcedureDisplay(""); // Clear the display value
+                            }}
+                            options={anotherOptions.map((item) => ({
+                                value: `${item.FMI9KODE} - ${item.FMI9KETERANGAN}`, // Display both code and name
+                                label: (
+                                    <div
+                                        style={{
+                                            wordBreak: "break-word", // Ensure text wraps
+                                            whiteSpace: "normal", // Allow wrapping long words
+                                            overflowWrap: "break-word", // Break long words if necessary
+                                            display: "block", // Ensure block level behavior for wrapping
+                                        }}
+                                    >
+                                        <strong>{item.FMI9KODE}</strong> -{" "}
+                                        <span>{item.FMI9KETERANGAN}</span>
+                                    </div>
+                                ),
+                                disabled: selectedProcedure.includes(
+                                    item.FMI9KODE
+                                ), // Disable if already selected
+                            }))}
+                            style={{ width: "100%" }}
+                            onSelect={(value) => {
+                                const kdPenyakit = value.split(" - ")[0]; // Extract FMI9KODE
+                                const displayValue = value; // Full display value with name and code
+                                setSelectedProcedureForm(kdPenyakit); // Store only the code
+                                setSelectedProcedureDisplay(displayValue); // Display both the code and name
+                            }}
+                            onSearch={(text) => {
+                                setSelectedProcedureDisplay(text); // Update the display value during search
+                                fetchSugetProcedure(text, 1); // Trigger the fetch for suggestions
+                            }}
+                            placeholder="Cari procedure/tindakan"
+                            onScroll={onScroll} // Attach scroll event for lazy loading
+                            value={selectedProcedureDisplay} // Show both code and name in the input
+                        />
+                    </Tooltip>
                 </Col>
                 <Col span={4}>
                     <Button

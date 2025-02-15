@@ -8,6 +8,7 @@ import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
 import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
 import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCatatan";
+import PasienRujukanDetailBridging from "./PasienRujukanDetailBridging";
 
 export default function PasienRujukanDetail({ auth, pasien }) {
     return (
@@ -36,6 +37,7 @@ export default function PasienRujukanDetail({ auth, pasien }) {
                     <PasienRujukanDetailAmnanesaCatatan pasien={pasien} />
                 </Col>
                 <Col span={12} style={{padding:2}}>
+                    <PasienRujukanDetailBridging pasien={pasien} />
                 </Col>
             </Row>
         </AuthenticatedLayout>

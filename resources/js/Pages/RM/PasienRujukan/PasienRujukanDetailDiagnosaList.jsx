@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Modal,
     Spin,
@@ -10,6 +10,7 @@ import {
     notification,
     Table,
     Button,
+    Tooltip,
 } from "antd";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -97,7 +98,7 @@ export default function Index({ pasien }) {
     };
 
     // Fetch diagnosa with lazy loading support
-    const fetchSugetDiagnosa = async (query="a", pageNumber) => {
+    const fetchSugetDiagnosa = async (query = "a", pageNumber) => {
         setLoading(true);
         try {
             const response = await axios.post(
@@ -214,37 +215,57 @@ export default function Index({ pasien }) {
             });
     };
 
-    // Memanggil endpoint untuk mendapatkan data diagnosa
+    const inputRefStatusDdiagnosa = useRef(null);
+
     useEffect(() => {
         fetchDiagnosa();
-    }, []); // Efek hanya dijalankan sekali setelah komponen di-mount
+
+        const handleKeyDown = (event) => {
+            // Jika Shift + F1 ditekan, fokus ke input status diagnosa
+            if (event.key === "F1") {
+                inputRefStatusDdiagnosa.current?.focus();
+            }
+        };
+
+        // Menambahkan event listener untuk keydown saat komponen mount
+        window.addEventListener("keydown", handleKeyDown);
+
+        // Membersihkan event listener saat komponen unmount
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
 
     return (
         <Card title={`Diagnosa`} style={{ marginBottom: 10 }}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={5}>
-                    <Select
-                        showSearch
-                        style={{ width: "100%" }}
-                        placeholder="STATUS DIAGNOSA"
-                        filterOption={(input, option) =>
-                            (option?.label ?? "")
-                                .toLowerCase()
-                                .includes(input.toLowerCase())
-                        }
-                        options={[
-                            { value: "5", label: "5-Diagnosa Akhir" },
-                            { value: "1", label: "1-Diagnosa Lain" },
-                            { value: "2", label: "2-Komplikasi" },
-                            { value: "0", label: "0-Diagnosa Awal" },
-                            { value: "3", label: "3-Penyebab Luar" },
-                            { value: "4", label: "4-Penyebeb Kematian" },
-                        ]}
-                        onChange={(value) => {
-                            setSelectedStatusDiagForm(value);
-                        }}
-                        value={selectedStatusDiagForm}
-                    />
+                    <Tooltip title="F1 untuk shortcut" placement="topLeft">
+                        <Select
+                            autoFocus
+                            ref={inputRefStatusDdiagnosa}
+                            showSearch
+                            style={{ width: "100%" }}
+                            placeholder="STATUS DIAGNOSA"
+                            filterOption={(input, option) =>
+                                (option?.label ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                            options={[
+                                { value: "5", label: "5-Diagnosa Akhir" },
+                                { value: "1", label: "1-Diagnosa Lain" },
+                                { value: "2", label: "2-Komplikasi" },
+                                { value: "0", label: "0-Diagnosa Awal" },
+                                { value: "3", label: "3-Penyebab Luar" },
+                                { value: "4", label: "4-Penyebeb Kematian" },
+                            ]}
+                            onChange={(value) => {
+                                setSelectedStatusDiagForm(value);
+                            }}
+                            value={selectedStatusDiagForm}
+                        />
+                    </Tooltip>
                 </Col>
                 <Col span={3}>
                     <Select
