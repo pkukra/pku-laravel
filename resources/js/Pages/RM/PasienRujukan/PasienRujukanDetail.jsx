@@ -25,10 +25,17 @@ export default function PasienRujukanDetail({ auth, pasien }) {
             <Row>
                 <Col span={12} style={{padding:2}}>
                     <PasienRujukanDetailDiagnosaList pasien={pasien} />
-                    <PasienRujukanDetailAmnanesaCatatan pasien={pasien} />
                 </Col>
                 <Col span={12} style={{padding:2}}>
                     <PasienRujukanDetailProcedureList pasien={pasien} />
+                </Col>
+            </Row>
+            
+            <Row>
+                <Col span={12} style={{padding:2}}>
+                    <PasienRujukanDetailAmnanesaCatatan pasien={pasien} />
+                </Col>
+                <Col span={12} style={{padding:2}}>
                 </Col>
             </Row>
         </AuthenticatedLayout>
