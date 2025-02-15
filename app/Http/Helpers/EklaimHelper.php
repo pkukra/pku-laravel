@@ -1,10 +1,5 @@
 <?php
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use Illuminate\Support\Facades\Log;
-
-
 if (! function_exists('mc_encrypt')) {
     function mc_encrypt($data, $key)
     {
