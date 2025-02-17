@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\RM\PasienRujukanController;
+use App\Http\Controllers\RM\EklaimController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/updateStudent/{id}', [StudentController::class, 'update'])->name('updateStudent.update');
     Route::delete('/deleteStudent/{id}', [StudentController::class, 'destroy'])->name('deleteStudent.destroy');
 });
+
 Route::prefix('rm')->group(function(){
     Route::middleware('auth')->prefix('pasien-rujukan')->group(function () {
         Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.pasien-rujukan.index');
@@ -53,5 +55,8 @@ Route::prefix('rm')->group(function(){
     });
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/xxx/{no_sep}', [EklaimController::class, 'index_data']);
+});
 
 require __DIR__.'/auth.php';
