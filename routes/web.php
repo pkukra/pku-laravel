@@ -53,7 +53,7 @@ Route::prefix('rm')->group(function () {
         Route::get('/get_mr_diagnosa/{kode_reg}', [PasienRujukanController::class, 'get_mr_diagnosa'])->name('rm.pasien-rujukan.get_mr_diagnosa');
         Route::post('/update_catatan_khusus/{kode_reg}', [PasienRujukanController::class, 'update_catatan_khusus'])->name('rm.pasien-rujukan.update_catatan_khusus');
 
-        Route::get('/get_detail_tarif/{kode_reg}', [PasienRujukanController::class, 'get_detail_tarif_transakasi']);
+        Route::get('/bridging_data_process/{no_sep}', [PasienRujukanController::class, 'bridging_data_process']);
     });
 });
 

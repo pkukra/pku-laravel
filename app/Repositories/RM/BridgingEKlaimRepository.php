@@ -3,13 +3,92 @@
 namespace App\Repositories\RM;
 
 use GuzzleHttp\Client;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 
 class BridgingEKlaimRepository
 {
+    /**
+     * Process bridgingDataProcess by kode reg
+     * 
+     * @param string $kode_reg
+     * @return \Illuminate\Support\Collection
+     */
+    public function bridgingDataProcess($no_sep)
+    {
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        $dpjp_uatama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $dpjp_uatama = $transaksi;
+                break;
+            }
+        }
+
+        $data = (object)[  // 'data' adalah objek
+            'nomor_sep' => $no_sep,
+            'tgl_masuk' => Carbon::parse($dpjp_uatama->FRPTGL)->format('d/m/Y'),
+            'tgl_pulang' => Carbon::parse($dpjp_uatama->FRPTGL)->format('d/m/Y'),
+            'jenis_rawat' => 2, // 1 ranap, 2 rajal, 3 igd
+            'kelas_rawat' => 3, // kelas rawat bpjs 1,2,3
+            'birth_weight' => 0, // sementara 0 dulu
+            'discharge_status' => 1,
+            // 'tarif_rs' => $this->getDetailTarifTransaksi($kode_reg),
+            // 'diagnosa' => $diagnosa_akhir,
+            // 'diagnosa_inagrouper' => $diagnosa_akhir,
+            // 'procedure' => $procedure_akhir,
+            // 'procedure_inagrouper' => $procedure_akhir,
+            // 'adl_sub_acute' => $adl_sub_acute,
+            // 'adl_chronic' => $adl_chronic,
+            // 'tarif_poli_eks' => (float)number_format($tarif_rs, 2, '.', ''),
+            // 'nama_dokter' => $dpjp,
+            // 'icu_indikator' => $icu_indikator,
+            // 'icu_los' => $icu_los,
+            // 'ventilator_hour' => $ventilator_hour,
+            // 'kode_tarif' => $kode_tarif,
+            // 'payor_id' => $payor_id,
+            // 'payor_cd' => $payor_cd,
+            // 'coder_nik' => $coder_nik,
+            // 'sistole' => $sistole,
+            // 'diastole' => $diastole,
+            // 'cara_masuk' => $dpjp_uatama->CARA_MASUK,
+        ];
+
+        return $data;
+    }
+
+    /**
+     * menampilkan list transaksi berdasar nomer SEP
+     * termasuk jika SEP pasien dengan kunjungan raber
+     * 
+     * @param string $no_sep
+     * @return array
+     */
+    public function allTransactionsBySep($no_sep)
+    {
+        try {
+            $detailTransaksi = DB::connection('sqlsrv')
+                ->table('BPJS_SEP AS sep')
+                ->leftJoin('PASIEN_RUJUKAN AS pr', function ($join) use ($no_sep) {
+                    $join->on('pr.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                        ->orOn('pr.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
+                })
+                ->leftJoin('DOKTER AS dr', 'pr.FRPDOKTER_ID', '=', 'dr.FMDDOKTER_ID')
+                ->leftJoin('POLIKLINIK AS poli', 'pr.FRPUNIT', '=', 'poli.FMPKLINIK_ID')
+                ->leftJoin('PASIEN AS p', 'pr.FRPPASIEN_ID', '=', 'p.KD_PASIEN')
+                ->select('sep.FMNOSEP', 'pr.*', 'dr.FMDDOKTERN', 'poli.FMPKLINIKN')
+                ->where('sep.FMNOSEP', $no_sep)
+                ->distinct()
+                ->get();
+        } catch (\Exception $e) {
+            // Log the error if any exception occurs
+            Log::error('Error updating Catatan Khusus: ' . $e->getMessage());
+            return false;
+        }
+        return $detailTransaksi;
+    }
+
     /**
      * Get detail tarif transaksi based on kode_reg
      * 
@@ -117,115 +196,5 @@ class BridgingEKlaimRepository
         }
 
         return $tarif;
-    }
-
-    /**
-     * Get the klaim data dari nomer sep
-     * 
-     * @param string $no_sep
-     * @return \Illuminate\Support\Collection
-     */
-    public function getKlaimData($no_sep)
-    {
-        $client = new Client();
-
-        $url = env("EKLAIM_WS_URL", "");
-        $request = json_encode((object)[
-            'metadata' => (object)[
-                'method' => 'get_claim_data'
-            ],
-            'data' => (object)[
-                'nomor_sep' => $no_sep,
-            ]
-        ]);
-
-        $key = "3286e120fea9b340164f0c76c50bbf0f529746666ce38e2d372dd2b4c5f0a946";
-        $data = mc_encrypt($request, $key);
-
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded'
-        ];
-
-        $response = $client->post($url, [
-            'headers' => $headers,
-            'body'    => $data
-        ]);
-
-        $response = $response->getBody()->getContents();
-
-        $first = strpos($response, "\n") + 1;
-        $last = strrpos($response, "\n") - 1;
-        $response = substr($response, $first, strlen($response) - $first - $last);
-        $response = mc_decrypt($response, $key);
-
-        return $response;
-    }
-
-    /**
-     * Get the klaim data dari nomer sep
-     * 
-     * @param string $no_sep
-     * @return \Illuminate\Support\Collection
-     */
-    public function bridgingDataProcess($kode_reg)
-    {
-        $client = new Client();
-
-        $url = env("EKLAIM_WS_URL", "");
-        $request = json_encode((object)[
-            'metadata' => (object)[
-                'method' => 'set_claim_data',
-                'nomor_sep' => '0153R0030125V010002'
-            ],
-            'data' => (object)[
-                'nomor_sep' => '0153R0030125V010002',
-                'tgl_masuk' => '2025-01-22 00:00:00',
-                'tgl_pulang' => '2025-01-22 00:00:00',
-                'jenis_rawat' => '2',
-                'kelas_rawat' => '3',
-                'birth_weight' => '0',
-                'discharge_status' => '1',
-                'diagnosa' => 'Z50.1#M48.0',
-                'diagnosa_inagrouper' => 'Z50.1#M48.0',
-                'procedure' => '93.35#93.39#93.15',
-                'procedure_inagrouper' => '93.35#93.39#93.15',
-                'adl_sub_acute' => '',
-                'adl_chronic' => '',
-                'tarif_rs' => $this->getDetailTarifTransaksi($kode_reg),
-                'tarif_poli_eks' => '179000',
-                'nama_dokter' => 'DR. NINIK DWIASTUTI, SP. KFR',
-                'icu_indikator' => '',
-                'icu_los' => '',
-                'ventilator_hour' => '',
-                'kode_tarif' => 'CS',
-                'payor_id' => '3',
-                'payor_cd' => 'JKN',
-                'coder_nik' => '123123123123',
-                'sistole' => '',
-                'diastole' => '',
-                'cara_masuk' => 'outp'
-            ]
-        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-
-        $key = "3286e120fea9b340164f0c76c50bbf0f529746666ce38e2d372dd2b4c5f0a946";
-        $data = mc_encrypt($request, $key);
-
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded'
-        ];
-
-        $response = $client->post($url, [
-            'headers' => $headers,
-            'body'    => $data
-        ]);
-
-        $response = $response->getBody()->getContents();
-
-        $first = strpos($response, "\n") + 1;
-        $last = strrpos($response, "\n") - 1;
-        $response = substr($response, $first, strlen($response) - $first - $last);
-        $response = mc_decrypt($response, $key);
-
-        return $response;
     }
 }

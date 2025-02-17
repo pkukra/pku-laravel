@@ -305,12 +305,12 @@ class PasienRujukanController extends Controller
     }
 
     /**
-     * get_detail_tarif_transakasi
-     * Menampilkan detail tarif setiap transaksi berdasarkan kode transaksi
+     * bridging_data_process
+     * Process bridging data ke eklaim
      */
-    public function get_detail_tarif_transakasi($kode_reg)
+    public function bridging_data_process($no_sep)
     {
-        $tarif = $this->bridgingEKlaimRepo->getDetailTarifTransaksi($kode_reg);
-        return response()->json($tarif);
+        $data = $this->bridgingEKlaimRepo->bridgingDataProcess($no_sep);
+        return response()->json($data);
     }
 }
