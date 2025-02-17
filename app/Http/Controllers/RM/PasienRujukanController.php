@@ -8,15 +8,21 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Repositories\RM\PasienRujukanRepository;
+use App\Repositories\RM\BridgingEKlaimRepository;
+use Illuminate\Support\Facades\DB;
 
 class PasienRujukanController extends Controller
 {
     protected $pasienRujukanRepo;
+    protected $bridgingEKlaimRepo;
 
     // Dependency Injection Repository
-    public function __construct(PasienRujukanRepository $pasienRujukanRepo)
-    {
+    public function __construct(
+        PasienRujukanRepository $pasienRujukanRepo,
+        BridgingEKlaimRepository $bridgingEKlaimRepo,
+    ) {
         $this->pasienRujukanRepo = $pasienRujukanRepo;
+        $this->bridgingEKlaimRepo = $bridgingEKlaimRepo;
     }
 
     /**
@@ -296,5 +302,15 @@ class PasienRujukanController extends Controller
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat menyimpan Cat khusus',
         ], 500);
+    }
+
+    /**
+     * get_detail_tarif_transakasi
+     * Menampilkan detail tarif setiap transaksi berdasarkan kode transaksi
+     */
+    public function get_detail_tarif_transakasi($kode_reg)
+    {
+        $tarif = $this->bridgingEKlaimRepo->getDetailTarifTransaksi($kode_reg);
+        return response()->json($tarif);
     }
 }

@@ -258,8 +258,6 @@ class PasienRujukanRepository
         return true;
     }
 
-    // 
-
     /**
      * Delete procedure by ID from MR_TINDAKAN table
      * 
