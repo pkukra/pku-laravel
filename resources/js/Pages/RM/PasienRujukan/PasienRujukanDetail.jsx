@@ -37,7 +37,7 @@ export default function PasienRujukanDetail({ auth, pasien }) {
                     <PasienRujukanDetailAmnanesaCatatan pasien={pasien} />
                 </Col>
                 <Col span={12} style={{padding:2}}>
-                    <PasienRujukanDetailBridging pasien={pasien} />
+                    <PasienRujukanDetailBridging pasien={pasien} user={auth.user} />
                 </Col>
             </Row>
         </AuthenticatedLayout>

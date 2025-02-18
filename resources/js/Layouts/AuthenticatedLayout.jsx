@@ -48,7 +48,7 @@ const items = [
     label: `nav ${index + 1}`,
 }));
 
-const App = ({ children }) => {
+const App = ({ children, user }) => {
     // Menyimpan status collapsed di state
     const [collapsed, setCollapsed] = useState(false);
 

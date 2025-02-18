@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Card, Button, Input, notification, Spin } from "antd";
+import { Modal, Card, Button, Tooltip, notification, Spin } from "antd";
 import axios from "axios";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, user }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
 
     const handleBridgingData = () => {};
 
     useEffect(() => {}, []);
+    const disabled = user.eklaim_key ? false : true;
 
     return (
         <>
             <Card title={"Sync Data ke Ekalim"}>
-                <Button onClick={() => setModalBridgeOpen(true)}>
-                    Bridge Data
-                </Button>
+                <Tooltip
+                    title={disabled ? "User belum setup Eklaim Key" : "Tekan untuk bridgin data ke INACBG"}
+                    placement="topLeft"
+                >
+                    <Button
+                        type="primary"
+                        onClick={() => setModalBridgeOpen(true)}
+                        disabled={disabled}
+                    >
+                        Bridge Data
+                    </Button>
+                </Tooltip>
             </Card>
 
             <Modal
