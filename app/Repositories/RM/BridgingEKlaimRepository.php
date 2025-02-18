@@ -105,7 +105,7 @@ class BridgingEKlaimRepository
                 ->get();
         } catch (\Exception $e) {
             // Log the error if any exception occurs
-            Log::error('Error updating Catatan Khusus: ' . $e->getMessage());
+            Log::error('Error get data allTransactionsBySep: ' . $e->getMessage());
             return false;
         }
         return $detailTransaksi;
