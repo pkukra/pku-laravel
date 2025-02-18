@@ -14,11 +14,34 @@ export default function Index({ pasien, user, noSep }) {
                     no_sep: noSep,
                 })
             );
-            console.log(response?.data);
+
+            if(response?.data?.status === "nok"){
+                return notification.warning({
+                    placement: "bottomRight",
+                    message: "Peringatan!",
+                    description: response?.data?.error
+                });
+            }
+            
+            if (response?.data?.response?.metadata?.code === 400) {
+                return notification.warning({
+                    placement: "bottomRight",
+                    message: "Peringatan!",
+                    description: response?.data?.response?.metadata?.message
+                });
+            }
+            
+            return notification.success({
+                placement: "bottomRight",
+                message: "Sukses!",
+                description: response?.data?.response?.metadata?.message
+            });
+
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
+            setModalBridgeOpen(false);
         }
     };
 

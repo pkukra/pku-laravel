@@ -114,7 +114,7 @@ class BridgingEKlaimRepository
         return (object)[
             "status" => "ok",
             "error" => null,
-            "response" => $response
+            "response" => json_decode($response)
         ];
     }
 
