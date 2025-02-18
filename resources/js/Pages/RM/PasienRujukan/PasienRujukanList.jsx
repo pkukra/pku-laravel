@@ -137,6 +137,7 @@ export default function PasienRujukanList({ auth }) {
             <Card style={{ marginBottom: 10 }}>
                 <Space direction="horizontal">
                     <Input
+                        autoFocus
                         className="input input-bordered w-full max-w-xs input-sm"
                         placeholder="No RM"
                         value={noRm} // Mengikat input ke state noRm

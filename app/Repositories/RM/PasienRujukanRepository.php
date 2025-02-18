@@ -70,6 +70,26 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get SEP dari pasien rujukan BPJS detail based on kode_reg 
+     *
+     * @param string $kode_reg
+     * @return object|null
+     */
+    public function getSepPasienRujukan($kode_reg, $kode_reg_kj)
+    {
+        try {
+            return DB::connection('sqlsrv')
+                ->table('BPJS_SEP')
+                ->select('BPJS_SEP.FMNOSEP')
+                ->whereIn('BPJS_SEP.FMNOTRANSAKSI', [$kode_reg, $kode_reg_kj])
+                ->first();
+        } catch (\Exception $e) {
+            Log::error("Err get SEP: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Get diagnosa penyakit by transaksi (MR_PENYAKIT)
      *
      * @param string $no_transaksi

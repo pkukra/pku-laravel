@@ -68,10 +68,30 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * get_nomer_sep
+     * Menampilkan nomer sep berdasarkan kode transaksi
+     */
+    public function get_nomer_sep($kode_reg, $kode_reg_kj)
+    {
+        // Mendapatkan diagnosa berdasarkan kode transaksi
+        $data = $this->pasienRujukanRepo->getSepPasienRujukan($kode_reg, $kode_reg_kj);
+        if(!$data){
+            return response()->json([
+                'status' => "nok",
+                'data' => null,
+            ], 500);
+        }
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
+    
+    /**
      * list_diagnosa
      * Menampilkan diagnosa berdasarkan kode transaksi
      */
-    public function list_diagnosa(Request $request, $kode_reg)
+    public function list_diagnosa($kode_reg)
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
         $diagnosa = $this->pasienRujukanRepo->getDiagnosaByTransaksi($kode_reg);

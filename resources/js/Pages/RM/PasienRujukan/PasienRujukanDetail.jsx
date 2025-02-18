@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Head } from "@inertiajs/react";
-import axios from "axios";
 import { Col, Row } from "antd";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -9,8 +8,10 @@ import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
 import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCatatan";
 import PasienRujukanDetailBridging from "./PasienRujukanDetailBridging";
+import PasienRujukanDetailSEP from "./PasienRujukanDetailSEP";
 
 export default function PasienRujukanDetail({ auth, pasien }) {
+    const [noSep, setNoSep] = useState(null);
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -24,20 +25,29 @@ export default function PasienRujukanDetail({ auth, pasien }) {
             <PasienRujukanDetailProfile pasien={pasien} />
 
             <Row>
-                <Col span={12} style={{padding:2}}>
+                <Col span={12} style={{ padding: 2 }}>
                     <PasienRujukanDetailDiagnosaList pasien={pasien} />
                 </Col>
-                <Col span={12} style={{padding:2}}>
+                <Col span={12} style={{ padding: 2 }}>
                     <PasienRujukanDetailProcedureList pasien={pasien} />
                 </Col>
             </Row>
-            
+
             <Row>
-                <Col span={12} style={{padding:2}}>
+                <Col span={12} style={{ padding: 2 }}>
                     <PasienRujukanDetailAmnanesaCatatan pasien={pasien} />
                 </Col>
-                <Col span={12} style={{padding:2}}>
-                    <PasienRujukanDetailBridging pasien={pasien} user={auth.user} />
+                <Col span={12} style={{ padding: 2 }}>
+                    <PasienRujukanDetailSEP
+                        pasien={pasien}
+                        user={auth.user}
+                        setNoSep={setNoSep}
+                        noSep={noSep}
+                    />
+                    <PasienRujukanDetailBridging
+                        pasien={pasien}
+                        user={auth.user}
+                    />
                 </Col>
             </Row>
         </AuthenticatedLayout>
