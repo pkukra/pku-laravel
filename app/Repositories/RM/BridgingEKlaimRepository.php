@@ -18,6 +18,13 @@ class BridgingEKlaimRepository
     public function bridgingDataProcess($no_sep)
     {
         $semua_transaksi = $this->allTransactionsBySep($no_sep);
+
+        /**
+         * menentukan dokter mana yang menjadi dpjp utama
+         * jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+         * jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+         * berarti yang bukan dokter raber
+         */
         $dpjp_uatama = $semua_transaksi[0];
         foreach ($semua_transaksi as $transaksi) {
             if ($transaksi->RUBBER == 0) {
@@ -25,8 +32,23 @@ class BridgingEKlaimRepository
                 break;
             }
         }
+        $bloodPresure = $this->getBloodPressure($dpjp_uatama->FRPNOTRANSAKSI);
 
-        $data = (object)[  // 'data' adalah objek
+
+        $adl_sub_acute = "";
+        $adl_chronic = "";
+        $tarif_poli_eks = 0;
+        $icu_indikator = "";
+        $icu_los = "";
+        $ventilator_hour = "";
+        $kode_tarif = "CS";
+        $payor_id = "3";
+        $payor_cd = "JKN";
+        $coder_nik = "123123123123";
+        $sistole = $bloodPresure->sistole;
+        $diastole = $bloodPresure->diastole;
+
+        $data = (object)[
             'nomor_sep' => $no_sep,
             'tgl_masuk' => Carbon::parse($dpjp_uatama->FRPTGL)->format('d/m/Y'),
             'tgl_pulang' => Carbon::parse($dpjp_uatama->FRPTGL)->format('d/m/Y'),
@@ -34,25 +56,25 @@ class BridgingEKlaimRepository
             'kelas_rawat' => 3, // kelas rawat bpjs 1,2,3
             'birth_weight' => 0, // sementara 0 dulu
             'discharge_status' => 1,
-            // 'tarif_rs' => $this->getDetailTarifTransaksi($kode_reg),
-            // 'diagnosa' => $diagnosa_akhir,
-            // 'diagnosa_inagrouper' => $diagnosa_akhir,
-            // 'procedure' => $procedure_akhir,
-            // 'procedure_inagrouper' => $procedure_akhir,
-            // 'adl_sub_acute' => $adl_sub_acute,
-            // 'adl_chronic' => $adl_chronic,
-            // 'tarif_poli_eks' => (float)number_format($tarif_rs, 2, '.', ''),
-            // 'nama_dokter' => $dpjp,
-            // 'icu_indikator' => $icu_indikator,
-            // 'icu_los' => $icu_los,
-            // 'ventilator_hour' => $ventilator_hour,
-            // 'kode_tarif' => $kode_tarif,
-            // 'payor_id' => $payor_id,
-            // 'payor_cd' => $payor_cd,
-            // 'coder_nik' => $coder_nik,
-            // 'sistole' => $sistole,
-            // 'diastole' => $diastole,
-            // 'cara_masuk' => $dpjp_uatama->CARA_MASUK,
+            'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi),
+            'diagnosa' => $this->getAllDiagnosa($semua_transaksi),
+            'diagnosa_inagrouper' => $this->getAllDiagnosa($semua_transaksi),
+            'procedure' => $this->getAllProcedure($semua_transaksi),
+            'procedure_inagrouper' => $this->getAllProcedure($semua_transaksi),
+            'adl_sub_acute' => $adl_sub_acute,
+            'adl_chronic' => $adl_chronic,
+            'tarif_poli_eks' => $tarif_poli_eks,
+            'nama_dokter' => $dpjp_uatama->FMDDOKTERN,
+            'icu_indikator' => $icu_indikator,
+            'icu_los' => $icu_los,
+            'ventilator_hour' => $ventilator_hour,
+            'kode_tarif' => $kode_tarif,
+            'payor_id' => $payor_id,
+            'payor_cd' => $payor_cd,
+            'coder_nik' => $coder_nik,
+            'sistole' => $sistole,
+            'diastole' => $diastole,
+            'cara_masuk' => $dpjp_uatama->CARA_MASUK,
         ];
 
         return $data;
@@ -90,12 +112,12 @@ class BridgingEKlaimRepository
     }
 
     /**
-     * Get detail tarif transaksi based on kode_reg
+     * Get total detail tarif transaksi based on array of pasien rujukan->kode_reg
      * 
-     * @param string $kode_reg
+     * @param array [$pasien_rujukan,$pasien_rujukan,$pasien_rujukan, ...]
      * @return array
      */
-    public function getDetailTarifTransaksi($kode_reg)
+    public function getTotalDetailTarifTransaksi($array_pasien_rujukan)
     {
         $tarif = [
             'prosedur_non_bedah' => 0,
@@ -116,85 +138,153 @@ class BridgingEKlaimRepository
             'sewa_alat' => 0,
         ];
 
-        $transaksiPasien = DB::connection('sqlsrv')
-            ->table('TRANSAKSIPASIEN AS a')
-            ->join('TRANSAKSIPASIEND AS b', 'a.FTNO_TRANSAKSI', '=', 'b.FDTNO_TRANSAKSI')
-            ->join('PRODUK AS p', 'p.FMPPRODUK_ID', '=', 'b.FDTKD_PRODUK')
-            ->join('PRODUK_UNIT AS pu', 'p.FMPUNITPRODUK', '=', 'pu.FTUKODE')
-            ->whereNull('b.FDTNO_FAKTUR')
-            ->where('b.FDTJENISTRANSAKSI', 'DB')
-            ->where('a.FTNO_TRANSAKSI', $kode_reg)
-            ->select('a.FTNO_TRANSAKSI', 'b.FDTQTY', 'b.FDTHARGA', 'b.FDTKD_PRODUK', 'pu.FTUKD_EKLAIM')
-            ->get();
+        foreach ($array_pasien_rujukan as $pasien_rujukan) {
+            // mencari list semua transaksi selain kredit
+            // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
+            $transaksiPasien = DB::connection('sqlsrv')
+                ->table('TRANSAKSIPASIEN AS a')
+                ->leftJoin('TRANSAKSIPASIEND AS b', 'a.FTNO_TRANSAKSI', '=', 'b.FDTNO_TRANSAKSI')
+                ->leftJoin('PRODUK AS p', 'p.FMPPRODUK_ID', '=', 'b.FDTKD_PRODUK')
+                ->leftJoin('PRODUK_UNIT AS pu', 'p.FMPUNITPRODUK', '=', 'pu.FTUKODE')
+                ->whereNull('b.FDTNO_FAKTUR')
+                ->where('b.FDTJENISTRANSAKSI', 'DB') // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
+                ->where('a.FTNO_TRANSAKSI', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->select('a.FTNO_TRANSAKSI', 'b.FDTQTY', 'b.FDTHARGA', 'b.FDTKD_PRODUK', 'pu.FTUKD_EKLAIM')
+                ->get();
 
-        foreach ($transaksiPasien as $transaksi) {
-            $total = $transaksi->FDTQTY * $transaksi->FDTHARGA;
-            switch ($transaksi->FTUKD_EKLAIM) {
-                case '1':
-                    $tarif['prosedur_non_bedah'] += $total;
-                    break;
-                case '2':
-                    $tarif['prosedur_bedah'] += $total;
-                    break;
-                case '3':
-                    $tarif['konsultasi'] += $total;
-                    break;
-                case '4':
-                    $tarif['tenaga_ahli'] += $total;
-                    break;
-                case '5':
-                    $tarif['keperawatan'] += $total;
-                    break;
-                case '6':
-                    $tarif['penunjang'] += $total;
-                    break;
-                case '7':
-                    $tarif['radiologi'] += $total;
-                    break;
-                case '8':
-                    $tarif['laboratorium'] += $total;
-                    break;
-                case '9':
-                    $tarif['pelayanan_darah'] += $total;
-                    break;
-                case '10':
-                    $tarif['rehabilitasi'] += $total;
-                    break;
-                case '11':
-                    $tarif['kamar'] += $total;
-                    break;
-                case '12':
-                    $tarif['rawat_intensif'] += $total;
-                    break;
-                case '13':
-                    $tarif['obat'] += $total;
-                    break;
-                case '14':
-                    $tarif['alkes'] += $total;
-                    break;
-                case '15':
-                    $tarif['bmhp'] += $total;
-                    break;
-                case '16':
-                    $tarif['sewa_alat'] += $total;
-                    break;
-                default:
-                    $tarif['bmhp'] += $total;
-                    break;
+            foreach ($transaksiPasien as $transaksi) {
+                $total = $transaksi->FDTQTY * $transaksi->FDTHARGA;
+                switch ($transaksi->FTUKD_EKLAIM) {
+                    case '1':
+                        $tarif['prosedur_non_bedah'] += $total;
+                        break;
+                    case '2':
+                        $tarif['prosedur_bedah'] += $total;
+                        break;
+                    case '3':
+                        $tarif['konsultasi'] += $total;
+                        break;
+                    case '4':
+                        $tarif['tenaga_ahli'] += $total;
+                        break;
+                    case '5':
+                        $tarif['keperawatan'] += $total;
+                        break;
+                    case '6':
+                        $tarif['penunjang'] += $total;
+                        break;
+                    case '7':
+                        $tarif['radiologi'] += $total;
+                        break;
+                    case '8':
+                        $tarif['laboratorium'] += $total;
+                        break;
+                    case '9':
+                        $tarif['pelayanan_darah'] += $total;
+                        break;
+                    case '10':
+                        $tarif['rehabilitasi'] += $total;
+                        break;
+                    case '11':
+                        $tarif['kamar'] += $total;
+                        break;
+                    case '12':
+                        $tarif['rawat_intensif'] += $total;
+                        break;
+                    case '13':
+                        $tarif['obat'] += $total;
+                        break;
+                    case '14':
+                        $tarif['alkes'] += $total;
+                        break;
+                    case '15':
+                        $tarif['bmhp'] += $total;
+                        break;
+                    case '16':
+                        $tarif['sewa_alat'] += $total;
+                        break;
+                    default:
+                        $tarif['bmhp'] += $total;
+                        break;
+                }
+            }
+
+            $fjinkotaData = DB::connection('sqlsrv')
+                ->table('FJINKOTA')
+                ->where('FHFJNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->where('FHFJKRONIS', '=', 0)
+                ->select('FHFJBUKTI_ID', 'FHFJTOTAL')
+                ->get();
+
+            foreach ($fjinkotaData as $fjinkota) {
+                $tarif['obat'] += (float) $fjinkota->FHFJTOTAL;
             }
         }
 
-        $fjinkotaData = DB::connection('sqlsrv')
-            ->table('FJINKOTA')
-            ->where('FHFJNO_TRANSAKSI', '=', $kode_reg)
-            ->where('FHFJKRONIS', '=', 0)
-            ->select('FHFJBUKTI_ID', 'FHFJTOTAL')
-            ->get();
+        return $tarif;
+    }
 
-        foreach ($fjinkotaData as $fjinkota) {
-            $tarif['obat'] += (float) $fjinkota->FHFJTOTAL;
+    /**
+     * Get all diagnosa from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
+     * 
+     * @param array $array_pasien_rujukan
+     * @return string Diagnosa dalam format "S71.0#A00.1"
+     */
+    public function getAllDiagnosa($array_pasien_rujukan)
+    {
+        $diagnoses_array = [];
+        foreach ($array_pasien_rujukan as $pasien_rujukan) {
+            $diagnosa = DB::connection('sqlsrv')
+                ->table('MR_PENYAKIT')
+                ->where('MRPNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->pluck('MRPKD_PENYAKIT') // Mengambil hanya kolom MRPKD_PENYAKIT sebagai array
+                ->toArray(); // Konversi ke array PHP
+
+            $diagnoses_array = array_merge($diagnoses_array, $diagnosa); // Gabungkan hasil query ke array utama
         }
 
-        return $tarif;
+        return implode('#', array_unique($diagnoses_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
+    }
+
+    /**
+     * Get all tindakan/procedures from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
+     * 
+     * @param array $array_pasien_rujukan
+     * @return string Prosedur dalam format "00123#00456"
+     */
+    public function getAllProcedure($array_pasien_rujukan)
+    {
+        $tindakan_array = [];
+        foreach ($array_pasien_rujukan as $pasien_rujukan) {
+            $tindakan = DB::connection('sqlsrv')
+                ->table('MR_TINDAKAN')
+                ->where('MRTNOTRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->pluck('MRTKD_TINDAKAN') // Mengambil hanya kolom MRTKD_TINDAKAN sebagai array
+                ->toArray(); // Konversi ke array PHP
+
+            $tindakan_array = array_merge($tindakan_array, $tindakan); // Gabungkan hasil query ke array utama
+        }
+        return implode('#', array_unique($tindakan_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
+    }
+
+    /**
+     * Get sistole and diastole based on kode_reg
+     * 
+     * @param string $kode_reg
+     * @return object Sistole dan diastole dalam format (object)['sistole' => value, 'diastole' => value]
+     */
+    public function getBloodPressure($kode_reg)
+    {
+        $vitalSign = DB::connection('sqlsrv')
+            ->table('PKU.dbo.TAC_RJ_VITAL_SIGN')
+            ->select('FS_TD as sistole', 'FS_TD2 as diastole')
+            ->where('FS_KD_REG', $kode_reg)
+            ->orderByDesc('FS_KD_REG') // TOP 1 digantikan dengan orderBy + first()
+            ->first();
+
+        return (object)[
+            'sistole' => $vitalSign->sistole ?? 0, // Default 0 jika tidak ada data
+            'diastole' => $vitalSign->diastole ?? 0 // Default 0 jika tidak ada data
+        ];
     }
 }
