@@ -1,39 +1,39 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import { Head } from '@inertiajs/react';
+import { Col, Row, Typography } from 'antd';
 
-export default function Edit({ mustVerifyEmail, status }) {
+function Edit({ auth, mustVerifyEmail, status }) {
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Profile
-                </h2>
-            }
-        >
+        <>
             <Head title="Profile" />
 
+            <Typography.Title level={2}>Profile</Typography.Title>
+
             <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                <Row gutter={[0, 20]}>
+                    <Col span={16}>
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}
                             status={status}
-                            className="max-w-xl"
                         />
-                    </div>
+                    </Col>
 
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdatePasswordForm className="max-w-xl" />
-                    </div>
+                    <Col span={16}>
+                        <UpdatePasswordForm />
+                    </Col>
 
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <DeleteUserForm className="max-w-xl" />
-                    </div>
-                </div>
+                    <Col span={16}>
+                        <DeleteUserForm />
+                    </Col>
+                </Row>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Edit.layout = page => <AuthenticatedLayout children={page} />
+
+export default Edit;
