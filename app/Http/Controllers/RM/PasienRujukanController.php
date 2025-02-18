@@ -333,4 +333,14 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingDataProcess($no_sep);
         return response()->json($data);
     }
+    
+    /**
+     * bridging_final_process
+     * Process bridging data ke eklaim
+     */
+    public function bridging_final_process($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingFinalProcess($no_sep);
+        return response()->json($data);
+    }
 }

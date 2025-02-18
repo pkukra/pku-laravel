@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Auth;
 class BridgingEKlaimRepository
 {
     /**
-     * Process bridgingDataProcess by kode reg
+     * Process bridgingDataProcess by no_sep
      * 
-     * @param string $kode_reg
+     * @param string $no_sep
      */
     public function bridgingDataProcess($no_sep)
     {
@@ -116,6 +116,66 @@ class BridgingEKlaimRepository
             "error" => null,
             "response" => json_decode($response)
         ];
+    }
+
+    /**
+     * Process bridgingFinalProcess by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingFinalProcess($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $request = json_encode([
+            "metadata" => ["method" => "claim_final"],
+            "data" => ["nomor_sep" => $no_sep, "coder_nik" => $user->nik]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        // Enkripsi data sebelum dikirim
+        $encryptedData = mc_encrypt($request, $key);
+
+        $client = new Client();
+        $url = env("EKLAIM_WS_URL");
+
+        try {
+            $response = $client->post($url, [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'Accept' => 'application/json'
+                ],
+                'body' => $encryptedData
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+
+            // Membersihkan response dari karakter tak diinginkan
+            $first = strpos($responseBody, "\n") + 1;
+            $last = strrpos($responseBody, "\n") - 1;
+            $responseBody = substr($responseBody, $first, strlen($responseBody) - $first - $last);
+
+            // Dekripsi response
+            $decryptedResponse = mc_decrypt($responseBody, $key);
+
+            return (object)[
+                "status" => "ok",
+                "error" => null,
+                "response" => json_decode($decryptedResponse)
+            ];
+        } catch (RequestException $e) {
+            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
+            return (object)[
+                "status" => "nok",
+                "error" => $error
+            ];
+        } catch (\Throwable $th) {
+            return (object)[
+                "status" => "nok",
+                "error" => $th->getMessage()
+            ];
+        }
     }
 
     /**
