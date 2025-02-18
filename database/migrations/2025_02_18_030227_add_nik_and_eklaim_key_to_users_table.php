@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('nik', 16)->nullable()->after('email'); // Nomor KTP (maks 16 digit)
+            $table->string('nik', 16)->after('email'); // Nomor KTP (maks 16 digit)
             $table->string('eklaim_key', 255)->nullable()->unique()->after('nik'); // Key unik untuk e-Klaim
         });
     }

@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class BridgingEKlaimRepository
 {
@@ -13,71 +14,85 @@ class BridgingEKlaimRepository
      * Process bridgingDataProcess by kode reg
      * 
      * @param string $kode_reg
-     * @return \Illuminate\Support\Collection
      */
     public function bridgingDataProcess($no_sep)
     {
         $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (count($semua_transaksi) < 1) {
+            return false;
+        }
 
-        /**
-         * menentukan dokter mana yang menjadi dpjp utama
-         * jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
-         * jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
-         * berarti yang bukan dokter raber
-         */
-        $dpjp_uatama = $semua_transaksi[0];
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_uatama = $semua_transaksi[0];
         foreach ($semua_transaksi as $transaksi) {
             if ($transaksi->RUBBER == 0) {
-                $dpjp_uatama = $transaksi;
+                $transaksi_uatama = $transaksi;
                 break;
             }
         }
-        $bloodPresure = $this->getBloodPressure($dpjp_uatama->FRPNOTRANSAKSI);
 
+        $user = Auth::user();
+        $bloodPresure = $this->getBloodPressure($transaksi_uatama->FRPNOTRANSAKSI);
 
-        $adl_sub_acute = "";
-        $adl_chronic = "";
-        $tarif_poli_eks = 0;
-        $icu_indikator = "";
-        $icu_los = "";
-        $ventilator_hour = "";
-        $kode_tarif = "CS";
-        $payor_id = "3";
-        $payor_cd = "JKN";
-        $coder_nik = "123123123123";
-        $sistole = $bloodPresure->sistole;
-        $diastole = $bloodPresure->diastole;
-
+        // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
-            'tgl_masuk' => Carbon::parse($dpjp_uatama->FRPTGL)->format('d/m/Y'),
-            'tgl_pulang' => Carbon::parse($dpjp_uatama->FRPTGL)->format('d/m/Y'),
+            'tgl_masuk' => Carbon::parse($transaksi_uatama->FRPTGL)->format('d/m/Y'),
+            'tgl_pulang' => Carbon::parse($transaksi_uatama->FRPTGL)->format('d/m/Y'),
             'jenis_rawat' => 2, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => 3, // kelas rawat bpjs 1,2,3
-            'birth_weight' => 0, // sementara 0 dulu
+            'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
+            'birth_weight' => 0,
             'discharge_status' => 1,
-            'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi),
+            'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
+            'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
             'diagnosa' => $this->getAllDiagnosa($semua_transaksi),
             'diagnosa_inagrouper' => $this->getAllDiagnosa($semua_transaksi),
             'procedure' => $this->getAllProcedure($semua_transaksi),
             'procedure_inagrouper' => $this->getAllProcedure($semua_transaksi),
-            'adl_sub_acute' => $adl_sub_acute,
-            'adl_chronic' => $adl_chronic,
-            'tarif_poli_eks' => $tarif_poli_eks,
-            'nama_dokter' => $dpjp_uatama->FMDDOKTERN,
-            'icu_indikator' => $icu_indikator,
-            'icu_los' => $icu_los,
-            'ventilator_hour' => $ventilator_hour,
-            'kode_tarif' => $kode_tarif,
-            'payor_id' => $payor_id,
-            'payor_cd' => $payor_cd,
-            'coder_nik' => $coder_nik,
-            'sistole' => $sistole,
-            'diastole' => $diastole,
-            'cara_masuk' => $dpjp_uatama->CARA_MASUK,
+            'adl_sub_acute' => "",
+            'adl_chronic' => "",
+            'nama_dokter' => $transaksi_uatama->FMDDOKTERN,
+            'icu_indikator' => "",
+            'icu_los' => "",
+            'ventilator_hour' => "",
+            'kode_tarif' => "CS",
+            'payor_id' => "3",
+            'payor_cd' => "JKN",
+            'coder_nik' => $user->nik,
+            'sistole' => $bloodPresure->sistole,
+            'diastole' => $bloodPresure->diastole,
+            'cara_masuk' => $transaksi_uatama->CARA_MASUK,
         ];
 
-        return $data;
+        $request = (object)[
+            'metadata' => (object)[
+                'method' => 'get_claim_data',
+                'nomor_sep' => $no_sep,
+            ],
+            'data' => $data
+        ];
+
+        $url = env("EKLAIM_WS_URL");
+        $key = $user->eklaim_key;
+        
+        $request =  json_encode($request);
+        $request_encrypted = mc_encrypt($request, $key);
+
+        $client = new Client();
+        $response = $client->post($url, [
+            'headers' => ["Content-Type: application/x-www-form-urlencoded"],
+            'json' => $request_encrypted,
+        ])->getBody()->getContents();
+
+        $first = strpos($response, "\n") + 1;
+        $last = strrpos($response, "\n") - 1;
+        $response = substr($response, $first, strlen($response) - $first - $last);
+        $response = mc_decrypt($response, $key);
+
+        return $response;
     }
 
     /**
@@ -115,7 +130,7 @@ class BridgingEKlaimRepository
      * Get total detail tarif transaksi based on array of pasien rujukan->kode_reg
      * 
      * @param array [$pasien_rujukan,$pasien_rujukan,$pasien_rujukan, ...]
-     * @return array
+     * @return object
      */
     public function getTotalDetailTarifTransaksi($array_pasien_rujukan)
     {
@@ -138,6 +153,8 @@ class BridgingEKlaimRepository
             'sewa_alat' => 0,
         ];
 
+        $tarif_poli_eks = 0;
+
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
             // mencari list semua transaksi selain kredit
             // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
@@ -151,6 +168,10 @@ class BridgingEKlaimRepository
                 ->where('a.FTNO_TRANSAKSI', $pasien_rujukan->FRPNOTRANSAKSIKJ)
                 ->select('a.FTNO_TRANSAKSI', 'b.FDTQTY', 'b.FDTHARGA', 'b.FDTKD_PRODUK', 'pu.FTUKD_EKLAIM')
                 ->get();
+
+            $tarif_poli_eks += $transaksiPasien->reduce(function ($carry, $transaksi) {
+                return $carry + ($transaksi->FDTQTY * $transaksi->FDTHARGA);
+            }, 0);
 
             foreach ($transaksiPasien as $transaksi) {
                 $total = $transaksi->FDTQTY * $transaksi->FDTHARGA;
@@ -217,11 +238,15 @@ class BridgingEKlaimRepository
                 ->get();
 
             foreach ($fjinkotaData as $fjinkota) {
-                $tarif['obat'] += (float) $fjinkota->FHFJTOTAL;
+                $tarif['obat'] += (float)$fjinkota->FHFJTOTAL;
+                $tarif_poli_eks += (float)$tarif['obat'];
             }
         }
 
-        return $tarif;
+        return (object)[
+            "tarif_rs" => $tarif,
+            "tarif_poli_eks" => $tarif_poli_eks,
+        ];
     }
 
     /**
