@@ -2,19 +2,38 @@ import React, { useState, useEffect } from "react";
 import { Modal, Card, Button, Tooltip, notification, Spin } from "antd";
 import axios from "axios";
 
-export default function Index({ pasien, user }) {
+export default function Index({ pasien, user, noSep }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleBridgingData = () => {};
+    const handleBridgingData = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.bridging_data_process", {
+                    no_sep: noSep,
+                })
+            );
+            console.log(response?.data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {}, []);
-    const disabled = user.eklaim_key ? false : true;
+    let disabled = !user.eklaim_key || noSep === "";
 
     return (
         <>
             <Card title={"Sync Data ke Ekalim"}>
                 <Tooltip
-                    title={disabled ? "User belum setup Eklaim Key" : "Tekan untuk bridgin data ke INACBG"}
+                    title={
+                        disabled
+                            ? "User belum setup Eklaim Key"
+                            : "Tekan untuk bridgin data ke INACBG"
+                    }
                     placement="topLeft"
                 >
                     <Button
@@ -33,7 +52,10 @@ export default function Index({ pasien, user }) {
                 onCancel={() => setModalBridgeOpen(false)}
                 okText={"Ok, Kirim Data"}
                 onOk={() => handleBridgingData()}
-            ></Modal>
+                loading={loading}
+            >
+                {noSep}
+            </Modal>
         </>
     );
 }

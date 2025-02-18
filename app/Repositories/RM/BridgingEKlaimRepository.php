@@ -3,6 +3,7 @@
 namespace App\Repositories\RM;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -67,32 +68,54 @@ class BridgingEKlaimRepository
             'cara_masuk' => $transaksi_uatama->CARA_MASUK,
         ];
 
-        $request = (object)[
+        $request = json_encode((object)[
             'metadata' => (object)[
-                'method' => 'get_claim_data',
+                'method' => 'set_claim_data',
                 'nomor_sep' => $no_sep,
             ],
             'data' => $data
-        ];
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-        $url = env("EKLAIM_WS_URL");
         $key = $user->eklaim_key;
-        
-        $request =  json_encode($request);
-        $request_encrypted = mc_encrypt($request, $key);
+
+        $data = mc_encrypt($request, $key);
 
         $client = new Client();
-        $response = $client->post($url, [
-            'headers' => ["Content-Type: application/x-www-form-urlencoded"],
-            'json' => $request_encrypted,
-        ])->getBody()->getContents();
+        $url = env("EKLAIM_WS_URL");
+
+        try {
+            $response = $client->post($url, [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded'
+                ],
+                'body'    => $data
+            ]);
+        } catch (RequestException $e) {
+            $err = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
+            return (object)[
+                "status" => "nok",
+                "error" => $err
+            ];
+        } catch (\Throwable $th) {
+            $err = $th->getMessage();
+            return (object)[
+                "status" => "nok",
+                "error" => $err
+            ];
+        }
+
+        $response = $response->getBody()->getContents();
 
         $first = strpos($response, "\n") + 1;
         $last = strrpos($response, "\n") - 1;
         $response = substr($response, $first, strlen($response) - $first - $last);
         $response = mc_decrypt($response, $key);
 
-        return $response;
+        return (object)[
+            "status" => "ok",
+            "error" => null,
+            "response" => $response
+        ];
     }
 
     /**

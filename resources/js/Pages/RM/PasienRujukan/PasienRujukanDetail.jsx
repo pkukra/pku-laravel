@@ -47,6 +47,7 @@ export default function PasienRujukanDetail({ auth, pasien }) {
                     <PasienRujukanDetailBridging
                         pasien={pasien}
                         user={auth.user}
+                        noSep={noSep}
                     />
                 </Col>
             </Row>
