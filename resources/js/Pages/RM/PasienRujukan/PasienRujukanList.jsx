@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, Input, Button, Space, Table } from "antd";
+import { Card, Input, Button, Space, Table, Tooltip } from "antd";
 import axios from "axios";
 import moment from "moment";
 
@@ -106,11 +106,30 @@ export default function PasienRujukanList({ auth }) {
         }
     };
 
-    const handleKeyDown = (e) => {
+    const handleKeyEnter = (e) => {
         if (e.key === "Enter") {
             handleSearch();
         }
     };
+
+    const inputRefNoRM = useRef(null);
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            // Jika Shift + F1 ditekan, fokus ke input status diagnosa
+            if (event.key === "F1") {
+                inputRefNoRM.current?.focus();
+            }
+        };
+
+        // Menambahkan event listener untuk keydown saat komponen mount
+        window.addEventListener("keydown", handleKeyDown);
+
+        // Membersihkan event listener saat komponen unmount
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
 
     return (
         <AuthenticatedLayout
@@ -124,15 +143,17 @@ export default function PasienRujukanList({ auth }) {
             <Head title="Pasien Rujukan List" />
             <Card style={{ marginBottom: 10 }}>
                 <Space direction="horizontal">
-                    <Input
-                        allowClear
-                        autoFocus
-                        className="input input-bordered w-full max-w-xs input-sm"
-                        placeholder="No RM"
-                        value={noRm}
-                        onChange={handleInputChange}
-                        onKeyDown={handleKeyDown}
-                    />
+                    <Tooltip title="F1 untuk shortcut" placement="topLeft">
+                        <Input
+                            ref={inputRefNoRM}
+                            allowClear
+                            autoFocus
+                            placeholder="No RM"
+                            value={noRm}
+                            onChange={handleInputChange}
+                            onKeyDown={handleKeyEnter}
+                        />
+                    </Tooltip>
                     <Button
                         style={{ width: 80 }}
                         onClick={handleSearch}
