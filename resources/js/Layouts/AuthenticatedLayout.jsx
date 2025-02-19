@@ -61,7 +61,7 @@ const App = ({ children }) => {
             <Layout>
                 <Content style={{ margin: "16px" }}>{children}</Content>
                 <Footer style={{ textAlign: "center" }}>
-                    SIMRS PKU Muhammadiyah Karanganyar ©{" "}
+                    X App PKU Muhammadiyah Karanganyar ©{" "}
                     {new Date().getFullYear()} Created By Dev Team
                 </Footer>
             </Layout>

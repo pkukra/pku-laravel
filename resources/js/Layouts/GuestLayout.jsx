@@ -1,18 +1,16 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
+import { Layout, Typography } from "antd";
 
-export default function GuestLayout({ children }) {
+export default function Guest({ children, showTitle = true }) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                </Link>
-            </div>
-
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg">
-                {children}
-            </div>
-        </div>
+        <Layout className="guest-layout">
+            <Layout.Content>
+                {showTitle && (
+                    <Typography.Title level={2}>
+                        X App PKU Muhammadiyah Karangnyar
+                    </Typography.Title>
+                )}
+                <div className="guest-content">{children}</div>
+            </Layout.Content>
+        </Layout>
     );
 }

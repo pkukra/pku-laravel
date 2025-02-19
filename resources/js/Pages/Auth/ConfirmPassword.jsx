@@ -1,55 +1,66 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import { useEffect } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
+import { Button, Card, Form, Input, Typography } from 'antd';
 
-export default function ConfirmPassword() {
+function ConfirmPassword() {
     const { data, setData, post, processing, errors, reset } = useForm({
         password: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
+    useEffect(() => {
+        return () => {
+            reset('password');
+        };
+    }, []);
 
-        post(route('password.confirm'), {
-            onFinish: () => reset('password'),
-        });
+    const submit = () => {
+        post(route('password.confirm'));
     };
 
     return (
-        <GuestLayout>
+        <>
             <Head title="Confirm Password" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                This is a secure area of the application. Please confirm your
-                password before continuing.
-            </div>
+            <Card className='auth-card'>
+                <Typography.Title level={4}>
+                    Confirm Password
+                </Typography.Title>
 
-            <form onSubmit={submit}>
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                <Typography.Paragraph style={{ marginBottom: 30 }}>
+                    This is a secure area of the application. Please confirm your password before continuing.
+                </Typography.Paragraph>
 
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                <Form
+                    name="basic"
+                    layout='vertical'
+                    initialValues={data}
+                    onFieldsChange={(changedFields) => {
+                        changedFields.forEach(item => {
+                            setData(item.name[0], item.value);
+                        })
+                    }}
+                    onFinish={submit}
+                    autoComplete="off"
+                >
+                    <Form.Item
+                            label="Password"
+                            name="password"
+                            validateStatus={errors.password && 'error'}
+                            help={errors.password}
+                        >
+                            <Input.Password />
+                    </Form.Item>
 
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <Button type="primary" htmlType="submit" loading={processing}>
                         Confirm
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+                    </Button>
+                </Form>
+            </Card>
+        </>
     );
 }
+
+ConfirmPassword.layout = page => <GuestLayout children={page} showTitle={false} />
+
+export default ConfirmPassword;

@@ -1,55 +1,65 @@
-import InputError from '@/Components/InputError';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
 
-export default function ForgotPassword({ status }) {
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Button, Card, Form, Input, Space, Typography } from 'antd';
+
+function ForgotPassword() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
 
-    const submit = (e) => {
-        e.preventDefault();
-
+    const submit = () => {
         post(route('password.email'));
     };
 
     return (
-        <GuestLayout>
+        <>
             <Head title="Forgot Password" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one.
-            </div>
+            <Card className='auth-card'>
+                <div style={{ marginBottom: 30 }}>
+                    <Typography.Title style={{ fontWeight: 400 }} level={4}>Forgot your password?</Typography.Title>
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
+                    <Typography.Text>No problem. Just let us know your email address and we will email you a password
+                    reset link that will allow you to choose a new one.</Typography.Text>
                 </div>
-            )}
 
-            <form onSubmit={submit}>
-                <TextInput
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
+                <Form
+                    name="basic"
+                    layout='vertical'
+                    initialValues={data}
+                    onFieldsChange={(changedFields) => {
+                        changedFields.forEach(item => {
+                            setData(item.name[0], item.value);
+                        })
+                    }}
+                    onFinish={submit}
+                    autoComplete="off"
+                >
+                    <Form.Item
+                        label="Email"
+                        name="email"
+                        validateStatus={errors.email && 'error'}
+                        help={errors.email}
+                    >
+                        <Input />
+                    </Form.Item>
 
-                <InputError message={errors.email} className="mt-2" />
+                    <Space direction='vertical' size={16}>
+                        <Button type="primary" htmlType="submit" loading={processing}>
+                            Email Password Reset Link
+                        </Button>
+                        <Link href={window.route('login')}>
+                            Back to login
+                        </Link>
+                    </Space>
+                </Form>
 
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Email Password Reset Link
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+            </Card>
+        </>
     );
 }
+
+ForgotPassword.layout = page => <GuestLayout children={page} />;
+
+export default ForgotPassword;

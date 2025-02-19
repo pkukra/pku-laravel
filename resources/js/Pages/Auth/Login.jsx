@@ -1,100 +1,90 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import { useEffect } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Login({ status, canResetPassword }) {
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Button, Card, Form, Input, Typography, Checkbox, Space } from 'antd';
+
+function Login() {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
         remember: false,
     });
 
-    const submit = (e) => {
-        e.preventDefault();
+    useEffect(() => {
+        return () => {
+            reset('password');
+        };
+    }, []);
 
-        post(route('login'), {
-            onFinish: () => reset('password'),
-        });
+    const submit = () => {
+        post(route('login'));
     };
 
     return (
-        <GuestLayout>
+        <>
             <Head title="Log in" />
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            <Card className='auth-card'>
+                <Typography.Title style={{ fontWeight: 400, marginBottom: 30 }} level={4}>Login to the application</Typography.Title>
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
+                <Form
+                    name="basic"
+                    layout='vertical'
+                    initialValues={data}
+                    onFieldsChange={(changedFields) => {
+                        changedFields.forEach(item => {
+                            setData(item.name[0], item.value);
+                        })
+                    }}
+                    onFinish={submit}
+                    autoComplete="off"
+                >
+                    <Form.Item
+                        label="Email"
                         name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
+                        validateStatus={errors.email && 'error'}
+                        help={errors.email}
+                    >
+                        <Input />
+                    </Form.Item>
 
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
+                    <Form.Item
+                        label="Password"
                         name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                        validateStatus={errors.password && 'error'}
+                        help={errors.password}
+                        extra={
+                            <Link style={{ display: 'inline-block', margin: '5px 0' }} href={window.route('password.request')}>
+                                Forgot password ?
+                            </Link>
+                        }
+                    >
+                        <Input.Password />
+                    </Form.Item>
 
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
+                    <Form.Item
+                        name="remember"
+                        valuePropName="checked"
+                    >
+                        <Checkbox>Remember me</Checkbox>
+                    </Form.Item>
 
-                <div className="mt-4 block">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
-                        />
-                        <span className="ms-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
-                    </label>
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            Forgot your password?
+                    <Space size={16}>
+                        <Button type="primary" htmlType="submit" loading={processing}>
+                            Login
+                        </Button>
+                        <Link href={window.route('register')}>
+                            Don't have an account ?
                         </Link>
-                    )}
+                    </Space>
+                </Form>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+            </Card>
+        </>
     );
 }
+
+Login.layout = page => <GuestLayout children={page} />
+
+export default Login;
