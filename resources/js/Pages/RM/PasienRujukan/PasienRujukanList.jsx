@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, Input, Button, Space } from "antd";
-
-import { Table } from "antd";
-import axios from "axios"; // Import axios untuk mengambil data
+import { Card, Input, Button, Space, Table } from "antd";
+import axios from "axios";
 import moment from "moment";
 
 const columns = [
@@ -23,14 +21,12 @@ const columns = [
     {
         title: "Tgl Jam Periksa",
         dataIndex: "FRPTGL",
-        render: (_, record) => {
-            return (
-                <>
-                    {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
-                    {moment(record.FRPJAM).format("HH:mm")}
-                </>
-            );
-        },
+        render: (_, record) => (
+            <>
+                {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
+                {moment(record.FRPJAM).format("HH:mm")}
+            </>
+        ),
     },
     {
         title: "Kode Dokter",
@@ -54,73 +50,65 @@ const columns = [
         key: "FRPNOTRANSAKSIKJ",
     },
     {
-        title: "Tgl Jam Periksa",
-        dataIndex: "FRPTGL",
-        render: (_, record) => {
-            return (
-                <>
-                    {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
-                    {moment(record.FRPJAM).format("HH:mm")}
-                </>
-            );
-        },
-    },
-    {
         title: "Action",
         dataIndex: "action",
         key: "action",
-        render: (_, record) => {
-            return (
-                <>
-                    <Button type="primary" size="small">
-                        <a
-                            href={route("rm.pasien-rujukan.detail", {
-                                kode_reg: record.FRPNOTRANSAKSIKJ,
-                            })}
-                        >
-                            Tampilkan
-                        </a>
-                    </Button>
-                </>
-            );
-        },
+        render: (_, record) => (
+            <Button type="primary" size="small">
+                <a
+                    href={route("rm.pasien-rujukan.detail", {
+                        kode_reg: record.FRPNOTRANSAKSIKJ,
+                    })}
+                >
+                    Tampilkan
+                </a>
+            </Button>
+        ),
     },
 ];
 
 export default function PasienRujukanList({ auth }) {
-    const [dataSource, setDataSource] = useState([]); // State untuk data tabel
-    const [loading, setLoading] = useState(false); // State untuk menandakan loading
-    const [noRm, setNoRm] = useState(""); // State untuk menyimpan No RM dari input
+    const [dataSource, setDataSource] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [noRm, setNoRm] = useState("");
 
-    // Fungsi untuk menghandle perubahan pada input No RM
+    // Ambil No RM dari localStorage saat komponen dimount
+    useEffect(() => {
+        const savedNoRm = localStorage.getItem("noRm");
+        if (savedNoRm) {
+            setNoRm(savedNoRm);
+            fetchData(savedNoRm); // Jika ada, langsung fetch data
+        }
+    }, []);
+
     const handleInputChange = (e) => {
-        setNoRm(e.target.value); // Update state no_rm ketika input berubah
+        setNoRm(e.target.value);
     };
 
-    // Fungsi untuk melakukan pencarian berdasarkan No RM
     const handleSearch = async () => {
-        if (!noRm) return; // Jika No RM kosong, jangan lakukan pencarian
+        if (!noRm) return;
 
-        setLoading(true); // Mulai loading sebelum melakukan fetch
+        localStorage.setItem("noRm", noRm); // Simpan ke localStorage
+        fetchData(noRm);
+    };
 
+    const fetchData = async (noRmValue) => {
+        setLoading(true);
         try {
             const response = await axios.get(
-                route("rm.pasien-rujukan.list", { no_rm: noRm })
+                route("rm.pasien-rujukan.list", { no_rm: noRmValue })
             );
-            const data = response?.data?.pasien_rujukans;
-            setDataSource(data || []); // Simpan data ke state dataSource
-            console.log(data);
+            setDataSource(response?.data?.pasien_rujukans || []);
         } catch (error) {
             console.error("Error fetching data: ", error);
         } finally {
-            setLoading(false); // Matikan loading setelah fetch selesai
+            setLoading(false);
         }
     };
 
-    // Fungsi untuk menangani event keydown pada input No RM
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
-            handleSearch(); // Jika tombol Enter ditekan, jalankan pencarian
+            handleSearch();
         }
     };
 
@@ -137,32 +125,31 @@ export default function PasienRujukanList({ auth }) {
             <Card style={{ marginBottom: 10 }}>
                 <Space direction="horizontal">
                     <Input
+                        allowClear
                         autoFocus
                         className="input input-bordered w-full max-w-xs input-sm"
                         placeholder="No RM"
-                        value={noRm} // Mengikat input ke state noRm
-                        onChange={handleInputChange} // Update state ketika input berubah
-                        onKeyDown={handleKeyDown} // Menangani event keydown untuk enter
+                        value={noRm}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
                     />
                     <Button
                         style={{ width: 80 }}
-                        onClick={handleSearch} // Pencarian berdasarkan noRm
+                        onClick={handleSearch}
                         type="primary"
                     >
                         Cari
                     </Button>
                 </Space>
             </Card>
-            <Card title="pasien rawat jalan">
+            <Card title="Pasien Rawat Jalan">
                 <Table
                     dataSource={dataSource}
                     columns={columns}
                     size="small"
-                    loading={loading} // Menampilkan indikator loading saat data sedang diambil
-                    rowKey="FRPNOTRANSAKSIKJ" // Pastikan menggunakan properti unik untuk key baris
-                    scroll={{
-                        x: "max-content",
-                    }}
+                    loading={loading}
+                    rowKey="FRPNOTRANSAKSIKJ"
+                    scroll={{ x: "max-content" }}
                 />
             </Card>
         </AuthenticatedLayout>
