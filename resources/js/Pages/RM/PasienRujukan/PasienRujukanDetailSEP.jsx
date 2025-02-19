@@ -43,7 +43,7 @@ export default function Index({ pasien, user }) {
             if (response?.data?.status === "nok") {
                 return notification.warning({
                     placement: "bottomRight",
-                    message: "Peringatan!",
+                    // message: "Peringatan!",
                     description: response?.data?.error,
                 });
             }
@@ -51,7 +51,7 @@ export default function Index({ pasien, user }) {
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
                     placement: "bottomRight",
-                    message: "Peringatan!",
+                    // message: "Peringatan!",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
@@ -83,7 +83,7 @@ export default function Index({ pasien, user }) {
             if (response?.data?.status === "nok") {
                 return notification.warning({
                     placement: "bottomRight",
-                    message: "Peringatan!",
+                    // message: "Peringatan!",
                     description: response?.data?.error,
                 });
             }
@@ -91,7 +91,7 @@ export default function Index({ pasien, user }) {
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
                     placement: "bottomRight",
-                    message: "Peringatan!",
+                    // message: "Peringatan!",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
