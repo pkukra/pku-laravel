@@ -209,7 +209,7 @@ export default function Index({ pasien }) {
 
         const handleKeyDown = (event) => {
             // Jika Shift + F2 ditekan, fokus ke input Autocomplete Procedure
-            if (event.key === "F2") {
+            if (event.shiftKey && event.key === "F2") {
                 inputRefStatusProcedure.current?.focus();
             }
         };
@@ -226,7 +226,7 @@ export default function Index({ pasien }) {
         <Card title={`Procedure`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={20}>
-                    <Tooltip title={"F2 untuk shortcut"} placement="topLeft">
+                    <Tooltip title={"Shift+F2 untuk shortcut"} placement="topLeft">
                         <AutoComplete
                             ref={inputRefStatusProcedure}
                             allowClear

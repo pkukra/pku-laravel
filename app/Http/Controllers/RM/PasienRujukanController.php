@@ -75,12 +75,6 @@ class PasienRujukanController extends Controller
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
         $data = $this->pasienRujukanRepo->getSepPasienRujukan($kode_reg, $kode_reg_kj);
-        if(!$data){
-            return response()->json([
-                'status' => "nok",
-                'data' => null,
-            ], 500);
-        }
         return response()->json([
             'status' => "ok",
             'data' => $data,

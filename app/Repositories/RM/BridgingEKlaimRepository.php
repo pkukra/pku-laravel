@@ -12,6 +12,81 @@ use Illuminate\Support\Facades\Auth;
 class BridgingEKlaimRepository
 {
     /**
+     * Process new claim by nomor kartu
+     *
+     * @param string $no_peserta
+     * @param string $no_sep
+     * @param string $norm
+     * @param string $nm_pasien
+     * @param string $tgl_lahir
+     * @param string $jns_kelamin
+     */
+    public function bridgingNewClaimProcess($nomor_kartu, $no_sep, $norm, $nm_pasien, $tgl_lahir, $jns_kelamin)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Format tanggal lahir
+        $formattedDate = date("Y/m/d H:i:s", strtotime($tgl_lahir));
+
+        // Data request
+        $request = json_encode([
+            "metadata" => ["method" => "new_claim"],
+            "data" => [
+                "nomor_kartu" => $nomor_kartu,
+                "nomor_sep" => $no_sep,
+                "nomor_rm" => $norm,
+                "nama_pasien" => $nm_pasien,
+                "tgl_lahir" => $formattedDate,
+                "gender" => $jns_kelamin
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        // Enkripsi data sebelum dikirim
+        $encryptedData = mc_encrypt($request, $key);
+
+        $client = new Client();
+        $url = env("EKLAIM_WS_URL");
+
+        try {
+            $response = $client->post($url, [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'Accept' => 'application/json'
+                ],
+                'body' => $encryptedData
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+
+            // Membersihkan response dari karakter tak diinginkan
+            $first = strpos($responseBody, "\n") + 1;
+            $last = strrpos($responseBody, "\n") - 1;
+            $responseBody = substr($responseBody, $first, strlen($responseBody) - $first - $last);
+
+            // Dekripsi response
+            $decryptedResponse = mc_decrypt($responseBody, $key);
+
+            return (object)[
+                "status" => "ok",
+                "error" => null,
+                "response" => json_decode($decryptedResponse)
+            ];
+        } catch (RequestException $e) {
+            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
+            return (object)[
+                "status" => "nok",
+                "error" => $error
+            ];
+        } catch (\Throwable $th) {
+            return (object)[
+                "status" => "nok",
+                "error" => $th->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Process bridgingDataProcess by no_sep
      * 
      * @param string $no_sep
@@ -35,14 +110,24 @@ class BridgingEKlaimRepository
             }
         }
 
+        // buat new claim dulu
+        $this->bridgingNewClaimProcess(
+            $transaksi_uatama->FMNO_KARTU,
+            $transaksi_uatama->FMNOSEP,
+            $transaksi_uatama->FRPPASIEN_ID,
+            $transaksi_uatama->NAMAPASIEN,
+            $transaksi_uatama->TGL_LAHIR,
+            $transaksi_uatama->JENIS_KELAMIN,
+        );
+
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_uatama->FRPNOTRANSAKSI);
 
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
-            'tgl_masuk' => Carbon::parse($transaksi_uatama->FRPTGL)->format('d/m/Y'),
-            'tgl_pulang' => Carbon::parse($transaksi_uatama->FRPTGL)->format('d/m/Y'),
+            'tgl_masuk' => Carbon::parse($transaksi_uatama->FRPTGL)->format('Y-m-d H:i:s'),
+            'tgl_pulang' => Carbon::parse($transaksi_uatama->FRPTGL)->format('Y-m-d H:i:s'),
             'jenis_rawat' => 2, // 1 ranap, 2 rajal, 3 igd
             'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
             'birth_weight' => 0,
@@ -197,7 +282,7 @@ class BridgingEKlaimRepository
                 ->leftJoin('DOKTER AS dr', 'pr.FRPDOKTER_ID', '=', 'dr.FMDDOKTER_ID')
                 ->leftJoin('POLIKLINIK AS poli', 'pr.FRPUNIT', '=', 'poli.FMPKLINIK_ID')
                 ->leftJoin('PASIEN AS p', 'pr.FRPPASIEN_ID', '=', 'p.KD_PASIEN')
-                ->select('sep.FMNOSEP', 'pr.*', 'dr.FMDDOKTERN', 'poli.FMPKLINIKN')
+                ->select('sep.FMNOSEP', 'sep.FMNO_KARTU', 'pr.*', 'dr.FMDDOKTERN', 'poli.FMPKLINIKN', 'p.NAMAPASIEN', 'p.TGL_LAHIR', 'p.JENIS_KELAMIN')
                 ->where('sep.FMNOSEP', $no_sep)
                 ->distinct()
                 ->get();

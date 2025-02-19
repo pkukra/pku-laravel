@@ -10,4 +10,5 @@ export default defineConfig({
         }),
         react(),
     ],
+    base: "/simrs/build"
 });

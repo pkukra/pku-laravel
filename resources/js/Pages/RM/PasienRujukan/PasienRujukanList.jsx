@@ -79,8 +79,14 @@ export default function PasienRujukanList({ auth }) {
     const handleSearch = async () => {
         if (!noRm) return;
 
-        localStorage.setItem("noRm", noRm); // Simpan ke localStorage
+        localStorage.setItem("noRm", noRm);
         fetchData(noRm);
+    };
+
+    const handleReset = () => {
+        localStorage.removeItem("noRm");
+        setNoRm("");
+        setDataSource([]);
     };
 
     const fetchData = async (noRmValue) => {
@@ -109,20 +115,16 @@ export default function PasienRujukanList({ auth }) {
         const savedNoRm = localStorage.getItem("noRm");
         if (savedNoRm) {
             setNoRm(savedNoRm);
-            fetchData(savedNoRm); // Jika ada, langsung fetch data
+            fetchData(savedNoRm);
         }
 
         const handleKeyDown = (event) => {
-            // Jika Shift + F1 ditekan, fokus ke input status diagnosa
             if (event.key === "F1") {
                 inputRefNoRM.current?.focus();
             }
         };
 
-        // Menambahkan event listener untuk keydown saat komponen mount
         window.addEventListener("keydown", handleKeyDown);
-
-        // Membersihkan event listener saat komponen unmount
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
@@ -157,6 +159,13 @@ export default function PasienRujukanList({ auth }) {
                         type="primary"
                     >
                         Cari
+                    </Button>
+                    <Button
+                        style={{ width: 80 }}
+                        onClick={handleReset}
+                        type="default"
+                    >
+                        Reset
                     </Button>
                 </Space>
             </Card>

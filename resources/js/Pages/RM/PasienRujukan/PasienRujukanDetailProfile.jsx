@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Input, Button, Space } from "antd";
+import { Card } from "antd";
 import moment from "moment";
 
 export default function Index({ pasien }) {

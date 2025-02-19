@@ -20,7 +20,7 @@ export default function Index({ pasien, user }) {
                 })
             )
             .then((response) => {
-                setNoSep(response?.data?.data?.FMNOSEP || null);
+                setNoSep(response?.data?.data?.FMNOSEP);
                 console.log(response?.data?.data?.FMNOSEP);
             })
             .catch((error) => {
@@ -78,8 +78,6 @@ export default function Index({ pasien, user }) {
                 })
             );
 
-            console.log(response?.data);
-
             if (response?.data?.status === "nok") {
                 return notification.warning({
                     placement: "bottomRight",
@@ -113,6 +111,13 @@ export default function Index({ pasien, user }) {
         fetchNoSep();
     }, []);
 
+    let ketSep = "";
+    if (pasien.FRPCUSTOMER_ID === "X002" || pasien.FRPCUSTOMER_ID === "X003") {
+        ketSep = noSep == null ? "Belum ada SEP" : `No SEP: ${noSep}`;
+    } else {
+        ketSep = "Bukan Pasien BPJS";
+    }
+
     const disabled = !user.eklaim_key;
 
     return (
@@ -122,7 +127,7 @@ export default function Index({ pasien, user }) {
                 loading={loadingSep}
                 style={{ margin: 5 }}
             >
-                <p>{!noSep ? <>Bukan Pasien BPJS</> : <>{noSep}</>}</p>
+                <p>{ketSep}</p>
 
                 <Tooltip
                     title={

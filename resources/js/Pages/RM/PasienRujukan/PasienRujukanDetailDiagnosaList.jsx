@@ -221,16 +221,15 @@ export default function Index({ pasien }) {
         fetchDiagnosa();
 
         const handleKeyDown = (event) => {
-            // Jika Shift + F1 ditekan, fokus ke input status diagnosa
-            if (event.key === "F1") {
+            // Cek apakah Shift dan F1 ditekan bersamaan
+            if (event.shiftKey && event.key === "F1") {
+                event.preventDefault(); // Mencegah aksi default browser
                 inputRefStatusDdiagnosa.current?.focus();
             }
         };
 
-        // Menambahkan event listener untuk keydown saat komponen mount
         window.addEventListener("keydown", handleKeyDown);
 
-        // Membersihkan event listener saat komponen unmount
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
@@ -240,7 +239,10 @@ export default function Index({ pasien }) {
         <Card title={`Diagnosa`} style={{ marginBottom: 10 }}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={5}>
-                    <Tooltip title="F1 untuk shortcut" placement="topLeft">
+                    <Tooltip
+                        title="Shift+F1 untuk shortcut"
+                        placement="topLeft"
+                    >
                         <Select
                             autoFocus
                             ref={inputRefStatusDdiagnosa}
@@ -267,7 +269,7 @@ export default function Index({ pasien }) {
                         />
                     </Tooltip>
                 </Col>
-                <Col span={3}>
+                <Col span={4}>
                     <Select
                         showSearch
                         style={{ width: "100%" }}
@@ -278,8 +280,8 @@ export default function Index({ pasien }) {
                                 .includes(input.toLowerCase())
                         }
                         options={[
-                            { value: "0", label: "Baru" },
-                            { value: "1", label: "Lama" },
+                            { value: "0", label: "0 Baru" },
+                            { value: "1", label: "1 Lama" },
                         ]}
                         onChange={(value) => {
                             setSelectedKasusForm(value);
@@ -287,7 +289,7 @@ export default function Index({ pasien }) {
                         value={selectedKasusForm}
                     />
                 </Col>
-                <Col span={12}>
+                <Col span={11}>
                     <AutoComplete
                         allowClear
                         onChange={() => {
