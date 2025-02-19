@@ -1,25 +1,26 @@
-import { Head, Link } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head } from "@inertiajs/react";
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
-    const handleImageError = () => {
-        document
-            .getElementById("screenshot-container")
-            ?.classList.add("!hidden");
-        document.getElementById("docs-card")?.classList.add("!row-span-1");
-        document
-            .getElementById("docs-card-content")
-            ?.classList.add("!flex-row");
-        document.getElementById("background")?.classList.add("!hidden");
-    };
-
+export default function Dashboard() {
     return (
-        <>
-            <div className="indicator">
-                <span className="indicator-item badge badge-secondary"></span>
-                <div className="bg-base-300 grid h-32 w-32 place-items-center">
-                    content
+        <AuthenticatedLayout
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    Dashboard
+                </h2>
+            }
+        >
+            <Head title="Dashboard" />
+
+            <div className="py-12">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div className="p-6 text-gray-900">
+                            You're logged in!
+                        </div>
+                    </div>
                 </div>
             </div>
-        </>
+        </AuthenticatedLayout>
     );
 }

@@ -1,47 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "@inertiajs/react"; // Gunakan Link dari Inertia.js
-import {
-    AppstoreOutlined,
-    BarChartOutlined,
-    CloudOutlined,
-    ShopOutlined,
-    TeamOutlined,
-    UploadOutlined,
-    UserOutlined,
-    VideoCameraOutlined,
-} from "@ant-design/icons";
+import { Link, usePage } from "@inertiajs/react";
+import { UserOutlined, CodeOutlined, HomeOutlined } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 
 const { Sider, Content, Footer } = Layout;
 
-const siderStyle = {
-    overflow: "auto",
-    height: "100vh",
-    position: "sticky",
-    insetInlineStart: 0,
-    top: 0,
-    bottom: 0,
-    scrollbarWidth: "thin",
-    scrollbarGutter: "stable",
-};
-
-// Buat daftar menu dengan navigasi menggunakan Inertia Link
+// Daftar menu dengan `key` sebagai `href`
 const items = [
-    { key: "1", icon: <UserOutlined />, label: <Link href="/">Home</Link> },
     {
-        key: "2",
-        icon: <VideoCameraOutlined />,
-        label: <Link href="/about">About</Link>,
+        key: "/",
+        icon: <HomeOutlined />,
+        label: <Link href="/">Home</Link>,
     },
     {
-        key: "3",
-        icon: <UploadOutlined />,
-        label: <Link href="/contact">Contact</Link>,
+        key: "/rm/pasien-rujukan",
+        icon: <CodeOutlined />,
+        label: <Link href="/rm/pasien-rujukan">RM Jalan</Link>,
+    },
+    {
+        key: "/profile",
+        icon: <UserOutlined />,
+        label: <Link href="/profile">Profile</Link>,
     },
 ];
 
 const App = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
+    const { url } = usePage(); // Dapatkan URL saat ini dari Inertia.js
 
     useEffect(() => {
         const savedCollapsed = localStorage.getItem("collapsed");
@@ -58,7 +43,6 @@ const App = ({ children }) => {
     return (
         <Layout style={{ minHeight: "100vh" }}>
             <Sider
-                style={siderStyle}
                 collapsible
                 collapsed={collapsed}
                 onCollapse={handleCollapseChange}
@@ -67,7 +51,7 @@ const App = ({ children }) => {
                 <Menu
                     theme="dark"
                     mode="inline"
-                    defaultSelectedKeys={["1"]}
+                    selectedKeys={[url]}
                     items={items}
                 />
             </Sider>
