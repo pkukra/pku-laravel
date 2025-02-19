@@ -115,7 +115,7 @@ const App = ({ children, user }) => {
                         textAlign: "center",
                     }}
                 >
-                    Ant Design ©{new Date().getFullYear()} Created by Ant UED
+                    SIMRS PKU Muhammadiyah Karanganyar © {new Date().getFullYear()} Created By Dev Team
                 </Footer>
             </Layout>
         </Layout>
