@@ -87,7 +87,7 @@ export default function Index({ pasien, user, noSep }) {
     };
 
     useEffect(() => {}, []);
-    const disabled = !user.eklaim_key
+    const disabled = !user.eklaim_key;
 
     return (
         <>
@@ -121,23 +121,53 @@ export default function Index({ pasien, user, noSep }) {
             </Card>
 
             <Modal
-                title="Bridging Data Ke INACBG"
+                closable={false}
                 open={modalBridgeOpen}
-                onCancel={() => setModalBridgeOpen(false)}
-                okText={"Ok, Kirim Data"}
-                onOk={() => handleBridgingData()}
-                loading={bridgingLoading}
+                title="Bridging Data Ke INACBG"
+                footer={[
+                    <Button
+                        key="back"
+                        onClick={() => setModalBridgeOpen(false)}
+                        loading={bridgingLoading}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type="primary"
+                        loading={bridgingLoading}
+                        onClick={() => handleBridgingData()}
+                        style={{ backgroundColor: " #33cc33" }}
+                    >
+                        Ok, Bridging Data
+                    </Button>,
+                ]}
             >
                 {noSep}
             </Modal>
 
             <Modal
-                title="Final Data Klaim Di INACBG"
+                closable={false}
                 open={modalFinalOpen}
-                onCancel={() => setModalFinalOpen(false)}
-                okText={"Ok, Final Data Klaim"}
-                onOk={() => handleFinalData()}
-                loading={finalLoading}
+                title="Final Klaim Di INACBG"
+                footer={[
+                    <Button
+                        key="back"
+                        loading={finalLoading}
+                        onClick={() => setModalFinalOpen(false)}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type="primary"
+                        loading={finalLoading}
+                        onClick={() => handleFinalData()}
+                        style={{ backgroundColor: " #cc66ff" }}
+                    >
+                        Ok, Final Data
+                    </Button>,
+                ]}
             >
                 {noSep}
             </Modal>
