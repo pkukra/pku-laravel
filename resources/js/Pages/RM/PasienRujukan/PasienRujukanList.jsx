@@ -72,15 +72,6 @@ export default function PasienRujukanList({ auth }) {
     const [loading, setLoading] = useState(false);
     const [noRm, setNoRm] = useState("");
 
-    // Ambil No RM dari localStorage saat komponen dimount
-    useEffect(() => {
-        const savedNoRm = localStorage.getItem("noRm");
-        if (savedNoRm) {
-            setNoRm(savedNoRm);
-            fetchData(savedNoRm); // Jika ada, langsung fetch data
-        }
-    }, []);
-
     const handleInputChange = (e) => {
         setNoRm(e.target.value);
     };
@@ -115,6 +106,12 @@ export default function PasienRujukanList({ auth }) {
     const inputRefNoRM = useRef(null);
 
     useEffect(() => {
+        const savedNoRm = localStorage.getItem("noRm");
+        if (savedNoRm) {
+            setNoRm(savedNoRm);
+            fetchData(savedNoRm); // Jika ada, langsung fetch data
+        }
+
         const handleKeyDown = (event) => {
             // Jika Shift + F1 ditekan, fokus ke input status diagnosa
             if (event.key === "F1") {
