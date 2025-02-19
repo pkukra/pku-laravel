@@ -118,11 +118,11 @@ export default function Index({ pasien, user }) {
     return (
         <>
             <Card
-                title={"Nomer SEP"}
+                title={"INACBG/BPJS/SEP"}
                 loading={loadingSep}
                 style={{ margin: 5 }}
             >
-                <p>{noSep}</p>
+                <p>{!noSep ? <>Bukan Pasien BPJS</> : <>{noSep}</>}</p>
 
                 <Tooltip
                     title={
