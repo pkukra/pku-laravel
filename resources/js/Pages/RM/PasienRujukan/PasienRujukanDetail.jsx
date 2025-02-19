@@ -11,7 +11,6 @@ import PasienRujukanDetailBridging from "./PasienRujukanDetailBridging";
 import PasienRujukanDetailSEP from "./PasienRujukanDetailSEP";
 
 export default function PasienRujukanDetail({ auth, pasien }) {
-    const [noSep, setNoSep] = useState(null);
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -41,14 +40,14 @@ export default function PasienRujukanDetail({ auth, pasien }) {
                     <PasienRujukanDetailSEP
                         pasien={pasien}
                         user={auth.user}
-                        setNoSep={setNoSep}
-                        noSep={noSep}
+                        // setNoSep={setNoSep}
+                        // noSep={noSep}
                     />
-                    <PasienRujukanDetailBridging
+                    {/* <PasienRujukanDetailBridging
                         pasien={pasien}
                         user={auth.user}
                         noSep={noSep}
-                    />
+                    /> */}
                 </Col>
             </Row>
         </AuthenticatedLayout>
