@@ -125,7 +125,6 @@ export default function Index({ pasien, user }) {
             <Card
                 title={"INACBG/BPJS/SEP"}
                 loading={loadingSep}
-                style={{ margin: 5 }}
             >
                 <p>{ketSep}</p>
 

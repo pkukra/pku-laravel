@@ -236,7 +236,7 @@ export default function Index({ pasien }) {
     }, []);
 
     return (
-        <Card title={`Diagnosa`} style={{ marginBottom: 10 }}>
+        <Card title={`Diagnosa`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={5}>
                     <Tooltip

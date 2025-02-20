@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Head } from "@inertiajs/react";
-import { Col, Row } from "antd";
+import { Col, Row, Card } from "antd";
 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
@@ -20,22 +20,33 @@ export default function PasienRujukanDetail({ auth, pasien }) {
             }
         >
             <Head title="Pasien Rujukan List" />
-            <PasienRujukanDetailProfile pasien={pasien} />
+            <Row>
+                <Col span={24}>
+                    <PasienRujukanDetailProfile pasien={pasien} />
+                </Col>
+            </Row>
 
             <Row>
-                <Col span={12} style={{ padding: 2 }}>
+                <Col span={12}>
+                    <Card>hallo</Card>
+                </Col>
+                <Col span={12}></Col>
+            </Row>
+
+            <Row>
+                <Col span={12}>
                     <PasienRujukanDetailDiagnosaList pasien={pasien} />
                 </Col>
-                <Col span={12} style={{ padding: 2 }}>
+                <Col span={12}>
                     <PasienRujukanDetailProcedureList pasien={pasien} />
                 </Col>
             </Row>
 
             <Row>
-                <Col span={12} style={{ padding: 2 }}>
+                <Col span={12}>
                     <PasienRujukanDetailAmnanesaCatatan pasien={pasien} />
                 </Col>
-                <Col span={12} style={{ padding: 2 }}>
+                <Col span={12}>
                     <PasienRujukanDetailSEP pasien={pasien} user={auth.user} />
                 </Col>
             </Row>
