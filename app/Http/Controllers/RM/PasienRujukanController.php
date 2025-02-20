@@ -328,6 +328,15 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
+    
+    public function get_hasil_radiologi($kode_reg_kj)
+    {
+        $data = $this->pasienRujukanRepo->getListHasilRadiologiByTransaksi($kode_reg_kj);
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 
     /**
      * bridging_data_process

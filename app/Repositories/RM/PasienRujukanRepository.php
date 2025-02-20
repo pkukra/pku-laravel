@@ -369,4 +369,30 @@ class PasienRujukanRepository
             ->orderByDesc('FS_KD_REG')
             ->first();
     }
+
+    /**
+     * Get hasil radiologi dokter by kode reg kj
+     *
+     * @param string $kode_reg_kj
+     * @return \Illuminate\Support\Collection
+     */
+    public function getListHasilRadiologiByTransaksi($kode_reg_kj)
+    {
+        $hasil = [];
+        $transactions = DB::connection('sqlsrv')
+            ->table('TRANSAKSIPASIEND AS A')
+            ->select('A.*')
+            ->where('A.FDTNO_TRANSAKSI', $kode_reg_kj)
+            ->where('A.FDTKD_PRODUK', 'ADL004')
+            ->get();
+
+        foreach ($transactions as $transaction) {
+            $hasil[] = DB::connection('sqlsrv')
+                ->table('RAD_HASIL AS rad')
+                ->select('rad.*')
+                ->where('rad.MRHNO_TRANSAKSI', $transaction->FDTNO_FAKTUR)
+                ->first();
+        }
+        return $hasil;
+    }
 }

@@ -16,7 +16,6 @@ export default function Index({ pasien }) {
             )
             .then((response) => {
                 setResumeData(response?.data?.data || null);
-                console.log(response?.data?.data);
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
