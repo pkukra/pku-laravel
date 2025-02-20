@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Select, Card, Button, notification } from "antd";
 
-export default function Index({ pasien, kode_reg }) {
+export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCaraMasuk, setSelectedCaraMasuk] = useState(
@@ -10,8 +10,6 @@ export default function Index({ pasien, kode_reg }) {
     const [selectedCaraPulang, setSelectedCaraPulang] = useState(
         pasien?.CARA_PULANG || ""
     );
-    const [pasienUpdated, setPasienUpdated] = useState(null);
-    const [pasienUpdatedLoading, setPasienUpdatedLoading] = useState(null);
 
     const caraMasukMap = {
         gp: "Rujukan FKTP",
@@ -74,53 +72,22 @@ export default function Index({ pasien, kode_reg }) {
             .finally(() => {
                 setLoadingSave(false);
                 setModalOpen(false);
-                fetchPasien();
+                reFetchPasien();
             });
-    };
-
-    const fetchPasien = () => {
-        setPasienUpdatedLoading(true);
-        axios
-            .get(
-                route("rm.pasien-rujukan.detail_data", {
-                    kode_reg: kode_reg,
-                })
-            )
-            .then((response) => {
-                console.log(response?.data);
-                setPasienUpdated(response?.data?.pasien);
-            })
-            .catch((error) => {
-                console.error("Error fetching data pasien:", error);
-            })
-            .finally(() => {
-                setPasienUpdatedLoading(false);
-            });
-        return;
     };
 
     return (
         <>
-            <Card title="Cara Masuk & Pulang" loading={pasienUpdatedLoading}>
+            <Card title="Cara Masuk & Pulang" loading={pasienLoading}>
                 <table style={{ width: "100%" }}>
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>Cara Masuk</td>
-                            <td>
-                                :{" "}
-                                {pasienUpdated === null
-                                    ? caraMasuk(pasien?.CARA_MASUK)
-                                    : caraMasuk(pasienUpdated?.CARA_MASUK)}
-                            </td>
+                            <td>: {caraMasuk(pasien?.CARA_MASUK)}</td>
                         </tr>
                         <tr>
                             <td>Cara Pulang</td>
-                            <td>
-                                :{" "}
-                                {pasienUpdated === null
-                                    ? caraMasuk(pasien?.CARA_PULANG)
-                                    : caraMasuk(pasienUpdated?.CARA_PULANG)}
-                            </td>
+                            <td>: {caraMasuk(pasien?.CARA_MASUK)}</td>
                         </tr>
                         <tr>
                             <td></td>

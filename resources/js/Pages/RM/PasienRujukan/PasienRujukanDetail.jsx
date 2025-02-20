@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Head } from "@inertiajs/react";
 import { Col, Row, Card } from "antd";
-
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
 import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
@@ -12,7 +11,35 @@ import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 
-export default function PasienRujukanDetail({ auth, pasien, kode_reg }) {
+export default function PasienRujukanDetail({
+    auth,
+    pasien: initialPasien,
+    kode_reg,
+}) {
+    const [pasien, setPasien] = useState(initialPasien);
+    const [pasienLoading, setPasienLoading] = useState(false);
+
+    const reFetchPasien = () => {
+        setPasienLoading(true);
+        axios
+            .get(
+                route("rm.pasien-rujukan.detail_data", {
+                    kode_reg: kode_reg,
+                })
+            )
+            .then((response) => {
+                console.log(response?.data);
+                setPasien(response?.data?.pasien);
+            })
+            .catch((error) => {
+                console.error("Error fetching data pasien:", error);
+            })
+            .finally(() => {
+                setPasienLoading(false);
+            });
+        return;
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -56,10 +83,11 @@ export default function PasienRujukanDetail({ auth, pasien, kode_reg }) {
                             <PasienRujukanDetailAmnanesaCatatan
                                 pasien={pasien}
                             />
-
                             <PasienRujukanDetailCaraMasukPulang
                                 pasien={pasien}
                                 kode_reg={kode_reg}
+                                pasienLoading={pasienLoading}
+                                reFetchPasien={reFetchPasien}
                             />
                         </Col>
                         <Col span={12}>
