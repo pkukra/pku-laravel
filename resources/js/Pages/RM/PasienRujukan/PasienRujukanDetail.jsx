@@ -8,6 +8,7 @@ import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
 import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCatatan";
 import PasienRujukanDetailSEP from "./PasienRujukanDetailSEP";
+import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 
 export default function PasienRujukanDetail({ auth, pasien }) {
     return (
@@ -19,37 +20,48 @@ export default function PasienRujukanDetail({ auth, pasien }) {
                 </p>
             }
         >
-            <Head title="Pasien Rujukan List" />
-            <Row>
-                <Col span={24}>
-                    <PasienRujukanDetailProfile pasien={pasien} />
-                </Col>
-            </Row>
+            {!pasien ? (
+                <Card>Pasien tidak ditemukan</Card>
+            ) : (
+                <>
+                    <Head title="Pasien Rujukan List" />
+                    <Row>
+                        <Col span={24}>
+                            <PasienRujukanDetailProfile pasien={pasien} />
+                        </Col>
+                    </Row>
 
-            <Row>
-                <Col span={12}>
-                    <Card>hallo</Card>
-                </Col>
-                <Col span={12}></Col>
-            </Row>
+                    <Row>
+                        <Col span={12}>
+                            <PasienRujukanDetailResume pasien={pasien} />
+                        </Col>
+                        <Col span={12}></Col>
+                    </Row>
 
-            <Row>
-                <Col span={12}>
-                    <PasienRujukanDetailDiagnosaList pasien={pasien} />
-                </Col>
-                <Col span={12}>
-                    <PasienRujukanDetailProcedureList pasien={pasien} />
-                </Col>
-            </Row>
+                    <Row>
+                        <Col span={12}>
+                            <PasienRujukanDetailDiagnosaList pasien={pasien} />
+                        </Col>
+                        <Col span={12}>
+                            <PasienRujukanDetailProcedureList pasien={pasien} />
+                        </Col>
+                    </Row>
 
-            <Row>
-                <Col span={12}>
-                    <PasienRujukanDetailAmnanesaCatatan pasien={pasien} />
-                </Col>
-                <Col span={12}>
-                    <PasienRujukanDetailSEP pasien={pasien} user={auth.user} />
-                </Col>
-            </Row>
+                    <Row>
+                        <Col span={12}>
+                            <PasienRujukanDetailAmnanesaCatatan
+                                pasien={pasien}
+                            />
+                        </Col>
+                        <Col span={12}>
+                            <PasienRujukanDetailSEP
+                                pasien={pasien}
+                                user={auth.user}
+                            />
+                        </Col>
+                    </Row>
+                </>
+            )}
         </AuthenticatedLayout>
     );
 }

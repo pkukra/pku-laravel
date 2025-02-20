@@ -317,6 +317,17 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan Cat khusus',
         ], 500);
     }
+    
+    public function get_resume($kode_reg)
+    {
+        // Mendapatkan data resume berdasarkan kode transaksi
+        $data = $this->pasienRujukanRepo->getResumeByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 
     /**
      * bridging_data_process

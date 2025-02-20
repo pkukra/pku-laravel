@@ -21,7 +21,6 @@ export default function Index({ pasien, user }) {
             )
             .then((response) => {
                 setNoSep(response?.data?.data?.FMNOSEP);
-                console.log(response?.data?.data?.FMNOSEP);
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
