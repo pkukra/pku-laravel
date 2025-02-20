@@ -12,7 +12,7 @@ import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 
-export default function PasienRujukanDetail({ auth, pasien }) {
+export default function PasienRujukanDetail({ auth, pasien, kode_reg }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -59,6 +59,7 @@ export default function PasienRujukanDetail({ auth, pasien }) {
 
                             <PasienRujukanDetailCaraMasukPulang
                                 pasien={pasien}
+                                kode_reg={kode_reg}
                             />
                         </Col>
                         <Col span={12}>

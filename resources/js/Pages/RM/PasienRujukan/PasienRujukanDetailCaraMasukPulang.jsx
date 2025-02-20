@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Select, Card, Button, notification } from "antd";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, kode_reg }) {
     const [loadingSave, setLoadingSave] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCaraMasuk, setSelectedCaraMasuk] = useState(
@@ -10,6 +10,7 @@ export default function Index({ pasien }) {
     const [selectedCaraPulang, setSelectedCaraPulang] = useState(
         pasien?.CARA_PULANG || ""
     );
+    const [pasienUpdated, setPasienUpdated] = useState(null);
 
     const caraMasukMap = {
         gp: "Rujukan FKTP",
@@ -72,7 +73,26 @@ export default function Index({ pasien }) {
             .finally(() => {
                 setLoadingSave(false);
                 setModalOpen(false);
+                fetchPasien();
             });
+    };
+
+    const fetchPasien = () => {
+        axios
+            .get(
+                route("rm.pasien-rujukan.detail_data", {
+                    kode_reg: kode_reg,
+                })
+            )
+            .then((response) => {
+                console.log(response?.data);
+                setPasienUpdated(response?.data?.pasien);
+            })
+            .catch((error) => {
+                console.error("Error fetching data pasien:", error);
+            })
+            .finally(() => {});
+        return;
     };
 
     return (
@@ -82,11 +102,21 @@ export default function Index({ pasien }) {
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>Cara Masuk</td>
-                            <td>: {caraMasuk(pasien?.CARA_MASUK)}</td>
+                            <td>
+                                :{" "}
+                                {pasienUpdated === null
+                                    ? caraMasuk(pasien?.CARA_MASUK)
+                                    : caraMasuk(pasienUpdated?.CARA_MASUK)}
+                            </td>
                         </tr>
                         <tr>
                             <td>Cara Pulang</td>
-                            <td>: {caraMasuk(pasien?.CARA_PULANG)}</td>
+                            <td>
+                                :{" "}
+                                {pasienUpdated === null
+                                    ? caraMasuk(pasien?.CARA_PULANG)
+                                    : caraMasuk(pasienUpdated?.CARA_PULANG)}
+                            </td>
                         </tr>
                         <tr>
                             <td></td>

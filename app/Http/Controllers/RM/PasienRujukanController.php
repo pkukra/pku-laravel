@@ -59,11 +59,24 @@ class PasienRujukanController extends Controller
     {
         // Mendapatkan detail pasien rujukan berdasarkan kode_reg
         $pasien_rujukans = $this->pasienRujukanRepo->getPasienRujukanDetail($kode_reg);
-        $count = $this->pasienRujukanRepo->countPasienRujukan();
-
         return Inertia::render('RM/PasienRujukan/PasienRujukanDetail', [
             'pasien' => $pasien_rujukans,
-            'count' => $count,
+            'kode_reg' => $kode_reg,
+        ]);
+    }
+
+    /**
+     * show_data
+     * Menampilkan detail pasien rujukan berdasarkan kode_reg
+     * RESPONSE JSON
+     */
+    public function show_data($kode_reg)
+    {
+        // Mendapatkan detail pasien rujukan berdasarkan kode_reg
+        $pasien_rujukan = $this->pasienRujukanRepo->getPasienRujukanDetail($kode_reg);
+
+        return response()->json([
+            'pasien' => $pasien_rujukan,
         ]);
     }
 
