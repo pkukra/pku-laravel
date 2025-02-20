@@ -11,6 +11,7 @@ export default function Index({ pasien, kode_reg }) {
         pasien?.CARA_PULANG || ""
     );
     const [pasienUpdated, setPasienUpdated] = useState(null);
+    const [pasienUpdatedLoading, setPasienUpdatedLoading] = useState(null);
 
     const caraMasukMap = {
         gp: "Rujukan FKTP",
@@ -78,6 +79,7 @@ export default function Index({ pasien, kode_reg }) {
     };
 
     const fetchPasien = () => {
+        setPasienUpdatedLoading(true);
         axios
             .get(
                 route("rm.pasien-rujukan.detail_data", {
@@ -91,13 +93,15 @@ export default function Index({ pasien, kode_reg }) {
             .catch((error) => {
                 console.error("Error fetching data pasien:", error);
             })
-            .finally(() => {});
+            .finally(() => {
+                setPasienUpdatedLoading(false);
+            });
         return;
     };
 
     return (
         <>
-            <Card title="Cara Masuk & Pulang">
+            <Card title="Cara Masuk & Pulang" loading={pasienUpdatedLoading}>
                 <table style={{ width: "100%" }}>
                     <tbody>
                         <tr>
