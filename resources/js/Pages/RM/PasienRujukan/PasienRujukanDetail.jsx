@@ -10,6 +10,7 @@ import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCat
 import PasienRujukanDetailSEP from "./PasienRujukanDetailSEP";
 import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
+import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 
 export default function PasienRujukanDetail({ auth, pasien }) {
     return (
@@ -53,6 +54,10 @@ export default function PasienRujukanDetail({ auth, pasien }) {
                     <Row>
                         <Col span={12}>
                             <PasienRujukanDetailAmnanesaCatatan
+                                pasien={pasien}
+                            />
+
+                            <PasienRujukanDetailCaraMasukPulang
                                 pasien={pasien}
                             />
                         </Col>
