@@ -83,7 +83,11 @@ export default function Index({ pasien }) {
 
     return (
         <>
-            <Card loading={fetchMrDiagnosaLoading} title={"Amnanese & Catatan Khusus"}>
+            <Card
+                loading={fetchMrDiagnosaLoading}
+                title={"Amnanese & Catatan Khusus"}
+                style={{ marginBottom: 5 }}
+            >
                 <p>
                     <strong>Amnanese:</strong>
                 </p>

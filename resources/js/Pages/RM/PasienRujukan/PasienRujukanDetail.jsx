@@ -35,7 +35,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                 {!pasien ? (
                     <Card>Pasien tidak ditemukan</Card>
                 ) : (
-                    <Row gutter={[20, 20]}>
+                    <Row gutter={[5, 5]}>
                         <Col span={24}>
                             <PasienRujukanDetailProfile pasien={pasien} />
                         </Col>
