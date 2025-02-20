@@ -54,15 +54,15 @@ const columns = [
         dataIndex: "action",
         key: "action",
         render: (_, record) => (
-            <Button type="primary" size="small">
-                <a
-                    href={route("rm.pasien-rujukan.detail", {
-                        kode_reg: record.FRPNOTRANSAKSIKJ,
-                    })}
-                >
+            <a
+                href={route("rm.pasien-rujukan.detail", {
+                    kode_reg: record.FRPNOTRANSAKSIKJ,
+                })}
+            >
+                <Button type="primary" size="small">
                     Tampilkan
-                </a>
-            </Button>
+                </Button>
+            </a>
         ),
     },
 ];
@@ -142,7 +142,7 @@ export default function PasienRujukanList({ auth }) {
             <Head title="Pasien Rujukan List" />
             <Card style={{ marginBottom: 10 }}>
                 <Space direction="horizontal">
-                    <Tooltip title="F1 untuk shortcut" placement="topLeft">
+                    <Tooltip title="Shif+F1 untuk shortcut" placement="topLeft">
                         <Input
                             ref={inputRefNoRM}
                             allowClear
