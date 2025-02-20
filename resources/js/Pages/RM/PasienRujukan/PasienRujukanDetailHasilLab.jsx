@@ -46,7 +46,7 @@ export default function Index({ pasien }) {
                     {/* Loading Indicator */}
                     {loadingPdf && (
                         <>
-                            <Skeleton />
+                            <Skeleton active  />
                         </>
                     )}
 
