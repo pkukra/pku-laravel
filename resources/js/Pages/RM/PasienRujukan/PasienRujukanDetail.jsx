@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { Head } from "@inertiajs/react";
 import { Col, Row, Card } from "antd";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -10,75 +9,51 @@ import PasienRujukanDetailSEP from "./PasienRujukanDetailSEP";
 import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
+import { useState } from "react";
+import axios from "axios";
 
-export default function PasienRujukanDetail({
-    auth,
-    pasien: initialPasien,
-    kode_reg,
-}) {
+function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
     const [pasienLoading, setPasienLoading] = useState(false);
 
     const reFetchPasien = () => {
         setPasienLoading(true);
         axios
-            .get(
-                route("rm.pasien-rujukan.detail_data", {
-                    kode_reg: kode_reg,
-                })
+            .get(route("rm.pasien-rujukan.detail_data", { kode_reg }))
+            .then((response) => setPasien(response?.data?.pasien))
+            .catch((error) =>
+                console.error("Error fetching data pasien:", error)
             )
-            .then((response) => {
-                console.log(response?.data);
-                setPasien(response?.data?.pasien);
-            })
-            .catch((error) => {
-                console.error("Error fetching data pasien:", error);
-            })
-            .finally(() => {
-                setPasienLoading(false);
-            });
-        return;
+            .finally(() => setPasienLoading(false));
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <p className="font-semibold text-lg text-gray-800 leading-tight">
-                    Detail Kunjungan Pasien
-                </p>
-            }
-        >
-            {!pasien ? (
-                <Card>Pasien tidak ditemukan</Card>
-            ) : (
-                <>
-                    <Head title="Pasien Rujukan List" />
-                    <Row>
+        <>
+            <Head title="Detail Kunjungan Pasien" />
+
+            <div className="py-12">
+                {!pasien ? (
+                    <Card>Pasien tidak ditemukan</Card>
+                ) : (
+                    <Row gutter={[20, 20]}>
                         <Col span={24}>
                             <PasienRujukanDetailProfile pasien={pasien} />
                         </Col>
-                    </Row>
 
-                    <Row>
                         <Col span={12}>
                             <PasienRujukanDetailResume pasien={pasien} />
                         </Col>
                         <Col span={12}>
                             <PasienRujukanDetailHasilLab pasien={pasien} />
                         </Col>
-                    </Row>
 
-                    <Row>
                         <Col span={12}>
                             <PasienRujukanDetailDiagnosaList pasien={pasien} />
                         </Col>
                         <Col span={12}>
                             <PasienRujukanDetailProcedureList pasien={pasien} />
                         </Col>
-                    </Row>
 
-                    <Row>
                         <Col span={12}>
                             <PasienRujukanDetailAmnanesaCatatan
                                 pasien={pasien}
@@ -97,8 +72,12 @@ export default function PasienRujukanDetail({
                             />
                         </Col>
                     </Row>
-                </>
-            )}
-        </AuthenticatedLayout>
+                )}
+            </div>
+        </>
     );
 }
+
+PasienRujukanDetail.layout = (page) => <AuthenticatedLayout children={page} />;
+
+export default PasienRujukanDetail;
