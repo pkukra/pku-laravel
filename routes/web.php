@@ -66,4 +66,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/xxx/{no_sep}', [EklaimController::class, 'index_data']);
 });
 
+Route::get('/hasil_lab', function(){
+    return response()->json([
+        'status' => "ok",
+        'data' => env("HASIL_LAB_URL"),
+    ]);
+})->name("common.lab_url");
+
 require __DIR__ . '/auth.php';
