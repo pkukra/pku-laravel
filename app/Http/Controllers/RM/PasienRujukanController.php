@@ -80,7 +80,7 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
-    
+
     /**
      * list_diagnosa
      * Menampilkan diagnosa berdasarkan kode transaksi
@@ -317,7 +317,33 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan Cat khusus',
         ], 500);
     }
-    
+
+    public function update_cara_masuk_pulang(Request $request, $no_transaksi)
+    {
+        // Validate the input
+        $validated = $request->validate([
+            'cara_masuk' => 'required|string',
+            'cara_pulang' => 'required|string',
+        ]);
+        // Get the validated catatan_khusus value
+        $cara_masuk = $validated['cara_masuk'];
+        $cara_pulang = $validated['cara_pulang'];
+
+        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($no_transaksi, $cara_masuk, $cara_pulang);
+
+        if ($isUpdated) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Data berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan Data',
+        ], 500);
+    }
+
     public function get_resume($kode_reg)
     {
         // Mendapatkan data resume berdasarkan kode transaksi
@@ -328,7 +354,7 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
-    
+
     public function get_hasil_radiologi($kode_reg_kj)
     {
         $data = $this->pasienRujukanRepo->getListHasilRadiologiByTransaksi($kode_reg_kj);
@@ -347,7 +373,7 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingDataProcess($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_final_process
      * Process bridging data ke eklaim

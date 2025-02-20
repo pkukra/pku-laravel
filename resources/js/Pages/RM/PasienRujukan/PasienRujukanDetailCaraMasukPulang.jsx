@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Modal, Select, Card, Button } from "antd";
+import { Modal, Select, Card, Button, notification } from "antd";
 
 export default function Index({ pasien }) {
-    const [modalCaraMasukOpen, setModalCaraMasukOpen] = useState(false);
+    const [loadingSave, setLoadingSave] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
     const [selectedCaraMasuk, setSelectedCaraMasuk] = useState(
         pasien?.CARA_MASUK || ""
     );
@@ -37,11 +38,41 @@ export default function Index({ pasien }) {
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
         setSelectedCaraPulang(pasien?.CARA_PULANG || "");
-        setModalCaraMasukOpen(true);
+        setModalOpen(true);
     };
-    
+
     const handleSave = () => {
-        alert(selectedCaraMasuk)
+        setLoadingSave(true);
+        axios
+            .post(
+                route("rm.pasien-rujukan.update_cara_masuk_pulang", {
+                    kode_reg: pasien.FRPNOTRANSAKSI,
+                }),
+                {
+                    cara_masuk: selectedCaraMasuk,
+                    cara_pulang: "selectedCaraPulang",
+                }
+            )
+            .then((response) => {
+                if (response?.data?.status !== "ok") {
+                    notification.error({
+                        message: "Gagal",
+                        description: "Gagal disimpan",
+                    });
+                } else {
+                    notification.success({
+                        message: "Success",
+                        description: "Berhasil disimpan",
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Error saving :", error);
+            })
+            .finally(() => {
+                setLoadingSave(false);
+                setModalOpen(false);
+            });
     };
 
     return (
@@ -73,16 +104,28 @@ export default function Index({ pasien }) {
             </Card>
 
             <Modal
+                closable={false}
                 destroyOnClose
                 title="Ubah Cara Masuk dan Pulang"
-                open={modalCaraMasukOpen}
-                onCancel={() => setModalCaraMasukOpen(false)}
+                open={modalOpen}
+                onCancel={() => setModalOpen(false)}
                 footer={[
-                    <Button onClick={() => setModalCaraMasukOpen(false)}>
+                    <Button
+                        onClick={() => setModalOpen(false)}
+                        key={"Batal"}
+                        loading={loadingSave}
+                        disabled={loadingSave}
+                    >
                         Batal
                     </Button>,
-                    <Button type="primary" onClick={handleSave}>
-                        Ubah
+                    <Button
+                        type="primary"
+                        onClick={handleSave}
+                        key={"Simpan"}
+                        loading={loadingSave}
+                        disabled={loadingSave}
+                    >
+                        Simpan
                     </Button>,
                 ]}
             >

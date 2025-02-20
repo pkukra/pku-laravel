@@ -47,36 +47,36 @@ export default function Index({ pasien }) {
                 onCancel={() => setModalOpen(false)}
                 footer={null}
                 width={800}
-            >   
+            >
                 <table
                     className="tw-table tw-table-xs"
                     style={{ width: "100%" }}
                 >
                     <tbody align="left">
-                        {hasilRadiologiData.map((item, index) => (
-                            <tr key={index}>
-                                <td
-                                    style={{
-                                        width: "25%",
-                                        verticalAlign: "top",
-                                    }}
-                                >
-                                    {item.MRHNO_TRANSAKSI}
-                                </td>
-                                <td
-                                    style={{ verticalAlign: "top" }}
-                                    dangerouslySetInnerHTML={{
-                                        __html: item.MRHHASIL,
-                                    }}
-                                ></td>
-                            </tr>
-                        ))}
-                        {
-                            hasilRadiologiData.length < 1 &&
+                        {hasilRadiologiData.length < 1 ? (
                             <tr>
                                 <td>Tidak ada hasil radiologi</td>
                             </tr>
-                        }
+                        ) : (
+                            hasilRadiologiData.map((item, index) => (
+                                <tr key={index}>
+                                    <td
+                                        style={{
+                                            width: "25%",
+                                            verticalAlign: "top",
+                                        }}
+                                    >
+                                        {item?.MRHNO_TRANSAKSI}
+                                    </td>
+                                    <td
+                                        style={{ verticalAlign: "top" }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: item?.MRHHASIL,
+                                        }}
+                                    ></td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </Modal>

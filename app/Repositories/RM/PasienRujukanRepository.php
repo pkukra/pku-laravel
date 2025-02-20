@@ -355,6 +355,31 @@ class PasienRujukanRepository
     }
 
     /**
+     * Update cara masuk dan pulang in PASIEN_RUJUKAN table based on no_transaksi
+     *
+     * @param string $no_transaksi
+     * @param string $cara_masuk
+     * @param string $cara_pulang
+     * @return \Illuminate\Http\Response
+     */
+    public function updateCaraMasukPulangsByTransaksi($no_transaksi, $cara_masuk, $cara_pulang)
+    {
+        $is_success = true;
+        try {
+            DB::connection('sqlsrv')
+                ->table('PASIEN_RUJUKAN')
+                ->where('FRPNOTRANSAKSI', $no_transaksi)
+                ->update(['CARA_MASUK' => $cara_masuk]);
+
+        } catch (\Exception $e) {
+            Log::error('Error update Cara masuk: ' . $e->getMessage());
+            $is_success = false;
+        }
+
+        return $is_success;
+    }
+
+    /**
      * Get resume dokter by kode reg
      *
      * @param string $kode_reg
