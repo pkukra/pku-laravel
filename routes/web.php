@@ -41,6 +41,7 @@ Route::prefix('rm')->group(function () {
         Route::get('/detail/{kode_reg}', [PasienRujukanController::class, 'show'])->name('rm.pasien-rujukan.detail');
         Route::get('/detail_data/{kode_reg}', [PasienRujukanController::class, 'show_data'])->name('rm.pasien-rujukan.detail_data');
         Route::get('/get_nomer_sep/{kode_reg}/{kode_reg_kj}', [PasienRujukanController::class, 'get_nomer_sep'])->name('rm.pasien-rujukan.get_nomer_sep');
+        Route::get('/get_keadaan_keluar_rs/{kode_reg}/', [PasienRujukanController::class, 'get_keadaan_keluar_rs'])->name('rm.pasien-rujukan.get_keadaan_keluar_rs');
 
         Route::get('/list_diagnosa/{kode_reg}', [PasienRujukanController::class, 'list_diagnosa'])->name('rm.pasien-rujukan.list_diagnosa');
         Route::post('/cari_penyakit', [PasienRujukanController::class, 'cari_penyakit'])->name('rm.pasien-rujukan.cari_penyakit');
@@ -55,6 +56,7 @@ Route::prefix('rm')->group(function () {
         Route::get('/get_mr_diagnosa/{kode_reg}', [PasienRujukanController::class, 'get_mr_diagnosa'])->name('rm.pasien-rujukan.get_mr_diagnosa');
         Route::post('/update_catatan_khusus/{kode_reg}', [PasienRujukanController::class, 'update_catatan_khusus'])->name('rm.pasien-rujukan.update_catatan_khusus');
         Route::get('/cari_cara_masuk_bpjs', [PasienRujukanController::class, 'cari_cara_masuk_bpjs'])->name('rm.pasien-rujukan.cari_cara_masuk_bpjs');
+        Route::get('/cari_keadaan_keluar_rs', [PasienRujukanController::class, 'cari_keadaan_keluar_rs'])->name('rm.pasien-rujukan.cari_keadaan_keluar_rs');
         Route::post('/update_cara_masuk_pulang/{kode_reg}', [PasienRujukanController::class, 'update_cara_masuk_pulang'])->name('rm.pasien-rujukan.update_cara_masuk_pulang');
 
         Route::get('/get_resume/{kode_reg}', [PasienRujukanController::class, 'get_resume'])->name('rm.pasien-rujukan.get_resume');

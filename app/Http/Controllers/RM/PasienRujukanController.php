@@ -95,6 +95,21 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * get_keadaan_keluar_rs
+     * Menampilkan aktual keaadaan keluar dari setiap pasien by kode_reg
+     */
+    public function get_keadaan_keluar_rs($kode_reg)
+    {
+        // Menampilkan aktual keaadaan keluar dari setiap pasien by kode_reg
+        $data = $this->pasienRujukanRepo->getKeadaanKeluarByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
+    
+    /**
      * list_diagnosa
      * Menampilkan diagnosa berdasarkan kode transaksi
      */
@@ -339,19 +354,28 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
+    
+    public function cari_keadaan_keluar_rs()
+    {
+        $data = $this->pasienRujukanRepo->getKeadaanKeluarRS();
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 
     public function update_cara_masuk_pulang(Request $request, $no_transaksi)
     {
         // Validate the input
         $validated = $request->validate([
             'cara_masuk' => 'required|string',
-            'cara_pulang' => 'required|string',
+            'keadaan_keluar' => 'required|string',
         ]);
         // Get the validated catatan_khusus value
         $cara_masuk = $validated['cara_masuk'];
-        $cara_pulang = $validated['cara_pulang'];
+        $keadaan_keluar = $validated['keadaan_keluar'];
 
-        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($no_transaksi, $cara_masuk, $cara_pulang);
+        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($no_transaksi, $cara_masuk, $keadaan_keluar);
 
         if ($isUpdated) {
             return response()->json([

@@ -1,24 +1,42 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Select, Card, Button, notification } from "antd";
+import { Modal, Select, Card, Button, notification, Spin } from "antd";
 
 export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
+
+    const [keadaanKeluar, setKeadaanKeluar] = useState(null); //actual keadaan keluar rs dari database
+
     const [caraMasukOptions, setCaraMasukOptions] = useState(false);
+    const [keadaanKeluarOptions, setKeadaanKeluarOptions] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCaraMasuk, setSelectedCaraMasuk] = useState(
         pasien?.CARA_MASUK || ""
     );
-    const [selectedCaraPulang, setSelectedCaraPulang] = useState(
-        pasien?.CARA_PULANG || ""
-    );
+    const [selectedKeadaanKeluar, setSelectedKeadaanKeluar] = useState(null);
 
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
-        setSelectedCaraPulang(pasien?.CARA_PULANG || "");
         setModalOpen(true);
     };
 
-    // Fetch cara masuk bpjs
+    // Fetch actual keadaan keluar rs
+    async function fetchActualKeadaanKelauarRS() {
+        try {
+            const response = await axios.get(
+                route("rm.pasien-rujukan.get_keadaan_keluar_rs", {
+                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                })
+            );
+            const data = response?.data?.data || [];
+            setKeadaanKeluar(data);
+            setSelectedKeadaanKeluar(data.MRKKEADAAN_KELUAR);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+        return;
+    }
+
+    // Fetch options cara masuk bpjs for selectbox
     async function fetchSugestCaraMasuk() {
         try {
             const response = await axios.get(
@@ -26,12 +44,30 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             );
             const data = response?.data?.data || [];
 
-            const caraMasukOptions = data.map((item) => ({
+            const options = data.map((item) => ({
                 value: item.KODE,
                 label: item.KETERANGAN,
             }));
 
-            setCaraMasukOptions(caraMasukOptions);
+            setCaraMasukOptions(options);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    }
+
+    // Fetch options keadaan keluar rs for selectbox
+    async function fetchSugestKeadaanKelauarRS() {
+        try {
+            const response = await axios.get(
+                route("rm.pasien-rujukan.cari_keadaan_keluar_rs")
+            );
+            const data = response?.data?.data || [];
+            const options = data.map((item) => ({
+                value: item.FMKKRSKODE,
+                label: item.FMKKRSKETERANGAN,
+            }));
+
+            setKeadaanKeluarOptions(options);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -46,7 +82,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 }),
                 {
                     cara_masuk: selectedCaraMasuk,
-                    cara_pulang: "selectedCaraPulang",
+                    keadaan_keluar: selectedKeadaanKeluar,
                 }
             )
             .then((response) => {
@@ -73,7 +109,9 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     };
 
     useEffect(() => {
+        fetchActualKeadaanKelauarRS();
         fetchSugestCaraMasuk();
+        fetchSugestKeadaanKelauarRS();
     }, []);
 
     return (
@@ -83,11 +121,18 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>Cara Masuk</td>
-                            <td>: {(pasien?.CARA_MASUK_BPJS) ?? <>Belum diisi</>}</td>
+                            <td>
+                                : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
+                            </td>
                         </tr>
                         <tr>
-                            <td>Cara Pulang</td>
-                            <td>: {(pasien?.CARA_MASUK_BPJS) ?? <>Belum diisi</>}</td>
+                            <td>Keadaan Keluar RS</td>
+                            <td>
+                                :{" "}
+                                {keadaanKeluar?.FMKKRSKETERANGAN ?? (
+                                    <>Belum diisi</>
+                                )}
+                            </td>
                         </tr>
                         <tr>
                             <td></td>
@@ -138,12 +183,12 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     options={caraMasukOptions}
                 />
 
-                <label>Cara Pulang:</label>
+                <label>Keadaan Keluar RS: </label>
                 <Select
-                    value={selectedCaraPulang}
+                    value={selectedKeadaanKeluar}
                     style={{ width: "100%" }}
-                    onChange={setSelectedCaraPulang}
-                    options={caraMasukOptions}
+                    onChange={setSelectedKeadaanKeluar}
+                    options={keadaanKeluarOptions}
                 />
             </Modal>
         </>

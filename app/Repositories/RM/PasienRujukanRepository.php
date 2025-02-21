@@ -92,6 +92,22 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get aktual keadaan keluar rs dari setiap pasien di tabel MR_KEMATIAN
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getKeadaanKeluarByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_KEMATIAN AS a')
+            ->join('MR_KEADAAN_KELUAR_RS AS b', 'a.MRKKEADAAN_KELUAR', '=', 'b.FMKKRSKODE')
+            ->select('a.*', 'b.FMKKRSKETERANGAN')
+            ->where('a.MRKNO_TRANSAKSI', $no_transaksi)
+            ->first();
+    }
+
+    /**
      * Get diagnosa penyakit by transaksi (MR_PENYAKIT)
      *
      * @param string $no_transaksi
@@ -371,14 +387,27 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get opsi keadaan keluar rs dari untuk transaksi pasien
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getKeadaanKeluarRS()
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_KEADAAN_KELUAR_RS')
+            ->select('*')
+            ->get();
+    }
+
+    /**
      * Update cara masuk dan pulang in PASIEN_RUJUKAN table based on no_transaksi
      *
      * @param string $no_transaksi
      * @param string $cara_masuk
-     * @param string $cara_pulang
+     * @param string $keadaan_keluar
      * @return \Illuminate\Http\Response
      */
-    public function updateCaraMasukPulangsByTransaksi($no_transaksi, $cara_masuk, $cara_pulang)
+    public function updateCaraMasukPulangsByTransaksi($no_transaksi, $cara_masuk, $keadaan_keluar)
     {
         $is_success = true;
         try {
@@ -386,7 +415,6 @@ class PasienRujukanRepository
                 ->table('PASIEN_RUJUKAN')
                 ->where('FRPNOTRANSAKSI', $no_transaksi)
                 ->update(['CARA_MASUK' => $cara_masuk]);
-
         } catch (\Exception $e) {
             Log::error('Error update Cara masuk: ' . $e->getMessage());
             $is_success = false;
