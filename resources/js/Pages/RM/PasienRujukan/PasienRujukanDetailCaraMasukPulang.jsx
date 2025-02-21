@@ -76,8 +76,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         fetchSugestCaraMasuk();
     }, []);
 
-    console.log(pasien);
-
     return (
         <>
             <Card title="Cara Masuk & Pulang" loading={pasienLoading}>
