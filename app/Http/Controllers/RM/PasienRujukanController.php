@@ -364,7 +364,7 @@ class PasienRujukanController extends Controller
         ]);
     }
 
-    public function update_cara_masuk_pulang(Request $request, $no_transaksi)
+    public function update_cara_masuk_pulang(Request $request, $no_transaksi_kj)
     {
         // Validate the input
         $validated = $request->validate([
@@ -375,7 +375,7 @@ class PasienRujukanController extends Controller
         $cara_masuk = $validated['cara_masuk'];
         $keadaan_keluar = $validated['keadaan_keluar'];
 
-        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($no_transaksi, $cara_masuk, $keadaan_keluar);
+        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($no_transaksi_kj, $cara_masuk, $keadaan_keluar);
 
         if ($isUpdated) {
             return response()->json([

@@ -5,6 +5,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
 
     const [keadaanKeluar, setKeadaanKeluar] = useState(null); //actual keadaan keluar rs dari database
+    const [keadaanKeluarLoading, setKeadaanKeluarLoading] = useState(false); //loading actual keadaan keluar rs dari database
 
     const [caraMasukOptions, setCaraMasukOptions] = useState(false);
     const [keadaanKeluarOptions, setKeadaanKeluarOptions] = useState(false);
@@ -57,6 +58,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
 
     // Fetch options keadaan keluar rs for selectbox
     async function fetchSugestKeadaanKelauarRS() {
+        setKeadaanKeluarLoading(true);
         try {
             const response = await axios.get(
                 route("rm.pasien-rujukan.cari_keadaan_keluar_rs")
@@ -71,6 +73,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         }
+        setKeadaanKeluarLoading(false);
     }
 
     const handleSave = () => {
@@ -78,7 +81,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         axios
             .post(
                 route("rm.pasien-rujukan.update_cara_masuk_pulang", {
-                    kode_reg: pasien.FRPNOTRANSAKSI,
+                    kode_reg_kj: pasien.FRPNOTRANSAKSIKJ,
                 }),
                 {
                     cara_masuk: selectedCaraMasuk,
@@ -100,11 +103,16 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             })
             .catch((error) => {
                 console.error("Error saving :", error);
+                notification.error({
+                    message: "Error",
+                    description: "Terjadi kesalahan",
+                });
             })
             .finally(() => {
                 setLoadingSave(false);
                 setModalOpen(false);
                 reFetchPasien();
+                fetchActualKeadaanKelauarRS();
             });
     };
 
@@ -116,7 +124,10 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
 
     return (
         <>
-            <Card title="Cara Masuk & Pulang" loading={pasienLoading}>
+            <Card
+                title="Cara Masuk & Pulang"
+                loading={pasienLoading || keadaanKeluarLoading}
+            >
                 <table style={{ width: "100%" }}>
                     <tbody>
                         <tr>
