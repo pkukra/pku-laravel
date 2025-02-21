@@ -84,8 +84,13 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     kode_reg_kj: pasien.FRPNOTRANSAKSIKJ,
                 }),
                 {
+                    kode_pasien: pasien.FRPPASIEN_ID,
+                    kode_unit: pasien.FRPUNIT,
+                    kode_dokter: pasien.FRPDOKTER_ID,
+                    tgl_masuk: pasien.FRPTGL,
                     cara_masuk: selectedCaraMasuk,
                     keadaan_keluar: selectedKeadaanKeluar,
+                    sebab_kematian: "",
                 }
             )
             .then((response) => {
@@ -121,6 +126,8 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         fetchSugestCaraMasuk();
         fetchSugestKeadaanKelauarRS();
     }, []);
+
+    console.log(pasien);
 
     return (
         <>

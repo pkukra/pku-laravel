@@ -403,24 +403,58 @@ class PasienRujukanRepository
      * Update cara masuk dan pulang in PASIEN_RUJUKAN table based on no_transaksi_kj
      *
      * @param string $no_transaksi_kj
-     * @param string $cara_masuk
-     * @param string $keadaan_keluar
+     * @param array $data
      * @return \Illuminate\Http\Response
      */
-    public function updateCaraMasukPulangsByTransaksi($no_transaksi_kj, $cara_masuk, $keadaan_keluar)
+    public function updateCaraMasukPulangsByTransaksi(array $data)
     {
         try {
             DB::connection('sqlsrv')
                 ->table('PASIEN_RUJUKAN')
-                ->where('FRPNOTRANSAKSIKJ', $no_transaksi_kj)
-                ->update(['CARA_MASUK' => $cara_masuk]);
+                ->where('FRPNOTRANSAKSIKJ', $data['no_transaksi_kj'])
+                ->update(['CARA_MASUK' => $data['cara_masuk']]);
 
-            DB::connection('sqlsrv')
+            $arrUpdate = [
+                'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
+                'updated_at' => $data['now'],
+                'updated_by' => $data['email'],
+            ];
+
+            $arrUpdate['MRKSEBAB'] = "";
+            if (!empty($data['sebab_kematian'])) {
+                $arrUpdate['MRKSEBAB'] = $data['sebab_kematian'];
+            }
+
+            $exists = DB::connection('sqlsrv')
                 ->table('MR_KEMATIAN')
-                ->where('MRKNO_TRANSAKSI', $no_transaksi_kj)
-                ->update(['MRKKEADAAN_KELUAR' => $keadaan_keluar]);
+                ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
+                ->exists();
+
+            if ($exists) {
+                // Jika sudah ada, lakukan update
+                DB::connection('sqlsrv')
+                    ->table('MR_KEMATIAN')
+                    ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
+                    ->update($arrUpdate);
+            } else {
+                // Jika belum ada, lakukan insert
+                $arrInsert = array_merge($arrUpdate, [
+                    'MRKNO_TRANSAKSI' => $data['no_transaksi_kj'],
+                    'MRKKD_PASIEN' => $data['kode_pasien'],
+                    'MRKKD_UNIT' => $data['kode_unit'],
+                    'MRKKD_DOKTER' => $data['kode_dokter'],
+                    'MRKTGL_MASUK' => $data['tgl_masuk'],
+                    'MRKTGL_KELUAR' => $data['tgl_masuk'],
+                    'created_at' => $data['now'],
+                    'created_by' => $data['email'],
+                ]);
+
+                DB::connection('sqlsrv')
+                    ->table('MR_KEMATIAN')
+                    ->insert($arrInsert);
+            }
         } catch (\Exception $e) {
-            Log::error('Error update Cara masuk: ' . $e->getMessage());
+            Log::error('Error update/insert Cara masuk: ' . $e->getMessage());
             return false;
         }
 

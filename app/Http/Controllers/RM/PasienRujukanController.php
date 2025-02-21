@@ -108,7 +108,7 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
-    
+
     /**
      * list_diagnosa
      * Menampilkan diagnosa berdasarkan kode transaksi
@@ -354,7 +354,7 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
-    
+
     public function cari_keadaan_keluar_rs()
     {
         $data = $this->pasienRujukanRepo->getKeadaanKeluarRS();
@@ -368,14 +368,22 @@ class PasienRujukanController extends Controller
     {
         // Validate the input
         $validated = $request->validate([
+            'kode_pasien' => 'required',
+            'kode_unit' => 'required',
+            'kode_dokter' => 'required',
+            'tgl_masuk' => 'required',
             'cara_masuk' => 'required|string',
             'keadaan_keluar' => 'required|string',
         ]);
-        // Get the validated catatan_khusus value
-        $cara_masuk = $validated['cara_masuk'];
-        $keadaan_keluar = $validated['keadaan_keluar'];
 
-        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($no_transaksi_kj, $cara_masuk, $keadaan_keluar);
+        // Tambahkan no_transaksi_kj ke dalam array data
+        $validated['no_transaksi_kj'] = $no_transaksi_kj;
+
+        $validated['sebab_kematian'] = $request->input("sebab_kematian");
+        $validated['email'] = Auth::user()->email;
+        $validated['now'] = now();
+
+        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($validated);
 
         if ($isUpdated) {
             return response()->json([
