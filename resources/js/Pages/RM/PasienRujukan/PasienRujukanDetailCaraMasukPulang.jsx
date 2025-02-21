@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Select, Card, Button, notification } from "antd";
 
 export default function Index({ pasien, reFetchPasien, pasienLoading }) {
@@ -35,10 +35,32 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         })),
     ];
 
+    const caraPulangMap = {
+        1: "SEMBUH",
+        2: "PERBAIKAN",
+        3: "MENINGGAL <48 JAM",
+        4: "MENINGGAL>=48",
+        5: "ATAS PERMINTAAN SENDIRI",
+        6: "LAIN- LAIN",
+    };
+
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
         setSelectedCaraPulang(pasien?.CARA_PULANG || "");
         setModalOpen(true);
+    };
+
+    // Fetch cara masuk bpjs
+    const fetchSugestCaraMasuk = async () => {
+        try {
+            const response = await axios.get(
+                route("rm.pasien-rujukan.cari_cara_masuk_bpjs")
+            );
+            console.log(response?.data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+        }
     };
 
     const handleSave = () => {
@@ -75,6 +97,10 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 reFetchPasien();
             });
     };
+
+    fetchSugestCaraMasuk(() => {
+        fetchSugestCaraMasuk();
+    }, []);
 
     return (
         <>

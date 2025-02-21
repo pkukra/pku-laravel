@@ -355,6 +355,20 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get opsi cara_masuk_bpjs dari untuk transaksi pasien
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCaraMasukBPJS()
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_CARA_MASUK_BPJS')
+            ->select('*')
+            ->orderBy('ORDER')
+            ->get();
+    }
+
+    /**
      * Update cara masuk dan pulang in PASIEN_RUJUKAN table based on no_transaksi
      *
      * @param string $no_transaksi

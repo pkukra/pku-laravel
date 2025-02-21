@@ -54,6 +54,7 @@ Route::prefix('rm')->group(function () {
 
         Route::get('/get_mr_diagnosa/{kode_reg}', [PasienRujukanController::class, 'get_mr_diagnosa'])->name('rm.pasien-rujukan.get_mr_diagnosa');
         Route::post('/update_catatan_khusus/{kode_reg}', [PasienRujukanController::class, 'update_catatan_khusus'])->name('rm.pasien-rujukan.update_catatan_khusus');
+        Route::get('/cari_cara_masuk_bpjs', [PasienRujukanController::class, 'cari_cara_masuk_bpjs'])->name('rm.pasien-rujukan.cari_cara_masuk_bpjs');
         Route::post('/update_cara_masuk_pulang/{kode_reg}', [PasienRujukanController::class, 'update_cara_masuk_pulang'])->name('rm.pasien-rujukan.update_cara_masuk_pulang');
 
         Route::get('/get_resume/{kode_reg}', [PasienRujukanController::class, 'get_resume'])->name('rm.pasien-rujukan.get_resume');
@@ -68,7 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/xxx/{no_sep}', [EklaimController::class, 'index_data']);
 });
 
-Route::get('/hasil_lab', function(){
+Route::get('/hasil_lab', function () {
     return response()->json([
         'status' => "ok",
         'data' => env("HASIL_LAB_URL"),

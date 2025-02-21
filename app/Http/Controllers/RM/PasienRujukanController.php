@@ -331,6 +331,15 @@ class PasienRujukanController extends Controller
         ], 500);
     }
 
+    public function cari_cara_masuk_bpjs()
+    {
+        $data = $this->pasienRujukanRepo->getCaraMasukBPJS();
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
+
     public function update_cara_masuk_pulang(Request $request, $no_transaksi)
     {
         // Validate the input
