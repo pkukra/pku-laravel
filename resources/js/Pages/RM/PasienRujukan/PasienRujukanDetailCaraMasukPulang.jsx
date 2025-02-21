@@ -12,15 +12,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         pasien?.CARA_PULANG || ""
     );
 
-    const caraPulangMap = {
-        1: "SEMBUH",
-        2: "PERBAIKAN",
-        3: "MENINGGAL <48 JAM",
-        4: "MENINGGAL>=48",
-        5: "ATAS PERMINTAAN SENDIRI",
-        6: "LAIN- LAIN",
-    };
-
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
         setSelectedCaraPulang(pasien?.CARA_PULANG || "");
@@ -81,11 +72,11 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             });
     };
 
-    console.log(caraMasukOptions);
-
     useEffect(() => {
         fetchSugestCaraMasuk();
     }, []);
+
+    console.log(pasien);
 
     return (
         <>
@@ -94,11 +85,11 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>Cara Masuk</td>
-                            <td>: {(pasien?.CARA_MASUK)}</td>
+                            <td>: {(pasien?.CARA_MASUK_BPJS) ?? <>Belum diisi</>}</td>
                         </tr>
                         <tr>
                             <td>Cara Pulang</td>
-                            <td>: {(pasien?.CARA_MASUK)}</td>
+                            <td>: {(pasien?.CARA_MASUK_BPJS) ?? <>Belum diisi</>}</td>
                         </tr>
                         <tr>
                             <td></td>

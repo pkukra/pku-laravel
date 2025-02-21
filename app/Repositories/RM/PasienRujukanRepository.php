@@ -55,6 +55,7 @@ class PasienRujukanRepository
             ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+            ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PASIEN_RUJUKAN.CARA_MASUK', '=', 'cm.KODE')
             ->select(
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',
@@ -63,7 +64,8 @@ class PasienRujukanRepository
                 'PASIEN.ALAMAT',
                 'PASIEN_RUJUKAN.*',
                 'DOKTER.FMDDOKTERN',
-                'POLIKLINIK.FMPKLINIKN'
+                'POLIKLINIK.FMPKLINIKN',
+                'cm.KETERANGAN AS CARA_MASUK_BPJS'
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
             ->first();  // Menggunakan `first` karena hanya mengambil satu data
