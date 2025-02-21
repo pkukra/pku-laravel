@@ -3,6 +3,7 @@ import { Modal, Select, Card, Button, notification } from "antd";
 
 export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
+    const [caraMasukOptions, setCaraMasukOptions] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCaraMasuk, setSelectedCaraMasuk] = useState(
         pasien?.CARA_MASUK || ""
@@ -10,30 +11,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [selectedCaraPulang, setSelectedCaraPulang] = useState(
         pasien?.CARA_PULANG || ""
     );
-
-    const caraMasukMap = {
-        gp: "Rujukan FKTP",
-        "hosp-trans": "Rujukan FKRTL",
-        mp: "Rujukan Spesialis",
-        outp: "Dari Rawat Jalan",
-        inp: "Dari Rawat Inap",
-        emd: "Dari Rawat Darurat",
-        born: "Lahir di RS",
-        nursing: "Rujukan Panti Jompo",
-        psych: "Rujukan dari RS Jiwa",
-        rehab: "Rujukan Fasilitas Rehab",
-        other: "Lain-lain",
-    };
-
-    const caraMasuk = (kode) => caraMasukMap[kode] || "Tidak Diketahui";
-
-    const caraMasukOptions = [
-        { value: "", label: "Pilih Cara Masuk" }, // Opsi default
-        ...Object.entries(caraMasukMap).map(([value, label]) => ({
-            value,
-            label,
-        })),
-    ];
 
     const caraPulangMap = {
         1: "SEMBUH",
@@ -51,17 +28,23 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     };
 
     // Fetch cara masuk bpjs
-    const fetchSugestCaraMasuk = async () => {
+    async function fetchSugestCaraMasuk() {
         try {
             const response = await axios.get(
                 route("rm.pasien-rujukan.cari_cara_masuk_bpjs")
             );
-            console.log(response?.data);
+            const data = response?.data?.data || [];
+
+            const caraMasukOptions = data.map((item) => ({
+                value: item.KODE,
+                label: item.KETERANGAN,
+            }));
+
+            setCaraMasukOptions(caraMasukOptions);
         } catch (error) {
             console.error("Error fetching data:", error);
-        } finally {
         }
-    };
+    }
 
     const handleSave = () => {
         setLoadingSave(true);
@@ -98,7 +81,9 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             });
     };
 
-    fetchSugestCaraMasuk(() => {
+    console.log(caraMasukOptions);
+
+    useEffect(() => {
         fetchSugestCaraMasuk();
     }, []);
 
@@ -109,11 +94,11 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     <tbody>
                         <tr>
                             <td style={{ width: "20%" }}>Cara Masuk</td>
-                            <td>: {caraMasuk(pasien?.CARA_MASUK)}</td>
+                            <td>: {(pasien?.CARA_MASUK)}</td>
                         </tr>
                         <tr>
                             <td>Cara Pulang</td>
-                            <td>: {caraMasuk(pasien?.CARA_MASUK)}</td>
+                            <td>: {(pasien?.CARA_MASUK)}</td>
                         </tr>
                         <tr>
                             <td></td>
