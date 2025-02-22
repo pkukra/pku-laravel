@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Select, Card, Button, notification, Spin } from "antd";
+import { Modal, Select, Card, Button, notification, Input } from "antd";
+const { TextArea } = Input;
 
 export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
@@ -14,6 +15,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         pasien?.CARA_MASUK || ""
     );
     const [selectedKeadaanKeluar, setSelectedKeadaanKeluar] = useState(null);
+    const [selectedSebabKematian, setSelectedSebabKematian] = useState("");
 
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
@@ -31,6 +33,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             const data = response?.data?.data || [];
             setKeadaanKeluar(data);
             setSelectedKeadaanKeluar(data.MRKKEADAAN_KELUAR);
+            setSelectedSebabKematian(data.MRKSEBAB);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -90,7 +93,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     tgl_masuk: pasien.FRPTGL,
                     cara_masuk: selectedCaraMasuk,
                     keadaan_keluar: selectedKeadaanKeluar,
-                    sebab_kematian: "",
+                    sebab_kematian: selectedSebabKematian,
                 }
             )
             .then((response) => {
@@ -127,8 +130,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         fetchSugestKeadaanKelauarRS();
     }, []);
 
-    console.log(pasien);
-
     return (
         <>
             <Card
@@ -151,6 +152,10 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                                     <>Belum diisi</>
                                 )}
                             </td>
+                        </tr>
+                        <tr>
+                            <td>Sebab Kematian</td>
+                            <td>: {keadaanKeluar?.MRKSEBAB}</td>
                         </tr>
                         <tr>
                             <td></td>
@@ -207,6 +212,20 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     style={{ width: "100%" }}
                     onChange={setSelectedKeadaanKeluar}
                     options={keadaanKeluarOptions}
+                />
+                <label>Sebab Kematian: </label>
+                <TextArea
+                    disabled={
+                        !(
+                            selectedKeadaanKeluar == 4 ||
+                            selectedKeadaanKeluar == 3
+                        )
+                    }
+                    rows={4}
+                    placeholder="Sebab Kematian"
+                    maxLength={6}
+                    value={selectedSebabKematian}
+                    onChange={(e) => setSelectedSebabKematian(e.target.value)}
                 />
             </Modal>
         </>

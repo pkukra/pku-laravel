@@ -399,13 +399,6 @@ class PasienRujukanRepository
             ->get();
     }
 
-    /**
-     * Update cara masuk dan pulang in PASIEN_RUJUKAN table based on no_transaksi_kj
-     *
-     * @param string $no_transaksi_kj
-     * @param array $data
-     * @return \Illuminate\Http\Response
-     */
     public function updateCaraMasukPulangsByTransaksi(array $data)
     {
         try {
@@ -420,10 +413,8 @@ class PasienRujukanRepository
                 'updated_by' => $data['email'],
             ];
 
-            $arrUpdate['MRKSEBAB'] = "";
-            if (!empty($data['sebab_kematian'])) {
-                $arrUpdate['MRKSEBAB'] = $data['sebab_kematian'];
-            }
+            // Jika keadaan_keluar adalah 4 atau 3, gunakan sebab_kematian, selain itu kosongkan
+            $arrUpdate['MRKSEBAB'] = in_array($data['keadaan_keluar'], [3, 4]) ? ($data['sebab_kematian'] ?? "") : "";
 
             $exists = DB::connection('sqlsrv')
                 ->table('MR_KEMATIAN')
@@ -460,6 +451,7 @@ class PasienRujukanRepository
 
         return true;
     }
+
 
     /**
      * Get resume dokter by kode reg

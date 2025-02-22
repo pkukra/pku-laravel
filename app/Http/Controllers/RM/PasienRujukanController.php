@@ -374,12 +374,12 @@ class PasienRujukanController extends Controller
             'tgl_masuk' => 'required',
             'cara_masuk' => 'required|string',
             'keadaan_keluar' => 'required|string',
+            'sebab_kematian' => 'nullable|string',
         ]);
 
         // Tambahkan no_transaksi_kj ke dalam array data
         $validated['no_transaksi_kj'] = $no_transaksi_kj;
 
-        $validated['sebab_kematian'] = $request->input("sebab_kematian");
         $validated['email'] = Auth::user()->email;
         $validated['now'] = now();
 
