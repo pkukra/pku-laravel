@@ -218,7 +218,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
                             </td>
                         </tr>
-                        <tr>
+                        {/* <tr>
                             <td>Keperawatan</td>
                             <td>
                                 :{" "}
@@ -230,24 +230,32 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                                     <>Belum diisi</>
                                 )}
                             </td>
-                        </tr>
-                        <tr>
-                            <td>Rujukan Keluar</td>
-                            <td>
-                                :{" "}
-                                {statusRujukanKeluar(
-                                    kunjunganPasien?.KPRUJUKLUAR
-                                )}
-                            </td>
-                        </tr>
+                        </tr> */}
+                        
                         <tr>
                             <td>Keadaan Keluar RS</td>
                             <td>: {keadaanKeluar?.FMKKRSKETERANGAN}</td>
                         </tr>
-                        <tr>
-                            <td>Sebab Kematian</td>
-                            <td>: {keadaanKeluar?.MRKSEBAB}</td>
-                        </tr>
+
+                        {selectedKeadaanKeluar == 7 && (
+                            <tr>
+                                <td>Rujukan Keluar</td>
+                                <td>
+                                    :{" "}
+                                    {statusRujukanKeluar(
+                                        kunjunganPasien?.KPRUJUKLUAR
+                                    )}
+                                </td>
+                            </tr>
+                        )}
+
+                        {(selectedKeadaanKeluar == 4 ||
+                            selectedKeadaanKeluar == 3) && (
+                            <tr>
+                                <td>Sebab Kematian</td>
+                                <td>: {keadaanKeluar?.MRKSEBAB}</td>
+                            </tr>
+                        )}
                         <tr>
                             <td></td>
                             <td>
@@ -297,7 +305,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     options={caraMasukOptions}
                 />
 
-                <label>Perawatan:</label>
+                {/* <label>Perawatan:</label>
                 <Select
                     value={parseInt(selectedKeperawatan)}
                     style={{ width: "100%", marginBottom: "10px" }}
@@ -305,16 +313,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                         setSelectedKeperawatan(parseInt(value))
                     }
                     options={perawatanOptions}
-                />
-
-                <label>RS Tujuan:</label>
-                <Select
-                    value={selectedRSRujukanKeluar}
-                    onChange={(value) => setSelectedRSRujukanKeluar(value)}
-                    disabled={!(selectedKeperawatan == 1)}
-                    style={{ width: "100%", marginBottom: "10px" }}
-                    options={RSRujukanOptions}
-                />
+                />*/}
 
                 <label>Keadaan Keluar RS: </label>
                 <Select
@@ -323,19 +322,40 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     onChange={setSelectedKeadaanKeluar}
                     options={keadaanKeluarOptions}
                 />
-                <label>Sebab Kematian: </label>
-                <TextArea
-                    disabled={
-                        !(
-                            selectedKeadaanKeluar == 4 ||
-                            selectedKeadaanKeluar == 3
-                        )
-                    }
-                    rows={4}
-                    placeholder="Sebab Kematian"
-                    value={selectedSebabKematian}
-                    onChange={(e) => setSelectedSebabKematian(e.target.value)}
-                />
+                {(selectedKeadaanKeluar == 4 || selectedKeadaanKeluar == 3) && (
+                    <>
+                        <label>Sebab Kematian: </label>
+                        <TextArea
+                            disabled={
+                                !(
+                                    selectedKeadaanKeluar == 4 ||
+                                    selectedKeadaanKeluar == 3
+                                )
+                            }
+                            rows={4}
+                            placeholder="Sebab Kematian"
+                            value={selectedSebabKematian}
+                            onChange={(e) =>
+                                setSelectedSebabKematian(e.target.value)
+                            }
+                        />
+                    </>
+                )}
+
+                {selectedKeadaanKeluar == 7 && (
+                    <>
+                        <label>RS Tujuan: </label>
+                        <Select
+                            value={selectedRSRujukanKeluar}
+                            onChange={(value) =>
+                                setSelectedRSRujukanKeluar(value)
+                            }
+                            disabled={!(selectedKeadaanKeluar == 7)}
+                            style={{ width: "100%", marginBottom: "10px" }}
+                            options={RSRujukanOptions}
+                        />
+                    </>
+                )}
             </Modal>
         </>
     );

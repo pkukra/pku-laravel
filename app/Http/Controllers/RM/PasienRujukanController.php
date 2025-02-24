@@ -9,7 +9,6 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Repositories\RM\PasienRujukanRepository;
 use App\Repositories\RM\BridgingEKlaimRepository;
-use Illuminate\Support\Facades\DB;
 
 class PasienRujukanController extends Controller
 {

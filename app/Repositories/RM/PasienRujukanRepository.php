@@ -410,6 +410,7 @@ class PasienRujukanRepository
     {
         return DB::connection('sqlsrv')
             ->table('MR_KEADAAN_KELUAR_RS')
+            ->orderBy('FMKKRSKODE_BPJS')
             ->select('*')
             ->get();
     }
@@ -435,8 +436,8 @@ class PasienRujukanRepository
                 ->where('FRPNOTRANSAKSIKJ', $data['no_transaksi_kj'])
                 ->update(['CARA_MASUK' => $data['cara_masuk']]);
 
-            // Jika keperawatan selain 1, KPRUJUKLUAR harus kosong
-            $kodeRsRujukKeluar = ($data['keperawatan'] == 1) ? $data['kode_rs_rujuk_keluar'] : "";
+            // Jika keadaan_keluar selain 1, KPRUJUKLUAR harus kosong
+            $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : "";
 
             // Update keperawatan di tabel KUNJUNGANPASIEN
             DB::connection('sqlsrv')
