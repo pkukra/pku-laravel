@@ -110,6 +110,21 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * get_kunjungan_pasien
+     * Menampilkan aktual kunjungan pasien data dari tabel KUNJUNGANPASIEN
+     */
+    public function get_kunjungan_pasien($kode_reg)
+    {
+        // Menampilkan aktual keaadaan keluar dari setiap pasien by kode_reg
+        $data = $this->pasienRujukanRepo->getKunjunganPasienByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
+
+    /**
      * list_diagnosa
      * Menampilkan diagnosa berdasarkan kode transaksi
      */

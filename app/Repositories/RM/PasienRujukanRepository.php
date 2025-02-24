@@ -106,6 +106,21 @@ class PasienRujukanRepository
             ->where('a.MRKNO_TRANSAKSI', $no_transaksi)
             ->first();
     }
+    
+    /**
+     * Get aktual kunjungan pasien dari setiap pasien di tabel KUNJUNGANPASIEN
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getKunjunganPasienByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('KUNJUNGANPASIEN AS a')
+            ->select('a.*')
+            ->where('a.KPNO_TRANSAKSI', $no_transaksi)
+            ->first();
+    }
 
     /**
      * Get diagnosa penyakit by transaksi (MR_PENYAKIT)

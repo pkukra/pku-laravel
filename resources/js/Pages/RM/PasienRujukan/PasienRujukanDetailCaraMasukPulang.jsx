@@ -2,11 +2,25 @@ import React, { useState, useEffect } from "react";
 import { Modal, Select, Card, Button, notification, Input } from "antd";
 const { TextArea } = Input;
 
+const perawatanOptions = [
+    { value: 0, label: "Dirawat" },
+    { value: 1, label: "Dirujuk" },
+    { value: 2, label: "Pulang" },
+    { value: 3, label: "Meninggal" },
+];
+
+// Fungsi untuk mendapatkan label berdasarkan value
+const statusPerawatan = (kode) => {
+    const found = perawatanOptions.find((opt) => opt.value == kode);
+    return found ? found.label : "Tidak Diketahui";
+};
+
 export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
 
     const [keadaanKeluar, setKeadaanKeluar] = useState(null); //actual keadaan keluar rs dari database
     const [keadaanKeluarLoading, setKeadaanKeluarLoading] = useState(false); //loading actual keadaan keluar rs dari database
+    const [kunjunganPasien, setKunjunganPasien] = useState(null); //actual keadaan keluar rs dari database
 
     const [caraMasukOptions, setCaraMasukOptions] = useState(false);
     const [keadaanKeluarOptions, setKeadaanKeluarOptions] = useState(false);
@@ -16,6 +30,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     );
     const [selectedKeadaanKeluar, setSelectedKeadaanKeluar] = useState(null);
     const [selectedSebabKematian, setSelectedSebabKematian] = useState("");
+    const [selectedKeperawatan, setSelectedKeperawatan] = useState("");
 
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
@@ -34,6 +49,23 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             setKeadaanKeluar(data);
             setSelectedKeadaanKeluar(data.MRKKEADAAN_KELUAR);
             setSelectedSebabKematian(data.MRKSEBAB);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+        return;
+    }
+
+    // Fetch actual keadaan keluar rs
+    async function fetchActualKunjunganPasien() {
+        try {
+            const response = await axios.get(
+                route("rm.pasien-rujukan.get_kunjungan_pasien", {
+                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                })
+            );
+            const data = response?.data?.data || null;
+            setSelectedKeperawatan(data?.KPPERAWATAN);
+            setKunjunganPasien(data);
         } catch (error) {
             console.error("Error fetching data:", error);
         }
@@ -125,6 +157,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     };
 
     useEffect(() => {
+        fetchActualKunjunganPasien();
         fetchActualKeadaanKelauarRS();
         fetchSugestCaraMasuk();
         fetchSugestKeadaanKelauarRS();
@@ -142,6 +175,19 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             <td style={{ width: "20%" }}>Cara Masuk</td>
                             <td>
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Keperawatan</td>
+                            <td>
+                                :{" "}
+                                {kunjunganPasien?.KPPERAWATAN ? (
+                                    statusPerawatan(
+                                        kunjunganPasien?.KPPERAWATAN
+                                    )
+                                ) : (
+                                    <>Belum diisi</>
+                                )}
                             </td>
                         </tr>
                         <tr>
@@ -206,6 +252,14 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     options={caraMasukOptions}
                 />
 
+                <label>Perawatan:</label>
+                <Select
+                    value={parseInt(selectedKeperawatan)}
+                    style={{ width: "100%", marginBottom: "10px" }}
+                    onChange={(value) => setSelectedKeperawatan(parseInt(value))}
+                    options={perawatanOptions}
+                />
+
                 <label>Keadaan Keluar RS: </label>
                 <Select
                     value={selectedKeadaanKeluar}
@@ -223,7 +277,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     }
                     rows={4}
                     placeholder="Sebab Kematian"
-                    maxLength={6}
                     value={selectedSebabKematian}
                     onChange={(e) => setSelectedSebabKematian(e.target.value)}
                 />

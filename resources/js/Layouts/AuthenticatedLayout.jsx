@@ -5,7 +5,6 @@ import { Layout, Menu } from "antd";
 
 const { Sider, Content, Footer } = Layout;
 
-// Daftar menu dengan `key` sesuai dengan path utama
 const items = [
     {
         key: "", // Root path
@@ -41,7 +40,7 @@ const App = ({ children }) => {
     };
 
     // Ambil path utama (fragment pertama setelah domain)
-    const currentKey = url.split("/")[1] || "";
+    const currentKey = url.split("/")[2] || "";
 
     return (
         <Layout style={{ minHeight: "100vh" }}>
