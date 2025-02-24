@@ -213,7 +213,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 <table style={{ width: "100%" }}>
                     <tbody>
                         <tr>
-                            <td style={{ width: "20%" }}>Cara Masuk</td>
+                            <td style={{ width: "25%" }}>Cara Masuk</td>
                             <td>
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
                             </td>
