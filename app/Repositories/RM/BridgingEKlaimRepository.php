@@ -27,7 +27,7 @@ class BridgingEKlaimRepository
         $key = $user->eklaim_key;
 
         // Format tanggal lahir
-        $formattedDate = date("Y/m/d H:i:s", strtotime($tgl_lahir));
+        $formattedBirthDate = date("Y-m-d H:i:s", strtotime($tgl_lahir));
 
         // Data request
         $request = json_encode([
@@ -37,7 +37,7 @@ class BridgingEKlaimRepository
                 "nomor_sep" => $no_sep,
                 "nomor_rm" => $norm,
                 "nama_pasien" => $nm_pasien,
-                "tgl_lahir" => $formattedDate,
+                "tgl_lahir" => $formattedBirthDate,
                 "gender" => $jns_kelamin
             ]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
