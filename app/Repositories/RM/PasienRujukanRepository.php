@@ -106,7 +106,7 @@ class PasienRujukanRepository
             ->where('a.MRKNO_TRANSAKSI', $no_transaksi)
             ->first();
     }
-    
+
     /**
      * Get aktual kunjungan pasien dari setiap pasien di tabel KUNJUNGANPASIEN
      *
@@ -414,6 +414,19 @@ class PasienRujukanRepository
             ->get();
     }
 
+    /**
+     * Get opsi rs rujukan untuk keadaan keluar rs yang dirujuk
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getRSRujukan()
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_RUJUKAN_KELUAR')
+            ->select('*')
+            ->get();
+    }
+
     public function updateCaraMasukPulangsByTransaksi(array $data)
     {
         try {
@@ -421,6 +434,18 @@ class PasienRujukanRepository
                 ->table('PASIEN_RUJUKAN')
                 ->where('FRPNOTRANSAKSIKJ', $data['no_transaksi_kj'])
                 ->update(['CARA_MASUK' => $data['cara_masuk']]);
+
+            // Jika keperawatan selain 1, KPRUJUKLUAR harus kosong
+            $kodeRsRujukKeluar = ($data['keperawatan'] == 1) ? $data['kode_rs_rujuk_keluar'] : "";
+
+            // Update keperawatan di tabel KUNJUNGANPASIEN
+            DB::connection('sqlsrv')
+                ->table('KUNJUNGANPASIEN')
+                ->where('KPNO_TRANSAKSI', $data['no_transaksi_kj'])
+                ->update([
+                    'KPRUJUKLUAR' => $kodeRsRujukKeluar,
+                    'KPPERAWATAN' => $data['keperawatan'],
+                ]);
 
             $arrUpdate = [
                 'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
@@ -466,7 +491,6 @@ class PasienRujukanRepository
 
         return true;
     }
-
 
     /**
      * Get resume dokter by kode reg

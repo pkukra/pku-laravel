@@ -9,12 +9,6 @@ const perawatanOptions = [
     { value: 3, label: "Meninggal" },
 ];
 
-// Fungsi untuk mendapatkan label berdasarkan value
-const statusPerawatan = (kode) => {
-    const found = perawatanOptions.find((opt) => opt.value == kode);
-    return found ? found.label : "Tidak Diketahui";
-};
-
 export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
 
@@ -23,14 +17,18 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [kunjunganPasien, setKunjunganPasien] = useState(null); //actual keadaan keluar rs dari database
 
     const [caraMasukOptions, setCaraMasukOptions] = useState(false);
+    const [RSRujukanOptions, setRSRujukanOptions] = useState(false);
     const [keadaanKeluarOptions, setKeadaanKeluarOptions] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
+
     const [selectedCaraMasuk, setSelectedCaraMasuk] = useState(
-        pasien?.CARA_MASUK || ""
+        pasien?.CARA_MASUK || null
     );
     const [selectedKeadaanKeluar, setSelectedKeadaanKeluar] = useState(null);
-    const [selectedSebabKematian, setSelectedSebabKematian] = useState("");
-    const [selectedKeperawatan, setSelectedKeperawatan] = useState("");
+    const [selectedSebabKematian, setSelectedSebabKematian] = useState(null);
+    const [selectedKeperawatan, setSelectedKeperawatan] = useState(null);
+    const [selectedRSRujukanKeluar, setSelectedRSRujukanKeluar] =
+        useState(null);
 
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
@@ -64,7 +62,10 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 })
             );
             const data = response?.data?.data || null;
+
             setSelectedKeperawatan(data?.KPPERAWATAN);
+            setSelectedRSRujukanKeluar(data?.KPRUJUKLUAR);
+
             setKunjunganPasien(data);
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -111,6 +112,23 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         setKeadaanKeluarLoading(false);
     }
 
+    // Fetch options rs rujukan keluar
+    async function fetchSugestRSRujukan() {
+        try {
+            const response = await axios.get(
+                route("rm.pasien-rujukan.cari_rs_rujukan")
+            );
+            const data = response?.data?.data || [];
+            const options = data.map((item) => ({
+                value: item.MRKODERUJUKAN,
+                label: item.MRKODERUJUKANN,
+            }));
+            setRSRujukanOptions(options);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    }
+
     const handleSave = () => {
         setLoadingSave(true);
         axios
@@ -124,6 +142,10 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     kode_dokter: pasien.FRPDOKTER_ID,
                     tgl_masuk: pasien.FRPTGL,
                     cara_masuk: selectedCaraMasuk,
+
+                    kode_rs_rujuk_keluar: selectedRSRujukanKeluar,
+                    keperawatan: selectedKeperawatan,
+
                     keadaan_keluar: selectedKeadaanKeluar,
                     sebab_kematian: selectedSebabKematian,
                 }
@@ -153,15 +175,34 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 setModalOpen(false);
                 reFetchPasien();
                 fetchActualKeadaanKelauarRS();
+                fetchActualKunjunganPasien();
             });
     };
 
     useEffect(() => {
+        fetchSugestRSRujukan();
         fetchActualKunjunganPasien();
         fetchActualKeadaanKelauarRS();
         fetchSugestCaraMasuk();
         fetchSugestKeadaanKelauarRS();
     }, []);
+
+    console.log(RSRujukanOptions);
+
+    // Fungsi untuk mendapatkan label berdasarkan value
+    const statusPerawatan = (kode) => {
+        const found = perawatanOptions.find((opt) => opt.value == kode);
+        return found ? found.label : "Tidak Diketahui";
+    };
+
+    // Fungsi untuk mendapatkan label berdasarkan value
+    const statusRujukanKeluar = (kode) => {
+        if (!RSRujukanOptions) {
+            return "Fetching data...";
+        }
+        const found = RSRujukanOptions.find((opt) => opt.value == kode);
+        return found ? found.label : "Tidak ada rujukan";
+    };
 
     return (
         <>
@@ -191,13 +232,17 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             </td>
                         </tr>
                         <tr>
-                            <td>Keadaan Keluar RS</td>
+                            <td>Rujukan Keluar</td>
                             <td>
                                 :{" "}
-                                {keadaanKeluar?.FMKKRSKETERANGAN ?? (
-                                    <>Belum diisi</>
+                                {statusRujukanKeluar(
+                                    kunjunganPasien?.KPRUJUKLUAR
                                 )}
                             </td>
+                        </tr>
+                        <tr>
+                            <td>Keadaan Keluar RS</td>
+                            <td>: {keadaanKeluar?.FMKKRSKETERANGAN}</td>
                         </tr>
                         <tr>
                             <td>Sebab Kematian</td>
@@ -256,8 +301,19 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 <Select
                     value={parseInt(selectedKeperawatan)}
                     style={{ width: "100%", marginBottom: "10px" }}
-                    onChange={(value) => setSelectedKeperawatan(parseInt(value))}
+                    onChange={(value) =>
+                        setSelectedKeperawatan(parseInt(value))
+                    }
                     options={perawatanOptions}
+                />
+
+                <label>RS Tujuan:</label>
+                <Select
+                    value={selectedRSRujukanKeluar}
+                    onChange={(value) => setSelectedRSRujukanKeluar(value)}
+                    disabled={!(selectedKeperawatan == 1)}
+                    style={{ width: "100%", marginBottom: "10px" }}
+                    options={RSRujukanOptions}
                 />
 
                 <label>Keadaan Keluar RS: </label>

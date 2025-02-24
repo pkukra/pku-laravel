@@ -378,6 +378,15 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
+    
+    public function cari_rs_rujukan()
+    {
+        $data = $this->pasienRujukanRepo->getRSRujukan();
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 
     public function update_cara_masuk_pulang(Request $request, $no_transaksi_kj)
     {
@@ -387,9 +396,12 @@ class PasienRujukanController extends Controller
             'kode_unit' => 'required',
             'kode_dokter' => 'required',
             'tgl_masuk' => 'required',
-            'cara_masuk' => 'required|string',
-            'keadaan_keluar' => 'required|string',
+            'cara_masuk' => 'required',
+            'keadaan_keluar' => 'required',
             'sebab_kematian' => 'nullable|string',
+
+            'keperawatan' => 'required',
+            'kode_rs_rujuk_keluar' => 'nullable',
         ]);
 
         // Tambahkan no_transaksi_kj ke dalam array data
