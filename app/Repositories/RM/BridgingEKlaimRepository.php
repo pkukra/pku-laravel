@@ -94,6 +94,9 @@ class BridgingEKlaimRepository
     public function bridgingDataProcess($no_sep)
     {
         $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi) {
+            return false;
+        }
         if (count($semua_transaksi) < 1) {
             return false;
         }
@@ -122,6 +125,12 @@ class BridgingEKlaimRepository
 
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_uatama->FRPNOTRANSAKSI);
+        // defaultnya atas persetujuan dokter
+        $discharge_status =  1;
+        if ($transaksi_uatama->DISCHARGE_SRARTUS) {
+            // jika berhasil di join dengan tabel mr_kematian untuk hasil yang lain
+            $discharge_status =  $transaksi_uatama->DISCHARGE_SRARTUS;
+        }
 
         // mapping data
         $data = (object)[
@@ -131,7 +140,7 @@ class BridgingEKlaimRepository
             'jenis_rawat' => 2, // 1 ranap, 2 rajal, 3 igd
             'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
             'birth_weight' => 0,
-            'discharge_status' => 1,
+            'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
             'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
             'diagnosa' => $this->getAllDiagnosa($semua_transaksi),
@@ -282,7 +291,19 @@ class BridgingEKlaimRepository
                 ->leftJoin('DOKTER AS dr', 'pr.FRPDOKTER_ID', '=', 'dr.FMDDOKTER_ID')
                 ->leftJoin('POLIKLINIK AS poli', 'pr.FRPUNIT', '=', 'poli.FMPKLINIK_ID')
                 ->leftJoin('PASIEN AS p', 'pr.FRPPASIEN_ID', '=', 'p.KD_PASIEN')
-                ->select('sep.FMNOSEP', 'sep.FMNO_KARTU', 'pr.*', 'dr.FMDDOKTERN', 'poli.FMPKLINIKN', 'p.NAMAPASIEN', 'p.TGL_LAHIR', 'p.JENIS_KELAMIN')
+                ->leftJoin('MR_KEMATIAN AS mati', 'sep.FMNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
+                ->leftJoin('MR_KEADAAN_KELUAR_RS', 'mati.MRKKEADAAN_KELUAR', '=', 'MR_KEADAAN_KELUAR_RS.FMKKRSKODE')
+                ->select(
+                    'sep.FMNOSEP',
+                    'sep.FMNO_KARTU',
+                    'pr.*',
+                    'dr.FMDDOKTERN',
+                    'poli.FMPKLINIKN',
+                    'p.NAMAPASIEN',
+                    'p.TGL_LAHIR',
+                    'p.JENIS_KELAMIN',
+                    'MR_KEADAAN_KELUAR_RS.FMKKRSKODE_BPJS AS DISCHARGE_SRARTUS'
+                )
                 ->where('sep.FMNOSEP', $no_sep)
                 ->distinct()
                 ->get();
