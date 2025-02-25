@@ -187,8 +187,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         fetchSugestKeadaanKelauarRS();
     }, []);
 
-    console.log(RSRujukanOptions);
-
     // Fungsi untuk mendapatkan label berdasarkan value
     const statusPerawatan = (kode) => {
         const found = perawatanOptions.find((opt) => opt.value == kode);

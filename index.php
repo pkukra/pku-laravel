@@ -11,8 +11,8 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 
 // Register the Composer autoloader...
 // require __DIR__.'/../vendor/autoload.php';
-require __DIR__.'/../simrs/vendor/autoload.php';
+require __DIR__.'/../pku-laravel/vendor/autoload.php';
 
 // Bootstrap Laravel and handle the request...
-(require_once __DIR__.'/../simrs/bootstrap/app.php')
+(require_once __DIR__.'/../pku-laravel/bootstrap/app.php')
     ->handleRequest(Request::capture());

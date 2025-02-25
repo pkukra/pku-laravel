@@ -14,14 +14,14 @@ class BridgingEKlaimRepository
     /**
      * Process new claim by nomor kartu
      *
-     * @param string $no_peserta
+     * @param string $nomor_kartu
      * @param string $no_sep
-     * @param string $norm
-     * @param string $nm_pasien
+     * @param string $nomor_rm
+     * @param string $nama_pasien
      * @param string $tgl_lahir
      * @param string $jns_kelamin
      */
-    public function bridgingNewClaimProcess($nomor_kartu, $no_sep, $norm, $nm_pasien, $tgl_lahir, $jns_kelamin)
+    public function bridgingNewClaimProcess($nomor_kartu, $no_sep, $nomor_rm, $nama_pasien, $tgl_lahir, $jns_kelamin)
     {
         $user = Auth::user();
         $key = $user->eklaim_key;
@@ -35,8 +35,8 @@ class BridgingEKlaimRepository
             "data" => [
                 "nomor_kartu" => $nomor_kartu,
                 "nomor_sep" => $no_sep,
-                "nomor_rm" => $norm,
-                "nama_pasien" => $nm_pasien,
+                "nomor_rm" => $nomor_rm,
+                "nama_pasien" => $nama_pasien,
                 "tgl_lahir" => $formattedBirthDate,
                 "gender" => $jns_kelamin
             ]
@@ -87,6 +87,73 @@ class BridgingEKlaimRepository
     }
 
     /**
+     * Process grouper stage 1 by nomor SEP
+     *
+     * @param string $no_sep
+     * @return object
+     */
+    public function bridgingGrouperStage1($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $request = json_encode([
+            "metadata" => [
+                "method" => "grouper",
+                "stage" => "1"
+            ],
+            "data" => [
+                "nomor_sep" => $no_sep
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        // Enkripsi data sebelum dikirim
+        $encryptedData = mc_encrypt($request, $key);
+
+        $client = new Client();
+        $url = env("EKLAIM_WS_URL");
+
+        try {
+            $response = $client->post($url, [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'Accept' => 'application/json'
+                ],
+                'body' => $encryptedData
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+
+            // Membersihkan response dari karakter tak diinginkan
+            $first = strpos($responseBody, "\n") + 1;
+            $last = strrpos($responseBody, "\n") - 1;
+            $responseBody = substr($responseBody, $first, strlen($responseBody) - $first - $last);
+
+            // Dekripsi response
+            $decryptedResponse = mc_decrypt($responseBody, $key);
+
+            return (object)[
+                "status" => "ok",
+                "error" => null,
+                "response" => json_decode($decryptedResponse)
+            ];
+        } catch (RequestException $e) {
+            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
+            return (object)[
+                "status" => "nok",
+                "error" => $error
+            ];
+        } catch (\Throwable $th) {
+            return (object)[
+                "status" => "nok",
+                "error" => $th->getMessage()
+            ];
+        }
+    }
+
+
+    /**
      * Process bridgingDataProcess by no_sep
      * 
      * @param string $no_sep
@@ -114,7 +181,7 @@ class BridgingEKlaimRepository
         }
 
         // buat new claim dulu
-        $this->bridgingNewClaimProcess(
+        return $this->bridgingNewClaimProcess(
             $transaksi_uatama->FMNO_KARTU,
             $transaksi_uatama->FMNOSEP,
             $transaksi_uatama->FRPPASIEN_ID,
@@ -122,6 +189,8 @@ class BridgingEKlaimRepository
             $transaksi_uatama->TGL_LAHIR,
             $transaksi_uatama->JENIS_KELAMIN,
         );
+
+        return $this->bridgingGrouperStage1($no_sep);
 
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_uatama->FRPNOTRANSAKSI);

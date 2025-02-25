@@ -10,5 +10,5 @@ export default defineConfig({
         }),
         react(),
     ],
-    base: "/simrs/build"
+    base: "/pku-laravel/build"
 });
