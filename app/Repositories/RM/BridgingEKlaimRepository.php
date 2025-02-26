@@ -30,7 +30,7 @@ class BridgingEKlaimRepository
         $formattedBirthDate = date("Y-m-d H:i:s", strtotime($tgl_lahir));
 
         // Data request
-        $request = json_encode([
+        $data = json_encode([
             "metadata" => ["method" => "new_claim"],
             "data" => [
                 "nomor_kartu" => $nomor_kartu,
@@ -42,48 +42,7 @@ class BridgingEKlaimRepository
             ]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-        // Enkripsi data sebelum dikirim
-        $encryptedData = mc_encrypt($request, $key);
-
-        $client = new Client();
-        $url = env("EKLAIM_WS_URL");
-
-        try {
-            $response = $client->post($url, [
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                    'Accept' => 'application/json'
-                ],
-                'body' => $encryptedData
-            ]);
-
-            $responseBody = $response->getBody()->getContents();
-
-            // Membersihkan response dari karakter tak diinginkan
-            $first = strpos($responseBody, "\n") + 1;
-            $last = strrpos($responseBody, "\n") - 1;
-            $responseBody = substr($responseBody, $first, strlen($responseBody) - $first - $last);
-
-            // Dekripsi response
-            $decryptedResponse = mc_decrypt($responseBody, $key);
-
-            return (object)[
-                "status" => "ok",
-                "error" => null,
-                "response" => json_decode($decryptedResponse)
-            ];
-        } catch (RequestException $e) {
-            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
-            return (object)[
-                "status" => "nok",
-                "error" => $error
-            ];
-        } catch (\Throwable $th) {
-            return (object)[
-                "status" => "nok",
-                "error" => $th->getMessage()
-            ];
-        }
+        return sendRequest($key, $data);
     }
 
     /**
@@ -98,7 +57,7 @@ class BridgingEKlaimRepository
         $key = $user->eklaim_key;
 
         // Data request
-        $request = json_encode([
+        $data = json_encode([
             "metadata" => [
                 "method" => "grouper",
                 "stage" => "1"
@@ -108,48 +67,7 @@ class BridgingEKlaimRepository
             ]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-        // Enkripsi data sebelum dikirim
-        $encryptedData = mc_encrypt($request, $key);
-
-        $client = new Client();
-        $url = env("EKLAIM_WS_URL");
-
-        try {
-            $response = $client->post($url, [
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                    'Accept' => 'application/json'
-                ],
-                'body' => $encryptedData
-            ]);
-
-            $responseBody = $response->getBody()->getContents();
-
-            // Membersihkan response dari karakter tak diinginkan
-            $first = strpos($responseBody, "\n") + 1;
-            $last = strrpos($responseBody, "\n") - 1;
-            $responseBody = substr($responseBody, $first, strlen($responseBody) - $first - $last);
-
-            // Dekripsi response
-            $decryptedResponse = mc_decrypt($responseBody, $key);
-
-            return (object)[
-                "status" => "ok",
-                "error" => null,
-                "response" => json_decode($decryptedResponse)
-            ];
-        } catch (RequestException $e) {
-            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
-            return (object)[
-                "status" => "nok",
-                "error" => $error
-            ];
-        } catch (\Throwable $th) {
-            return (object)[
-                "status" => "nok",
-                "error" => $th->getMessage()
-            ];
-        }
+        return sendRequest($key, $data);
     }
 
 
@@ -161,10 +79,7 @@ class BridgingEKlaimRepository
     public function bridgingDataProcess($no_sep)
     {
         $semua_transaksi = $this->allTransactionsBySep($no_sep);
-        if (!$semua_transaksi) {
-            return false;
-        }
-        if (count($semua_transaksi) < 1) {
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
             return false;
         }
 
@@ -180,8 +95,10 @@ class BridgingEKlaimRepository
             }
         }
 
+        $this->bridgingReEditClaim($no_sep);
+
         // buat new claim dulu
-        return $this->bridgingNewClaimProcess(
+        $this->bridgingNewClaimProcess(
             $transaksi_uatama->FMNO_KARTU,
             $transaksi_uatama->FMNOSEP,
             $transaksi_uatama->FRPPASIEN_ID,
@@ -190,7 +107,13 @@ class BridgingEKlaimRepository
             $transaksi_uatama->JENIS_KELAMIN,
         );
 
-        return $this->bridgingGrouperStage1($no_sep);
+        $this->bridgingUpdatePatien(
+            $transaksi_uatama->FRPPASIEN_ID,
+            $transaksi_uatama->FMNO_KARTU,
+            $transaksi_uatama->NAMAPASIEN,
+            $transaksi_uatama->TGL_LAHIR,
+            $transaksi_uatama->JENIS_KELAMIN,
+        );
 
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_uatama->FRPNOTRANSAKSI);
@@ -231,7 +154,7 @@ class BridgingEKlaimRepository
             'cara_masuk' => $transaksi_uatama->CARA_MASUK,
         ];
 
-        $request = json_encode((object)[
+        $requestData = json_encode((object)[
             'metadata' => (object)[
                 'method' => 'set_claim_data',
                 'nomor_sep' => $no_sep,
@@ -241,44 +164,7 @@ class BridgingEKlaimRepository
 
         $key = $user->eklaim_key;
 
-        $data = mc_encrypt($request, $key);
-
-        $client = new Client();
-        $url = env("EKLAIM_WS_URL");
-
-        try {
-            $response = $client->post($url, [
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded'
-                ],
-                'body'    => $data
-            ]);
-        } catch (RequestException $e) {
-            $err = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
-            return (object)[
-                "status" => "nok",
-                "error" => $err
-            ];
-        } catch (\Throwable $th) {
-            $err = $th->getMessage();
-            return (object)[
-                "status" => "nok",
-                "error" => $err
-            ];
-        }
-
-        $response = $response->getBody()->getContents();
-
-        $first = strpos($response, "\n") + 1;
-        $last = strrpos($response, "\n") - 1;
-        $response = substr($response, $first, strlen($response) - $first - $last);
-        $response = mc_decrypt($response, $key);
-
-        return (object)[
-            "status" => "ok",
-            "error" => null,
-            "response" => json_decode($response)
-        ];
+        return sendRequest($key, $requestData);
     }
 
     /**
@@ -292,53 +178,64 @@ class BridgingEKlaimRepository
         $key = $user->eklaim_key;
 
         // Data request
-        $request = json_encode([
+        $data = json_encode([
             "metadata" => ["method" => "claim_final"],
             "data" => ["nomor_sep" => $no_sep, "coder_nik" => $user->nik]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-        // Enkripsi data sebelum dikirim
-        $encryptedData = mc_encrypt($request, $key);
+        return sendRequest($key, $data);
+    }
 
-        $client = new Client();
-        $url = env("EKLAIM_WS_URL");
+    /**
+     * Process bridgingUpdatePatien
+     * 
+     * @param string $nomor_rm, $nomor_kartu, $nama_pasien, $tgl_lahir, $gender
+     */
+    public function bridgingUpdatePatien($nomor_rm, $nomor_kartu, $nama_pasien, $tgl_lahir, $gender)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $formattedBirthDate = date("Y-m-d H:i:s", strtotime($tgl_lahir));
 
-        try {
-            $response = $client->post($url, [
-                'headers' => [
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                    'Accept' => 'application/json'
-                ],
-                'body' => $encryptedData
-            ]);
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "update_patient",
+                "nomor_rm" => $nomor_rm,
+            ],
+            "data" => [
+                "nomor_kartu" => $nomor_kartu,
+                "nomor_rm" => $nomor_rm,
+                "nama_pasien" => $nama_pasien,
+                "tgl_lahir" => $formattedBirthDate,
+                "gender" => $gender,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-            $responseBody = $response->getBody()->getContents();
+        return sendRequest($key, $data);
+    }
 
-            // Membersihkan response dari karakter tak diinginkan
-            $first = strpos($responseBody, "\n") + 1;
-            $last = strrpos($responseBody, "\n") - 1;
-            $responseBody = substr($responseBody, $first, strlen($responseBody) - $first - $last);
+    /**
+     * Process bridgingReEditClaim
+     * 
+     * @param string $nomor_rm, $nomor_kartu, $nama_pasien, $tgl_lahir, $gender
+     */
+    public function bridgingReEditClaim($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
 
-            // Dekripsi response
-            $decryptedResponse = mc_decrypt($responseBody, $key);
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "reedit_claim",
+            ],
+            "data" => [
+                "nomor_sep" => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-            return (object)[
-                "status" => "ok",
-                "error" => null,
-                "response" => json_decode($decryptedResponse)
-            ];
-        } catch (RequestException $e) {
-            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
-            return (object)[
-                "status" => "nok",
-                "error" => $error
-            ];
-        } catch (\Throwable $th) {
-            return (object)[
-                "status" => "nok",
-                "error" => $th->getMessage()
-            ];
-        }
+        return sendRequest($key, $data);
     }
 
     /**

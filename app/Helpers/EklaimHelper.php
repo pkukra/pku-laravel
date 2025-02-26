@@ -1,5 +1,9 @@
 <?php
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Log;
+
 if (! function_exists('mc_encrypt')) {
     function mc_encrypt($data, $key)
     {
@@ -62,5 +66,54 @@ if (! function_exists('mc_decrypt')) {
         }
         $decrypted = openssl_decrypt($encrypted, "aes-256-cbc", $key, OPENSSL_RAW_DATA, $iv);
         return $decrypted;
+    }
+}
+
+if (! function_exists('sendRequest')) {
+    function sendRequest($key, $data)
+    {
+        $encryptedData = mc_encrypt($data, $key); // enkripsi data sebelum dikirim
+
+        $url = env("EKLAIM_WS_URL");
+        $client = new Client();
+
+        try {
+            $response = $client->post($url, [
+                'headers' => [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'Accept' => 'application/json'
+                ],
+                'body' => $encryptedData
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+
+            // Membersihkan response dari karakter tak diinginkan
+            $first = strpos($responseBody, "\n") + 1;
+            $last = strrpos($responseBody, "\n") - 1;
+            $responseBody = substr($responseBody, $first, strlen($responseBody) - $first - $last);
+
+            // Dekripsi response
+            $decryptedResponse = mc_decrypt($responseBody, $key);
+
+            return (object)[
+                "status" => "ok",
+                "error" => null,
+                "response" => json_decode($decryptedResponse)
+            ];
+        } catch (RequestException $e) {
+            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
+            Log::error('Error heleper send req RequestException: ' . $e->getMessage());
+            return (object)[
+                "status" => "nok",
+                "error" => $error
+            ];
+        } catch (\Throwable $th) {
+            Log::error('Error heleper send req Throwable: ' . $th->getMessage());
+            return (object)[
+                "status" => "nok",
+                "error" => $th->getMessage()
+            ];
+        }
     }
 }
