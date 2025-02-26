@@ -161,10 +161,35 @@ class BridgingEKlaimRepository
             ],
             'data' => $data
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $key = $user->eklaim_key;
+        $response =  sendRequest($key, $requestData);
+        $this->bridgingGroupStage1Process($no_sep);
 
+        return $response;
+    }
+
+    /**
+     * Process bridgingGroupStage1Process by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingGroupStage1Process($no_sep)
+    {
+        $user = Auth::user();
         $key = $user->eklaim_key;
 
-        return sendRequest($key, $requestData);
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "grouper",
+                "stage" => "1",
+            ],
+            "data" => [
+                "nomor_sep" => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        return sendRequest($key, $data);
     }
 
     /**
