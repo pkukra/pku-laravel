@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\RM\PasienRujukanController;
+use App\Http\Controllers\Cesemix\CesemixRanapMonitController;
 use App\Http\Controllers\RM\EklaimController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -66,6 +67,12 @@ Route::prefix('rm')->group(function () {
 
         Route::post('/bridging_data_process/{no_sep}', [PasienRujukanController::class, 'bridging_data_process'])->name('rm.pasien-rujukan.bridging_data_process');
         Route::post('/bridging_final_process/{no_sep}', [PasienRujukanController::class, 'bridging_final_process'])->name('rm.pasien-rujukan.bridging_final_process');
+    });
+});
+
+Route::prefix('casemix')->group(function () {
+    Route::middleware('auth')->prefix('ranap-monit')->group(function () {
+        Route::get('/', [CesemixRanapMonitController::class, 'list_pasien'])->name('casemix.ranap-monit.list_pasien');
     });
 });
 

@@ -28,7 +28,8 @@
     },
     "autoload": {
         "files": [
-            "app/Helpers/EklaimHelper.php"
+            "app/Helpers/EklaimHelper.php",
+            "app/Helpers/GetDiagnosaByKodereg.php"
         ],
         "psr-4": {
             "App\\": "app/",
