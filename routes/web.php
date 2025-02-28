@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\RM\PasienRujukanController;
-use App\Http\Controllers\Cesemix\CesemixRanapMonitController;
+use App\Http\Controllers\Cesemix\RanapMonitController;
 use App\Http\Controllers\RM\EklaimController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -72,7 +72,9 @@ Route::prefix('rm')->group(function () {
 
 Route::prefix('casemix')->group(function () {
     Route::middleware('auth')->prefix('ranap-monit')->group(function () {
-        Route::get('/', [CesemixRanapMonitController::class, 'list_pasien'])->name('casemix.ranap-monit.list_pasien');
+        Route::get('/', [RanapMonitController::class, 'list_pasien'])->name('casemix.ranap-monit.list_pasien');
+        Route::get('/list_pasien_data', [RanapMonitController::class, 'list_pasien_data'])->name('casemix.ranap-monit.list_pasien_data');
+        Route::post('/update_monit_row/{kode_reg}', [RanapMonitController::class, 'update_monit_row'])->name('casemix.ranap-monit.update_monit_row');
     });
 });
 
