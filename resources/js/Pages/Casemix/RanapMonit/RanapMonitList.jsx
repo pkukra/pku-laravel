@@ -5,6 +5,8 @@ import { Table, Card, Modal, Input, Button } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
 import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
@@ -323,6 +325,7 @@ export default function Index({ auth }) {
                 title={modalUpdateKey}
                 open={openModalUpdate}
                 closable={false}
+                width={700}
                 footer={[
                     <Button
                         key="back"
@@ -342,11 +345,19 @@ export default function Index({ auth }) {
                 ]}
             >
                 <p>{modalUpdateKodeReg}</p>
-                <TextArea
-                    rows={4}
-                    value={modalUpdateValue}
-                    onChange={(e) => setModalUpdateValue(e.target.value)}
-                />
+                {modalUpdateKey === "naik_kelas" ? (
+                    <TextArea
+                        rows={4}
+                        value={modalUpdateValue}
+                        onChange={(e) => setModalUpdateValue(e.target.value)}
+                    />
+                ) : (
+                    <ReactQuill
+                        theme="snow"
+                        value={modalUpdateValue}
+                        onChange={setModalUpdateValue}
+                    />
+                )}
             </Modal>
         </AuthenticatedLayout>
     );
