@@ -7,6 +7,7 @@ import axios from "axios";
 import moment from "moment";
 
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
+import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
 
 const { TextArea } = Input;
 
@@ -15,8 +16,6 @@ export default function Index({ auth }) {
     const [loadingFetchData, setLoadingFetchData] = useState(false);
     const [openModalUpdate, setOpenModalUpdate] = useState(false);
     const [loadingSave, setLoadingSave] = useState(false);
-
-    const [openModalDiagnosa, setOpenModalDiagnosa] = useState(false);
 
     const [modalUpdateKey, setModalUpdateKey] = useState(null);
     const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
@@ -197,8 +196,14 @@ export default function Index({ auth }) {
         },
         {
             title: "Kemungkinan Kode Prosedur",
-            dataIndex: "LOS",
-            key: "DPJP",
+            dataIndex: "KODE_PROCEDURE",
+            key: "KODE_PROCEDURE",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <RanapMonitListModalProcedure pasien={record} />
+                </>
+            ),
         },
         {
             title: "Total Billing",

@@ -49,8 +49,8 @@ export default function Index({ pasien }) {
         },
     ];
 
-    const [anotherOptions, setAnotherOptions] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [anotherOptions, setAnotherOptions] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [selectedProcedureForm, setSelectedProcedureForm] = useState(null);
