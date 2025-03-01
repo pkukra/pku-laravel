@@ -244,9 +244,6 @@ export default function Index({ pasien }) {
                     <Button key="back" onClick={() => setModalOpen(false)}>
                         Cancel
                     </Button>,
-                    <Button key="submit" type="primary">
-                        Simpan
-                    </Button>,
                 ]}
             >
                 <Row gutter={16} style={{ marginBottom: 10 }}>
