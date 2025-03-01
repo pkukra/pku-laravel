@@ -113,6 +113,7 @@ export default function Index({ pasien }) {
 
     // Fungsi untuk mengambil data procedure
     const fetchProcedure = () => {
+        setProcedure([]); // Reset data procedure sebelum mengambil data terbaru
         setLoadingFetchProcedure(true);
         axios
             .get(

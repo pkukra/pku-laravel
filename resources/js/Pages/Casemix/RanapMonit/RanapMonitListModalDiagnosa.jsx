@@ -85,6 +85,7 @@ export default function Index({ pasien }) {
 
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosaByNoTransakasi = async (kode_reg) => {
+        setDiagnosa([]); // Reset the data
         setLoadingFetchDiagnosa(true);
         axios
             .get(
