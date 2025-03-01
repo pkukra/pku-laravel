@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Cesemix;
 use Inertia\Inertia;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Repositories\Casemix\RanapMonitRepository;
 
@@ -22,14 +22,14 @@ class RanapMonitController extends Controller
 
     public function list_pasien()
     {
-        return Inertia::render('Casemix/RanapMonit/List');
+        return Inertia::render('Casemix/RanapMonit/RanapMonitList');
     }
 
     /**
      * list_pasien_data json data for list_pasien view
      * @return object
      */
-    public function list_pasien_data($bulan = "1", $tahun = "2025", $bangsal_induk = "IK043", $status = "sudah_pulang")
+    public function list_pasien_data($bulan = "12", $tahun = "2024", $bangsal_induk = "IK043", $status = "")
     {
         $data = $this->RanapMonitRepo->getPasienRanap($bulan, $tahun, $bangsal_induk, $status);
         return response()->json([
@@ -65,10 +65,10 @@ class RanapMonitController extends Controller
     }
 
     /**
-     * get_mr_diagnosa
+     * list_diagnosa
      * Menampilkan list_mr_diagnosa berdasarkan kode transaksi
      */
-    public function get_mr_diagnosa($kode_reg)
+    public function list_diagnosa($kode_reg)
     {
         $data = $this->RanapMonitRepo->getDiagnosaByTransaksi($kode_reg);
 
@@ -76,5 +76,72 @@ class RanapMonitController extends Controller
             'status' => "ok",
             'data' => $data,
         ]);
+    }
+
+    /**
+     * delete_diagnosa
+     * Hapus diagnosa berdasarkan ID
+     */
+    public function delete_diagnosa($id)
+    {
+        // Hapus diagnosa berdasarkan ID dari tabel MR_PENYAKIT
+        $deleted = $this->RanapMonitRepo->deleteDiagnosaById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus diagnosa',
+        ], 500);
+    }
+
+    /**
+     * save_diagnosa
+     * Menyimpan data diagnosa untuk pasien rujukan
+     */
+    public function save_diagnosa(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'icd10_code' => 'required|string|max:10',
+            'no_transaksikj' => 'required|string|max:20',
+            'no_rm' => 'required|string|max:20',
+            'kd_unit' => 'required|string|max:20',
+            'tgl_masuk' => 'required|date',
+            'status_diagnosa' => 'required|string',
+            'kasus' => 'required|string',
+        ]);
+
+        // Mengambil data yang diperlukan untuk penyimpanan
+        $data = [
+            'icd10_code' => $validated['icd10_code'],
+            'no_transaksikj' => $validated['no_transaksikj'],
+            'no_rm' => $validated['no_rm'],
+            'kd_unit' => $validated['kd_unit'],
+            'status_diagnosa' => $validated['status_diagnosa'],
+            'kasus' => $validated['kasus'],
+            'tgl_masuk' => Carbon::parse($validated['tgl_masuk']),
+            'user_id' => Auth::id(),
+        ];
+
+        // Menyimpan data diagnosa melalui repository
+        $isSaved = $this->RanapMonitRepo->saveDiagnosa($data);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
+        ], 500);
     }
 }

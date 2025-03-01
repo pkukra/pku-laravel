@@ -13,50 +13,52 @@ class RanapMonitRepository
      */
     public function getPasienRanap($bulan, $tahun, $bangsal_induk = "IK043", $status = "dirawat")
     {
-        $cacheKey = "pasien_ranap_{$bulan}_{$tahun}_{$bangsal_induk}_{$status}";
+        // $cacheKey = "pasien_ranap_{$bulan}_{$tahun}_{$bangsal_induk}_{$status}";
 
-        return Cache::remember($cacheKey, 60, function () use ($bulan, $tahun, $bangsal_induk, $status) {
-            $data = DB::connection('sqlsrv')
-                ->table('PASIENRAWATINAP AS A')
-                ->leftJoin('PASIEN AS B', 'A.PRWIKD_PASIEN', '=', 'B.KD_PASIEN')
-                ->leftJoin('DOKTER AS C', 'A.PRWIKD_DOKTER', '=', 'C.FMDDOKTER_ID')
-                ->leftJoin('KAMAR AS D', 'A.PRWIKD_KAMAR', '=', 'D.FMKKAMAR_ID')
-                ->select(
-                    'A.PRWINO_TRANSAKSI',
-                    'C.FMDDOKTERN',
-                    DB::raw('MAX(A.PRWITGL_MASUK) as PRWITGL_MASUK'),
-                    DB::raw('MAX(A.PRWITGL_KELUAR) as PRWITGL_KELUAR'),
-                    'A.PRWIKD_PASIEN',
-                    'B.NAMAPASIEN',
-                    'D.FMKKAMARINDUK',
-                    DB::raw('CASE 
+        // return Cache::remember($cacheKey, 60, function () use ($bulan, $tahun, $bangsal_induk, $status) {
+        $data = DB::connection('sqlsrv')
+            ->table('PASIENRAWATINAP AS A')
+            ->leftJoin('PASIEN AS B', 'A.PRWIKD_PASIEN', '=', 'B.KD_PASIEN')
+            ->leftJoin('DOKTER AS C', 'A.PRWIKD_DOKTER', '=', 'C.FMDDOKTER_ID')
+            ->leftJoin('KAMAR AS D', 'A.PRWIKD_KAMAR', '=', 'D.FMKKAMAR_ID')
+            ->select(
+                'A.PRWINO_TRANSAKSI',
+                'A.PRWIKD_KAMAR',
+                'C.FMDDOKTERN',
+                DB::raw('MAX(A.PRWITGL_MASUK) as PRWITGL_MASUK'),
+                DB::raw('MAX(A.PRWITGL_KELUAR) as PRWITGL_KELUAR'),
+                'A.PRWIKD_PASIEN',
+                'B.NAMAPASIEN',
+                'D.FMKKAMARINDUK',
+                DB::raw('CASE 
                         WHEN MAX(A.PRWITGL_KELUAR) IS NULL THEN DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), GETDATE()) + 1
                         ELSE DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), MAX(A.PRWITGL_KELUAR)) + 1
                         END as TOTAL_HARI')
-                )
-                ->whereRaw('MONTH(A.PRWITGL_INAP) = ?', [$bulan])
-                ->whereRaw('YEAR(A.PRWITGL_INAP) = ?', [$tahun])
-                ->where('D.FMKKAMARINDUK', $bangsal_induk)
-                ->when($status === 'dirawat', fn($query) => $query->whereNull('A.PRWITGL_KELUAR'))
-                ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('A.PRWITGL_KELUAR'))
-                ->groupBy('A.PRWINO_TRANSAKSI', 'A.PRWIKD_PASIEN', 'B.NAMAPASIEN', 'C.FMDDOKTERN', 'D.FMKKAMARINDUK')
-                ->orderByDesc('PRWITGL_MASUK')
-                ->get();
+            )
+            ->whereRaw('MONTH(A.PRWITGL_INAP) = ?', [$bulan])
+            ->whereRaw('YEAR(A.PRWITGL_INAP) = ?', [$tahun])
+            ->where('D.FMKKAMARINDUK', $bangsal_induk)
+            ->when($status === 'dirawat', fn($query) => $query->whereNull('A.PRWITGL_KELUAR'))
+            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('A.PRWITGL_KELUAR'))
+            ->groupBy('A.PRWINO_TRANSAKSI', 'A.PRWIKD_KAMAR', 'A.PRWIKD_PASIEN', 'B.NAMAPASIEN', 'C.FMDDOKTERN', 'D.FMKKAMARINDUK')
+            ->orderByDesc('PRWITGL_MASUK')
+            ->limit(5)
+            ->get();
 
-            return $data->map(function ($pasien) {
-                $cacheKey = "pasien_detail_{$pasien->PRWINO_TRANSAKSI}";
-                return Cache::remember($cacheKey, 30, function () use ($pasien) {
-                    $pasien->FS_DIAGNOSA = get_diagnosa_ri($pasien->PRWINO_TRANSAKSI);
-                    $ranap = get_casemix_ranap_data($pasien->PRWINO_TRANSAKSI);
-                    if ($ranap) {
-                        foreach ($ranap as $key => $value) {
-                            $pasien->$key = $value;
-                        }
+        return $data->map(function ($pasien) {
+            $cacheKey = "pasien_detail_{$pasien->PRWINO_TRANSAKSI}";
+            return Cache::remember($cacheKey, 30, function () use ($pasien) {
+                $pasien->FS_DIAGNOSA = get_diagnosa_ri($pasien->PRWINO_TRANSAKSI);
+                $ranap = get_casemix_ranap_data($pasien->PRWINO_TRANSAKSI);
+                if ($ranap) {
+                    foreach ($ranap as $key => $value) {
+                        $pasien->$key = $value;
                     }
-                    return $pasien;
-                });
+                }
+                return $pasien;
             });
         });
+        // });
     }
 
     /**
@@ -140,5 +142,74 @@ class RanapMonitRepository
             ->select('MR_PENYAKIT.*', 'PENYAKIT.PENYAKIT')
             ->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi)
             ->get();
+    }
+
+    /**
+     * Delete diagnosa by ID from MR_PENYAKIT table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteDiagnosaById($id)
+    {
+        try {
+            $deleted = DB::connection('sqlsrv')
+                ->table('MR_PENYAKIT')
+                ->where('ID', $id)
+                ->delete();
+
+            return $deleted > 0;
+        } catch (\Exception $e) {
+            // Handle exception (logging, etc.)
+            return false;
+        }
+    }
+
+    /**
+     * Save diagnosa for pasien rujukan
+     * 
+     * @param array $data
+     * @return boolean
+     */
+    public function saveDiagnosa($data)
+    {
+        $no_transaksikj = $data['no_transaksikj'];
+        $now = now();
+        $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
+
+        // Get the latest MRPURUT_MASUK value to generate next
+        $lastUrutMasuk = DB::connection('sqlsrv')
+            ->table('MR_PENYAKIT')
+            ->where('MRPNO_TRANSAKSI', $no_transaksikj)
+            ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'desc')
+            ->limit(1)
+            ->value('MRPURUT_MASUK');
+
+        $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
+
+        try {
+            DB::connection('sqlsrv')
+                ->table('MR_PENYAKIT')
+                ->insert([
+                    'MRPKD_PENYAKIT' => $data['icd10_code'],
+                    'MRPNO_TRANSAKSI' => $no_transaksikj,
+                    'MRPKD_PASIEN' => $data['no_rm'],
+                    'MRPKD_UNIT' => $data['kd_unit'],
+                    'MRPTGL_MASUK' => $tgl_masuk,
+                    'MRPURUT_MASUK' => $no_urut_masuk,
+                    'MRPJENIS' => 'RJ',
+                    'MRPSTAT_DIAG' => $data['status_diagnosa'],
+                    'MRPKASUS' => $data['kasus'],
+                    // 'STATUS_IMUN' => 1,
+                    // 'MRPIMUNKE' => 1,
+                    'USER_ID' => $data['user_id'], // Assuming user ID is passed
+                    'UPDATE_DT' => $now,
+                ]);
+        } catch (\Exception $e) {
+            // Handle exception (logging, etc.)
+            return false;
+        }
+
+        return true;
     }
 }

@@ -6,6 +6,8 @@ import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
 
+import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
+
 const { TextArea } = Input;
 
 export default function Index({ auth }) {
@@ -189,15 +191,7 @@ export default function Index({ auth }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleModalDiagnosaOpen({
-                                kode_reg: record?.PRWINO_TRANSAKSI,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    <RanapMonitListModalDiagnosa pasien={record} />
                 </>
             ),
         },
@@ -290,26 +284,6 @@ export default function Index({ auth }) {
         }
     };
 
-    const fetchDiagnosaByNoTransakasi = async (kode_reg) => {
-        try {
-            const response = await axios.get(
-                route("casemix.ranap-monit.get_mr_diagnosa", {
-                    kode_reg,
-                })
-            );
-            console.log(response?.data);
-        } catch (error) {
-            console.error("Error fetching data: ", error);
-        } finally {
-        }
-    };
-    
-    const handleModalDiagnosaOpen = (param) => {
-        setModalUpdateKodeReg(param?.kode_reg);
-        fetchDiagnosaByNoTransakasi(param?.kode_reg);
-        setOpenModalDiagnosa(true);
-    };
-
     useEffect(() => {
         fetchData();
     }, []);
@@ -333,10 +307,10 @@ export default function Index({ auth }) {
                     columns={columns}
                     size="small"
                     rowKey="PRWINO_TRANSAKSI"
-                    // scroll={{
-                    //     x: 2000,
-                    //     y: 600,
-                    // }}
+                    scroll={{
+                        x: 2000,
+                        y: 600,
+                    }}
                 />
             </Card>
             <Modal
@@ -368,27 +342,6 @@ export default function Index({ auth }) {
                     value={modalUpdateValue}
                     onChange={(e) => setModalUpdateValue(e.target.value)}
                 />
-            </Modal>
-
-            <Modal
-                title="Edit Kode Diagnosa"
-                destroyOnClose
-                open={openModalDiagnosa}
-                closable={false}
-                width={800}
-                footer={[
-                    <Button
-                        key="back"
-                        onClick={() => setOpenModalDiagnosa(false)}
-                    >
-                        Cancel
-                    </Button>,
-                    <Button key="submit" type="primary">
-                        Simpan
-                    </Button>,
-                ]}
-            >
-                hallo
             </Modal>
         </AuthenticatedLayout>
     );
