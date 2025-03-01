@@ -78,6 +78,10 @@ Route::prefix('casemix')->group(function () {
         Route::post('/update_monit_row/{kode_reg}', [RanapMonitController::class, 'update_monit_row'])->name('casemix.ranap-monit.update_monit_row');
         Route::delete('/pasien-rujukan/diagnosa/{id}', [RanapMonitController::class, 'delete_diagnosa'])->name('casemix.ranap-monit.delete_diagnosa');
         Route::post('/save-diagnosa', [RanapMonitController::class, 'save_diagnosa'])->name('casemix.ranap-monit.save_diagnosa');
+
+        Route::post('/save-procedure', [RanapMonitController::class, 'save_procedure'])->name('casemix.ranap-monit.save_procedure');
+        Route::get('/list_procedure/{kode_reg}', [RanapMonitController::class, 'list_procedure'])->name('casemix.ranap-monit.list_procedure');
+        Route::delete('/ranap-monit/delete-procedure/{id}', [RanapMonitController::class, 'delete_procedure'])->name('casemix.ranap-monit.delete_procedure');
     });
 });
 

@@ -144,4 +144,82 @@ class RanapMonitController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
         ], 500);
     }
+
+    /**
+     * save_diagnosa
+     * Menyimpan data diagnosa untuk pasien rujukan
+     */
+    public function save_procedure(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'icd9_code' => 'required|string|max:10',
+            'no_transaksikj' => 'required|string|max:20',
+            'no_rm' => 'required|string|max:20',
+            'kd_unit' => 'required|string|max:20',
+            'tgl_masuk' => 'required|date',
+        ]);
+
+        // Mengambil data yang diperlukan untuk penyimpanan
+        $data = [
+            'icd9_code' => $validated['icd9_code'],
+            'no_transaksikj' => $validated['no_transaksikj'],
+            'no_rm' => $validated['no_rm'],
+            'kd_unit' => $validated['kd_unit'],
+            'tgl_masuk' => Carbon::parse($validated['tgl_masuk']),
+            'user_id' => Auth::id(),
+        ];
+
+        // Menyimpan data procedure melalui repository
+        $isSaved = $this->RanapMonitRepo->saveProcedure($data);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan procedure',
+        ], 500);
+    }
+
+    /**
+     * list_procedure
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function list_procedure($kode_reg)
+    {
+        // Mendapatkan procedure berdasarkan kode transaksi
+        $procedure = $this->RanapMonitRepo->getProcedureByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+        ]);
+    }
+
+    /**
+     * delete_procedure
+     * Hapus procedure berdasarkan ID
+     */
+    public function delete_procedure($id)
+    {
+        // Hapus procedure berdasarkan ID dari tabel MR_TINDAKAN
+        $deleted = $this->RanapMonitRepo->deleteProcedureById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus procedure',
+        ], 500);
+    }
 }

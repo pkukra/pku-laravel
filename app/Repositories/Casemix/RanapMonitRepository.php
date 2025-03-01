@@ -212,4 +212,86 @@ class RanapMonitRepository
 
         return true;
     }
+
+    /**
+     * Save procedure for pasien rujukan
+     * 
+     * @param array $data
+     * @return boolean
+     */
+    public function saveProcedure($data)
+    {
+        $no_transaksikj = $data['no_transaksikj'];
+        $now = now();
+        $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
+
+        // Get the latest MRTURUT_MASUK value to generate next
+        $lastUrutMasuk = DB::connection('sqlsrv')
+            ->table('MR_TINDAKAN')
+            ->where('MRTNOTRANSAKSI', $no_transaksikj)
+            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'desc')
+            ->limit(1)
+            ->value('MRTURUT_MASUK');
+
+        $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
+
+        try {
+            DB::connection('sqlsrv')
+                ->table('MR_TINDAKAN')
+                ->insert([
+                    'MRTKD_TINDAKAN' => $data['icd9_code'],
+                    'MRTNOTRANSAKSI' => $no_transaksikj,
+                    'MRTKD_PASIEN' => $data['no_rm'],
+                    'MRTKD_UNIT' => $data['kd_unit'],
+                    'MRTTGL_MASUK' => $tgl_masuk,
+                    'MRTURUT_MASUK' => $no_urut_masuk,
+                    // 'USER_ID' => $data['user_id'], // Assuming user ID is passed
+                    'MRTTGL_TINDAKAN' => $now,
+                ]);
+        } catch (\Exception $e) {
+            Log::error("Error while saving procedure: " . $e->getMessage());
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get procedure penyakit by transaksi (MR_TINDAKAN)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getProcedureByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_TINDAKAN')
+            ->select('MR_TINDAKAN.*', 'MR_ICD9.FMI9KETERANGAN')
+            ->join('MR_ICD9', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'MR_ICD9.FMI9KODE')
+            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC')
+            ->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi)
+            ->get();
+    }
+
+    /**
+     * Delete procedure by ID from MR_TINDAKAN table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteProcedureById($id)
+    {
+        try {
+            $deleted = DB::connection('sqlsrv')
+                ->table('MR_TINDAKAN')
+                ->where('ID', $id)
+                ->delete();
+
+            return $deleted > 0;
+        } catch (\Exception $e) {
+            // Handle exception (logging, etc.)
+            return false;
+        }
+    }
 }

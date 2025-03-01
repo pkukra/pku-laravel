@@ -78,7 +78,7 @@ export default function Index({ pasien }) {
         const now = moment().format("YYYY-MM-DD HH:mm:ss.SSS");
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.save_procedure"),
+                route("casemix.ranap-monit.save_procedure"),
                 {
                     icd9_code: selectedProcedureForm,
                     no_transaksikj: pasien.PRWINO_TRANSAKSI,
@@ -116,7 +116,7 @@ export default function Index({ pasien }) {
         setLoadingFetchProcedure(true);
         axios
             .get(
-                route("rm.pasien-rujukan.list_procedure", {
+                route("casemix.ranap-monit.list_procedure", {
                     kode_reg: pasien.PRWINO_TRANSAKSI,
                 })
             )
@@ -150,7 +150,7 @@ export default function Index({ pasien }) {
         setLoadingDeleteProcedure(true); // Set loading true saat mulai menghapus
         axios
             .delete(
-                route("rm.pasien-rujukan.delete_procedure", {
+                route("casemix.ranap-monit.delete_procedure", {
                     id: id,
                 })
             )
@@ -227,10 +227,7 @@ export default function Index({ pasien }) {
                 footer={[
                     <Button key="back" onClick={() => setModalOpen(false)}>
                         Cancel
-                    </Button>,
-                    <Button key="submit" type="primary">
-                        Simpan
-                    </Button>,
+                    </Button>
                 ]}
             >
                 <Row gutter={16} style={{ marginBottom: 10 }}>
