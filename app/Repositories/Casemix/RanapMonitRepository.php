@@ -11,40 +11,46 @@ class RanapMonitRepository
     /**
      * Get the list of pasien ranap each bangsal based on bangsal_induk
      */
-    public function getPasienRanap($bulan, $tahun, $bangsal_induk = "IK043", $status = "dirawat")
+    public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $status, $perPage = null, $offset = null, $countOnly = false)
     {
-        // $cacheKey = "pasien_ranap_{$bulan}_{$tahun}_{$bangsal_induk}_{$status}";
-
-        // return Cache::remember($cacheKey, 60, function () use ($bulan, $tahun, $bangsal_induk, $status) {
-        $data = DB::connection('sqlsrv')
+        $query = DB::connection('sqlsrv')
             ->table('PASIENRAWATINAP AS A')
             ->leftJoin('PASIEN AS B', 'A.PRWIKD_PASIEN', '=', 'B.KD_PASIEN')
             ->leftJoin('DOKTER AS C', 'A.PRWIKD_DOKTER', '=', 'C.FMDDOKTER_ID')
             ->leftJoin('KAMAR AS D', 'A.PRWIKD_KAMAR', '=', 'D.FMKKAMAR_ID')
-            ->select(
-                'A.PRWINO_TRANSAKSI',
-                'A.PRWIKD_KAMAR',
-                'C.FMDDOKTERN',
-                DB::raw('MAX(A.PRWITGL_MASUK) as PRWITGL_MASUK'),
-                DB::raw('MAX(A.PRWITGL_KELUAR) as PRWITGL_KELUAR'),
-                'A.PRWIKD_PASIEN',
-                'B.NAMAPASIEN',
-                'D.FMKKAMARINDUK',
-                DB::raw('CASE 
-                        WHEN MAX(A.PRWITGL_KELUAR) IS NULL THEN DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), GETDATE()) + 1
-                        ELSE DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), MAX(A.PRWITGL_KELUAR)) + 1
-                        END as TOTAL_HARI')
-            )
             ->whereRaw('MONTH(A.PRWITGL_INAP) = ?', [$bulan])
             ->whereRaw('YEAR(A.PRWITGL_INAP) = ?', [$tahun])
             ->where('D.FMKKAMARINDUK', $bangsal_induk)
             ->when($status === 'dirawat', fn($query) => $query->whereNull('A.PRWITGL_KELUAR'))
-            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('A.PRWITGL_KELUAR'))
+            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('A.PRWITGL_KELUAR'));
+
+        // Jika hanya ingin menghitung total data
+        if ($countOnly) {
+            return $query->count();
+        }
+
+        // Ambil data dengan limit dan offset
+        $data = $query->select(
+            'A.PRWINO_TRANSAKSI',
+            'A.PRWIKD_KAMAR',
+            'C.FMDDOKTERN',
+            DB::raw('MAX(A.PRWITGL_MASUK) as PRWITGL_MASUK'),
+            DB::raw('MAX(A.PRWITGL_KELUAR) as PRWITGL_KELUAR'),
+            'A.PRWIKD_PASIEN',
+            'B.NAMAPASIEN',
+            'D.FMKKAMARINDUK',
+            DB::raw('CASE 
+                    WHEN MAX(A.PRWITGL_KELUAR) IS NULL THEN DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), GETDATE()) + 1
+                    ELSE DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), MAX(A.PRWITGL_KELUAR)) + 1
+                    END as TOTAL_HARI')
+        )
             ->groupBy('A.PRWINO_TRANSAKSI', 'A.PRWIKD_KAMAR', 'A.PRWIKD_PASIEN', 'B.NAMAPASIEN', 'C.FMDDOKTERN', 'D.FMKKAMARINDUK')
             ->orderByDesc('PRWITGL_MASUK')
-            ->limit(5)
+            ->offset($offset)
+            ->limit($perPage)
             ->get();
 
+        // Proses hasil dengan cache untuk diagnosa dan casemix ranap
         return $data->map(function ($pasien) {
             $cacheKey = "pasien_detail_{$pasien->PRWINO_TRANSAKSI}";
             return Cache::remember($cacheKey, 30, function () use ($pasien) {
@@ -58,8 +64,8 @@ class RanapMonitRepository
                 return $pasien;
             });
         });
-        // });
     }
+
 
     /**
      * Update data in CASEMIX_RANAP table

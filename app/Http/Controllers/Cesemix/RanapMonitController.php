@@ -29,13 +29,30 @@ class RanapMonitController extends Controller
      * list_pasien_data json data for list_pasien view
      * @return object
      */
-    public function list_pasien_data($bulan = "12", $tahun = "2024", $bangsal_induk = "IK043", $status = "")
-    {
-        $data = $this->RanapMonitRepo->getPasienRanap($bulan, $tahun, $bangsal_induk, $status);
-        return response()->json([
-            'pasiens' => $data,
-        ]);
-    }
+    public function list_pasien_data(Request $request)
+{
+    $bulan = $request->bulan ?? date('m');
+    $tahun = $request->tahun ?? date('Y');
+    $bangsal_induk = $request->bangsal_induk ?? "IK043";
+    $status = $request->status ?? "dirawat";
+    $perPage = $request->get('per_page', 10);
+    $page = $request->get('page', 1);
+    $offset = ($page - 1) * $perPage;
+
+    // Ambil total pasien untuk pagination
+    $total = $this->RanapMonitRepo->getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $status, null, null, true);
+
+    // Ambil data pasien
+    $data = $this->RanapMonitRepo->getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $status, $perPage, $offset, false);
+
+    return response()->json([
+        'pasiens' => $data,
+        'total' => $total,
+        'page' => $page,
+        'per_page' => $perPage,
+    ]);
+}
+
 
     // update_monit_row
     public function update_monit_row(Request $request, $kode_reg)

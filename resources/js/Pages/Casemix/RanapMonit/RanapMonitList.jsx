@@ -14,15 +14,6 @@ import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
 const { TextArea } = Input;
 
 export default function Index({ auth }) {
-    const [dataSource, setDataSource] = useState([]);
-    const [loadingFetchData, setLoadingFetchData] = useState(false);
-    const [openModalUpdate, setOpenModalUpdate] = useState(false);
-    const [loadingSave, setLoadingSave] = useState(false);
-
-    const [modalUpdateKey, setModalUpdateKey] = useState(null);
-    const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
-    const [modalUpdateValue, setModalUpdateValue] = useState(null);
-
     const columns = [
         {
             title: "No Transakasi",
@@ -219,6 +210,20 @@ export default function Index({ auth }) {
         },
     ];
 
+    const [dataSource, setDataSource] = useState([]);
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        total: 0,
+    });
+    const [loadingFetchData, setLoadingFetchData] = useState(false);
+    const [openModalUpdate, setOpenModalUpdate] = useState(false);
+    const [loadingSave, setLoadingSave] = useState(false);
+
+    const [modalUpdateKey, setModalUpdateKey] = useState(null);
+    const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
+    const [modalUpdateValue, setModalUpdateValue] = useState(null);
+
     const handleOpenModal = (param) => {
         setModalUpdateKey(param?.key);
         setModalUpdateKodeReg(param?.kode_reg);
@@ -277,15 +282,29 @@ export default function Index({ auth }) {
             });
     };
 
-    const fetchData = async () => {
+   const fetchData = async (page = pagination.current, perPage = pagination.pageSize) => {
         setLoadingFetchData(true);
         try {
-            const response = await axios.get(
-                route("casemix.ranap-monit.list_pasien_data")
+            const { data } = await axios.get(
+                route("casemix.ranap-monit.list_pasien_data"),
+                {
+                    params: { page, per_page: perPage },
+                }
             );
-            setDataSource(response?.data?.pasiens || []);
+
+            setDataSource(data.pasiens);
+            setPagination((prev) => {
+                const newPagination = {
+                    ...prev,
+                    current: data.page,
+                    pageSize: data.per_page,
+                    total: data.total,
+                };
+                localStorage.setItem("pagination", JSON.stringify(newPagination));
+                return newPagination;
+            });
         } catch (error) {
-            console.error("Error fetching data: ", error);
+            console.error("Error fetching data:", error);
         } finally {
             setLoadingFetchData(false);
         }
@@ -309,7 +328,6 @@ export default function Index({ auth }) {
                 <Table
                     bordered
                     loading={loadingFetchData}
-                    pagination={false}
                     dataSource={dataSource}
                     columns={columns}
                     size="small"
@@ -317,6 +335,12 @@ export default function Index({ auth }) {
                     scroll={{
                         x: 2000,
                         y: 600,
+                    }}
+                    pagination={{
+                        current: pagination.current,
+                        total: pagination.total,
+                        pageSize: pagination.pageSize,
+                        onChange: (page, pageSize) => fetchData(page, pageSize),
                     }}
                 />
             </Card>
@@ -346,8 +370,7 @@ export default function Index({ auth }) {
             >
                 <p>{modalUpdateKodeReg}</p>
                 {modalUpdateKey === "naik_kelas" ? (
-                    <TextArea
-                        rows={4}
+                    <Input
                         value={modalUpdateValue}
                         onChange={(e) => setModalUpdateValue(e.target.value)}
                     />
