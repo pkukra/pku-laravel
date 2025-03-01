@@ -191,7 +191,9 @@ export default function Index({ auth }) {
                     <div dangerouslySetInnerHTML={{ __html: text }} />
                     <a
                         onClick={() => {
-                            setOpenModalDiagnosa(true);
+                            handleModalDiagnosaOpen({
+                                kode_reg: record?.PRWINO_TRANSAKSI,
+                            });
                         }}
                     >
                         <EditOutlined />
@@ -288,6 +290,26 @@ export default function Index({ auth }) {
         }
     };
 
+    const fetchDiagnosaByNoTransakasi = async (kode_reg) => {
+        try {
+            const response = await axios.get(
+                route("casemix.ranap-monit.get_mr_diagnosa", {
+                    kode_reg,
+                })
+            );
+            console.log(response?.data);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        } finally {
+        }
+    };
+    
+    const handleModalDiagnosaOpen = (param) => {
+        setModalUpdateKodeReg(param?.kode_reg);
+        fetchDiagnosaByNoTransakasi(param?.kode_reg);
+        setOpenModalDiagnosa(true);
+    };
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -311,10 +333,10 @@ export default function Index({ auth }) {
                     columns={columns}
                     size="small"
                     rowKey="PRWINO_TRANSAKSI"
-                    scroll={{
-                        x: 2000,
-                        y: 600,
-                    }}
+                    // scroll={{
+                    //     x: 2000,
+                    //     y: 600,
+                    // }}
                 />
             </Card>
             <Modal

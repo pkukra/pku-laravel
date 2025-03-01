@@ -109,4 +109,36 @@ class RanapMonitRepository
             return false;
         }
     }
+
+    /**
+     * Get procedure penyakit by transaksi (MR_DIAGNOSA)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getMrDiagnosaByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_DIAGNOSA')
+            ->select('MR_DIAGNOSA.*')
+            ->where('MR_DIAGNOSA.MRDNO_TRANSAKSI', $no_transaksi)
+            ->get();
+    }
+
+    /**
+     * Get diagnosa penyakit by transaksi (MR_PENYAKIT)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getDiagnosaByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('MR_PENYAKIT')
+            ->join('PENYAKIT', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'PENYAKIT.KD_PENYAKIT')
+            ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
+            ->select('MR_PENYAKIT.*', 'PENYAKIT.PENYAKIT')
+            ->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi)
+            ->get();
+    }
 }

@@ -29,7 +29,7 @@ class RanapMonitController extends Controller
      * list_pasien_data json data for list_pasien view
      * @return object
      */
-    public function list_pasien_data($bulan = "2", $tahun = "2025", $bangsal_induk = "IK043", $status = "dirawat")
+    public function list_pasien_data($bulan = "1", $tahun = "2025", $bangsal_induk = "IK043", $status = "sudah_pulang")
     {
         $data = $this->RanapMonitRepo->getPasienRanap($bulan, $tahun, $bangsal_induk, $status);
         return response()->json([
@@ -62,5 +62,19 @@ class RanapMonitController extends Controller
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat menyimpan data',
         ], 500);
+    }
+
+    /**
+     * get_mr_diagnosa
+     * Menampilkan list_mr_diagnosa berdasarkan kode transaksi
+     */
+    public function get_mr_diagnosa($kode_reg)
+    {
+        $data = $this->RanapMonitRepo->getDiagnosaByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
     }
 }
