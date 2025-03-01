@@ -11,8 +11,6 @@ import "react-quill/dist/quill.snow.css";
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
 import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
 
-const { TextArea } = Input;
-
 export default function Index({ auth }) {
     const columns = [
         {
@@ -210,12 +208,16 @@ export default function Index({ auth }) {
         },
     ];
 
+    // Ambil pagination dari localStorage jika ada
+    const getSavedPagination = () => {
+        const savedPagination = localStorage.getItem("pagination");
+        return savedPagination
+            ? JSON.parse(savedPagination)
+            : { current: 1, pageSize: 10, total: 0 };
+    };
+
     const [dataSource, setDataSource] = useState([]);
-    const [pagination, setPagination] = useState({
-        current: 1,
-        pageSize: 10,
-        total: 0,
-    });
+    const [pagination, setPagination] = useState(getSavedPagination());
     const [loadingFetchData, setLoadingFetchData] = useState(false);
     const [openModalUpdate, setOpenModalUpdate] = useState(false);
     const [loadingSave, setLoadingSave] = useState(false);
@@ -282,7 +284,10 @@ export default function Index({ auth }) {
             });
     };
 
-   const fetchData = async (page = pagination.current, perPage = pagination.pageSize) => {
+    const fetchData = async (
+        page = pagination.current,
+        perPage = pagination.pageSize
+    ) => {
         setLoadingFetchData(true);
         try {
             const { data } = await axios.get(
@@ -300,7 +305,10 @@ export default function Index({ auth }) {
                     pageSize: data.per_page,
                     total: data.total,
                 };
-                localStorage.setItem("pagination", JSON.stringify(newPagination));
+                localStorage.setItem(
+                    "pagination",
+                    JSON.stringify(newPagination)
+                );
                 return newPagination;
             });
         } catch (error) {
