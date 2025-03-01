@@ -12,6 +12,9 @@ export default function Index({ auth }) {
     const [dataSource, setDataSource] = useState([]);
     const [loadingFetchData, setLoadingFetchData] = useState(false);
     const [openModalUpdate, setOpenModalUpdate] = useState(false);
+    const [loadingSave, setLoadingSave] = useState(false);
+
+    const [openModalDiagnosa, setOpenModalDiagnosa] = useState(false);
 
     const [modalUpdateKey, setModalUpdateKey] = useState(null);
     const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
@@ -19,11 +22,16 @@ export default function Index({ auth }) {
 
     const columns = [
         {
+            title: "No Transakasi",
+            dataIndex: "PRWINO_TRANSAKSI",
+            key: "PRWINO_TRANSAKSI",
+            fixed: "left",
+        },
+        {
             title: "Nama Pasien",
             dataIndex: "NAMAPASIEN",
             key: "NAMAPASIEN",
             fixed: "left",
-            align: "top",
         },
         {
             title: "Nomer RM",
@@ -41,14 +49,12 @@ export default function Index({ auth }) {
             title: "Tanggal Masuk",
             dataIndex: "PRWITGL_MASUK",
             key: "PRWITGL_MASUK",
-            fixed: "left",
             render: (text) => moment(text).format("D-M-YYYY"),
         },
         {
             title: "Tanggal Keluar",
             dataIndex: "PRWITGL_KELUAR",
             key: "PRWITGL_KELUAR",
-            fixed: "left",
             render: (text) => (text ? moment(text).format("D-M-YYYY") : ""),
         },
         {
@@ -60,8 +66,8 @@ export default function Index({ auth }) {
         },
         {
             title: "Diagnosa Utama",
-            dataIndex: "DIAGNOSA",
-            key: "DIAGNOSA",
+            dataIndex: "FS_DIAGNOSA",
+            key: "FS_DIAGNOSA",
             render: (text) => (
                 <div dangerouslySetInnerHTML={{ __html: text }} />
             ),
@@ -89,18 +95,66 @@ export default function Index({ auth }) {
         },
         {
             title: "Tindakan",
-            dataIndex: "DPJP",
-            key: "DPJP",
+            dataIndex: "TINDAKAN",
+            key: "TINDAKAN",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "tindakan",
+                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
         },
         {
             title: "Pemeriksaan Penunjang",
-            dataIndex: "LOS",
-            key: "DPJP",
+            dataIndex: "PEMERIKSAAN_PENUNJANG",
+            key: "PEMERIKSAAN_PENUNJANG",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "pemeriksaan_penunjang",
+                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
         },
         {
             title: "Hasil Penunjang Abnormal",
-            dataIndex: "LOS",
-            key: "DPJP",
+            dataIndex: "HASIL_PENUNJANG_ABNORMAL",
+            key: "HASIL_PENUNJANG_ABNORMAL",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "hasil_penunjang_abnormal",
+                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
         },
         {
             title: "Hak Kelas",
@@ -109,13 +163,41 @@ export default function Index({ auth }) {
         },
         {
             title: "Naik Kelas",
-            dataIndex: "LOS",
-            key: "DPJP",
+            dataIndex: "NAIK_KELAS",
+            key: "NAIK_KELAS",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "naik_kelas",
+                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
         },
         {
             title: "Kemungkinan Kode Dignosis",
-            dataIndex: "LOS",
-            key: "DPJP",
+            dataIndex: "KODE_DIAGNOSA",
+            key: "KODE_DIAGNOSA",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            setOpenModalDiagnosa(true);
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
         },
         {
             title: "Kemungkinan Kode Prosedur",
@@ -141,11 +223,36 @@ export default function Index({ auth }) {
         setOpenModalUpdate(true);
     };
 
-    const handleUpdateModal = () => {
+    const handleUpdate = () => {
+        setLoadingSave(true);
         let payload = {};
         if (modalUpdateKey === "diagnosa_sekunder") {
             payload = {
                 diagnosa_sekunder: modalUpdateValue,
+            };
+        }
+
+        if (modalUpdateKey === "tindakan") {
+            payload = {
+                tindakan: modalUpdateValue,
+            };
+        }
+
+        if (modalUpdateKey === "pemeriksaan_penunjang") {
+            payload = {
+                pemeriksaan_penunjang: modalUpdateValue,
+            };
+        }
+
+        if (modalUpdateKey === "hasil_penunjang_abnormal") {
+            payload = {
+                hasil_penunjang_abnormal: modalUpdateValue,
+            };
+        }
+
+        if (modalUpdateKey === "naik_kelas") {
+            payload = {
+                naik_kelas: modalUpdateValue,
             };
         }
 
@@ -159,16 +266,19 @@ export default function Index({ auth }) {
             .then((response) => {
                 console.log(response?.data);
             })
-            .catch((error) => {});
+            .catch((error) => {})
+            .finally(() => {
+                setLoadingSave(false);
+                setOpenModalUpdate(false);
+                fetchData();
+            });
     };
 
-    const fetchData = async (noRmValue) => {
+    const fetchData = async () => {
         setLoadingFetchData(true);
         try {
             const response = await axios.get(
-                route("casemix.ranap-monit.list_pasien_data", {
-                    no_rm: noRmValue,
-                })
+                route("casemix.ranap-monit.list_pasien_data")
             );
             setDataSource(response?.data?.pasiens || []);
         } catch (error) {
@@ -216,13 +326,15 @@ export default function Index({ auth }) {
                     <Button
                         key="back"
                         onClick={() => setOpenModalUpdate(false)}
+                        loading={loadingSave}
                     >
                         Cancel
                     </Button>,
                     <Button
                         key="submit"
                         type="primary"
-                        onClick={handleUpdateModal}
+                        onClick={handleUpdate}
+                        loading={loadingSave}
                     >
                         Simpan
                     </Button>,
@@ -232,8 +344,29 @@ export default function Index({ auth }) {
                 <TextArea
                     rows={4}
                     value={modalUpdateValue}
-                    onChange={(e) => setModalUpdateValue(e.target.value)} // Update the state with the new value
+                    onChange={(e) => setModalUpdateValue(e.target.value)}
                 />
+            </Modal>
+
+            <Modal
+                title="Edit Kode Diagnosa"
+                destroyOnClose
+                open={openModalDiagnosa}
+                closable={false}
+                width={800}
+                footer={[
+                    <Button
+                        key="back"
+                        onClick={() => setOpenModalDiagnosa(false)}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button key="submit" type="primary">
+                        Simpan
+                    </Button>,
+                ]}
+            >
+                hallo
             </Modal>
         </AuthenticatedLayout>
     );

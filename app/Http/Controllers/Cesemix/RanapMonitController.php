@@ -44,6 +44,9 @@ class RanapMonitController extends Controller
         $request->validate([
             'diagnosa_sekunder' => 'nullable|string',
             'tindakan' => 'nullable|string',
+            'pemeriksaan_penunjang' => 'nullable|string',
+            'hasil_penunjang_abnormal' => 'nullable|string',
+            'naik_kelas' => 'nullable|string',
         ]);
 
         $isUpdated =  $this->RanapMonitRepo->updateCasemixRanap($kode_reg, $request);
