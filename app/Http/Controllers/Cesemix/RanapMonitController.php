@@ -40,10 +40,10 @@ class RanapMonitController extends Controller
     $offset = ($page - 1) * $perPage;
 
     // Ambil total pasien untuk pagination
-    $total = $this->RanapMonitRepo->getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $status, null, null, true);
+    $total = $this->RanapMonitRepo->getOrCountPasienRanap(2, $tahun, $bangsal_induk, $status, null, null, true);
 
     // Ambil data pasien
-    $data = $this->RanapMonitRepo->getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $status, $perPage, $offset, false);
+    $data = $this->RanapMonitRepo->getOrCountPasienRanap(2, $tahun, $bangsal_induk, $status, $perPage, $offset, false);
 
     return response()->json([
         'pasiens' => $data,

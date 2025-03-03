@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Table, Card, Modal, Input, Button } from "antd";
+import { Table, Card, Modal, Input, Button, DatePicker, Row, Col } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
@@ -333,6 +333,20 @@ export default function Index({ auth }) {
         >
             <Head title="Pasien Ranap" />
             <Card title="Pasien Ranap">
+                <Row gutter={16} style={{ marginBottom: 10 }}>
+                    <Col span={2}>
+                        <DatePicker
+                            onChange={(date, dateString) => {
+                                console.log(date);
+                                console.log(dateString);
+                            }}
+                            picker="month"
+                        />
+                    </Col>
+                    <Col span={2}>
+                        <Input />
+                    </Col>
+                </Row>
                 <Table
                     bordered
                     loading={loadingFetchData}

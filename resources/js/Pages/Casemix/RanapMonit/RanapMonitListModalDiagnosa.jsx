@@ -7,7 +7,6 @@ import {
     AutoComplete,
     Row,
     Col,
-    Tooltip,
     Spin,
     notification,
 } from "antd";
@@ -244,43 +243,44 @@ export default function Index({ pasien }) {
                 footer={[
                     <Button key="back" onClick={() => setModalOpen(false)}>
                         Cancel
-                    </Button>,
+                    </Button>
                 ]}
             >
+                <p>
+                    No RM: <strong>{pasien.PRWIKD_PASIEN} </strong> No
+                    Transakasi: <strong>{pasien.PRWINO_TRANSAKSI} </strong>
+                    Nama Pasien: <strong>{pasien.NAMAPASIEN}</strong>
+                </p>
+
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={5}>
-                        <Tooltip
-                            title="Shift+F1 untuk shortcut"
-                            placement="topLeft"
-                        >
-                            <Select
-                                autoFocus
-                                ref={inputRefStatusDdiagnosa}
-                                showSearch
-                                style={{ width: "100%" }}
-                                placeholder="STATUS DIAGNOSA"
-                                filterOption={(input, option) =>
-                                    (option?.label ?? "")
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase())
-                                }
-                                options={[
-                                    { value: "5", label: "5-Diagnosa Akhir" },
-                                    { value: "1", label: "1-Diagnosa Lain" },
-                                    { value: "2", label: "2-Komplikasi" },
-                                    { value: "0", label: "0-Diagnosa Awal" },
-                                    { value: "3", label: "3-Penyebab Luar" },
-                                    {
-                                        value: "4",
-                                        label: "4-Penyebeb Kematian",
-                                    },
-                                ]}
-                                onChange={(value) => {
-                                    setSelectedStatusDiagForm(value);
-                                }}
-                                value={selectedStatusDiagForm}
-                            />
-                        </Tooltip>
+                        <Select
+                            autoFocus
+                            ref={inputRefStatusDdiagnosa}
+                            showSearch
+                            style={{ width: "100%" }}
+                            placeholder="STATUS DIAGNOSA"
+                            filterOption={(input, option) =>
+                                (option?.label ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                            options={[
+                                { value: "5", label: "5-Diagnosa Akhir" },
+                                { value: "1", label: "1-Diagnosa Lain" },
+                                { value: "2", label: "2-Komplikasi" },
+                                { value: "0", label: "0-Diagnosa Awal" },
+                                { value: "3", label: "3-Penyebab Luar" },
+                                {
+                                    value: "4",
+                                    label: "4-Penyebeb Kematian",
+                                },
+                            ]}
+                            onChange={(value) => {
+                                setSelectedStatusDiagForm(value);
+                            }}
+                            value={selectedStatusDiagForm}
+                        />
                     </Col>
                     <Col span={4}>
                         <Select
