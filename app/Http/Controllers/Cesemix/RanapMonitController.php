@@ -30,29 +30,31 @@ class RanapMonitController extends Controller
      * @return object
      */
     public function list_pasien_data(Request $request)
-{
-    $bulan = $request->bulan ?? date('m');
-    $tahun = $request->tahun ?? date('Y');
-    $bangsal_induk = $request->bangsal_induk ?? "IK043";
-    $status = $request->status ?? "dirawat";
-    $perPage = $request->get('per_page', 10);
-    $page = $request->get('page', 1);
-    $offset = ($page - 1) * $perPage;
+    {
+        $bangsal_induk = $request->bangsal_induk ?? "IK043";
+        $status = $request->status ?? "dirawat";
 
-    // Ambil total pasien untuk pagination
-    $total = $this->RanapMonitRepo->getOrCountPasienRanap(2, $tahun, $bangsal_induk, $status, null, null, true);
+        $month = $request->month ?? date('m');
+        $year = $request->year ?? date('Y');
 
-    // Ambil data pasien
-    $data = $this->RanapMonitRepo->getOrCountPasienRanap(2, $tahun, $bangsal_induk, $status, $perPage, $offset, false);
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
 
-    return response()->json([
-        'pasiens' => $data,
-        'total' => $total,
-        'page' => $page,
-        'per_page' => $perPage,
-    ]);
-}
+        $offset = ($page - 1) * $perPage;
 
+        // Ambil total pasien untuk pagination
+        $total = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $status, null, null, true);
+
+        // Ambil data pasien
+        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $status, $perPage, $offset, false);
+
+        return response()->json([
+            'pasiens' => $data,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+        ]);
+    }
 
     // update_monit_row
     public function update_monit_row(Request $request, $kode_reg)

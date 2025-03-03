@@ -5,6 +5,7 @@ import { Table, Card, Modal, Input, Button, DatePicker, Row, Col } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
+import dayjs from "dayjs";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -209,15 +210,11 @@ export default function Index({ auth }) {
     ];
 
     // Ambil pagination dari localStorage jika ada
-    const getSavedPagination = () => {
-        const savedPagination = localStorage.getItem("pagination");
-        return savedPagination
-            ? JSON.parse(savedPagination)
-            : { current: 1, pageSize: 10, total: 0 };
-    };
+    const [pagination, setPagination] = useState(null);
+    const [selectedNoRM, setSelectedNoRM] = useState(null);
+    const [selectedMonthYear, setSelectedMonthYear] = useState(null);
 
     const [dataSource, setDataSource] = useState([]);
-    const [pagination, setPagination] = useState(getSavedPagination());
     const [loadingFetchData, setLoadingFetchData] = useState(false);
     const [openModalUpdate, setOpenModalUpdate] = useState(false);
     const [loadingSave, setLoadingSave] = useState(false);
@@ -284,33 +281,36 @@ export default function Index({ auth }) {
             });
     };
 
-    const fetchData = async (
-        page = pagination.current,
-        perPage = pagination.pageSize
-    ) => {
+    const fetchData = async () => {
         setLoadingFetchData(true);
+        const monthYear = localStorage.getItem("selectedMonthYear");
+        const [year, month] = monthYear.split("-");
+        let savedPagination = localStorage.getItem("pagination");
+        savedPagination = JSON.parse(savedPagination);
+
         try {
             const { data } = await axios.get(
                 route("casemix.ranap-monit.list_pasien_data"),
                 {
-                    params: { page, per_page: perPage },
+                    params: {
+                        page: savedPagination.current,
+                        per_page: savedPagination.pageSize,
+                        year,
+                        month,
+                    },
                 }
             );
-
             setDataSource(data.pasiens);
             setPagination((prev) => {
-                const newPagination = {
+                return {
                     ...prev,
-                    current: data.page,
-                    pageSize: data.per_page,
+                    current: savedPagination.page,
+                    pageSize: savedPagination.per_page,
                     total: data.total,
                 };
-                localStorage.setItem(
-                    "pagination",
-                    JSON.stringify(newPagination)
-                );
-                return newPagination;
             });
+
+            console.log(data);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -319,6 +319,10 @@ export default function Index({ auth }) {
     };
 
     useEffect(() => {
+        const monthYear = localStorage.getItem("selectedMonthYear");
+        const formattedDate = dayjs(monthYear, "YYYY-M");
+        setSelectedMonthYear(formattedDate);
+
         fetchData();
     }, []);
 
@@ -336,15 +340,33 @@ export default function Index({ auth }) {
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={2}>
                         <DatePicker
+                            value={selectedMonthYear}
                             onChange={(date, dateString) => {
-                                console.log(date);
-                                console.log(dateString);
+                                setSelectedMonthYear(date);
+                                localStorage.setItem(
+                                    "selectedMonthYear",
+                                    dateString
+                                );
                             }}
                             picker="month"
+                            placeholder="Pilih Bulan/Tahun"
                         />
                     </Col>
                     <Col span={2}>
-                        <Input />
+                        <Input
+                            placeholder="Cari Nomor RM"
+                            value={selectedNoRM}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setSelectedNoRM(value);
+                                localStorage.setItem("selectedNoRM", value);
+                            }}
+                        />
+                    </Col>
+                    <Col span={2}>
+                        <Button type="primary" onClick={() => fetchData()}>
+                            Cari
+                        </Button>
                     </Col>
                 </Row>
                 <Table
@@ -359,10 +381,16 @@ export default function Index({ auth }) {
                         y: 600,
                     }}
                     pagination={{
-                        current: pagination.current,
-                        total: pagination.total,
-                        pageSize: pagination.pageSize,
-                        onChange: (page, pageSize) => fetchData(page, pageSize),
+                        current: pagination?.current,
+                        total: pagination?.total,
+                        pageSize: pagination?.pageSize,
+                        onChange: (page, pageSize) => {
+                            localStorage.setItem(
+                                "pagination",
+                                JSON.stringify({ current: page, pageSize })
+                            );
+                            fetchData();
+                        },
                     }}
                 />
             </Card>
