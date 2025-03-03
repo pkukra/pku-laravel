@@ -209,12 +209,12 @@ export default function Index({ auth }) {
         },
     ];
 
-    const [page, setPage] = useState(1);
-    const [totalData, setTotalData] = useState(0);
-    const [pageSize, setPageSize] = useState(10);
-
     const [selectedNoRM, setSelectedNoRM] = useState(null);
-    const [selectedMonthYear, setSelectedMonthYear] = useState(null);
+    const [selectedYearMonth, setSelectedYearMonth] = useState(null);
+
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(10);
+    const [totalData, setTotalData] = useState(10);
 
     const [dataSource, setDataSource] = useState([]);
     const [loadingFetchData, setLoadingFetchData] = useState(false);
@@ -279,30 +279,26 @@ export default function Index({ auth }) {
             .finally(() => {
                 setLoadingSave(false);
                 setOpenModalUpdate(false);
-                fetchData();
+                fetchData(selectedYearMonth, selectedNoRM, page, perPage);
             });
     };
 
-    const fetchData = async () => {
+    const fetchData = async (yearMonth, nomerRM, page, perPage) => {
         setLoadingFetchData(true);
-        const monthYear = localStorage.getItem("selectedMonthYear");
-        const [year, month] = monthYear.split("-");
-        const nomerRM = localStorage.getItem("selectedNoRM");
-
         try {
+            const [year, month] = yearMonth.split("-");
             const { data } = await axios.get(
                 route("casemix.ranap-monit.list_pasien_data"),
                 {
                     params: {
                         page: page,
-                        per_page: pageSize,
+                        per_page: perPage,
                         year,
                         month,
                         nomer_rm: nomerRM,
                     },
                 }
             );
-            console.log(data);
 
             setDataSource(data.pasiens);
             setTotalData(data.total);
@@ -313,21 +309,14 @@ export default function Index({ auth }) {
         }
     };
 
+    const handleCari = () => {
+        setPage(1);
+        fetchData(selectedYearMonth, selectedNoRM, 1, perPage);
+    };
+
     useEffect(() => {
-        let monthYear = localStorage.getItem("selectedMonthYear");
-
-        if (!monthYear) {
-            monthYear = dayjs().format("YYYY-M"); // Isi dengan bulan & tahun sekarang
-            localStorage.setItem("selectedMonthYear", monthYear);
-        }
-
-        const formattedDate = dayjs(monthYear, "YYYY-M");
-        setSelectedMonthYear(formattedDate);
-
-        let nomerRm = localStorage.getItem("selectedNoRM");
-        setSelectedNoRM(nomerRm || ""); // Pastikan tidak null
-
-        fetchData();
+        setSelectedYearMonth(dayjs().format("YYYY-MM"));
+        fetchData(selectedYearMonth, selectedNoRM, page, perPage);
     }, []);
 
     return (
@@ -344,13 +333,9 @@ export default function Index({ auth }) {
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={2}>
                         <DatePicker
-                            value={selectedMonthYear}
+                            value={dayjs(selectedYearMonth, "YYYY-MM")}
                             onChange={(date, dateString) => {
-                                setSelectedMonthYear(date);
-                                localStorage.setItem(
-                                    "selectedMonthYear",
-                                    dateString
-                                );
+                                setSelectedYearMonth(dateString);
                             }}
                             picker="month"
                             placeholder="Pilih Bulan/Tahun"
@@ -364,26 +349,16 @@ export default function Index({ auth }) {
                             onChange={(e) => {
                                 const value = e.target.value;
                                 setSelectedNoRM(value);
-                                localStorage.setItem("selectedNoRM", value);
                             }}
                         />
                     </Col>
                     <Col span={2}>
-                        <Button
-                            type="primary"
-                            onClick={() => {
-                                setPage(() => {
-                                    fetchData(1);
-                                    return 1;
-                                });
-                                setDataSource([]);
-                                setTotalData(0);
-                            }}
-                        >
+                        <Button type="primary" onClick={handleCari}>
                             Cari
                         </Button>
                     </Col>
                 </Row>
+                <small>total data: {totalData}</small>
                 <Table
                     bordered
                     loading={loadingFetchData}
@@ -396,13 +371,20 @@ export default function Index({ auth }) {
                         y: 600,
                     }}
                     pagination={{
+                        simple: true,
                         current: page,
                         total: totalData,
-                        pageSize: pageSize,
-                        onChange: (page, pageSize) => {
-                            setPage(page);
-                            setPageSize(pageSize);
-                            fetchData();
+                        pageSize: perPage,
+                        onChange: (currentPage, currentPageSize) => {
+                            console.log(currentPage, currentPageSize);
+                            setPage(currentPage);
+                            setPerPage(currentPageSize);
+                            fetchData(
+                                selectedYearMonth,
+                                selectedNoRM,
+                                currentPage,
+                                currentPageSize
+                            );
                         },
                     }}
                 />
