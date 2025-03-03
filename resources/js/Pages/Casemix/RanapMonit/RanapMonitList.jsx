@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Table, Card, Modal, Input, Button, DatePicker, Row, Col } from "antd";
+import {
+    Table,
+    Card,
+    Modal,
+    Input,
+    Button,
+    DatePicker,
+    Row,
+    Col,
+    Select,
+} from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
@@ -209,6 +219,7 @@ export default function Index({ auth }) {
         },
     ];
 
+    const [selectedStatusRawat, setSelectedStatusRawat] = useState("dirawat");
     const [selectedNoRM, setSelectedNoRM] = useState(null);
     const [selectedYearMonth, setSelectedYearMonth] = useState(null);
 
@@ -295,6 +306,7 @@ export default function Index({ auth }) {
                         per_page: perPage,
                         year,
                         month,
+                        status: selectedStatusRawat,
                         nomer_rm: selectedNoRM,
                     },
                 }
@@ -333,6 +345,7 @@ export default function Index({ auth }) {
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={2}>
                         <DatePicker
+                            allowClear={false}
                             value={dayjs(selectedYearMonth, "YYYY-MM")}
                             onChange={(date, dateString) => {
                                 setSelectedYearMonth(dateString);
@@ -350,6 +363,21 @@ export default function Index({ auth }) {
                                 const value = e.target.value;
                                 setSelectedNoRM(value);
                             }}
+                        />
+                    </Col>
+                    <Col span={3}>
+                        <Select
+                            defaultValue={selectedStatusRawat}
+                            style={{ width: 150 }}
+                            onChange={(value) => setSelectedStatusRawat(value)}
+                            options={[
+                                { value: "dirawat", label: "Dirawat" },
+                                {
+                                    value: "sudah_pulang",
+                                    label: "Sudah Pulang",
+                                },
+                                { value: "semua", label: "Semua" },
+                            ]}
                         />
                     </Col>
                     <Col span={2}>
