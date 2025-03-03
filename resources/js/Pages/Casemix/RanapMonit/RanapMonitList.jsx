@@ -279,14 +279,14 @@ export default function Index({ auth }) {
             .finally(() => {
                 setLoadingSave(false);
                 setOpenModalUpdate(false);
-                fetchData(selectedYearMonth, selectedNoRM, page, perPage);
+                fetchData();
             });
     };
 
-    const fetchData = async (yearMonth, nomerRM, page, perPage) => {
+    const fetchData = async () => {
         setLoadingFetchData(true);
         try {
-            const [year, month] = yearMonth.split("-");
+            const [year, month] = selectedYearMonth.split("-");
             const { data } = await axios.get(
                 route("casemix.ranap-monit.list_pasien_data"),
                 {
@@ -295,7 +295,7 @@ export default function Index({ auth }) {
                         per_page: perPage,
                         year,
                         month,
-                        nomer_rm: nomerRM,
+                        nomer_rm: selectedNoRM,
                     },
                 }
             );
@@ -311,12 +311,12 @@ export default function Index({ auth }) {
 
     const handleCari = () => {
         setPage(1);
-        fetchData(selectedYearMonth, selectedNoRM, 1, perPage);
+        fetchData();
     };
 
     useEffect(() => {
         setSelectedYearMonth(dayjs().format("YYYY-MM"));
-        fetchData(selectedYearMonth, selectedNoRM, page, perPage);
+        fetchData();
     }, []);
 
     return (
@@ -379,12 +379,7 @@ export default function Index({ auth }) {
                             console.log(currentPage, currentPageSize);
                             setPage(currentPage);
                             setPerPage(currentPageSize);
-                            fetchData(
-                                selectedYearMonth,
-                                selectedNoRM,
-                                currentPage,
-                                currentPageSize
-                            );
+                            fetchData();
                         },
                     }}
                 />
