@@ -33,6 +33,7 @@ class RanapMonitController extends Controller
     {
         $bangsal_induk = $request->bangsal_induk ?? "IK043";
         $status = $request->status ?? "dirawat";
+        $nomer_rm = $request->nomer_rm ?? "";
 
         $month = $request->month ?? date('m');
         $year = $request->year ?? date('Y');
@@ -43,10 +44,10 @@ class RanapMonitController extends Controller
         $offset = ($page - 1) * $perPage;
 
         // Ambil total pasien untuk pagination
-        $total = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $status, null, null, true);
+        $total = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, true);
 
         // Ambil data pasien
-        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $status, $perPage, $offset, false);
+        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, false);
 
         return response()->json([
             'pasiens' => $data,

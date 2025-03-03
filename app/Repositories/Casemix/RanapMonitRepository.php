@@ -11,7 +11,7 @@ class RanapMonitRepository
     /**
      * Get the list of pasien ranap each bangsal based on bangsal_induk
      */
-    public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $status, $perPage = null, $offset = null, $countOnly = false)
+    public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false)
     {
         $query = DB::connection('sqlsrv')
             ->table('PASIENRAWATINAP AS A')
@@ -23,6 +23,10 @@ class RanapMonitRepository
             ->where('D.FMKKAMARINDUK', $bangsal_induk)
             ->when($status === 'dirawat', fn($query) => $query->whereNull('A.PRWITGL_KELUAR'))
             ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('A.PRWITGL_KELUAR'));
+
+        if ($nomer_rm) {
+            $query->where('A.PRWIKD_PASIEN', "$nomer_rm");
+        }
 
         // Jika hanya ingin menghitung total data
         if ($countOnly) {

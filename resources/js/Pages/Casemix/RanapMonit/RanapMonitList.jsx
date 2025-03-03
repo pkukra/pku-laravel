@@ -209,8 +209,10 @@ export default function Index({ auth }) {
         },
     ];
 
-    // Ambil pagination dari localStorage jika ada
-    const [pagination, setPagination] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalData, setTotalData] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+
     const [selectedNoRM, setSelectedNoRM] = useState(null);
     const [selectedMonthYear, setSelectedMonthYear] = useState(null);
 
@@ -285,32 +287,25 @@ export default function Index({ auth }) {
         setLoadingFetchData(true);
         const monthYear = localStorage.getItem("selectedMonthYear");
         const [year, month] = monthYear.split("-");
-        let savedPagination = localStorage.getItem("pagination");
-        savedPagination = JSON.parse(savedPagination);
+        const nomerRM = localStorage.getItem("selectedNoRM");
 
         try {
             const { data } = await axios.get(
                 route("casemix.ranap-monit.list_pasien_data"),
                 {
                     params: {
-                        page: savedPagination.current,
-                        per_page: savedPagination.pageSize,
+                        page: page,
+                        per_page: pageSize,
                         year,
                         month,
+                        nomer_rm: nomerRM,
                     },
                 }
             );
-            setDataSource(data.pasiens);
-            setPagination((prev) => {
-                return {
-                    ...prev,
-                    current: savedPagination.page,
-                    pageSize: savedPagination.per_page,
-                    total: data.total,
-                };
-            });
-
             console.log(data);
+
+            setDataSource(data.pasiens);
+            setTotalData(data.total);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -319,9 +314,18 @@ export default function Index({ auth }) {
     };
 
     useEffect(() => {
-        const monthYear = localStorage.getItem("selectedMonthYear");
+        let monthYear = localStorage.getItem("selectedMonthYear");
+
+        if (!monthYear) {
+            monthYear = dayjs().format("YYYY-M"); // Isi dengan bulan & tahun sekarang
+            localStorage.setItem("selectedMonthYear", monthYear);
+        }
+
         const formattedDate = dayjs(monthYear, "YYYY-M");
         setSelectedMonthYear(formattedDate);
+
+        let nomerRm = localStorage.getItem("selectedNoRM");
+        setSelectedNoRM(nomerRm || ""); // Pastikan tidak null
 
         fetchData();
     }, []);
@@ -354,6 +358,7 @@ export default function Index({ auth }) {
                     </Col>
                     <Col span={2}>
                         <Input
+                            allowClear
                             placeholder="Cari Nomor RM"
                             value={selectedNoRM}
                             onChange={(e) => {
@@ -364,7 +369,17 @@ export default function Index({ auth }) {
                         />
                     </Col>
                     <Col span={2}>
-                        <Button type="primary" onClick={() => fetchData()}>
+                        <Button
+                            type="primary"
+                            onClick={() => {
+                                setPage(() => {
+                                    fetchData(1);
+                                    return 1;
+                                });
+                                setDataSource([]);
+                                setTotalData(0);
+                            }}
+                        >
                             Cari
                         </Button>
                     </Col>
@@ -381,14 +396,12 @@ export default function Index({ auth }) {
                         y: 600,
                     }}
                     pagination={{
-                        current: pagination?.current,
-                        total: pagination?.total,
-                        pageSize: pagination?.pageSize,
+                        current: page,
+                        total: totalData,
+                        pageSize: pageSize,
                         onChange: (page, pageSize) => {
-                            localStorage.setItem(
-                                "pagination",
-                                JSON.stringify({ current: page, pageSize })
-                            );
+                            setPage(page);
+                            setPageSize(pageSize);
                             fetchData();
                         },
                     }}
