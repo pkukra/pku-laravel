@@ -239,4 +239,19 @@ class RanapMonitController extends Controller
             'message' => 'Terjadi kesalahan saat menghapus procedure',
         ], 500);
     }
+
+
+    /**
+     * list_billing_temp
+     * Menampilkan list_billing_temp berdasarkan kode transaksi dari tabel CASEMIX_BILLING_TEMP
+     */
+    public function list_billing_temp($kode_reg)
+    {
+        $data = $this->RanapMonitRepo->getListBillingTempByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 }

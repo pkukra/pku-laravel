@@ -10,21 +10,41 @@ export default function Index({ pasien }) {
 
     // Fungsi untuk mengambil data billing sementara dari tabel CASEMIX_BILLING_TEMP
     const fetchData = () => {
+        setFetchDataLoading(true);
+        axios
+            .get(
+                route("casemix.ranap-monit.list_billing_temp", {
+                    kode_reg: pasien?.FTNO_TRANSAKSI,
+                })
+            )
+            .then((response) => {
+                console.log(response?.data);
+
+                setData(response?.data?.data || []);
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setFetchDataLoading(true);
+            });
+
         return;
     };
 
-    useEffect(() => {
+    const handleClick = () => {
+        setModalOpen(true);
         fetchData();
-    }, []);
+    };
 
     return (
         <>
-            <a onClick={() => setModalOpen(true)}>
+            <a onClick={() => handleClick()}>
                 <EditOutlined />
             </a>
 
             <Modal
-                title="Edit Billing"
+                title="Edit Billing Sementara"
                 open={modalOpen}
                 onCancel={() => setModalOpen(false)}
                 width={800}
@@ -34,7 +54,12 @@ export default function Index({ pasien }) {
                     </Button>,
                 ]}
             >
-                hallo
+                <p>
+                    No RM: <strong>{pasien?.FTKD_PASIEN} </strong> Nama Pasien:{" "}
+                    <strong>{pasien?.NAMAPASIEN}</strong> No Transakasi:{" "}
+                    <strong>{pasien?.FTNO_TRANSAKSI} </strong>
+                </p>
+                {JSON.stringify(data)}
             </Modal>
         </>
     );

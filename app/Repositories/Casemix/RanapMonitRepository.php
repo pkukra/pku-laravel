@@ -356,4 +356,20 @@ class RanapMonitRepository
             return false;
         }
     }
+
+    /**
+     * Get diagnosa penyakit by transaksi (MR_PENYAKIT)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getListBillingTempByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('CASEMIX_BILLING_TEMP')
+            ->orderBy('CREATED_AT', 'ASC')
+            ->select('*')
+            ->where('NO_TRANSAKSI', $no_transaksi)
+            ->get();
+    }
 }
