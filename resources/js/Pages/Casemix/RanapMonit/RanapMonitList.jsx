@@ -21,6 +21,7 @@ import "react-quill/dist/quill.snow.css";
 
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
 import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
+import RanapMonitListModalBilling from "./RanapMonitListModalBilling";
 
 export default function Index({ auth }) {
     const columns = [
@@ -214,9 +215,15 @@ export default function Index({ auth }) {
             ),
         },
         {
-            title: "Total Billing",
-            dataIndex: "LOS",
-            key: "DPJP",
+            title: "Billing Sementara",
+            dataIndex: "BILLING_TEMP",
+            key: "BILLING_TEMP",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <RanapMonitListModalBilling pasien={record} />
+                </>
+            ),
         },
         {
             title: "Perkiraan Klaim",
