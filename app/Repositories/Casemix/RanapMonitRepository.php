@@ -154,8 +154,6 @@ class RanapMonitRepository
             $request->key => $request->data,
         ];
 
-        Log::error($data);
-
         try {
             $pasien = DB::connection('sqlsrv')
                 ->table('PASIENRAWATINAP AS A')

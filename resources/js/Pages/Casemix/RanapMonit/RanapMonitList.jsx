@@ -339,6 +339,10 @@ export default function Index({ auth }) {
     };
 
     const handleUpdate = () => {
+        if (modalUpdateValue?.length > 160) {
+            return alert("Maksimal karakter 160");
+        }
+
         setLoadingSave(true);
 
         axios
