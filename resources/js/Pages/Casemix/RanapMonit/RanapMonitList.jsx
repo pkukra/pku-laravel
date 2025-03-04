@@ -318,7 +318,7 @@ export default function Index({ auth }) {
 
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
-    const [totalData, setTotalData] = useState(10);
+    const [totalData, setTotalData] = useState(0);
 
     const [dataSource, setDataSource] = useState([]);
     const [loadingFetchData, setLoadingFetchData] = useState(false);

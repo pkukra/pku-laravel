@@ -21,9 +21,6 @@ class RanapMonitRepository
             })
             ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
 
-            // ->leftJoin('PASIEN AS P', 'P.KD_PASIEN', '=', 'TPI.FTKD_PASIEN')
-            // ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
-
             ->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
             ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun])
             ->where('K.FMKKAMARINDUK', $bangsal_induk)
@@ -45,8 +42,8 @@ class RanapMonitRepository
             'PRI.PRWITGL_KELUAR',
             'TPI.FTTGL_TRANSAKSI',
             'TPI.FTKD_PASIEN',
-            // 'DR.FMDDOKTERN',
         )
+            ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
             ->offset($offset)
             ->limit($perPage)
             ->get();
