@@ -59,28 +59,28 @@ class RanapMonitRepository
                     $data_detail->$key = $value;
                 }
             }
-            
+
             $pasien = get_pasien_by_no_rm($data_detail->FTKD_PASIEN);
             if ($pasien) {
                 foreach ($pasien as $key => $value) {
                     $data_detail->$key = $value;
                 }
             }
-            
+
             $dokter = get_dokter_by_kode($data_detail->PRWIKD_DOKTER);
             if ($dokter) {
                 foreach ($dokter as $key => $value) {
                     $data_detail->$key = $value;
                 }
             }
-            
+
             $sep = get_sep_by_kode_reg($data_detail->FTNO_TRANSAKSI);
             if ($sep) {
                 foreach ($sep as $key => $value) {
                     $data_detail->$key = $value;
                 }
             }
-            
+
             return $data_detail;
         });
     }
@@ -150,24 +150,15 @@ class RanapMonitRepository
      */
     public function updateCasemixRanap($no_transaksi, $request)
     {
-        $data = [];
+        $data = [
+            $request->key => $request->data,
+        ];
 
-        foreach (['diagnosa_sekunder', 'tindakan', 'pemeriksaan_penunjang', 'hasil_penunjang_abnormal', 'naik_kelas'] as $field) {
-            if ($request->has($field)) {
-                $data[strtoupper($field)] = $request->$field;
-            }
-        }
+        Log::error($data);
 
         try {
-            // Dapatkan data pasien sebelum update untuk menentukan cache yang harus dihapus
             $pasien = DB::connection('sqlsrv')
                 ->table('PASIENRAWATINAP AS A')
-                ->join('KAMAR AS D', 'A.PRWIKD_KAMAR', '=', 'D.FMKKAMAR_ID')
-                ->select(
-                    DB::raw('MONTH(A.PRWITGL_INAP) AS bulan'),
-                    DB::raw('YEAR(A.PRWITGL_INAP) AS tahun'),
-                    'D.FMKKAMARINDUK AS bangsal_induk'
-                )
                 ->where('A.PRWINO_TRANSAKSI', $no_transaksi)
                 ->first();
 
@@ -180,14 +171,6 @@ class RanapMonitRepository
             DB::connection('sqlsrv')
                 ->table('CASEMIX_RANAP')
                 ->updateOrInsert(['NO_TRANSAKSI' => $no_transaksi], $data);
-
-            // Hapus cache per pasien
-            Cache::forget("pasien_detail_{$no_transaksi}");
-
-            // Hapus cache daftar pasien untuk bulan, tahun, dan bangsal yang sesuai
-            foreach (['dirawat', 'sudah_pulang', 'semua'] as $status) {
-                Cache::forget("pasien_ranap_{$pasien->bulan}_{$pasien->tahun}_{$pasien->bangsal_induk}_{$status}");
-            }
 
             return true;
         } catch (\Exception $e) {

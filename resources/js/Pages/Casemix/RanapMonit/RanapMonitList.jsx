@@ -91,7 +91,7 @@ export default function Index({ auth }) {
                     <a
                         onClick={() => {
                             handleOpenModal({
-                                key: "diagnosa_sekunder",
+                                key: "DIAGNOSA_SEKUNDER",
                                 data_record: record,
                                 value: text,
                             });
@@ -112,7 +112,7 @@ export default function Index({ auth }) {
                     <a
                         onClick={() => {
                             handleOpenModal({
-                                key: "tindakan",
+                                key: "TINDAKAN",
                                 data_record: record,
                                 value: text,
                             });
@@ -133,7 +133,7 @@ export default function Index({ auth }) {
                     <a
                         onClick={() => {
                             handleOpenModal({
-                                key: "pemeriksaan_penunjang",
+                                key: "PEMERIKSAAN_PENUNJANG",
                                 data_record: record,
                                 value: text,
                             });
@@ -154,7 +154,7 @@ export default function Index({ auth }) {
                     <a
                         onClick={() => {
                             handleOpenModal({
-                                key: "hasil_penunjang_abnormal",
+                                key: "HASIL_PENUNJANG_ABNORMAL",
                                 data_record: record,
                                 value: text,
                             });
@@ -180,7 +180,7 @@ export default function Index({ auth }) {
                     <a
                         onClick={() => {
                             handleOpenModal({
-                                key: "naik_kelas",
+                                key: "NAIK_KELAS",
                                 data_record: record,
                                 value: text,
                             });
@@ -223,6 +223,90 @@ export default function Index({ auth }) {
             dataIndex: "LOS",
             key: "DPJP",
         },
+        {
+            title: "Konfirmasi Koder",
+            dataIndex: "KONFIRMASI_KODER",
+            key: "KONFIRMASI_KODER",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "KONFIRMASI_KODER",
+                                data_record: record,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
+        },
+        {
+            title: "Konfirmasi Dokter Bangsal",
+            dataIndex: "KONFIRMASI_DR_BANGSAL",
+            key: "KONFIRMASI_DR_BANGSAL",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "KONFIRMASI_DR_BANGSAL",
+                                data_record: record,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
+        },
+        {
+            title: "Follow Up SPV Bangsal",
+            dataIndex: "FOLLOW_UP_SPV_BANGSAL",
+            key: "FOLLOW_UP_SPV_BANGSAL",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "FOLLOW_UP_SPV_BANGSAL",
+                                data_record: record,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
+        },
+        {
+            title: "Follow Up MPP",
+            dataIndex: "FOLLOW_UP_MPP",
+            key: "FOLLOW_UP_MPP",
+            render: (text, record) => (
+                <>
+                    <div dangerouslySetInnerHTML={{ __html: text }} />
+                    <a
+                        onClick={() => {
+                            handleOpenModal({
+                                key: "FOLLOW_UP_MPP",
+                                data_record: record,
+                                value: text,
+                            });
+                        }}
+                    >
+                        <EditOutlined />
+                    </a>
+                </>
+            ),
+        },
     ];
 
     const [shouldFetch, setShouldFetch] = useState(false);
@@ -256,43 +340,16 @@ export default function Index({ auth }) {
 
     const handleUpdate = () => {
         setLoadingSave(true);
-        let payload = {};
-        if (modalUpdateKey === "diagnosa_sekunder") {
-            payload = {
-                diagnosa_sekunder: modalUpdateValue,
-            };
-        }
-
-        if (modalUpdateKey === "tindakan") {
-            payload = {
-                tindakan: modalUpdateValue,
-            };
-        }
-
-        if (modalUpdateKey === "pemeriksaan_penunjang") {
-            payload = {
-                pemeriksaan_penunjang: modalUpdateValue,
-            };
-        }
-
-        if (modalUpdateKey === "hasil_penunjang_abnormal") {
-            payload = {
-                hasil_penunjang_abnormal: modalUpdateValue,
-            };
-        }
-
-        if (modalUpdateKey === "naik_kelas") {
-            payload = {
-                naik_kelas: modalUpdateValue,
-            };
-        }
 
         axios
             .post(
                 route("casemix.ranap-monit.update_monit_row", {
                     kode_reg: modalUpdateKodeReg,
                 }),
-                payload
+                {
+                    key: modalUpdateKey,
+                    data: modalUpdateValue,
+                }
             )
             .then((response) => {
                 console.log(response?.data);
@@ -325,7 +382,6 @@ export default function Index({ auth }) {
 
             setDataSource(data.pasiens);
             setTotalData(data.total);
-            console.log(data.pasiens);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -418,7 +474,6 @@ export default function Index({ auth }) {
                         total: totalData,
                         pageSize: perPage,
                         onChange: (currentPage, currentPageSize) => {
-                            console.log(currentPage, currentPageSize);
                             setPage(currentPage);
                             setPerPage(currentPageSize);
                             fetchData();
@@ -428,9 +483,9 @@ export default function Index({ auth }) {
             </Card>
             <Modal
                 destroyOnClose
-                title={
-                    modalUpdateKey?.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
-                }
+                title={modalUpdateKey
+                    ?.replace(/_/g, " ")
+                    .replace(/\b\w/g, (char) => char.toUpperCase())}
                 open={openModalUpdate}
                 closable={false}
                 width={700}
@@ -454,11 +509,12 @@ export default function Index({ auth }) {
             >
                 Detail Pasien:
                 <p>
-                    No RM: <strong>{modalUpdateRecord?.FTKD_PASIEN} </strong>
-                    Nama Pasien: <strong>{modalUpdateRecord?.NAMAPASIEN}</strong>{""}
-                    No Transakasi: <strong>{modalUpdateRecord?.FTNO_TRANSAKSI} </strong>
+                    No RM: <strong>{modalUpdateRecord?.FTKD_PASIEN} </strong>{" "}
+                    Nama Pasien:{" "}
+                    <strong>{modalUpdateRecord?.NAMAPASIEN}</strong> No
+                    Transakasi:{" "}
+                    <strong>{modalUpdateRecord?.FTNO_TRANSAKSI} </strong>
                 </p>
-
                 {modalUpdateKey === "naik_kelas" ? (
                     <Input
                         value={modalUpdateValue}
