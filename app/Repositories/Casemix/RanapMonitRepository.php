@@ -40,6 +40,7 @@ class RanapMonitRepository
         $data = $query->select(
             'TPI.FTNO_TRANSAKSI',
             'PRI.PRWIKD_KAMAR',
+            'PRI.PRWIKD_KELAS',
             'PRI.PRWIKD_DOKTER',
             'PRI.PRWITGL_KELUAR',
             'TPI.FTTGL_TRANSAKSI',

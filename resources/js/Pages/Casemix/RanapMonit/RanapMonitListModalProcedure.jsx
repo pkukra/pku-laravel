@@ -228,13 +228,14 @@ export default function Index({ pasien }) {
                 footer={[
                     <Button key="back" onClick={() => setModalOpen(false)}>
                         Cancel
-                    </Button>
+                    </Button>,
                 ]}
             >
                 <p>
-                    No RM: <strong>{pasien.PRWIKD_PASIEN} </strong> No
-                    Transakasi: <strong>{pasien.PRWINO_TRANSAKSI} </strong>
-                    Nama Pasien: <strong>{pasien.NAMAPASIEN} </strong>
+                    No RM: <strong>{pasien.FTKD_PASIEN} </strong> No
+                    Transakasi:{" "}
+                    <strong>{pasien.FTNO_TRANSAKSI} </strong>
+                    Nama Pasien: <strong>{pasien.NAMAPASIEN}</strong>
                 </p>
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={20}>

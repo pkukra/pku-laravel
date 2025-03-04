@@ -247,8 +247,8 @@ export default function Index({ pasien }) {
                 ]}
             >
                 <p>
-                    No RM: <strong>{pasien.PRWIKD_PASIEN} </strong> No
-                    Transakasi: <strong>{pasien.PRWINO_TRANSAKSI} </strong>
+                    No RM: <strong>{pasien.FTKD_PASIEN} </strong> No
+                    Transakasi: <strong>{pasien.FTNO_TRANSAKSI} </strong>
                     Nama Pasien: <strong>{pasien.NAMAPASIEN}</strong>
                 </p>
 

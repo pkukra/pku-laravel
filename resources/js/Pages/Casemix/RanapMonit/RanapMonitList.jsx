@@ -92,7 +92,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "diagnosa_sekunder",
-                                kode_reg: record?.FTNO_TRANSAKSI,
+                                data_record: record,
                                 value: text,
                             });
                         }}
@@ -113,7 +113,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "tindakan",
-                                kode_reg: record?.FTNO_TRANSAKSI,
+                                data_record: record,
                                 value: text,
                             });
                         }}
@@ -134,7 +134,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "pemeriksaan_penunjang",
-                                kode_reg: record?.FTNO_TRANSAKSI,
+                                data_record: record,
                                 value: text,
                             });
                         }}
@@ -155,7 +155,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "hasil_penunjang_abnormal",
-                                kode_reg: record?.FTNO_TRANSAKSI,
+                                data_record: record,
                                 value: text,
                             });
                         }}
@@ -167,8 +167,8 @@ export default function Index({ auth }) {
         },
         {
             title: "Hak Kelas",
-            dataIndex: "LOS",
-            key: "DPJP",
+            dataIndex: "PRWIKD_KELAS",
+            key: "PRWIKD_KELAS",
         },
         {
             title: "Naik Kelas",
@@ -181,7 +181,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "naik_kelas",
-                                kode_reg: record?.FTNO_TRANSAKSI,
+                                data_record: record,
                                 value: text,
                             });
                         }}
@@ -241,13 +241,15 @@ export default function Index({ auth }) {
     const [openModalUpdate, setOpenModalUpdate] = useState(false);
     const [loadingSave, setLoadingSave] = useState(false);
 
+    const [modalUpdateRecord, setModalUpdateRecord] = useState(null);
     const [modalUpdateKey, setModalUpdateKey] = useState(null);
     const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
     const [modalUpdateValue, setModalUpdateValue] = useState(null);
 
     const handleOpenModal = (param) => {
+        setModalUpdateRecord(param?.data_record);
         setModalUpdateKey(param?.key);
-        setModalUpdateKodeReg(param?.kode_reg);
+        setModalUpdateKodeReg(param?.data_record?.FTNO_TRANSAKSI);
         setModalUpdateValue(param?.value);
         setOpenModalUpdate(true);
     };
@@ -324,7 +326,6 @@ export default function Index({ auth }) {
             setDataSource(data.pasiens);
             setTotalData(data.total);
             console.log(data.pasiens);
-            
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -412,7 +413,7 @@ export default function Index({ auth }) {
                         y: 600,
                     }}
                     pagination={{
-                        simple: true,
+                        // simple: true,
                         current: page,
                         total: totalData,
                         pageSize: perPage,
@@ -427,7 +428,9 @@ export default function Index({ auth }) {
             </Card>
             <Modal
                 destroyOnClose
-                title={modalUpdateKey}
+                title={
+                    modalUpdateKey.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
+                }
                 open={openModalUpdate}
                 closable={false}
                 width={700}
@@ -449,7 +452,13 @@ export default function Index({ auth }) {
                     </Button>,
                 ]}
             >
-                <p>{modalUpdateKodeReg}</p>
+                Detail Pasien:
+                <p>
+                    No RM: <strong>{modalUpdateRecord?.FTKD_PASIEN} </strong>
+                    Nama Pasien: <strong>{modalUpdateRecord?.NAMAPASIEN}</strong>{""}
+                    No Transakasi: <strong>{modalUpdateRecord?.FTNO_TRANSAKSI} </strong>
+                </p>
+
                 {modalUpdateKey === "naik_kelas" ? (
                     <Input
                         value={modalUpdateValue}
