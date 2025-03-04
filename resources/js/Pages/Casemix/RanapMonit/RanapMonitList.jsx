@@ -429,7 +429,7 @@ export default function Index({ auth }) {
             <Modal
                 destroyOnClose
                 title={
-                    modalUpdateKey.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
+                    modalUpdateKey?.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
                 }
                 open={openModalUpdate}
                 closable={false}

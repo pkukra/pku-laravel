@@ -13,6 +13,7 @@ if (!function_exists('get_diagnosa_ri')) {
     }
 }
 
+
 if (!function_exists('get_casemix_ranap_data')) {
     function get_casemix_ranap_data($kode_reg)
     {
