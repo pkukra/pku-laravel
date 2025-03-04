@@ -44,3 +44,14 @@ if (!function_exists('get_dokter_by_kode')) {
             ->first();
     }
 }
+
+if (!function_exists('get_sep_by_kode_reg')) {
+    function get_sep_by_kode_reg($kode_reg)
+    {
+        return DB::connection('sqlsrv')
+            ->table('BPJS_SEP')
+            ->where('FMNOTRANSAKSI', $kode_reg)
+            ->select('FMKODEKELAS AS KELAS_RAWAT')
+            ->first();
+    }
+}

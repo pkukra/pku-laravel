@@ -167,8 +167,8 @@ export default function Index({ auth }) {
         },
         {
             title: "Hak Kelas",
-            dataIndex: "PRWIKD_KELAS",
-            key: "PRWIKD_KELAS",
+            dataIndex: "KELAS_RAWAT",
+            key: "KELAS_RAWAT",
         },
         {
             title: "Naik Kelas",

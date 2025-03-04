@@ -74,6 +74,13 @@ class RanapMonitRepository
                 }
             }
             
+            $sep = get_sep_by_kode_reg($data_detail->FTNO_TRANSAKSI);
+            if ($sep) {
+                foreach ($sep as $key => $value) {
+                    $data_detail->$key = $value;
+                }
+            }
+            
             return $data_detail;
         });
     }
