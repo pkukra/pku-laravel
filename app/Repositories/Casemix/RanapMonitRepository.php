@@ -5,6 +5,7 @@ namespace App\Repositories\Casemix;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 
 class RanapMonitRepository
 {
@@ -371,5 +372,53 @@ class RanapMonitRepository
             ->select('*')
             ->where('NO_TRANSAKSI', $no_transaksi)
             ->get();
+    }
+
+    /**
+     * Save biliing temp for pasien inap
+     * 
+     * @param array $data
+     * @return boolean
+     */
+    public function saveBillingTemp($data)
+    {
+        $user = Auth::user();
+
+        try {
+            DB::connection('sqlsrv')
+                ->table('CASEMIX_BILLING_TEMP')
+                ->insert([
+                    'NO_TRANSAKSI' => $data['NO_TRANSAKSI'],
+                    'KETERANGAN' => $data['KETERANGAN'],
+                    'NOMINAL' => $data['NOMINAL'],
+                    'CREATED_BY' => $user->email,
+                ]);
+        } catch (\Exception $e) {
+            Log::error("Error save CASEMIX_BILLING_TEMP: " . $e->getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Delete diagnosa by ID from CASEMIX_BILLING_TEMP table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteBillingTempById($id)
+    {
+        try {
+            $deleted = DB::connection('sqlsrv')
+                ->table('CASEMIX_BILLING_TEMP')
+                ->where('ID', $id)
+                ->delete();
+
+            return $deleted > 0;
+        } catch (\Exception $e) {
+            Log::error("Error delete CASEMIX_BILLING_TEMP: " . $e->getMessage());
+            return false;
+        }
     }
 }

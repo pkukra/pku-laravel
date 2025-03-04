@@ -86,6 +86,9 @@ Route::prefix('casemix')->group(function () {
         Route::delete('/delete_procedure/{id}', [RanapMonitController::class, 'delete_procedure'])->name('casemix.ranap-monit.delete_procedure');
 
         Route::get('/list_billing_temp/{kode_reg}', [RanapMonitController::class, 'list_billing_temp'])->name('casemix.ranap-monit.list_billing_temp');
+        Route::post('/save_billing_temp', [RanapMonitController::class, 'save_billing_temp'])->name('casemix.ranap-monit.save_billing_temp');
+        Route::delete('/delete_billing_temp/{id}', [RanapMonitController::class, 'delete_billing_temp'])->name('casemix.ranap-monit.delete_billing_temp');
+
     });
 });
 

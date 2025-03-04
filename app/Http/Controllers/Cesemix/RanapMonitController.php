@@ -254,4 +254,49 @@ class RanapMonitController extends Controller
             'data' => $data,
         ]);
     }
+
+    /**
+     * list_billing_temp
+     * Menampilkan list_billing_temp berdasarkan kode transaksi dari tabel CASEMIX_BILLING_TEMP
+     */
+    public function save_billing_temp(Request $request)
+    {
+        // Validasi input
+        $data = $request->validate([
+            'NO_TRANSAKSI' => 'required',
+            'KETERANGAN' => 'required',
+            'NOMINAL' => 'required',
+        ]);
+
+        $isSaved = $this->RanapMonitRepo->saveBillingTemp($data);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Data berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan data',
+        ], 500);
+    }
+
+    public function delete_billing_temp($id)
+    {
+        $deleted = $this->RanapMonitRepo->deleteBillingTempById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Billing Temp berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus billing temp',
+        ], 500);
+    }
 }
