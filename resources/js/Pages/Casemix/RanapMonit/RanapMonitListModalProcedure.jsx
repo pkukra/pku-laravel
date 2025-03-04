@@ -81,7 +81,7 @@ export default function Index({ pasien }) {
                 route("casemix.ranap-monit.save_procedure"),
                 {
                     icd9_code: selectedProcedureForm,
-                    no_transaksikj: pasien.PRWINO_TRANSAKSI,
+                    no_transaksikj: pasien.FTNO_TRANSAKSI,
                     no_rm: pasien.PRWIKD_PASIEN,
                     kd_unit: pasien.PRWIKD_KAMAR,
                     tgl_masuk: now,
@@ -118,7 +118,7 @@ export default function Index({ pasien }) {
         axios
             .get(
                 route("casemix.ranap-monit.list_procedure", {
-                    kode_reg: pasien.PRWINO_TRANSAKSI,
+                    kode_reg: pasien.FTNO_TRANSAKSI,
                 })
             )
             .then((response) => {

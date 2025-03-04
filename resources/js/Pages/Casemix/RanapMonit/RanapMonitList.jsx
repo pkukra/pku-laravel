@@ -192,7 +192,7 @@ export default function Index({ auth }) {
             ),
         },
         {
-            title: "Kemungkinan Kode Dignosis",
+            title: "Kemungkinan Kode Dignosa",
             dataIndex: "KODE_DIAGNOSA",
             key: "KODE_DIAGNOSA",
             render: (text, record) => (
