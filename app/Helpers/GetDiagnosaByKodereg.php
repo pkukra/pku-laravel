@@ -22,3 +22,25 @@ if (!function_exists('get_casemix_ranap_data')) {
             ->first();
     }
 }
+
+if (!function_exists('get_pasien_by_no_rm')) {
+    function get_pasien_by_no_rm($no_rm)
+    {
+        return DB::connection('sqlsrv')
+            ->table('PASIEN')
+            ->where('KD_PASIEN', $no_rm)
+            ->select('NAMAPASIEN')
+            ->first();
+    }
+}
+
+if (!function_exists('get_dokter_by_kode')) {
+    function get_dokter_by_kode($kode)
+    {
+        return DB::connection('sqlsrv')
+            ->table('DOKTER')
+            ->where('FMDDOKTER_ID', $kode)
+            ->select('FMDDOKTERN AS DPJP')
+            ->first();
+    }
+}

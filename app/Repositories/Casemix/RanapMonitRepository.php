@@ -14,6 +14,72 @@ class RanapMonitRepository
     public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false)
     {
         $query = DB::connection('sqlsrv')
+            ->table('TRANSAKSIPASIENINAP AS TPI')
+            ->join('PASIENRAWATINAP AS PRI', function ($join) {
+                $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
+                    ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
+            })
+            ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
+
+            // ->leftJoin('PASIEN AS P', 'P.KD_PASIEN', '=', 'TPI.FTKD_PASIEN')
+            // ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
+
+            ->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
+            ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun])
+            ->where('K.FMKKAMARINDUK', $bangsal_induk)
+            ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
+            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
+        if ($nomer_rm) {
+            $query->where('TPI.FTKD_PASIEN', "$nomer_rm");
+        }
+
+        if ($countOnly) {
+            return $query->count();
+        }
+
+        $data = $query->select(
+            'TPI.FTNO_TRANSAKSI',
+            'PRI.PRWIKD_KAMAR',
+            'PRI.PRWIKD_DOKTER',
+            'PRI.PRWITGL_KELUAR',
+            'TPI.FTTGL_TRANSAKSI',
+            'TPI.FTKD_PASIEN',
+            // 'DR.FMDDOKTERN',
+        )
+            ->offset($offset)
+            ->limit($perPage)
+            ->get();
+
+        return $data->map(function ($data_detail) {
+            $data_detail->FS_DIAGNOSA = get_diagnosa_ri($data_detail->FTNO_TRANSAKSI);
+            $ranap = get_casemix_ranap_data($data_detail->FTNO_TRANSAKSI);
+            if ($ranap) {
+                foreach ($ranap as $key => $value) {
+                    $data_detail->$key = $value;
+                }
+            }
+            
+            $pasien = get_pasien_by_no_rm($data_detail->FTKD_PASIEN);
+            if ($pasien) {
+                foreach ($pasien as $key => $value) {
+                    $data_detail->$key = $value;
+                }
+            }
+            
+            $dokter = get_dokter_by_kode($data_detail->PRWIKD_DOKTER);
+            if ($dokter) {
+                foreach ($dokter as $key => $value) {
+                    $data_detail->$key = $value;
+                }
+            }
+            
+            return $data_detail;
+        });
+    }
+
+    public function getOrCountPasienRanap2($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false)
+    {
+        $query = DB::connection('sqlsrv')
             ->table('PASIENRAWATINAP AS A')
             ->leftJoin('PASIEN AS B', 'A.PRWIKD_PASIEN', '=', 'B.KD_PASIEN')
             ->leftJoin('DOKTER AS C', 'A.PRWIKD_DOKTER', '=', 'C.FMDDOKTER_ID')

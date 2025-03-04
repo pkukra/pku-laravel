@@ -26,8 +26,8 @@ export default function Index({ auth }) {
     const columns = [
         {
             title: "No Transakasi",
-            dataIndex: "PRWINO_TRANSAKSI",
-            key: "PRWINO_TRANSAKSI",
+            dataIndex: "FTNO_TRANSAKSI",
+            key: "FTNO_TRANSAKSI",
             fixed: "left",
         },
         {
@@ -38,20 +38,20 @@ export default function Index({ auth }) {
         },
         {
             title: "Nomer RM",
-            dataIndex: "PRWIKD_PASIEN",
-            key: "PRWIKD_PASIEN",
+            dataIndex: "FTKD_PASIEN",
+            key: "FTKD_PASIEN",
             fixed: "left",
         },
         {
             title: "DPJP",
-            dataIndex: "FMDDOKTERN",
-            key: "FMDDOKTERN",
+            dataIndex: "DPJP",
+            key: "DPJP",
             fixed: "left",
         },
         {
             title: "Tanggal Masuk",
-            dataIndex: "PRWITGL_MASUK",
-            key: "PRWITGL_MASUK",
+            dataIndex: "FTTGL_TRANSAKSI",
+            key: "FTTGL_TRANSAKSI",
             render: (text) => moment(text).format("D-M-YYYY"),
         },
         {
@@ -62,10 +62,16 @@ export default function Index({ auth }) {
         },
         {
             title: "Total Hari",
-            dataIndex: "TOTAL_HARI",
             key: "TOTAL_HARI",
             width: 50,
             align: "center",
+            render: (_, record) => {
+                const masuk = moment(record.FTTGL_TRANSAKSI);
+                const keluar = record.PRWITGL_KELUAR
+                    ? moment(record.PRWITGL_KELUAR)
+                    : moment();
+                return keluar.diff(masuk, "days");
+            },
         },
         {
             title: "Diagnosa Utama",
@@ -86,7 +92,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "diagnosa_sekunder",
-                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                kode_reg: record?.FTNO_TRANSAKSI,
                                 value: text,
                             });
                         }}
@@ -107,7 +113,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "tindakan",
-                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                kode_reg: record?.FTNO_TRANSAKSI,
                                 value: text,
                             });
                         }}
@@ -128,7 +134,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "pemeriksaan_penunjang",
-                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                kode_reg: record?.FTNO_TRANSAKSI,
                                 value: text,
                             });
                         }}
@@ -149,7 +155,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "hasil_penunjang_abnormal",
-                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                kode_reg: record?.FTNO_TRANSAKSI,
                                 value: text,
                             });
                         }}
@@ -175,7 +181,7 @@ export default function Index({ auth }) {
                         onClick={() => {
                             handleOpenModal({
                                 key: "naik_kelas",
-                                kode_reg: record?.PRWINO_TRANSAKSI,
+                                kode_reg: record?.FTNO_TRANSAKSI,
                                 value: text,
                             });
                         }}
@@ -219,9 +225,12 @@ export default function Index({ auth }) {
         },
     ];
 
+    const [shouldFetch, setShouldFetch] = useState(false);
     const [selectedStatusRawat, setSelectedStatusRawat] = useState("dirawat");
     const [selectedNoRM, setSelectedNoRM] = useState(null);
-    const [selectedYearMonth, setSelectedYearMonth] = useState(null);
+    const [selectedYearMonth, setSelectedYearMonth] = useState(
+        dayjs().format("YYYY-MM")
+    );
 
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
@@ -314,6 +323,8 @@ export default function Index({ auth }) {
 
             setDataSource(data.pasiens);
             setTotalData(data.total);
+            console.log(data.pasiens);
+            
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -322,14 +333,16 @@ export default function Index({ auth }) {
     };
 
     const handleCari = () => {
-        setPage(1);
-        fetchData();
+        setPage(1); // Set nilai page
+        setShouldFetch(true); // Aktifkan trigger untuk fetchData()
     };
 
     useEffect(() => {
-        setSelectedYearMonth(dayjs().format("YYYY-MM"));
-        fetchData();
-    }, []);
+        if (shouldFetch) {
+            fetchData();
+            setShouldFetch(false); // Matikan trigger setelah fetch
+        }
+    }, [shouldFetch]);
 
     return (
         <AuthenticatedLayout
@@ -393,7 +406,7 @@ export default function Index({ auth }) {
                     dataSource={dataSource}
                     columns={columns}
                     size="small"
-                    rowKey="PRWINO_TRANSAKSI"
+                    rowKey="FTNO_TRANSAKSI"
                     scroll={{
                         x: 2000,
                         y: 600,
