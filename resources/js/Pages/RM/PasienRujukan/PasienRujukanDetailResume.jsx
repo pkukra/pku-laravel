@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Card } from "antd";
-import moment from "moment";
+import { Card, Button, Modal } from "antd";
+
+const cleanText = (html) =>
+    html
+        .replace(/<\/?p>/g, "") // Hapus tag <p> dan </p>
+        .replace(/&nbsp;/g, " ") // Ganti &nbsp; dengan spasi
+        .replace(/\s+/g, " ") // Hapus enter & spasi berlebih
+        .trim(); // Hapus spasi di awal dan akhir
 
 export default function Index({ pasien }) {
     const [resumeData, setResumeData] = useState(null);
     const [loadingResume, setLoadingResume] = useState(false);
+    const [sugestDariAi, setSugestDariAi] = useState([]);
+    const [modalAiOpen, setModalAiOpen] = useState(false);
+    const [loadingFetchingSugestKodeAI, setLoadingFetchingSugestKodeAI] =
+        useState(false);
 
     const fetchResume = async () => {
         setLoadingResume(true);
@@ -23,6 +33,28 @@ export default function Index({ pasien }) {
             .finally(() => {
                 setLoadingResume(false);
             });
+    };
+
+    const handleGetAiSugest = async () => {
+        setModalAiOpen(true);
+        setLoadingFetchingSugestKodeAI(true);
+        const anamnesa = cleanText(resumeData?.FS_ANAMNESA || "");
+        const diagnosa = cleanText(resumeData?.FS_DIAGNOSA || "");
+
+        try {
+            const response = await axios.post(
+                "http://localhost:3000/get-icd10",
+                {
+                    anamnesa: anamnesa,
+                    diagnosa: diagnosa,
+                }
+            );
+            setSugestDariAi(response?.data?.ICD10_Codes || []);
+        } catch (error) {
+            console.error("Error fetching ai sugest:", error);
+        } finally {
+            setLoadingFetchingSugestKodeAI(false);
+        }
     };
 
     useEffect(() => {
@@ -81,9 +113,51 @@ export default function Index({ pasien }) {
                                 }}
                             ></td>
                         </tr>
+                        <tr>
+                            <th style={{ verticalAlign: "top" }}></th>
+                            <td>
+                                <p>
+                                    {JSON.stringify(sugestDariAi.ICD10_Codes)}
+                                </p>
+                                <Button
+                                    color="purple"
+                                    variant="solid"
+                                    onClick={handleGetAiSugest}
+                                >
+                                    AI Sugest
+                                </Button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </Card>
+
+            <Modal
+                title="Saran Kode Diagnosa dari AI"
+                open={modalAiOpen}
+                onOk={() => {}}
+                onCancel={() => {
+                    setModalAiOpen(false);
+                }}
+                okText="Ya"
+                cancelText="Tidak"
+                okButtonProps={{ danger: true }}
+            >
+                {loadingFetchingSugestKodeAI ? (
+                    <>Berfikirr..Berfikirr..Berfikirr...</>
+                ) : (
+                    <table>
+                        <tbody>
+                            {sugestDariAi.map((item, index) => (
+                                <tr key={index}>
+                                    <td>{item.Code}</td>
+                                    <td>{item.Diagnosis}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </Modal>
         </>
     );
 }
