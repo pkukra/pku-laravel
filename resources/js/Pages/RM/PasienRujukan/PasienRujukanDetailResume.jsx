@@ -43,13 +43,14 @@ export default function Index({ pasien }) {
 
         try {
             const response = await axios.post(
-                "http://localhost:3000/get-icd10",
+                "http://10.10.10.225:3000/get-icd10",
                 {
                     anamnesa: anamnesa,
                     diagnosa: diagnosa,
                 }
             );
             setSugestDariAi(response?.data?.ICD10_Codes || []);
+            console.log(response?.data?.ICD10_Codes);
         } catch (error) {
             console.error("Error fetching ai sugest:", error);
         } finally {
@@ -116,9 +117,6 @@ export default function Index({ pasien }) {
                         <tr>
                             <th style={{ verticalAlign: "top" }}></th>
                             <td>
-                                <p>
-                                    {JSON.stringify(sugestDariAi.ICD10_Codes)}
-                                </p>
                                 <Button
                                     color="purple"
                                     variant="solid"
@@ -139,23 +137,26 @@ export default function Index({ pasien }) {
                 onCancel={() => {
                     setModalAiOpen(false);
                 }}
-                okText="Ya"
+                okText={false}
                 cancelText="Tidak"
                 okButtonProps={{ danger: true }}
             >
                 {loadingFetchingSugestKodeAI ? (
                     <>Berfikirr..Berfikirr..Berfikirr...</>
                 ) : (
-                    <table>
-                        <tbody>
-                            {sugestDariAi.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.Code}</td>
-                                    <td>{item.Diagnosis}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <>
+                        {JSON.stringify(sugestDariAi)}
+                        <table>
+                            <tbody>
+                                {sugestDariAi.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{item.Code}</td>
+                                        <td>{item.Diagnosis}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </>
                 )}
             </Modal>
         </>
