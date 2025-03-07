@@ -95,6 +95,7 @@ class BridgingEKlaimRepository
             }
         }
 
+        // update/reedit claim
         $this->bridgingReEditClaim($no_sep);
 
         // buat new claim dulu
@@ -107,6 +108,7 @@ class BridgingEKlaimRepository
             $transaksi_uatama->JENIS_KELAMIN,
         );
 
+        // update patient
         $this->bridgingUpdatePatien(
             $transaksi_uatama->FRPPASIEN_ID,
             $transaksi_uatama->FMNO_KARTU,
