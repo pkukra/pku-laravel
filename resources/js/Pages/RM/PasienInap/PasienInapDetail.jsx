@@ -38,7 +38,6 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                     <Row gutter={[5, 5]}>
                         <Col span={24}>
                             <PasienInapDetailProfile pasien={pasien} />
-                            {JSON.stringify(pasien)}
                         </Col>
 
                         <Col span={12}>
@@ -52,7 +51,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienInapDetailDiagnosaList pasien={pasien} />
                         </Col>
                         <Col span={12}>
-                            {/* <PasienInapDetailProcedureList pasien={pasien} /> */}
+                            <PasienInapDetailProcedureList pasien={pasien} />
                         </Col>
 
                         <Col span={12}>
