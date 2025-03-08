@@ -32,11 +32,8 @@ export default function Index({ pasien }) {
                                                 Tanggal Periksa
                                             </th>
                                             <td>
-                                                {moment(pasien.FRPTGL).format(
+                                                {moment(pasien.PRWITGL_MASUK).format(
                                                     "DD/MM/YYYY"
-                                                )}{" "}
-                                                {moment(pasien.FRPJAM).format(
-                                                    "HH:mm"
                                                 )}
                                             </td>
                                         </tr>
