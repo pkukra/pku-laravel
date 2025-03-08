@@ -516,7 +516,7 @@ class PasienInapRepository
     public function getResumeByTransaksi($kode_reg)
     {
         return DB::connection('sqlsrv')
-            ->table('PKU.dbo.TAC_RJ_MEDIS')
+            ->table('PKU.dbo.TAC_RI_MEDIS')
             ->select('*')
             ->where('FS_KD_REG', $kode_reg)
             ->orderByDesc('FS_KD_REG')

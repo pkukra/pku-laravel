@@ -6,7 +6,7 @@ import PasienInapDetailDiagnosaList from "./PasienInapDetailDiagnosaList";
 import PasienInapDetailProcedureList from "./PasienInapDetailProcedureList";
 // import PasienInapDetailAmnanesaCatatan from "./PasienInapDetailAmnanesaCatatan";
 import PasienInapDetailSEP from "./PasienInapDetailSEP";
-// import PasienInapDetailResume from "./PasienInapDetailResume";
+import PasienInapDetailResume from "./PasienInapDetailResume";
 // import PasienInapDetailHasilLab from "./PasienInapDetailHasilLab";
 // import PasienInapDetailCaraMasukPulang from "./PasienInapDetailCaraMasukPulang";
 import { useState } from "react";
@@ -41,7 +41,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={12}>
-                            {/* <PasienInapDetailResume pasien={pasien} /> */}
+                            <PasienInapDetailResume pasien={pasien} />
                         </Col>
                         <Col span={12}>
                             {/* <PasienInapDetailHasilLab pasien={pasien} /> */}

@@ -51,6 +51,8 @@ Route::prefix('rm')->group(function () {
         Route::post('/cari_procedure', [PasienInapController::class, 'cari_procedure'])->name('rm.pasien-inap.cari_procedure');
         Route::post('/save-procedure', [PasienInapController::class, 'save_procedure'])->name('rm.pasien-inap.save_procedure');
         Route::delete('/procedure/{id}', [PasienInapController::class, 'delete_procedure'])->name('rm.pasien-inap.delete_procedure');
+
+        Route::get('/get_resume/{kode_reg}', [PasienInapController::class, 'get_resume'])->name('rm.pasien-inap.get_resume');
     });
 
 });
