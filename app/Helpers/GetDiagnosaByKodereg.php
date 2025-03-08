@@ -56,3 +56,14 @@ if (!function_exists('get_sep_by_kode_reg')) {
             ->first();
     }
 }
+
+if (!function_exists('get_tgl_keluar_inap')) {
+    function get_tgl_keluar_inap($kode_reg)
+    {
+        return DB::connection('sqlsrv')
+            ->table('PASIENRAWATINAP')
+            ->where('PRWINO_TRANSAKSI', $kode_reg)
+            ->orderBy('PRWITGL_KELUAR', 'desc')
+            ->value('PRWITGL_KELUAR');
+    }
+}

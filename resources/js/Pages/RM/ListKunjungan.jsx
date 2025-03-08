@@ -90,18 +90,16 @@ const columnsInap = [
         dataIndex: "FRPTGL",
         render: (_, record) => (
             <>
-                {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
-                {moment(record.FRPJAM).format("HH:mm")}
+            {moment(record?.FRPTGL).format("DD/MM/YYYY")}
             </>
         ),
     },
     {
         title: "Tanggal Keluar",
-        dataIndex: "FRPTGL",
+        dataIndex: "TGL_KELUAR",
         render: (_, record) => (
             <>
-                {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
-                {moment(record.FRPJAM).format("HH:mm")}
+            {moment(record?.TGL_KELUAR).format("DD/MM/YYYY")}
             </>
         ),
     },
@@ -128,7 +126,7 @@ const columnsInap = [
         render: (_, record) => (
             <a
                 href={route("rm.pasien-rujukan.detail", {
-                    kode_reg: record.FTNO_TRANSAKSI,
+                    kode_reg: record?.FTNO_TRANSAKSI,
                 })}
             >
                 <Button type="primary" size="small">
@@ -189,7 +187,7 @@ export default function PasienRujukanList({ auth }) {
             );
 
             console.log(response?.data);
-            
+
             setDataPasienInap(response?.data?.pasien_inaps || []);
         } catch (error) {
             console.error("Error fetching data: ", error);
@@ -284,7 +282,7 @@ export default function PasienRujukanList({ auth }) {
                     columns={columnsInap}
                     size="small"
                     loading={loadingFetcInap}
-                    rowKey="FRPNOTRANSAKSIKJ"
+                    rowKey="FTNO_TRANSAKSI"
                     scroll={{ x: "max-content" }}
                     pagination={{
                         pageSize: 5,

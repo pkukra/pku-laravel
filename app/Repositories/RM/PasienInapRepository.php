@@ -16,7 +16,7 @@ class PasienInapRepository
      */
     public function getPasienInaps($no_rm)
     {
-        return DB::connection('sqlsrv')
+        $data =  DB::connection('sqlsrv')
             ->table('TRANSAKSIPASIENINAP AS TPI')
             ->join('PASIENRAWATINAP AS PRI', function ($join) {
                 $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
@@ -38,6 +38,11 @@ class PasienInapRepository
             ->where('TPI.FTKD_PASIEN', $no_rm)
             ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
             ->get();
+
+        return $data->map(function ($data_detail) {
+            $data_detail->TGL_KELUAR = get_tgl_keluar_inap($data_detail->FTNO_TRANSAKSI);
+            return $data_detail;
+        });
     }
 
     /**
