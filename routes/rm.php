@@ -46,6 +46,11 @@ Route::prefix('rm')->group(function () {
         Route::post('/cari_penyakit', [PasienInapController::class, 'cari_penyakit'])->name('rm.pasien-inap.cari_penyakit');
         Route::post('/save-diagnosa', [PasienInapController::class, 'save_diagnosa'])->name('rm.pasien-inap.save_diagnosa');
         Route::delete('/diagnosa/{id}', [PasienInapController::class, 'delete_diagnosa'])->name('rm.pasien-inap.delete_diagnosa');
+
+        Route::get('/list_procedure/{kode_reg}', [PasienInapController::class, 'list_procedure'])->name('rm.pasien-inap.list_procedure');
+        Route::post('/cari_procedure', [PasienInapController::class, 'cari_procedure'])->name('rm.pasien-inap.cari_procedure');
+        Route::post('/save-procedure', [PasienInapController::class, 'save_procedure'])->name('rm.pasien-inap.save_procedure');
+        Route::delete('/procedure/{id}', [PasienInapController::class, 'delete_procedure'])->name('rm.pasien-inap.delete_procedure');
     });
 
 });
