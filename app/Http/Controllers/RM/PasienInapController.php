@@ -48,9 +48,9 @@ class PasienInapController extends Controller
     public function show($kode_reg)
     {
         // Mendapatkan detail pasien inap berdasarkan kode_reg
-        $pasien_inaps = $this->pasienInapRepo->getPasienInapDetail($kode_reg);
+        $pasien_inap = $this->pasienInapRepo->getPasienInapDetail($kode_reg);
         return Inertia::render('RM/PasienInap/PasienInapDetail', [
-            'pasien' => $pasien_inaps,
+            'pasien' => $pasien_inap,
             'kode_reg' => $kode_reg,
         ]);
     }

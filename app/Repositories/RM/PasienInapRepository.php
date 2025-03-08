@@ -66,23 +66,21 @@ class PasienInapRepository
     public function getPasienInapDetail($kode_reg)
     {
         return DB::connection('sqlsrv')
-            ->table('PASIEN_RUJUKAN')
-            ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
-            ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
-            ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
-            ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PASIEN_RUJUKAN.CARA_MASUK', '=', 'cm.KODE')
+            ->table('PASIENRAWATINAP AS PRI')
+            ->leftJoin('PASIEN', 'PRI.PRWIKD_PASIEN', '=', 'PASIEN.KD_PASIEN')
+            ->leftJoin('DOKTER', 'PRI.PRWIKD_DOKTER', '=', 'DOKTER.FMDDOKTER_ID')
+            ->leftJoin('SPESIALISASI', 'PRI.PRWIKD_SPECIAL', '=', 'SPESIALISASI.FMSPESIALISASI_ID')
             ->select(
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',
                 'PASIEN.GOL_DARAH',
                 'PASIEN.JENIS_KELAMIN',
                 'PASIEN.ALAMAT',
-                'PASIEN_RUJUKAN.*',
+                'PRI.*',
                 'DOKTER.FMDDOKTERN',
-                'POLIKLINIK.FMPKLINIKN',
-                'cm.KETERANGAN AS CARA_MASUK_BPJS'
+                'SPESIALISASI.FMSPESIALISASIN',
             )
-            ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
+            ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->first();  // Menggunakan `first` karena hanya mengambil satu data
     }
 

@@ -40,5 +40,6 @@ Route::prefix('rm')->group(function () {
     
     Route::middleware('auth')->prefix('pasien-inap')->group(function () {
         Route::get('/list/{no_rm}', [PasienInapController::class, 'index_data'])->name('rm.pasien-inap.list');
+        Route::get('/detail/{kode_reg}', [PasienInapController::class, 'show'])->name('rm.pasien-inap.detail');
     });
 });
