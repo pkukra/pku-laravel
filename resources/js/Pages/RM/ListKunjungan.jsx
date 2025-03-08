@@ -68,8 +68,11 @@ const columns = [
 ];
 
 export default function PasienRujukanList({ auth }) {
-    const [dataSource, setDataSource] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [dataPasienRujukans, setDataPasienRujukans] = useState([]);
+    const [dataPasienInap, setDataPasienInap] = useState([]);
+
+    const [loadingFetchRujukan, setLoadingFetchRujukan] = useState(false);
+    const [loadingFetcInap, setLoadingFetcInap] = useState(false);
     const [noRm, setNoRm] = useState("");
 
     const handleInputChange = (e) => {
@@ -80,26 +83,43 @@ export default function PasienRujukanList({ auth }) {
         if (!noRm) return;
 
         localStorage.setItem("noRm", noRm);
-        fetchData(noRm);
+        fetchDataPasienRujukan(noRm);
+        fetchDataPasienInap(noRm);
     };
 
     const handleReset = () => {
         localStorage.removeItem("noRm");
         setNoRm("");
-        setDataSource([]);
+        setDataPasienRujukans([]);
     };
 
-    const fetchData = async (noRmValue) => {
-        setLoading(true);
+    const fetchDataPasienRujukan = async (noRmValue) => {
+        setLoadingFetchRujukan(true);
         try {
             const response = await axios.get(
                 route("rm.pasien-rujukan.list", { no_rm: noRmValue })
             );
-            setDataSource(response?.data?.pasien_rujukans || []);
+            console.log(response?.data);
+
+            setDataPasienRujukans(response?.data?.pasien_rujukans || []);
         } catch (error) {
             console.error("Error fetching data: ", error);
         } finally {
-            setLoading(false);
+            setLoadingFetchRujukan(false);
+        }
+    };
+
+    const fetchDataPasienInap = async (noRmValue) => {
+        setLoadingFetcInap(true);
+        try {
+            const response = await axios.get(
+                route("rm.pasien-inap.list", { no_rm: noRmValue })
+            );
+            setDataPasienInap(response?.data?.pasien_inaps || []);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        } finally {
+            setLoadingFetcInap(false);
         }
     };
 
@@ -115,7 +135,7 @@ export default function PasienRujukanList({ auth }) {
         const savedNoRm = localStorage.getItem("noRm");
         if (savedNoRm) {
             setNoRm(savedNoRm);
-            fetchData(savedNoRm);
+            fetchDataPasienRujukan(savedNoRm);
         }
 
         const handleKeyDown = (event) => {
@@ -169,14 +189,30 @@ export default function PasienRujukanList({ auth }) {
                     </Button>
                 </Space>
             </Card>
-            <Card title="Pasien Rawat Jalan">
+            <Card title="Pasien Rawat Jalan" style={{ marginBottom: 5 }}>
                 <Table
-                    dataSource={dataSource}
+                    dataSource={dataPasienRujukans}
                     columns={columns}
                     size="small"
-                    loading={loading}
+                    loading={loadingFetchRujukan}
                     rowKey="FRPNOTRANSAKSIKJ"
                     scroll={{ x: "max-content" }}
+                    pagination={{
+                        pageSize: 5,
+                    }}
+                />
+            </Card>
+            <Card title="Pasien Rawat Inap">
+                <Table
+                    dataSource={dataPasienInap}
+                    columns={columns}
+                    size="small"
+                    loading={loadingFetcInap}
+                    rowKey="FRPNOTRANSAKSIKJ"
+                    scroll={{ x: "max-content" }}
+                    pagination={{
+                        pageSize: 5,
+                    }}
                 />
             </Card>
         </AuthenticatedLayout>

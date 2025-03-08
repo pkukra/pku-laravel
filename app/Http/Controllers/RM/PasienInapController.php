@@ -7,20 +7,20 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
-use App\Repositories\RM\PasienRujukanRepository;
+use App\Repositories\RM\PasienInapRepository;
 use App\Repositories\RM\BridgingEKlaimRepository;
 
-class PasienRujukanController extends Controller
+class PasienInapController extends Controller
 {
-    protected $pasienRujukanRepo;
+    protected $pasienInapRepo;
     protected $bridgingEKlaimRepo;
 
     // Dependency Injection Repository
     public function __construct(
-        PasienRujukanRepository $pasienRujukanRepo,
+        PasienInapRepository $pasienInapRepo,
         BridgingEKlaimRepository $bridgingEKlaimRepo,
     ) {
-        $this->pasienRujukanRepo = $pasienRujukanRepo;
+        $this->pasienInapRepo = $pasienInapRepo;
         $this->bridgingEKlaimRepo = $bridgingEKlaimRepo;
     }
 
@@ -40,12 +40,12 @@ class PasienRujukanController extends Controller
     public function index_data($no_rm)
     {
         // Mendapatkan data pasien rujukan menggunakan repository
-        $pasien_rujukans = $this->pasienRujukanRepo->getPasienRujukans($no_rm);
-        $count = $this->pasienRujukanRepo->countPasienRujukan();
+        $pasien_inaps = $this->pasienInapRepo->getPasienInaps($no_rm);
+        $count = $this->pasienInapRepo->countPasienInap();
 
         return response()->json([
             'status' => "ok",
-            'pasien_rujukans' => $pasien_rujukans,
+            'pasien_inaps' => $pasien_inaps,
             'count' => $count,
         ]);
     }
@@ -57,9 +57,9 @@ class PasienRujukanController extends Controller
     public function show($kode_reg)
     {
         // Mendapatkan detail pasien rujukan berdasarkan kode_reg
-        $pasien_rujukans = $this->pasienRujukanRepo->getPasienRujukanDetail($kode_reg);
-        return Inertia::render('RM/PasienRujukan/PasienRujukanDetail', [
-            'pasien' => $pasien_rujukans,
+        $pasien_inaps = $this->pasienInapRepo->getPasienInapDetail($kode_reg);
+        return Inertia::render('RM/PasienInap/PasienInapDetail', [
+            'pasien' => $pasien_inaps,
             'kode_reg' => $kode_reg,
         ]);
     }
@@ -72,10 +72,10 @@ class PasienRujukanController extends Controller
     public function show_data($kode_reg)
     {
         // Mendapatkan detail pasien rujukan berdasarkan kode_reg
-        $pasien_rujukan = $this->pasienRujukanRepo->getPasienRujukanDetail($kode_reg);
+        $pasien_inap = $this->pasienInapRepo->getPasienInapDetail($kode_reg);
 
         return response()->json([
-            'pasien' => $pasien_rujukan,
+            'pasien' => $pasien_inap,
         ]);
     }
 
@@ -86,7 +86,7 @@ class PasienRujukanController extends Controller
     public function get_nomer_sep($kode_reg, $kode_reg_kj)
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
-        $data = $this->pasienRujukanRepo->getSepPasienRujukan($kode_reg, $kode_reg_kj);
+        $data = $this->pasienInapRepo->getSepPasienInap($kode_reg, $kode_reg_kj);
         return response()->json([
             'status' => "ok",
             'data' => $data,
@@ -100,7 +100,7 @@ class PasienRujukanController extends Controller
     public function get_keadaan_keluar_rs($kode_reg)
     {
         // Menampilkan aktual keaadaan keluar dari setiap pasien by kode_reg
-        $data = $this->pasienRujukanRepo->getKeadaanKeluarByTransaksi($kode_reg);
+        $data = $this->pasienInapRepo->getKeadaanKeluarByTransaksi($kode_reg);
 
         return response()->json([
             'status' => "ok",
@@ -115,7 +115,7 @@ class PasienRujukanController extends Controller
     public function get_kunjungan_pasien($kode_reg)
     {
         // Menampilkan aktual keaadaan keluar dari setiap pasien by kode_reg
-        $data = $this->pasienRujukanRepo->getKunjunganPasienByTransaksi($kode_reg);
+        $data = $this->pasienInapRepo->getKunjunganPasienByTransaksi($kode_reg);
 
         return response()->json([
             'status' => "ok",
@@ -130,7 +130,7 @@ class PasienRujukanController extends Controller
     public function list_diagnosa($kode_reg)
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
-        $diagnosa = $this->pasienRujukanRepo->getDiagnosaByTransaksi($kode_reg);
+        $diagnosa = $this->pasienInapRepo->getDiagnosaByTransaksi($kode_reg);
 
         return response()->json([
             'status' => "ok",
@@ -148,7 +148,7 @@ class PasienRujukanController extends Controller
         $page = $request->input('page', 1); // Halaman saat ini (default 1)
 
         // Mendapatkan data penyakit berdasarkan pencarian
-        $penyakit = $this->pasienRujukanRepo->searchPenyakit($searchTerm, $page);
+        $penyakit = $this->pasienInapRepo->searchPenyakit($searchTerm, $page);
 
         return response()->json([
             'status' => "ok",
@@ -187,7 +187,7 @@ class PasienRujukanController extends Controller
         ];
 
         // Menyimpan data diagnosa melalui repository
-        $isSaved = $this->pasienRujukanRepo->saveDiagnosa($data);
+        $isSaved = $this->pasienInapRepo->saveDiagnosa($data);
 
         if ($isSaved) {
             return response()->json([
@@ -209,7 +209,7 @@ class PasienRujukanController extends Controller
     public function delete_diagnosa($id)
     {
         // Hapus diagnosa berdasarkan ID dari tabel MR_PENYAKIT
-        $deleted = $this->pasienRujukanRepo->deleteDiagnosaById($id);
+        $deleted = $this->pasienInapRepo->deleteDiagnosaById($id);
 
         if ($deleted) {
             return response()->json([
@@ -231,7 +231,7 @@ class PasienRujukanController extends Controller
     public function list_procedure($kode_reg)
     {
         // Mendapatkan procedure berdasarkan kode transaksi
-        $procedure = $this->pasienRujukanRepo->getProcedureByTransaksi($kode_reg);
+        $procedure = $this->pasienInapRepo->getProcedureByTransaksi($kode_reg);
 
         return response()->json([
             'status' => "ok",
@@ -249,7 +249,7 @@ class PasienRujukanController extends Controller
         $page = $request->input('page', 1); // Halaman saat ini (default 1)
 
         // Mendapatkan data procedure berdasarkan pencarian
-        $procedure = $this->pasienRujukanRepo->searchProcedure($searchTerm, $page);
+        $procedure = $this->pasienInapRepo->searchProcedure($searchTerm, $page);
 
         return response()->json([
             'status' => "ok",
@@ -284,7 +284,7 @@ class PasienRujukanController extends Controller
         ];
 
         // Menyimpan data procedure melalui repository
-        $isSaved = $this->pasienRujukanRepo->saveProcedure($data);
+        $isSaved = $this->pasienInapRepo->saveProcedure($data);
 
         if ($isSaved) {
             return response()->json([
@@ -306,7 +306,7 @@ class PasienRujukanController extends Controller
     public function delete_procedure($id)
     {
         // Hapus procedure berdasarkan ID dari tabel MR_TINDAKAN
-        $deleted = $this->pasienRujukanRepo->deleteProcedureById($id);
+        $deleted = $this->pasienInapRepo->deleteProcedureById($id);
 
         if ($deleted) {
             return response()->json([
@@ -328,7 +328,7 @@ class PasienRujukanController extends Controller
      */
     public function get_mr_diagnosa($kode_reg)
     {
-        $data = $this->pasienRujukanRepo->getMrDiagnosaByTransaksi($kode_reg);
+        $data = $this->pasienInapRepo->getMrDiagnosaByTransaksi($kode_reg);
 
         return response()->json([
             'status' => "ok",
@@ -345,7 +345,7 @@ class PasienRujukanController extends Controller
         // Get the validated catatan_khusus value
         $catatanKhusus = $validated['catatan_khusus'];
 
-        $isUpdated = $this->pasienRujukanRepo->updateCatatanKhususByTransaksi($no_transaksi, $catatanKhusus);
+        $isUpdated = $this->pasienInapRepo->updateCatatanKhususByTransaksi($no_transaksi, $catatanKhusus);
 
         if ($isUpdated) {
             return response()->json([
@@ -362,7 +362,7 @@ class PasienRujukanController extends Controller
 
     public function cari_cara_masuk_bpjs()
     {
-        $data = $this->pasienRujukanRepo->getCaraMasukBPJS();
+        $data = $this->pasienInapRepo->getCaraMasukBPJS();
         return response()->json([
             'status' => "ok",
             'data' => $data,
@@ -371,7 +371,7 @@ class PasienRujukanController extends Controller
 
     public function cari_keadaan_keluar_rs()
     {
-        $data = $this->pasienRujukanRepo->getKeadaanKeluarRS();
+        $data = $this->pasienInapRepo->getKeadaanKeluarRS();
         return response()->json([
             'status' => "ok",
             'data' => $data,
@@ -380,7 +380,7 @@ class PasienRujukanController extends Controller
     
     public function cari_rs_rujukan()
     {
-        $data = $this->pasienRujukanRepo->getRSRujukan();
+        $data = $this->pasienInapRepo->getRSRujukan();
         return response()->json([
             'status' => "ok",
             'data' => $data,
@@ -409,7 +409,7 @@ class PasienRujukanController extends Controller
         $validated['email'] = Auth::user()->email;
         $validated['now'] = now();
 
-        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($validated);
+        $isUpdated = $this->pasienInapRepo->updateCaraMasukPulangsByTransaksi($validated);
 
         if ($isUpdated) {
             return response()->json([
@@ -427,7 +427,7 @@ class PasienRujukanController extends Controller
     public function get_resume($kode_reg)
     {
         // Mendapatkan data resume berdasarkan kode transaksi
-        $data = $this->pasienRujukanRepo->getResumeByTransaksi($kode_reg);
+        $data = $this->pasienInapRepo->getResumeByTransaksi($kode_reg);
 
         return response()->json([
             'status' => "ok",
@@ -437,7 +437,7 @@ class PasienRujukanController extends Controller
 
     public function get_hasil_radiologi($kode_reg_kj)
     {
-        $data = $this->pasienRujukanRepo->getListHasilRadiologiByTransaksi($kode_reg_kj);
+        $data = $this->pasienInapRepo->getListHasilRadiologiByTransaksi($kode_reg_kj);
         return response()->json([
             'status' => "ok",
             'data' => $data,
