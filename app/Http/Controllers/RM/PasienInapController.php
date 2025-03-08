@@ -25,38 +25,29 @@ class PasienInapController extends Controller
     }
 
     /**
-     * index
-     * Load halaman utama daftar pasien rujukan
-     */
-    public function index(Request $request)
-    {
-        return Inertia::render('RM/ListKunjungan');
-    }
-
-    /**
      * index_data
-     * Menampilkan daftar pasien rujukan dalam format JSON
+     * Menampilkan daftar pasien inap dalam format JSON
      */
     public function index_data($no_rm)
     {
-        // Mendapatkan data pasien rujukan menggunakan repository
+        // Mendapatkan data pasien inap menggunakan repository
         $pasien_inaps = $this->pasienInapRepo->getPasienInaps($no_rm);
-        $count = $this->pasienInapRepo->countPasienInap();
+        // $count = $this->pasienInapRepo->countPasienInap();
 
         return response()->json([
             'status' => "ok",
             'pasien_inaps' => $pasien_inaps,
-            'count' => $count,
+            'count' => 0,
         ]);
     }
 
     /**
      * show
-     * Menampilkan detail pasien rujukan berdasarkan kode_reg
+     * Menampilkan detail pasien inap berdasarkan kode_reg
      */
     public function show($kode_reg)
     {
-        // Mendapatkan detail pasien rujukan berdasarkan kode_reg
+        // Mendapatkan detail pasien inap berdasarkan kode_reg
         $pasien_inaps = $this->pasienInapRepo->getPasienInapDetail($kode_reg);
         return Inertia::render('RM/PasienInap/PasienInapDetail', [
             'pasien' => $pasien_inaps,
@@ -66,12 +57,12 @@ class PasienInapController extends Controller
 
     /**
      * show_data
-     * Menampilkan detail pasien rujukan berdasarkan kode_reg
+     * Menampilkan detail pasien inap berdasarkan kode_reg
      * RESPONSE JSON
      */
     public function show_data($kode_reg)
     {
-        // Mendapatkan detail pasien rujukan berdasarkan kode_reg
+        // Mendapatkan detail pasien inap berdasarkan kode_reg
         $pasien_inap = $this->pasienInapRepo->getPasienInapDetail($kode_reg);
 
         return response()->json([
@@ -159,7 +150,7 @@ class PasienInapController extends Controller
 
     /**
      * save_diagnosa
-     * Menyimpan data diagnosa untuk pasien rujukan
+     * Menyimpan data diagnosa untuk pasien inap
      */
     public function save_diagnosa(Request $request)
     {
@@ -260,7 +251,7 @@ class PasienInapController extends Controller
 
     /**
      * save_diagnosa
-     * Menyimpan data diagnosa untuk pasien rujukan
+     * Menyimpan data diagnosa untuk pasien inap
      */
     public function save_procedure(Request $request)
     {

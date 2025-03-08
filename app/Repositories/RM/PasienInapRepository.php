@@ -17,16 +17,26 @@ class PasienInapRepository
     public function getPasienInaps($no_rm)
     {
         return DB::connection('sqlsrv')
-            ->table('PASIEN_RUJUKAN')
-            ->join('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
-            ->join('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+            ->table('TRANSAKSIPASIENINAP AS TPI')
+            ->join('PASIENRAWATINAP AS PRI', function ($join) {
+                $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
+                    ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
+            })
+            ->leftJoin('SPESIALISASI AS S', 'PRI.PRWIKD_SPECIAL', '=', 'S.FMSPESIALISASI_ID')
+            ->leftJoin('KAMAR_KELAS AS KK', 'PRI.PRWIKD_KELAS', '=', 'KK.FMKKODEKLAS')
+            ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
+            ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
             ->select(
-                'PASIEN_RUJUKAN.*',
-                'DOKTER.FMDDOKTERN',
-                'POLIKLINIK.FMPKLINIKN'
+                'TPI.*',
+                'KK.FMKKAMARN',
+                'K.FMKNAMA_KAMAR',
+                'S.FMSPESIALISASIN',
+                'PRI.PRWIKD_DOKTER',
+                'PRI.PRWIKD_CUSTOMER',
+                'DR.FMDDOKTERN',
             )
-            ->where('PASIEN_RUJUKAN.FRPPASIEN_ID', $no_rm)
-            ->orderBy('FRPTGL', 'desc')
+            ->where('TPI.FTKD_PASIEN', $no_rm)
+            ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
             ->get();
     }
 

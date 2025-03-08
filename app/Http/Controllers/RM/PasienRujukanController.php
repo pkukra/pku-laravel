@@ -41,7 +41,7 @@ class PasienRujukanController extends Controller
     {
         // Mendapatkan data pasien rujukan menggunakan repository
         $pasien_rujukans = $this->pasienRujukanRepo->getPasienRujukans($no_rm);
-        $count = $this->pasienRujukanRepo->countPasienRujukan();
+        $count = $this->pasienRujukanRepo->countPasienRujukan($no_rm);
 
         return response()->json([
             'status' => "ok",

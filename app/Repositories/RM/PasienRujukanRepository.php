@@ -35,10 +35,11 @@ class PasienRujukanRepository
      * 
      * @return int
      */
-    public function countPasienRujukan()
+    public function countPasienRujukan($no_rm)
     {
         return DB::connection('sqlsrv')
             ->table('PASIEN_RUJUKAN')
+            ->where('PASIEN_RUJUKAN.FRPPASIEN_ID', $no_rm)
             ->count();
     }
 

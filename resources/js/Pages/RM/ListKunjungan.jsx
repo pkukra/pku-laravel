@@ -5,7 +5,7 @@ import { Card, Input, Button, Space, Table, Tooltip } from "antd";
 import axios from "axios";
 import moment from "moment";
 
-const columns = [
+const columnsRujukan = [
     {
         title: "Kode Poly",
         dataIndex: "FRPUNIT",
@@ -66,6 +66,78 @@ const columns = [
         ),
     },
 ];
+const columnsInap = [
+    {
+        title: "Spesialisasi",
+        dataIndex: "FMSPESIALISASIN",
+        key: "FMSPESIALISASIN",
+        fixed: "left",
+    },
+    {
+        title: "Kelas Kamar",
+        dataIndex: "FMKKAMARN",
+        key: "FMKKAMARN",
+        fixed: "left",
+    },
+    {
+        title: "Kamar",
+        dataIndex: "FMKNAMA_KAMAR",
+        key: "FMKNAMA_KAMAR",
+        fixed: "left",
+    },
+    {
+        title: "Tanggal Masuk",
+        dataIndex: "FRPTGL",
+        render: (_, record) => (
+            <>
+                {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
+                {moment(record.FRPJAM).format("HH:mm")}
+            </>
+        ),
+    },
+    {
+        title: "Tanggal Keluar",
+        dataIndex: "FRPTGL",
+        render: (_, record) => (
+            <>
+                {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
+                {moment(record.FRPJAM).format("HH:mm")}
+            </>
+        ),
+    },
+    {
+        title: "Dokter",
+        dataIndex: "FMDDOKTERN",
+        key: "FMDDOKTERN",
+        fixed: "left",
+    },
+    {
+        title: "Kelompok",
+        dataIndex: "PRWIKD_CUSTOMER",
+        key: "PRWIKD_CUSTOMER",
+    },
+    {
+        title: "No Transaksi",
+        dataIndex: "FTNO_TRANSAKSI",
+        key: "FTNO_TRANSAKSI",
+    },
+    {
+        title: "Action",
+        dataIndex: "action",
+        key: "action",
+        render: (_, record) => (
+            <a
+                href={route("rm.pasien-rujukan.detail", {
+                    kode_reg: record.FTNO_TRANSAKSI,
+                })}
+            >
+                <Button type="primary" size="small">
+                    Tampilkan
+                </Button>
+            </a>
+        ),
+    },
+];
 
 export default function PasienRujukanList({ auth }) {
     const [dataPasienRujukans, setDataPasienRujukans] = useState([]);
@@ -115,6 +187,9 @@ export default function PasienRujukanList({ auth }) {
             const response = await axios.get(
                 route("rm.pasien-inap.list", { no_rm: noRmValue })
             );
+
+            console.log(response?.data);
+            
             setDataPasienInap(response?.data?.pasien_inaps || []);
         } catch (error) {
             console.error("Error fetching data: ", error);
@@ -136,6 +211,7 @@ export default function PasienRujukanList({ auth }) {
         if (savedNoRm) {
             setNoRm(savedNoRm);
             fetchDataPasienRujukan(savedNoRm);
+            fetchDataPasienInap(savedNoRm);
         }
 
         const handleKeyDown = (event) => {
@@ -192,7 +268,7 @@ export default function PasienRujukanList({ auth }) {
             <Card title="Pasien Rawat Jalan" style={{ marginBottom: 5 }}>
                 <Table
                     dataSource={dataPasienRujukans}
-                    columns={columns}
+                    columns={columnsRujukan}
                     size="small"
                     loading={loadingFetchRujukan}
                     rowKey="FRPNOTRANSAKSIKJ"
@@ -205,7 +281,7 @@ export default function PasienRujukanList({ auth }) {
             <Card title="Pasien Rawat Inap">
                 <Table
                     dataSource={dataPasienInap}
-                    columns={columns}
+                    columns={columnsInap}
                     size="small"
                     loading={loadingFetcInap}
                     rowKey="FRPNOTRANSAKSIKJ"
