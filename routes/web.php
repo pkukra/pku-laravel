@@ -36,8 +36,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::prefix('rm')->group(function () {
+    Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
+
     Route::middleware('auth')->prefix('pasien-rujukan')->group(function () {
-        Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.pasien-rujukan.index');
         Route::get('/list/{no_rm}', [PasienRujukanController::class, 'index_data'])->name('rm.pasien-rujukan.list');
         Route::get('/detail/{kode_reg}', [PasienRujukanController::class, 'show'])->name('rm.pasien-rujukan.detail');
         Route::get('/detail_data/{kode_reg}', [PasienRujukanController::class, 'show_data'])->name('rm.pasien-rujukan.detail_data');

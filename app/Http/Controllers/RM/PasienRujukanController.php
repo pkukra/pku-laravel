@@ -30,7 +30,7 @@ class PasienRujukanController extends Controller
      */
     public function index(Request $request)
     {
-        return Inertia::render('RM/PasienRujukan/PasienRujukanList');
+        return Inertia::render('RM/PasienRujukanList');
     }
 
     /**

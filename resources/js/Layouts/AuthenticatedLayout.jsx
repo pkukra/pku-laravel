@@ -14,7 +14,7 @@ const items = [
     {
         key: "rm", // Untuk `/rm` dan turunannya
         icon: <CodeOutlined />,
-        label: <Link href={route("rm.pasien-rujukan.index")}>RM Jalan</Link>,
+        label: <Link href={route("rm.index")}>RM Jalan</Link>,
     },
     {
         key: "profile", // Untuk `/profile`
