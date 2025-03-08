@@ -2,10 +2,10 @@ import { Head } from "@inertiajs/react";
 import { Col, Row, Card } from "antd";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienInapDetailProfile from "./PasienInapDetailProfile";
-// import PasienInapDetailDiagnosaList from "./PasienInapDetailDiagnosaList";
-// import PasienInapDetailProcedureList from "./PasienInapDetailProcedureList";
+import PasienInapDetailDiagnosaList from "./PasienInapDetailDiagnosaList";
+import PasienInapDetailProcedureList from "./PasienInapDetailProcedureList";
 // import PasienInapDetailAmnanesaCatatan from "./PasienInapDetailAmnanesaCatatan";
-// import PasienInapDetailSEP from "./PasienInapDetailSEP";
+import PasienInapDetailSEP from "./PasienInapDetailSEP";
 // import PasienInapDetailResume from "./PasienInapDetailResume";
 // import PasienInapDetailHasilLab from "./PasienInapDetailHasilLab";
 // import PasienInapDetailCaraMasukPulang from "./PasienInapDetailCaraMasukPulang";
@@ -19,7 +19,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
     const reFetchPasien = () => {
         setPasienLoading(true);
         axios
-            .get(route("rm.pasien-rujukan.detail_data", { kode_reg }))
+            .get(route("rm.pasien-inap.detail_data", { kode_reg }))
             .then((response) => setPasien(response?.data?.pasien))
             .catch((error) =>
                 console.error("Error fetching data pasien:", error)
@@ -38,7 +38,6 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                     <Row gutter={[5, 5]}>
                         <Col span={24}>
                             <PasienInapDetailProfile pasien={pasien} />
-
                             {JSON.stringify(pasien)}
                         </Col>
 
@@ -50,7 +49,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={12}>
-                            {/* <PasienInapDetailDiagnosaList pasien={pasien} /> */}
+                            <PasienInapDetailDiagnosaList pasien={pasien} />
                         </Col>
                         <Col span={12}>
                             {/* <PasienInapDetailProcedureList pasien={pasien} /> */}

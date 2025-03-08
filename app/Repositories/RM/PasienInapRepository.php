@@ -81,6 +81,7 @@ class PasienInapRepository
                 'SPESIALISASI.FMSPESIALISASIN',
             )
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
+            ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
             ->first();  // Menggunakan `first` karena hanya mengambil satu data
     }
 

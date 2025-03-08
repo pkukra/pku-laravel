@@ -87,10 +87,10 @@ const columnsInap = [
     },
     {
         title: "Tanggal Masuk",
-        dataIndex: "FRPTGL",
+        dataIndex: "FTTGL_TRANSAKSI",
         render: (_, record) => (
             <>
-            {moment(record?.FRPTGL).format("DD/MM/YYYY")}
+            {moment(record?.FTTGL_TRANSAKSI).format("DD/MM/YYYY")}
             </>
         ),
     },
@@ -125,7 +125,7 @@ const columnsInap = [
         key: "action",
         render: (_, record) => (
             <a
-                href={route("rm.pasien-rujukan.detail", {
+                href={route("rm.pasien-inap.detail", {
                     kode_reg: record?.FTNO_TRANSAKSI,
                 })}
             >

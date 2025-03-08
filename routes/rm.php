@@ -41,5 +41,11 @@ Route::prefix('rm')->group(function () {
     Route::middleware('auth')->prefix('pasien-inap')->group(function () {
         Route::get('/list/{no_rm}', [PasienInapController::class, 'index_data'])->name('rm.pasien-inap.list');
         Route::get('/detail/{kode_reg}', [PasienInapController::class, 'show'])->name('rm.pasien-inap.detail');
+
+        Route::get('/list_diagnosa/{kode_reg}', [PasienInapController::class, 'list_diagnosa'])->name('rm.pasien-inap.list_diagnosa');
+        Route::post('/cari_penyakit', [PasienInapController::class, 'cari_penyakit'])->name('rm.pasien-inap.cari_penyakit');
+        Route::post('/save-diagnosa', [PasienInapController::class, 'save_diagnosa'])->name('rm.pasien-inap.save_diagnosa');
+        Route::delete('/diagnosa/{id}', [PasienInapController::class, 'delete_diagnosa'])->name('rm.pasien-inap.delete_diagnosa');
     });
+
 });
