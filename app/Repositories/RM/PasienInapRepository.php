@@ -532,7 +532,7 @@ class PasienInapRepository
     {
         $hasil = [];
         $transactions = DB::connection('sqlsrv')
-            ->table('TRANSAKSIPASIEND AS A')
+            ->table('TRANSAKSIPASIENINAPD AS A')
             ->select('A.*')
             ->where('A.FDTNO_TRANSAKSI', $kode_reg_kj)
             ->where('A.FDTKD_PRODUK', 'ADL004')

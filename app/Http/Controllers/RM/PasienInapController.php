@@ -426,9 +426,9 @@ class PasienInapController extends Controller
         ]);
     }
 
-    public function get_hasil_radiologi($kode_reg_kj)
+    public function get_hasil_radiologi($kode_reg)
     {
-        $data = $this->pasienInapRepo->getListHasilRadiologiByTransaksi($kode_reg_kj);
+        $data = $this->pasienInapRepo->getListHasilRadiologiByTransaksi($kode_reg);
         return response()->json([
             'status' => "ok",
             'data' => $data,

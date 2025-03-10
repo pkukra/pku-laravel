@@ -57,6 +57,7 @@ Route::prefix('rm')->group(function () {
         Route::delete('/procedure/{id}', [PasienInapController::class, 'delete_procedure'])->name('rm.pasien-inap.delete_procedure');
 
         Route::get('/get_resume/{kode_reg}', [PasienInapController::class, 'get_resume'])->name('rm.pasien-inap.get_resume');
+        Route::get('/get_hasil_radiologi/{kode_reg}', [PasienInapController::class, 'get_hasil_radiologi'])->name('rm.pasien-inap.get_hasil_radiologi');
 
         Route::get('/get_nomer_sep/{kode_reg}', [PasienInapController::class, 'get_nomer_sep'])->name('rm.pasien-inap.get_nomer_sep');
 
