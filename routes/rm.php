@@ -41,6 +41,10 @@ Route::prefix('rm')->group(function () {
     Route::middleware('auth')->prefix('pasien-inap')->group(function () {
         Route::get('/list/{no_rm}', [PasienInapController::class, 'index_data'])->name('rm.pasien-inap.list');
         Route::get('/detail/{kode_reg}', [PasienInapController::class, 'show'])->name('rm.pasien-inap.detail');
+        Route::get('/detail_data/{kode_reg}', [PasienInapController::class, 'show_data'])->name('rm.pasien-inap.detail_data');
+        Route::get('/get_keadaan_keluar_rs/{kode_reg}/', [PasienInapController::class, 'get_keadaan_keluar_rs'])->name('rm.pasien-inap.get_keadaan_keluar_rs');
+        Route::get('/get_kunjungan_pasien/{kode_reg}/', [PasienInapController::class, 'get_kunjungan_pasien'])->name('rm.pasien-inap.get_kunjungan_pasien');
+
 
         Route::get('/list_diagnosa/{kode_reg}', [PasienInapController::class, 'list_diagnosa'])->name('rm.pasien-inap.list_diagnosa');
         Route::post('/cari_penyakit', [PasienInapController::class, 'cari_penyakit'])->name('rm.pasien-inap.cari_penyakit');
@@ -55,5 +59,10 @@ Route::prefix('rm')->group(function () {
         Route::get('/get_resume/{kode_reg}', [PasienInapController::class, 'get_resume'])->name('rm.pasien-inap.get_resume');
 
         Route::get('/get_nomer_sep/{kode_reg}', [PasienInapController::class, 'get_nomer_sep'])->name('rm.pasien-inap.get_nomer_sep');
+
+        Route::get('/cari_cara_masuk_bpjs', [PasienInapController::class, 'cari_cara_masuk_bpjs'])->name('rm.pasien-inap.cari_cara_masuk_bpjs');
+        Route::get('/cari_keadaan_keluar_rs', [PasienInapController::class, 'cari_keadaan_keluar_rs'])->name('rm.pasien-inap.cari_keadaan_keluar_rs');
+        Route::get('/cari_rs_rujukan', [PasienInapController::class, 'cari_rs_rujukan'])->name('rm.pasien-inap.cari_rs_rujukan');
+        Route::post('/update_cara_masuk_pulang/{kode_reg_kj}', [PasienInapController::class, 'update_cara_masuk_pulang'])->name('rm.pasien-inap.update_cara_masuk_pulang');
     });
 });

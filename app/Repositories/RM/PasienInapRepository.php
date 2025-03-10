@@ -446,22 +446,11 @@ class PasienInapRepository
     {
         try {
             DB::connection('sqlsrv')
-                ->table('PASIEN_RUJUKAN')
-                ->where('FRPNOTRANSAKSIKJ', $data['no_transaksi_kj'])
+                ->table('PASIENRAWATINAP')
+                ->where('PRWINO_TRANSAKSI', $data['no_transaksi'])
                 ->update(['CARA_MASUK' => $data['cara_masuk']]);
 
-            // Jika keadaan_keluar selain 1, KPRUJUKLUAR harus kosong
-            $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : "";
-
-            // Update keperawatan di tabel KUNJUNGANPASIEN
-            DB::connection('sqlsrv')
-                ->table('KUNJUNGANPASIEN')
-                ->where('KPNO_TRANSAKSI', $data['no_transaksi_kj'])
-                ->update([
-                    'KPRUJUKLUAR' => $kodeRsRujukKeluar,
-                    'KPPERAWATAN' => $data['keperawatan'],
-                ]);
-
+            // mulai update mr kematian
             $arrUpdate = [
                 'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
                 'updated_at' => $data['now'],
@@ -473,19 +462,19 @@ class PasienInapRepository
 
             $exists = DB::connection('sqlsrv')
                 ->table('MR_KEMATIAN')
-                ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
+                ->where('MRKNO_TRANSAKSI', $data['no_transaksi'])
                 ->exists();
 
             if ($exists) {
                 // Jika sudah ada, lakukan update
                 DB::connection('sqlsrv')
                     ->table('MR_KEMATIAN')
-                    ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
+                    ->where('MRKNO_TRANSAKSI', $data['no_transaksi'])
                     ->update($arrUpdate);
             } else {
                 // Jika belum ada, lakukan insert
                 $arrInsert = array_merge($arrUpdate, [
-                    'MRKNO_TRANSAKSI' => $data['no_transaksi_kj'],
+                    'MRKNO_TRANSAKSI' => $data['no_transaksi'],
                     'MRKKD_PASIEN' => $data['kode_pasien'],
                     'MRKKD_UNIT' => $data['kode_unit'],
                     'MRKKD_DOKTER' => $data['kode_dokter'],

@@ -378,7 +378,7 @@ class PasienInapController extends Controller
         ]);
     }
 
-    public function update_cara_masuk_pulang(Request $request, $no_transaksi_kj)
+    public function update_cara_masuk_pulang(Request $request, $no_transaksi)
     {
         // Validate the input
         $validated = $request->validate([
@@ -390,12 +390,12 @@ class PasienInapController extends Controller
             'keadaan_keluar' => 'required',
             'sebab_kematian' => 'nullable|string',
 
-            'keperawatan' => 'required',
+            'keperawatan' => 'nullable',
             'kode_rs_rujuk_keluar' => 'nullable',
         ]);
 
-        // Tambahkan no_transaksi_kj ke dalam array data
-        $validated['no_transaksi_kj'] = $no_transaksi_kj;
+        // Tambahkan no_transaksi ke dalam array data
+        $validated['no_transaksi'] = $no_transaksi;
 
         $validated['email'] = Auth::user()->email;
         $validated['now'] = now();
