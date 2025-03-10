@@ -52,25 +52,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         return;
     }
 
-    // async function fetchActualKunjunganPasien() {
-    //     try {
-    //         const response = await axios.get(
-    //             route("rm.pasien-inap.get_kunjungan_pasien", {
-    //                 kode_reg: pasien.PRWINO_TRANSAKSI,
-    //             })
-    //         );
-    //         const data = response?.data?.data || null;
-
-    //         setSelectedKeperawatan(data?.KPPERAWATAN);
-    //         setSelectedRSRujukanKeluar(data?.KPRUJUKLUAR);
-
-    //         setKunjunganPasien(data);
-    //     } catch (error) {
-    //         console.error("Error fetching data:", error);
-    //     }
-    //     return;
-    // }
-
     // Fetch options cara masuk bpjs for selectbox
     async function fetchSugestCaraMasuk() {
         try {
@@ -177,6 +158,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     };
 
     useEffect(() => {
+        setSelectedRSRujukanKeluar(pasien?.PRWIRUJUKLUAR);
         fetchSugestRSRujukan();
         fetchActualKeadaanKelauarRS();
         fetchSugestCaraMasuk();
@@ -212,20 +194,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
                             </td>
                         </tr>
-                        {/* <tr>
-                            <td>Keperawatan</td>
-                            <td>
-                                :{" "}
-                                {kunjunganPasien?.KPPERAWATAN ? (
-                                    statusPerawatan(
-                                        kunjunganPasien?.KPPERAWATAN
-                                    )
-                                ) : (
-                                    <>Belum diisi</>
-                                )}
-                            </td>
-                        </tr> */}
-                        
+
                         <tr>
                             <td>Keadaan Keluar RS</td>
                             <td>: {keadaanKeluar?.FMKKRSKETERANGAN}</td>
@@ -234,12 +203,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                         {selectedKeadaanKeluar == 7 && (
                             <tr>
                                 <td>Rujukan Keluar</td>
-                                <td>
-                                    :{" "}
-                                    {statusRujukanKeluar(
-                                        kunjunganPasien?.KPRUJUKLUAR
-                                    )}
-                                </td>
+                                <td>: {pasien?.PRWIRUJUKLUAR} - {pasien?.RS_RUJUKAN_KELUAR}</td>
                             </tr>
                         )}
 
@@ -298,16 +262,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     onChange={setSelectedCaraMasuk}
                     options={caraMasukOptions}
                 />
-
-                {/* <label>Perawatan:</label>
-                <Select
-                    value={parseInt(selectedKeperawatan)}
-                    style={{ width: "100%", marginBottom: "10px" }}
-                    onChange={(value) =>
-                        setSelectedKeperawatan(parseInt(value))
-                    }
-                    options={perawatanOptions}
-                />*/}
 
                 <label>Keadaan Keluar RS: </label>
                 <Select

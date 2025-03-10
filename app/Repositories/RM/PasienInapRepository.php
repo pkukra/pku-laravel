@@ -71,6 +71,7 @@ class PasienInapRepository
             ->leftJoin('DOKTER', 'PRI.PRWIKD_DOKTER', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('SPESIALISASI', 'PRI.PRWIKD_SPECIAL', '=', 'SPESIALISASI.FMSPESIALISASI_ID')
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PRI.CARA_MASUK', '=', 'cm.KODE')
+            ->leftJoin('MR_RUJUKAN_KELUAR AS rk', 'PRI.PRWIRUJUKLUAR', '=', 'rk.MRKODERUJUKAN')
             ->select(
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',
@@ -80,7 +81,8 @@ class PasienInapRepository
                 'PRI.*',
                 'DOKTER.FMDDOKTERN',
                 'SPESIALISASI.FMSPESIALISASIN',
-                'cm.KETERANGAN AS CARA_MASUK_BPJS'
+                'cm.KETERANGAN AS CARA_MASUK_BPJS',
+                'rk.MRKODERUJUKANN AS RS_RUJUKAN_KELUAR',
             )
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
@@ -447,11 +449,17 @@ class PasienInapRepository
     public function updateCaraMasukPulangsByTransaksi(array $data)
     {
         try {
+            // Jika keadaan_keluar selain 1, KPRUJUKLUAR harus kosong
+            $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : null;
+
             DB::connection('sqlsrv')
                 ->table('PASIENRAWATINAP')
                 ->where('PRWINO_TRANSAKSI', $data['no_transaksi'])
-                ->update(['CARA_MASUK' => $data['cara_masuk']]);
-
+                ->update([
+                    'PRWIRUJUKLUAR' => $kodeRsRujukKeluar,
+                    'CARA_MASUK' => $data['cara_masuk'], // cara masuk standara BPJS opsi
+                ]);
+            
             // mulai update mr kematian
             $arrUpdate = [
                 'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
