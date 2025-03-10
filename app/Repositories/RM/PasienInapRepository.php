@@ -70,6 +70,7 @@ class PasienInapRepository
             ->leftJoin('PASIEN', 'PRI.PRWIKD_PASIEN', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PRI.PRWIKD_DOKTER', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('SPESIALISASI', 'PRI.PRWIKD_SPECIAL', '=', 'SPESIALISASI.FMSPESIALISASI_ID')
+            ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PRI.CARA_MASUK', '=', 'cm.KODE')
             ->select(
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',
@@ -79,6 +80,7 @@ class PasienInapRepository
                 'PRI.*',
                 'DOKTER.FMDDOKTERN',
                 'SPESIALISASI.FMSPESIALISASIN',
+                'cm.KETERANGAN AS CARA_MASUK_BPJS'
             )
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
