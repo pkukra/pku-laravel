@@ -25,8 +25,6 @@ export default function Index({ pasien }) {
                 })
             )
             .then((response) => {
-                console.log(response?.data);
-                
                 setResumeData(response?.data?.data || null);
             })
             .catch((error) => {
