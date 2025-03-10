@@ -29,7 +29,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
 
     return (
         <>
-            <Head title="Detail Kunjungan Pasien" />
+            <Head title="Detail Kunjungan Pasien Rajal" />
 
             <div className="py-12">
                 {!pasien ? (

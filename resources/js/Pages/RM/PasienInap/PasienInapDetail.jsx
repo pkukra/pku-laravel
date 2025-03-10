@@ -8,7 +8,7 @@ import PasienInapDetailProcedureList from "./PasienInapDetailProcedureList";
 import PasienInapDetailSEP from "./PasienInapDetailSEP";
 import PasienInapDetailResume from "./PasienInapDetailResume";
 // import PasienInapDetailHasilLab from "./PasienInapDetailHasilLab";
-// import PasienInapDetailCaraMasukPulang from "./PasienInapDetailCaraMasukPulang";
+import PasienInapDetailCaraMasukPulang from "./PasienInapDetailCaraMasukPulang";
 import { useState } from "react";
 import axios from "axios";
 
@@ -29,7 +29,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
 
     return (
         <>
-            <Head title="Detail Kunjungan Pasien" />
+            <Head title="Detail Kunjungan Pasien Ranap" />
 
             <div className="py-12">
                 {!pasien ? (
@@ -58,12 +58,13 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             {/* <PasienInapDetailAmnanesaCatatan
                                 pasien={pasien}
                             />
+                            */}
                             <PasienInapDetailCaraMasukPulang
                                 pasien={pasien}
                                 kode_reg={kode_reg}
                                 pasienLoading={pasienLoading}
                                 reFetchPasien={reFetchPasien}
-                            /> */}
+                            />
                         </Col>
                         <Col span={12}>
                             <PasienInapDetailSEP

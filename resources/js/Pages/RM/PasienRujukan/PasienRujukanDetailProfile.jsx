@@ -5,7 +5,7 @@ import moment from "moment";
 export default function Index({ pasien }) {
     return (
         <>
-            <Card title="Profil Pasien">
+            <Card title="Profil Pasien Rawat Jalan">
                 <table className="tw-table tw-table-xs" style={{ width: "100%" }}>
                     <tbody>
                         <tr>
