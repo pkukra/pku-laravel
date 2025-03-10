@@ -91,16 +91,16 @@ class PasienInapRepository
      * @param string $kode_reg
      * @return object|null
      */
-    public function getSepPasienInap($kode_reg, $kode_reg_kj)
+    public function getSepPasienInap($kode_reg)
     {
         try {
             return DB::connection('sqlsrv')
                 ->table('BPJS_SEP')
                 ->select('BPJS_SEP.FMNOSEP')
-                ->whereIn('BPJS_SEP.FMNOTRANSAKSI', [$kode_reg, $kode_reg_kj])
+                ->where('BPJS_SEP.FMNOTRANSAKSI', $kode_reg)
                 ->first();
         } catch (\Exception $e) {
-            Log::error("Err get SEP: " . $e->getMessage());
+            Log::error("Err get SEP inap: " . $e->getMessage());
             return false;
         }
     }

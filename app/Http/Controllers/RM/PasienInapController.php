@@ -74,10 +74,10 @@ class PasienInapController extends Controller
      * get_nomer_sep
      * Menampilkan nomer sep berdasarkan kode transaksi
      */
-    public function get_nomer_sep($kode_reg, $kode_reg_kj)
+    public function get_nomer_sep($kode_reg)
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
-        $data = $this->pasienInapRepo->getSepPasienInap($kode_reg, $kode_reg_kj);
+        $data = $this->pasienInapRepo->getSepPasienInap($kode_reg);
         return response()->json([
             'status' => "ok",
             'data' => $data,

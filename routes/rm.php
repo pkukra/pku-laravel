@@ -37,7 +37,7 @@ Route::prefix('rm')->group(function () {
         Route::post('/bridging_data_process/{no_sep}', [PasienRujukanController::class, 'bridging_data_process'])->name('rm.pasien-rujukan.bridging_data_process');
         Route::post('/bridging_final_process/{no_sep}', [PasienRujukanController::class, 'bridging_final_process'])->name('rm.pasien-rujukan.bridging_final_process');
     });
-    
+
     Route::middleware('auth')->prefix('pasien-inap')->group(function () {
         Route::get('/list/{no_rm}', [PasienInapController::class, 'index_data'])->name('rm.pasien-inap.list');
         Route::get('/detail/{kode_reg}', [PasienInapController::class, 'show'])->name('rm.pasien-inap.detail');
@@ -53,6 +53,7 @@ Route::prefix('rm')->group(function () {
         Route::delete('/procedure/{id}', [PasienInapController::class, 'delete_procedure'])->name('rm.pasien-inap.delete_procedure');
 
         Route::get('/get_resume/{kode_reg}', [PasienInapController::class, 'get_resume'])->name('rm.pasien-inap.get_resume');
-    });
 
+        Route::get('/get_nomer_sep/{kode_reg}', [PasienInapController::class, 'get_nomer_sep'])->name('rm.pasien-inap.get_nomer_sep');
+    });
 });
