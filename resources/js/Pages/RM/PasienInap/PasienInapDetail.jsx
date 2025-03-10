@@ -4,10 +4,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienInapDetailProfile from "./PasienInapDetailProfile";
 import PasienInapDetailDiagnosaList from "./PasienInapDetailDiagnosaList";
 import PasienInapDetailProcedureList from "./PasienInapDetailProcedureList";
-// import PasienInapDetailAmnanesaCatatan from "./PasienInapDetailAmnanesaCatatan";
 import PasienInapDetailSEP from "./PasienInapDetailSEP";
 import PasienInapDetailResume from "./PasienInapDetailResume";
-// import PasienInapDetailHasilLab from "./PasienInapDetailHasilLab";
+import PasienInapDetailHasilLab from "./PasienInapDetailHasilLab";
 import PasienInapDetailCaraMasukPulang from "./PasienInapDetailCaraMasukPulang";
 import { useState } from "react";
 import axios from "axios";
@@ -44,7 +43,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienInapDetailResume pasien={pasien} />
                         </Col>
                         <Col span={12}>
-                            {/* <PasienInapDetailHasilLab pasien={pasien} /> */}
+                            <PasienInapDetailHasilLab pasien={pasien} />
                         </Col>
 
                         <Col span={12}>
@@ -55,10 +54,6 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={12}>
-                            {/* <PasienInapDetailAmnanesaCatatan
-                                pasien={pasien}
-                            />
-                            */}
                             <PasienInapDetailCaraMasukPulang
                                 pasien={pasien}
                                 kode_reg={kode_reg}
