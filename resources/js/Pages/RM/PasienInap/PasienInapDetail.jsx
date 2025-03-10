@@ -66,10 +66,10 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             /> */}
                         </Col>
                         <Col span={12}>
-                            {/* <PasienInapDetailSEP
+                            <PasienInapDetailSEP
                                 pasien={pasien}
                                 user={auth.user}
-                            /> */}
+                            />
                         </Col>
                     </Row>
                 )}
