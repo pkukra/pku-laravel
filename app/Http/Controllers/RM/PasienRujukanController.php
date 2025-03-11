@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Repositories\RM\PasienRujukanRepository;
-use App\Repositories\RM\BridgingEKlaimRepository;
+use App\Repositories\RM\PasienRujukanEklaimRepository;
 
 class PasienRujukanController extends Controller
 {
@@ -18,7 +18,7 @@ class PasienRujukanController extends Controller
     // Dependency Injection Repository
     public function __construct(
         PasienRujukanRepository $pasienRujukanRepo,
-        BridgingEKlaimRepository $bridgingEKlaimRepo,
+        PasienRujukanEklaimRepository $bridgingEKlaimRepo,
     ) {
         $this->pasienRujukanRepo = $pasienRujukanRepo;
         $this->bridgingEKlaimRepo = $bridgingEKlaimRepo;

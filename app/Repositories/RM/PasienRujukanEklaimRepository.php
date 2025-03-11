@@ -2,14 +2,12 @@
 
 namespace App\Repositories\RM;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
-class BridgingEKlaimRepository
+class PasienRujukanEklaimRepository
 {
     /**
      * Process new claim by nomor kartu
