@@ -18,5 +18,5 @@ export default {
         },
     },
     prefix: "tw-",
-    plugins: [forms, require("daisyui")],
+    plugins: [forms],
 };
