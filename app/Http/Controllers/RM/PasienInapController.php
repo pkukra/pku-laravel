@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Repositories\RM\PasienInapRepository;
-use App\Repositories\RM\BridgingEKlaimRepository;
+use App\Repositories\RM\PasienInapEklaimRepository;
 
 class PasienInapController extends Controller
 {
@@ -18,7 +18,7 @@ class PasienInapController extends Controller
     // Dependency Injection Repository
     public function __construct(
         PasienInapRepository $pasienInapRepo,
-        BridgingEKlaimRepository $bridgingEKlaimRepo,
+        PasienInapEklaimRepository $bridgingEKlaimRepo,
     ) {
         $this->pasienInapRepo = $pasienInapRepo;
         $this->bridgingEKlaimRepo = $bridgingEKlaimRepo;
