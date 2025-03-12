@@ -156,7 +156,7 @@ export default function Index({ pasien }) {
                 {
                     icd10_code: selectedDiagnosaForm,
                     no_transaksikj: pasien.FTNO_TRANSAKSI,
-                    no_rm: pasien.PRWIKD_PASIEN,
+                    no_rm: pasien.FTKD_PASIEN,
                     kd_unit: pasien.PRWIKD_KAMAR,
                     tgl_masuk: now,
                     status_diagnosa: selectedStatusDiagForm,
