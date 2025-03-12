@@ -118,8 +118,11 @@ class PasienInapEklaimRepository
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
-            'tgl_masuk' => Carbon::parse($transaksi_uatama->PRWITGL_MASUK)->format('Y-m-d H:i:s'),
-            'tgl_pulang' => Carbon::parse($transaksi_uatama->PRWITGL_MASUK)->format('Y-m-d H:i:s'),
+            'tgl_masuk' => Carbon::parse($transaksi_uatama->TGL_MASUK)->format('Y-m-d H:i:s'),
+            // 'tgl_pulang' => Carbon::parse($transaksi_uatama->PRWITGL_KELUAR)->format('Y-m-d H:i:s'),
+            'tgl_pulang' => $transaksi_uatama->PRWITGL_KELUAR
+                ? Carbon::parse($transaksi_uatama->PRWITGL_KELUAR)->format('Y-m-d H:i:s')
+                : now()->format('Y-m-d H:i:s'),
             'jenis_rawat' => 2, // 1 ranap, 2 rajal, 3 igd
             'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
             'birth_weight' => 0,
@@ -266,17 +269,21 @@ class PasienInapEklaimRepository
         try {
             $detailTransaksi = DB::connection('sqlsrv')
                 ->table('BPJS_SEP AS sep')
-                ->leftJoin('PASIENRAWATINAP AS PRI', 'PRI.PRWINO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'TPI.FTNO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                ->join('PASIENRAWATINAP AS PRI', function ($join) {
+                    $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
+                        ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
+                })
                 ->leftJoin('DOKTER AS dr', 'PRI.PRWIKD_DOKTER', '=', 'dr.FMDDOKTER_ID')
                 ->leftJoin('PASIEN AS p', 'PRI.PRWIKD_PASIEN', '=', 'p.KD_PASIEN')
                 ->leftJoin('MR_KEMATIAN AS mati', 'sep.FMNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
                 ->leftJoin('MR_KEADAAN_KELUAR_RS', 'mati.MRKKEADAAN_KELUAR', '=', 'MR_KEADAAN_KELUAR_RS.FMKKRSKODE')
                 ->select(
-                    'PRI.PRWINO_TRANSAKSI',
-                    'PRI.PRWITGL_MASUK',
-                    'PRI.CARA_MASUK',
                     'sep.FMNOSEP',
                     'sep.FMNO_KARTU',
+                    'PRI.PRWINO_TRANSAKSI',
+                    'PRI.PRWITGL_KELUAR',
+                    'PRI.CARA_MASUK',
                     'dr.FMDDOKTERN',
                     'p.NAMAPASIEN',
                     'p.KD_PASIEN',
@@ -287,6 +294,14 @@ class PasienInapEklaimRepository
                 ->where('sep.FMNOSEP', $no_sep)
                 ->orderBy('PRI.PRWITGL_MASUK', "ASC")
                 ->first();
+
+            if ($detailTransaksi) {
+                $detailTransaksi->TGL_MASUK = DB::connection('sqlsrv')
+                    ->table('PASIENRAWATINAP')
+                    ->where('PRWINO_TRANSAKSI', $detailTransaksi->PRWINO_TRANSAKSI)
+                    ->select('PRWITGL_MASUK')
+                    ->orderBy('PRWITGL_MASUK', 'ASC')->first()->PRWITGL_MASUK;
+            }
         } catch (\Exception $e) {
             // Log the error if any exception occurs
             Log::error('Error get data getDetailTransactionBySep: ' . $e->getMessage());
