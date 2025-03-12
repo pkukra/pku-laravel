@@ -99,7 +99,11 @@ const columnsInap = [
         dataIndex: "TGL_KELUAR",
         render: (_, record) => (
             <>
-            {moment(record?.TGL_KELUAR).format("DD/MM/YYYY")}
+            {
+                (record?.TGL_KELUAR)
+                &&
+                moment(record?.TGL_KELUAR).format("DD/MM/YYYY")
+            }
             </>
         ),
     },
