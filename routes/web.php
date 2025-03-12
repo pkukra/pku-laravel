@@ -27,6 +27,10 @@ Route::middleware('auth')->group(function () {
 Route::prefix('casemix')->group(function () {
     Route::middleware('auth')->prefix('ranap-monit')->group(function () {
         Route::get('/', [RanapMonitController::class, 'list_pasien'])->name('casemix.ranap-monit.list_pasien');
+        Route::get('/list_pasien_data', [RanapMonitController::class, 'list_pasien_data'])->name('casemix.ranap-monit.list_pasien_data');
+        Route::get('/list_billing_temp/{kode_reg}', [RanapMonitController::class, 'list_billing_temp'])->name('casemix.ranap-monit.list_billing_temp');
+        Route::get('/list_procedure/{kode_reg}', [RanapMonitController::class, 'list_procedure'])->name('casemix.ranap-monit.list_procedure');
+        Route::get('/list_diagnosa/{kode_reg}', [RanapMonitController::class, 'list_diagnosa'])->name('casemix.ranap-monit.list_diagnosa');
         Route::post('/update_monit_row/{kode_reg}', [RanapMonitController::class, 'update_monit_row'])->name('casemix.ranap-monit.update_monit_row');
     });
 });
