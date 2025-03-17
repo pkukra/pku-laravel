@@ -5,6 +5,7 @@ namespace App\Repositories\RM;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Bpjs\Bridging\Vclaim\BridgeVclaim;
 
 class PasienRujukanRepository
 {
@@ -89,6 +90,123 @@ class PasienRujukanRepository
         } catch (\Exception $e) {
             Log::error("Err get SEP: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Get diagnosa utama pasien by koderegkj 
+     *
+     * @param string $kode_reg_kj
+     * @return object|null
+     */
+    public function getDiagnosaUtamaPasienRujukan($kode_reg_kj)
+    {
+        try {
+            return DB::connection('sqlsrv')
+                ->table('MR_PENYAKIT')
+                ->select('MRPKD_PENYAKIT')
+                ->where('MRPSTAT_DIAG', 5)
+                ->where('MRPNO_TRANSAKSI', $kode_reg_kj)
+                ->first();
+        } catch (\Exception $e) {
+            Log::error("getDiagnosaUtamaPasienRujukan: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update nomer SEP dari pasien rujukan BPJS detail based on kode_reg 
+     *
+     * @param string $kode_reg, $kode_reg_kj, $no_rm, $new_sep
+     * @return object
+     */
+    public function updateNomerSepPasienRujukan($kode_reg, $kode_reg_kj, $no_rm, $new_sep, $kode_poli, $dpjp)
+    {
+        $bridging = new BridgeVclaim();
+
+        try {
+            $endpoint = 'SEP/' . $new_sep;
+            $response = json_decode($bridging->getRequest($endpoint));
+
+            // Menghindari error jika response kosong
+            $detail_pasien_vclaim = optional($response->response);
+            $peserta = optional($detail_pasien_vclaim->peserta);
+
+            // Validasi data dari API
+            if (!$peserta->noMr) {
+                Log::error("Response dari VClaim tidak valid atau kosong.");
+                return [
+                    "status" => "nok",
+                    "message" => "Data SEP tidak ditemukan"
+                ];
+            }
+
+            // Mengecek apakah nomor RM sesuai
+            if ($peserta->noMr !== $no_rm) {
+                return [
+                    "status" => "nok",
+                    "message" => "Nomor RM tidak cocok, lihat di VClaim"
+                ];
+            }
+
+            // Ambil data dari response API
+            $nomer_kartu   = $peserta->noKartu;
+            $jenis_kelamin = $peserta->kelamin;
+            $tgl_lahir     = $peserta->tglLahir;
+            $hak_kelas     = optional($detail_pasien_vclaim->klsRawat)->klsRawatHak;
+            $nama          = $peserta->nama;
+            $tanggal_sep   = $detail_pasien_vclaim->tglSep;
+        } catch (\Exception $e) {
+            Log::error("Error BridgeVclaim: " . $e->getMessage());
+            return [
+                "status" => "nok",
+                "message" => "Gagal mendapatkan data SEP dari BPJS"
+            ];
+        }
+
+        // Mulai transaksi database
+        DB::connection('sqlsrv')->beginTransaction();
+        try {
+            // Hapus data jika ada
+            DB::connection('sqlsrv')
+                ->table('BPJS_SEP')
+                ->whereIn('FMNOTRANSAKSI', [$kode_reg, $kode_reg_kj])
+                ->delete();
+
+            // Insert data baru
+            DB::connection('sqlsrv')
+                ->table('BPJS_SEP')
+                ->insert([
+                    'FMNOTRANSAKSI'   => $kode_reg,
+                    'FMNOSEP'         => $new_sep,
+                    'FMTGL_SEP'       => date('Y-m-d H:i:s', strtotime($tanggal_sep)),
+                    'FMNO_KARTU'      => $nomer_kartu,
+                    'FMPASIEN_ID'     => $no_rm,
+                    'FMJENIS_KELAMIN' => $jenis_kelamin,
+                    'FMNAMA_PESERTA'  => $nama,
+                    'FMJENISRAWAT'    => '2',
+                    'FMKODEKELAS'     => $hak_kelas,
+                    'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
+                    'FMPOLYN'         => $kode_poli,
+                    'dpjpn'           => $dpjp,
+                    'FMDIAGNOSA'      => app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg_kj' => $kode_reg_kj])->MRPKD_PENYAKIT
+                ]);
+
+            // Commit transaksi
+            DB::connection('sqlsrv')->commit();
+
+            return [
+                "status" => "ok",
+                "message" => "Update Nomer SEP berhasil"
+            ];
+        } catch (\Exception $e) {
+            DB::connection('sqlsrv')->rollBack();
+            Log::error("Error update BPJS_SEP: " . $e->getMessage());
+
+            return [
+                "status" => "nok",
+                "message" => "Terjadi kesalahan saat memperbarui data SEP"
+            ];
         }
     }
 
