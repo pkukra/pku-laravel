@@ -119,7 +119,6 @@ class PasienInapEklaimRepository
         $data = (object)[
             'nomor_sep' => $no_sep,
             'tgl_masuk' => Carbon::parse($transaksi_uatama->TGL_MASUK)->format('Y-m-d H:i:s'),
-            // 'tgl_pulang' => Carbon::parse($transaksi_uatama->PRWITGL_KELUAR)->format('Y-m-d H:i:s'),
             'tgl_pulang' => $transaksi_uatama->PRWITGL_KELUAR
                 ? Carbon::parse($transaksi_uatama->PRWITGL_KELUAR)->format('Y-m-d H:i:s')
                 : now()->format('Y-m-d H:i:s'),
@@ -147,8 +146,6 @@ class PasienInapEklaimRepository
             'diastole' => $bloodPresure->diastole ?? 0,
             'cara_masuk' => $transaksi_uatama->CARA_MASUK,
         ];
-
-        return $data;
 
         $requestData = json_encode((object)[
             'metadata' => (object)[
