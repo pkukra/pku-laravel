@@ -167,30 +167,51 @@ class PasienRujukanRepository
         // Mulai transaksi database
         DB::connection('sqlsrv')->beginTransaction();
         try {
-            // Hapus data jika ada
-            DB::connection('sqlsrv')
+            // Cari apakah salah satu FMNOTRANSAKSI sudah ada
+            $existingRecord = DB::connection('sqlsrv')
                 ->table('BPJS_SEP')
                 ->whereIn('FMNOTRANSAKSI', [$kode_reg, $kode_reg_kj])
-                ->delete();
+                ->first();
 
-            // Insert data baru
-            DB::connection('sqlsrv')
-                ->table('BPJS_SEP')
-                ->insert([
-                    'FMNOTRANSAKSI'   => $kode_reg,
-                    'FMNOSEP'         => $new_sep,
-                    'FMTGL_SEP'       => date('Y-m-d H:i:s', strtotime($tanggal_sep)),
-                    'FMNO_KARTU'      => $nomer_kartu,
-                    'FMPASIEN_ID'     => $no_rm,
-                    'FMJENIS_KELAMIN' => $jenis_kelamin,
-                    'FMNAMA_PESERTA'  => $nama,
-                    'FMJENISRAWAT'    => '2',
-                    'FMKODEKELAS'     => $hak_kelas,
-                    'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
-                    'FMPOLYN'         => $kode_poli,
-                    'dpjpn'           => $dpjp,
-                    'FMDIAGNOSA'      => app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg_kj' => $kode_reg_kj])->MRPKD_PENYAKIT
-                ]);
+            if ($existingRecord) {
+                // Jika sudah ada, update berdasarkan FMNOTRANSAKSI yang ditemukan
+                DB::connection('sqlsrv')
+                    ->table('BPJS_SEP')
+                    ->where('FMNOTRANSAKSI', $existingRecord->FMNOTRANSAKSI)
+                    ->update([
+                        'FMNOSEP'         => $new_sep,
+                        'FMTGL_SEP'       => date('Y-m-d H:i:s', strtotime($tanggal_sep)),
+                        'FMNO_KARTU'      => $nomer_kartu,
+                        'FMPASIEN_ID'     => $no_rm,
+                        'FMJENIS_KELAMIN' => $jenis_kelamin,
+                        'FMNAMA_PESERTA'  => $nama,
+                        'FMJENISRAWAT'    => '2',
+                        'FMKODEKELAS'     => $hak_kelas,
+                        'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
+                        'FMPOLYN'         => $kode_poli,
+                        'dpjpn'           => $dpjp,
+                        'FMDIAGNOSA'      => app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg_kj' => $kode_reg_kj])->MRPKD_PENYAKIT
+                    ]);
+            } else {
+                // Jika tidak ada, lakukan insert
+                DB::connection('sqlsrv')
+                    ->table('BPJS_SEP')
+                    ->insert([
+                        'FMNOTRANSAKSI'   => $kode_reg_kj,
+                        'FMNOSEP'         => $new_sep,
+                        'FMTGL_SEP'       => date('Y-m-d H:i:s', strtotime($tanggal_sep)),
+                        'FMNO_KARTU'      => $nomer_kartu,
+                        'FMPASIEN_ID'     => $no_rm,
+                        'FMJENIS_KELAMIN' => $jenis_kelamin,
+                        'FMNAMA_PESERTA'  => $nama,
+                        'FMJENISRAWAT'    => '2',
+                        'FMKODEKELAS'     => $hak_kelas,
+                        'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
+                        'FMPOLYN'         => $kode_poli,
+                        'dpjpn'           => $dpjp,
+                        'FMDIAGNOSA'      => app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg_kj' => $kode_reg_kj])->MRPKD_PENYAKIT
+                    ]);
+            }
 
             // Commit transaksi
             DB::connection('sqlsrv')->commit();
