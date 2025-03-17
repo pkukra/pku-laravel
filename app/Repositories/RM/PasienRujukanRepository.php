@@ -173,6 +173,14 @@ class PasienRujukanRepository
                 ->whereIn('FMNOTRANSAKSI', [$kode_reg, $kode_reg_kj])
                 ->first();
 
+            $diagnosa = optional(app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg' => $kode_reg]))->MRPKD_PENYAKIT ?? null;
+            if (!$diagnosa) {
+                return [
+                    "status" => "nok",
+                    "message" => "Belum ada diagnosa, ganti nomer sep dari aplikasi rajal"
+                ];
+            }
+
             if ($existingRecord) {
                 // Jika sudah ada, update berdasarkan FMNOTRANSAKSI yang ditemukan
                 DB::connection('sqlsrv')
@@ -190,7 +198,7 @@ class PasienRujukanRepository
                         'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
                         'FMPOLYN'         => $kode_poli,
                         'dpjpn'           => $dpjp,
-                        'FMDIAGNOSA'      => app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg_kj' => $kode_reg_kj])->MRPKD_PENYAKIT
+                        'FMDIAGNOSA'      => $diagnosa
                     ]);
             } else {
                 // Jika tidak ada, lakukan insert
@@ -209,7 +217,7 @@ class PasienRujukanRepository
                         'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
                         'FMPOLYN'         => $kode_poli,
                         'dpjpn'           => $dpjp,
-                        'FMDIAGNOSA'      => app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg_kj' => $kode_reg_kj])->MRPKD_PENYAKIT
+                        'FMDIAGNOSA'      => $diagnosa
                     ]);
             }
 
