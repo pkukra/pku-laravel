@@ -139,7 +139,6 @@ export default function Index({ pasien, user }) {
                 message: "Sukses!",
                 description: "Update Nomer SEP Berhasil",
             });
-            
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -278,7 +277,7 @@ export default function Index({ pasien, user }) {
                     </Button>,
                 ]}
             >
-                <p>No SEP saat ini: {ketSep}</p>
+                <p>{ketSep}</p>
                 <Input
                     placeholder="Nomer SEP BARU"
                     value={noSepBaru}
