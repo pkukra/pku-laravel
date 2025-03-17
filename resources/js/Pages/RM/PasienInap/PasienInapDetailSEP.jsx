@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Card, Button, Tooltip, notification, Spin } from "antd";
+import { Modal, Card, Button, Tooltip, notification, Input } from "antd";
 import axios from "axios";
 
 export default function Index({ pasien, user }) {
@@ -9,6 +9,9 @@ export default function Index({ pasien, user }) {
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
     const [noSep, setNoSep] = useState(null);
+    const [noSepBaru, setNoSepBaru] = useState(null);
+    const [modalUpdateNoSEPOpen, setModalUpdateNoSEPOpen] = useState(false);
+    const [loadingUpdateNoSep, setLoadingUpdateNoSep] = useState(false);
 
     const fetchNoSep = async () => {
         setLoadingSep(true);
@@ -105,12 +108,54 @@ export default function Index({ pasien, user }) {
         }
     };
 
+    const handleUbahSep = async () => {
+        if (!noSepBaru) {
+            return;
+        }
+        setLoadingUpdateNoSep(true);
+        try {
+            const response = await axios.put(
+                route("rm.pasien-inap.update_nomer_sep", {
+                    kode_reg: pasien?.PRWINO_TRANSAKSI,
+                }),
+                {
+                    no_rm: pasien?.PRWIKD_PASIEN,
+                    new_sep: noSepBaru,
+                    poli: pasien?.FMSPESIALISASIN,
+                    dpjp: pasien?.FMDDOKTERN,
+                }
+            );
+            if (response?.data?.status === "nok") {
+                return notification.warning({
+                    placement: "bottomRight",
+                    description: response?.data?.message,
+                });
+            }
+
+            fetchNoSep();
+            return notification.success({
+                placement: "bottomRight",
+                message: "Sukses!",
+                description: "Update Nomer SEP Berhasil",
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoadingUpdateNoSep(false);
+            setModalUpdateNoSEPOpen(false);
+            setNoSepBaru(null);
+        }
+    };
+
     useEffect(() => {
         fetchNoSep();
     }, []);
 
     let ketSep = "";
-    if (pasien.PRWIKD_CUSTOMER === "X002" || pasien.PRWIKD_CUSTOMER === "X003") {
+    if (
+        pasien.PRWIKD_CUSTOMER === "X002" ||
+        pasien.PRWIKD_CUSTOMER === "X003"
+    ) {
         ketSep = noSep == null ? "Belum ada SEP" : `No SEP: ${noSep}`;
     } else {
         ketSep = "Bukan Pasien BPJS";
@@ -120,10 +165,7 @@ export default function Index({ pasien, user }) {
 
     return (
         <>
-            <Card
-                title={"INACBG/BPJS/SEP"}
-                loading={loadingSep}
-            >
+            <Card title={"INACBG/BPJS/SEP"} loading={loadingSep}>
                 <p>{ketSep}</p>
 
                 <Tooltip
@@ -134,6 +176,14 @@ export default function Index({ pasien, user }) {
                     }
                     placement="topLeft"
                 >
+                    <Button
+                        type="primary"
+                        onClick={() => setModalUpdateNoSEPOpen(true)}
+                        style={{ marginRight: 5 }}
+                    >
+                        Ubah SEP
+                    </Button>
+
                     <Button
                         type="primary"
                         onClick={() => setModalBridgeOpen(true)}
@@ -204,6 +254,37 @@ export default function Index({ pasien, user }) {
                 ]}
             >
                 {noSep}
+            </Modal>
+
+            <Modal
+                destroyOnClose
+                closable={false}
+                open={modalUpdateNoSEPOpen}
+                title="Edit Nomer SEP"
+                footer={[
+                    <Button
+                        loading={loadingUpdateNoSep}
+                        key="back"
+                        onClick={() => setModalUpdateNoSEPOpen(false)}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        loading={loadingUpdateNoSep}
+                        key="submit"
+                        type="primary"
+                        onClick={handleUbahSep}
+                    >
+                        Simpan
+                    </Button>,
+                ]}
+            >
+                <p>{ketSep}</p>
+                <Input
+                    placeholder="Nomer SEP BARU"
+                    value={noSepBaru}
+                    onChange={(e) => setNoSepBaru(e.target.value)}
+                />
             </Modal>
         </>
     );

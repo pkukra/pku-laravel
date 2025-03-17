@@ -85,6 +85,24 @@ class PasienInapController extends Controller
     }
 
     /**
+     * update_nomer_sep
+     * Update nomer sep berdasarkan kode transaksi
+     */
+    public function update_nomer_sep(Request $request, $kode_reg)
+    {
+        $validated = $request->validate([
+            'no_rm' => 'required|string',
+            'new_sep' => 'required|string|max:19|min:19',
+            'poli' => 'required',
+            'dpjp' => 'required',
+        ]);
+
+        // Mendapatkan diagnosa berdasarkan kode transaksi
+        $response = $this->pasienInapRepo->updateNomerSepPasienInap($kode_reg, $validated['no_rm'], $validated['new_sep'], $validated['poli'], $validated['dpjp']);
+        return response()->json($response);
+    }
+
+    /**
      * get_keadaan_keluar_rs
      * Menampilkan aktual keaadaan keluar dari setiap pasien by kode_reg
      */
@@ -368,7 +386,7 @@ class PasienInapController extends Controller
             'data' => $data,
         ]);
     }
-    
+
     public function cari_rs_rujukan()
     {
         $data = $this->pasienInapRepo->getRSRujukan();

@@ -6,12 +6,12 @@ export default function Index({ pasien, user }) {
     const [loadingSep, setLoadingSep] = useState(false);
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
-    const [modalUpdateNoSEPOpen, setModalUpdateNoSEPOpen] = useState(false);
-    const [loadingUpdateNoSep, setLoadingUpdateNoSep] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
     const [noSep, setNoSep] = useState(null);
     const [noSepBaru, setNoSepBaru] = useState(null);
+    const [modalUpdateNoSEPOpen, setModalUpdateNoSEPOpen] = useState(false);
+    const [loadingUpdateNoSep, setLoadingUpdateNoSep] = useState(false);
 
     const fetchNoSep = async () => {
         setLoadingSep(true);

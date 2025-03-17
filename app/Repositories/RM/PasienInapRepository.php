@@ -5,6 +5,7 @@ namespace App\Repositories\RM;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Bpjs\Bridging\Vclaim\BridgeVclaim;
 
 class PasienInapRepository
 {
@@ -105,6 +106,153 @@ class PasienInapRepository
                 ->first();
         } catch (\Exception $e) {
             Log::error("Err get SEP inap: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update nomer SEP dari pasien inap  BPJS detail based on kode_reg 
+     *
+     * @param string $kode_reg, $no_rm, $new_sep
+     * @return object
+     */
+    public function updateNomerSepPasienInap($kode_reg, $no_rm, $new_sep, $kode_poli, $dpjp)
+    {
+        $bridging = new BridgeVclaim();
+
+        try {
+            $endpoint = 'SEP/' . $new_sep;
+            $response = json_decode($bridging->getRequest($endpoint));
+
+            // Menghindari error jika response kosong
+            $detail_pasien_vclaim = optional($response->response);
+            $peserta = optional($detail_pasien_vclaim->peserta);
+
+            // Validasi data dari API
+            if (!$peserta->noMr) {
+                Log::error("Response dari VClaim tidak valid atau kosong.");
+                return [
+                    "status" => "nok",
+                    "message" => "Data SEP tidak ditemukan"
+                ];
+            }
+
+            // Mengecek apakah nomor RM sesuai
+            if ($peserta->noMr !== $no_rm) {
+                return [
+                    "status" => "nok",
+                    "message" => "Nomor RM tidak cocok, lihat di VClaim"
+                ];
+            }
+
+            // Ambil data dari response API
+            $nomer_kartu   = $peserta->noKartu;
+            $jenis_kelamin = $peserta->kelamin;
+            $tgl_lahir     = $peserta->tglLahir;
+            $hak_kelas     = optional($detail_pasien_vclaim->klsRawat)->klsRawatHak;
+            $nama          = $peserta->nama;
+            $tanggal_sep   = $detail_pasien_vclaim->tglSep;
+        } catch (\Exception $e) {
+            Log::error("Error BridgeVclaim: " . $e->getMessage());
+            return [
+                "status" => "nok",
+                "message" => "Gagal mendapatkan data SEP dari BPJS"
+            ];
+        }
+
+        // Mulai transaksi database
+        DB::connection('sqlsrv')->beginTransaction();
+        try {
+            // Cari apakah salah satu FMNOTRANSAKSI sudah ada
+            $existingRecord = DB::connection('sqlsrv')
+                ->table('BPJS_SEP')
+                ->where('FMNOTRANSAKSI', $kode_reg)
+                ->first();
+
+            $diagnosa = optional(app()->call([$this, 'getDiagnosaUtamaPasienInap'], ['kode_reg' => $kode_reg]))->MRPKD_PENYAKIT ?? null;
+
+            if (!$diagnosa) {
+                return [
+                    "status" => "nok",
+                    "message" => "Belum ada diagnosa, ganti nomer sep dari aplikasi ranap"
+                ];
+            }
+
+            if ($existingRecord) {
+                // Jika sudah ada, update berdasarkan FMNOTRANSAKSI yang ditemukan
+                DB::connection('sqlsrv')
+                    ->table('BPJS_SEP')
+                    ->where('FMNOTRANSAKSI', $existingRecord->FMNOTRANSAKSI)
+                    ->update([
+                        'FMNOSEP'         => $new_sep,
+                        'FMTGL_SEP'       => date('Y-m-d H:i:s', strtotime($tanggal_sep)),
+                        'FMNO_KARTU'      => $nomer_kartu,
+                        'FMPASIEN_ID'     => $no_rm,
+                        'FMJENIS_KELAMIN' => $jenis_kelamin,
+                        'FMNAMA_PESERTA'  => $nama,
+                        'FMJENISRAWAT'    => '1',
+                        'FMKODEKELAS'     => $hak_kelas,
+                        'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
+                        'FMPOLYN'         => $kode_poli,
+                        'dpjpn'           => $dpjp,
+                        'FMDIAGNOSA'      => $diagnosa
+                    ]);
+            } else {
+                // Jika tidak ada, lakukan insert
+                DB::connection('sqlsrv')
+                    ->table('BPJS_SEP')
+                    ->insert([
+                        'FMNOTRANSAKSI'   => $kode_reg,
+                        'FMNOSEP'         => $new_sep,
+                        'FMTGL_SEP'       => date('Y-m-d H:i:s', strtotime($tanggal_sep)),
+                        'FMNO_KARTU'      => $nomer_kartu,
+                        'FMPASIEN_ID'     => $no_rm,
+                        'FMJENIS_KELAMIN' => $jenis_kelamin,
+                        'FMNAMA_PESERTA'  => $nama,
+                        'FMJENISRAWAT'    => '1',
+                        'FMKODEKELAS'     => $hak_kelas,
+                        'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
+                        'FMPOLYN'         => $kode_poli,
+                        'dpjpn'           => $dpjp,
+                        'FMDIAGNOSA'      => $diagnosa
+                    ]);
+            }
+
+            // Commit transaksi
+            DB::connection('sqlsrv')->commit();
+
+            return [
+                "status" => "ok",
+                "message" => "Update Nomer SEP inap berhasil"
+            ];
+        } catch (\Exception $e) {
+            DB::connection('sqlsrv')->rollBack();
+            Log::error("Error update BPJS_SEP inap: " . $e->getMessage());
+
+            return [
+                "status" => "nok",
+                "message" => "Terjadi kesalahan saat memperbarui data SEP inap"
+            ];
+        }
+    }
+
+    /**
+     * Get diagnosa utama pasien by kode_reg
+     *
+     * @param string $kode_reg
+     * @return object|null
+     */
+    public function getDiagnosaUtamaPasienInap($kode_reg)
+    {
+        try {
+            return DB::connection('sqlsrv')
+                ->table('MR_PENYAKIT')
+                ->select('MRPKD_PENYAKIT')
+                ->where('MRPSTAT_DIAG', 5)
+                ->where('MRPNO_TRANSAKSI', $kode_reg)
+                ->first();
+        } catch (\Exception $e) {
+            Log::error("getDiagnosaUtamaPasienInap: " . $e->getMessage());
             return false;
         }
     }
@@ -459,7 +607,7 @@ class PasienInapRepository
                     'PRWIRUJUKLUAR' => $kodeRsRujukKeluar,
                     'CARA_MASUK' => $data['cara_masuk'], // cara masuk standara BPJS opsi
                 ]);
-            
+
             // mulai update mr kematian
             $arrUpdate = [
                 'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
