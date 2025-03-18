@@ -156,7 +156,7 @@ class PasienInapRepository
             Log::error("Error BridgeVclaim: " . $e->getMessage());
             return [
                 "status" => "nok",
-                "message" => "Gagal mendapatkan data SEP dari BPJS"
+                "message" => "Gagal mendapatkan data SEP dari VClaim"
             ];
         }
 
