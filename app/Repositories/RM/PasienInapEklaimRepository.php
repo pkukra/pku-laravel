@@ -156,7 +156,12 @@ class PasienInapEklaimRepository
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
-        $this->bridgingGroupStage1Process($no_sep);
+
+        $grouper = $this->bridgingGroupStage1Process($no_sep);
+        $special_cmg = implode('#', array_column($grouper->response->special_cmg_option ?? [], 'code'));
+        if (!empty($specialCmg)) {
+            $this->bridgingGroupStage2Process($no_sep, $special_cmg);
+        }
 
         return $response;
     }
@@ -179,6 +184,31 @@ class PasienInapEklaimRepository
             ],
             "data" => [
                 "nomor_sep" => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        return sendRequest($key, $data);
+    }
+
+    /**
+     * Process bridgingGroupStage2Process by no_sep
+     * 
+     * @param string $no_sep, $special_cmg
+     */
+    public function bridgingGroupStage2Process($no_sep, $special_cmg)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "grouper",
+                "stage" => "2",
+            ],
+            "data" => [
+                "nomor_sep" => $no_sep,
+                "special_cmg" => $special_cmg
             ]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
