@@ -158,10 +158,64 @@ class PasienInapEklaimRepository
         $response =  sendRequest($key, $requestData);
 
         $grouper = $this->bridgingGroupStage1Process($no_sep);
+        $cbg_code = $grouper->response->response->cbg->code ?? null;
+        $tarif_inacbg = $grouper->response->response->cbg->tariff ?? 0;
+        $tarif_inacbg_1 = 0;
+        $tarif_inacbg_2 = 0;
+        $tarif_inacbg_3 = 0;
+        // mapping tari response dari eklaim
+        if (!empty($grouper->response->tarif_alt)) {
+            foreach ($grouper->response->tarif_alt as $tarif) {
+                switch ($tarif->kelas) {
+                    case 'kelas_1':
+                        $tarif_inacbg_1 = $tarif->tarif_inacbg;
+                        break;
+                    case 'kelas_2':
+                        $tarif_inacbg_2 = $tarif->tarif_inacbg;
+                        break;
+                    case 'kelas_3':
+                        $tarif_inacbg_3 = $tarif->tarif_inacbg;
+                        break;
+                }
+            }
+        }
+
         $special_cmg = implode('#', array_column($grouper->response->special_cmg_option ?? [], 'code'));
         if (!empty($specialCmg)) {
-            $this->bridgingGroupStage2Process($no_sep, $special_cmg);
+            // jika mempunyai specialCmg maka dilakukan grouping stage 2
+            $grouper_statge_2 = $this->bridgingGroupStage2Process($no_sep, $special_cmg);
+            $cbg_code = $grouper_statge_2->response->response->cbg->code ?? null;
+            $tarif_inacbg = $grouper_statge_2->response->response->cbg->tariff ?? 0;
+
+            // mapping tari response dari eklaim
+            if (!empty($grouper_statge_2->response->tarif_alt)) {
+                foreach ($grouper_statge_2->response->tarif_alt as $tarif) {
+                    switch ($tarif->kelas) {
+                        case 'kelas_1':
+                            $tarif_inacbg_1 = $tarif->tarif_inacbg;
+                            break;
+                        case 'kelas_2':
+                            $tarif_inacbg_2 = $tarif->tarif_inacbg;
+                            break;
+                        case 'kelas_3':
+                            $tarif_inacbg_3 = $tarif->tarif_inacbg;
+                            break;
+                    }
+                }
+            }
         }
+
+        DB::connection('sqlsrv')
+            ->table('TRANSAKSIPASIENINAP')
+            ->where('FTNO_TRANSAKSI', $transaksi_uatama->PRWINO_TRANSAKSI)
+            ->update([
+                'FTKODEINACBG' => $cbg_code,
+                'FTTARIPINACBG' => $tarif_inacbg,
+                'FTTARIPINACBG1' => $tarif_inacbg_1,
+                'FTTARIPINACBG2' => $tarif_inacbg_2,
+                'FTTARIPINACBG3' => $tarif_inacbg_3,
+                'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1') // Incremen FKUNCI_VALIDASI2
+            ]);
 
         return $response;
     }
