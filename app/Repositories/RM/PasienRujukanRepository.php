@@ -173,7 +173,8 @@ class PasienRujukanRepository
                 ->whereIn('FMNOTRANSAKSI', [$kode_reg, $kode_reg_kj])
                 ->first();
 
-            $diagnosa = optional(app()->call([$this, 'getDiagnosaUtamaPasienRujukan'], ['kode_reg' => $kode_reg]))->MRPKD_PENYAKIT ?? null;
+            $diagnosa = $this->getDiagnosaUtamaPasienRujukan($kode_reg_kj);
+            $diagnosa = $diagnosa ? $diagnosa->MRPKD_PENYAKIT : null;
             if (!$diagnosa) {
                 return [
                     "status" => "nok",

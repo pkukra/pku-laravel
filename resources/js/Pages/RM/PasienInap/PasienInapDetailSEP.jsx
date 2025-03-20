@@ -177,13 +177,13 @@ export default function Index({ pasien, user }) {
                     }
                     placement="topLeft"
                 >
-                    <Button
+                    {/* <Button
                         type="primary"
                         onClick={() => setModalUpdateNoSEPOpen(true)}
                         style={{ marginRight: 5 }}
                     >
                         Ubah SEP
-                    </Button>
+                    </Button> */}
 
                     <Button
                         type="primary"
