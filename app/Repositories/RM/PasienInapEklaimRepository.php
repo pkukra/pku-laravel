@@ -111,7 +111,7 @@ class PasienInapEklaimRepository
         // defaultnya atas persetujuan dokter
         $discharge_status =  1;
         if ($transaksi_uatama->DISCHARGE_STATUS) {
-            // jika berhasil di join dengan tabel mr_kematian untuk hasil yang lain
+            // jika berhasil makan dilakukan join dengan tabel mr_kematian untuk hasil yang lain
             $discharge_status =  $transaksi_uatama->DISCHARGE_STATUS;
         }
 
@@ -168,13 +168,13 @@ class PasienInapEklaimRepository
             foreach ($grouper->response->tarif_alt as $tarif) {
                 switch ($tarif->kelas) {
                     case 'kelas_1':
-                        $tarif_inacbg_1 = $tarif->tarif_inacbg;
+                        $tarif_inacbg_1 = (float)$tarif->tarif_inacbg;
                         break;
                     case 'kelas_2':
-                        $tarif_inacbg_2 = $tarif->tarif_inacbg;
+                        $tarif_inacbg_2 = (float)$tarif->tarif_inacbg;
                         break;
                     case 'kelas_3':
-                        $tarif_inacbg_3 = $tarif->tarif_inacbg;
+                        $tarif_inacbg_3 = (float)$tarif->tarif_inacbg;
                         break;
                 }
             }
@@ -192,13 +192,13 @@ class PasienInapEklaimRepository
                 foreach ($grouper_statge_2->response->tarif_alt as $tarif) {
                     switch ($tarif->kelas) {
                         case 'kelas_1':
-                            $tarif_inacbg_1 = $tarif->tarif_inacbg;
+                            $tarif_inacbg_1 = (float)$tarif->tarif_inacbg;
                             break;
                         case 'kelas_2':
-                            $tarif_inacbg_2 = $tarif->tarif_inacbg;
+                            $tarif_inacbg_2 = (float)$tarif->tarif_inacbg;
                             break;
                         case 'kelas_3':
-                            $tarif_inacbg_3 = $tarif->tarif_inacbg;
+                            $tarif_inacbg_3 = (float)$tarif->tarif_inacbg;
                             break;
                     }
                 }
@@ -274,7 +274,7 @@ class PasienInapEklaimRepository
      * 
      * @param string $no_sep
      */
-    public function bridgingFinalProcess($no_sep)
+    public function bridgingFinalProcess($kode_reg, $no_sep)
     {
         $user = Auth::user();
         $key = $user->eklaim_key;
@@ -285,7 +285,20 @@ class PasienInapEklaimRepository
             "data" => ["nomor_sep" => $no_sep, "coder_nik" => $user->nik]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-        return sendRequest($key, $data);
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                DB::connection('sqlsrv')
+                    ->table('TRANSAKSIPASIENINAP')
+                    ->where('FTNO_TRANSAKSI', $kode_reg)
+                    ->update([
+                        'FKUNCI_VALIDASI' => 1,
+                    ]);
+            } catch (\Exception $e) {
+                Log::error('Final process TRANSAKSIPASIENINAP FKUNCI_VALIDASI err: ' . $e->getMessage());
+            }
+        }
+        return $response;
     }
 
     /**

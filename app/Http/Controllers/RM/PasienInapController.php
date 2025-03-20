@@ -467,9 +467,9 @@ class PasienInapController extends Controller
      * bridging_final_process
      * Process bridging data ke eklaim
      */
-    public function bridging_final_process($no_sep)
+    public function bridging_final_process($kode_reg, $no_sep)
     {
-        $data = $this->bridgingEKlaimRepo->bridgingFinalProcess($no_sep);
+        $data = $this->bridgingEKlaimRepo->bridgingFinalProcess($kode_reg, $no_sep);
         return response()->json($data);
     }
 }

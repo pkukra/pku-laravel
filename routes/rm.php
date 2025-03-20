@@ -66,8 +66,9 @@ Route::prefix('rm')->group(function () {
         Route::get('/cari_cara_masuk_bpjs', [PasienInapController::class, 'cari_cara_masuk_bpjs'])->name('rm.pasien-inap.cari_cara_masuk_bpjs');
         Route::get('/cari_keadaan_keluar_rs', [PasienInapController::class, 'cari_keadaan_keluar_rs'])->name('rm.pasien-inap.cari_keadaan_keluar_rs');
         Route::get('/cari_rs_rujukan', [PasienInapController::class, 'cari_rs_rujukan'])->name('rm.pasien-inap.cari_rs_rujukan');
-        Route::post('/update_cara_masuk_pulang/{kode_reg_kj}', [PasienInapController::class, 'update_cara_masuk_pulang'])->name('rm.pasien-inap.update_cara_masuk_pulang');
+        Route::post('/update_cara_masuk_pulang/{kode_reg}', [PasienInapController::class, 'update_cara_masuk_pulang'])->name('rm.pasien-inap.update_cara_masuk_pulang');
 
         Route::post('/bridging_data_process/{no_sep}', [PasienInapController::class, 'bridging_data_process'])->name('rm.pasien-inap.bridging_data_process');
+        Route::post('/bridging_final_process/{kode_reg}/{no_sep}', [PasienInapController::class, 'bridging_final_process'])->name('rm.pasien-inap.bridging_final_process');
     });
 });

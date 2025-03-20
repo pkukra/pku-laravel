@@ -76,6 +76,7 @@ export default function Index({ pasien, user }) {
             const response = await axios.post(
                 route("rm.pasien-inap.bridging_final_process", {
                     no_sep: noSep,
+                    kode_reg: pasien?.PRWINO_TRANSAKSI,
                 })
             );
 

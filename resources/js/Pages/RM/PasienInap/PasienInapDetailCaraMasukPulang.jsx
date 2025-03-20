@@ -113,7 +113,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         axios
             .post(
                 route("rm.pasien-inap.update_cara_masuk_pulang", {
-                    kode_reg_kj: pasien.PRWINO_TRANSAKSI,
+                    kode_reg: pasien.PRWINO_TRANSAKSI,
                 }),
                 {
                     kode_pasien: pasien.PRWIKD_PASIEN,
