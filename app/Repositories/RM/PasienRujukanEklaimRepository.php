@@ -85,10 +85,10 @@ class PasienRujukanEklaimRepository
         // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
         // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
         // berarti yang bukan dokter RaBer (Rawat Bersama)
-        $transaksi_uatama = $semua_transaksi[0];
+        $transaksi_utama = $semua_transaksi[0];
         foreach ($semua_transaksi as $transaksi) {
             if ($transaksi->RUBBER == 0) {
-                $transaksi_uatama = $transaksi;
+                $transaksi_utama = $transaksi;
                 break;
             }
         }
@@ -98,39 +98,39 @@ class PasienRujukanEklaimRepository
 
         // buat new claim dulu
         $this->bridgingNewClaimProcess(
-            $transaksi_uatama->FMNO_KARTU,
-            $transaksi_uatama->FMNOSEP,
-            $transaksi_uatama->FRPPASIEN_ID,
-            $transaksi_uatama->NAMAPASIEN,
-            $transaksi_uatama->TGL_LAHIR,
-            $transaksi_uatama->JENIS_KELAMIN,
+            $transaksi_utama->FMNO_KARTU,
+            $transaksi_utama->FMNOSEP,
+            $transaksi_utama->FRPPASIEN_ID,
+            $transaksi_utama->NAMAPASIEN,
+            $transaksi_utama->TGL_LAHIR,
+            $transaksi_utama->JENIS_KELAMIN,
         );
 
         // update patient
         $this->bridgingUpdatePatien(
-            $transaksi_uatama->FRPPASIEN_ID,
-            $transaksi_uatama->FMNO_KARTU,
-            $transaksi_uatama->NAMAPASIEN,
-            $transaksi_uatama->TGL_LAHIR,
-            $transaksi_uatama->JENIS_KELAMIN,
+            $transaksi_utama->FRPPASIEN_ID,
+            $transaksi_utama->FMNO_KARTU,
+            $transaksi_utama->NAMAPASIEN,
+            $transaksi_utama->TGL_LAHIR,
+            $transaksi_utama->JENIS_KELAMIN,
         );
 
         $user = Auth::user();
-        $bloodPresure = $this->getBloodPressure($transaksi_uatama->FRPNOTRANSAKSI);
+        $bloodPresure = $this->getBloodPressure($transaksi_utama->FRPNOTRANSAKSI);
         // defaultnya atas persetujuan dokter
         $discharge_status =  1;
-        if ($transaksi_uatama->DISCHARGE_SRARTUS) {
+        if ($transaksi_utama->DISCHARGE_SRARTUS) {
             // jika berhasil di join dengan tabel mr_kematian untuk hasil yang lain
-            $discharge_status =  $transaksi_uatama->DISCHARGE_SRARTUS;
+            $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
         }
 
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
-            'tgl_masuk' => Carbon::parse($transaksi_uatama->FRPTGL)->format('Y-m-d H:i:s'),
-            'tgl_pulang' => Carbon::parse($transaksi_uatama->FRPTGL)->format('Y-m-d H:i:s'),
-            'jenis_rawat' => 2, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
+            'tgl_masuk' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
+            'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
+            'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
+            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
@@ -141,7 +141,7 @@ class PasienRujukanEklaimRepository
             'procedure_inagrouper' => $this->getAllProcedure($semua_transaksi),
             'adl_sub_acute' => "",
             'adl_chronic' => "",
-            'nama_dokter' => $transaksi_uatama->FMDDOKTERN,
+            'nama_dokter' => $transaksi_utama->FMDDOKTERN,
             'icu_indikator' => "",
             'icu_los' => "",
             'ventilator_hour' => "",
@@ -151,7 +151,7 @@ class PasienRujukanEklaimRepository
             'coder_nik' => $user->nik,
             'sistole' => $bloodPresure->sistole,
             'diastole' => $bloodPresure->diastole,
-            'cara_masuk' => $transaksi_uatama->CARA_MASUK,
+            'cara_masuk' => $transaksi_utama->CARA_MASUK,
         ];
 
         $requestData = json_encode((object)[
@@ -317,6 +317,8 @@ class PasienRujukanEklaimRepository
                 ->select(
                     'sep.FMNOSEP',
                     'sep.FMNO_KARTU',
+                    'sep.FMJENISRAWAT',
+                    'sep.FMKODEKELAS',
                     'pr.*',
                     'dr.FMDDOKTERN',
                     'poli.FMPKLINIKN',
