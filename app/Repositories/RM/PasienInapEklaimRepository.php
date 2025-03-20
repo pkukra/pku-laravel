@@ -76,8 +76,8 @@ class PasienInapEklaimRepository
      */
     public function bridgingDataProcess($no_sep)
     {
-        $transaksi_uatama = $this->getDetailTransactionBySep($no_sep);
-        if (!$transaksi_uatama) {
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
             return (object)[
                 "status" => "nok",
                 "error" => "Transaction not found"
@@ -89,52 +89,52 @@ class PasienInapEklaimRepository
 
         // buat new claim dulu
         $this->bridgingNewClaimProcess(
-            $transaksi_uatama->FMNO_KARTU,
-            $transaksi_uatama->FMNOSEP,
-            $transaksi_uatama->KD_PASIEN,
-            $transaksi_uatama->NAMAPASIEN,
-            $transaksi_uatama->TGL_LAHIR,
-            $transaksi_uatama->JENIS_KELAMIN,
+            $transaksi_utama->FMNO_KARTU,
+            $transaksi_utama->FMNOSEP,
+            $transaksi_utama->KD_PASIEN,
+            $transaksi_utama->NAMAPASIEN,
+            $transaksi_utama->TGL_LAHIR,
+            $transaksi_utama->JENIS_KELAMIN,
         );
 
         // update patient
         $this->bridgingUpdatePatien(
-            $transaksi_uatama->KD_PASIEN,
-            $transaksi_uatama->FMNO_KARTU,
-            $transaksi_uatama->NAMAPASIEN,
-            $transaksi_uatama->TGL_LAHIR,
-            $transaksi_uatama->JENIS_KELAMIN,
+            $transaksi_utama->KD_PASIEN,
+            $transaksi_utama->FMNO_KARTU,
+            $transaksi_utama->NAMAPASIEN,
+            $transaksi_utama->TGL_LAHIR,
+            $transaksi_utama->JENIS_KELAMIN,
         );
 
         $user = Auth::user();
-        $bloodPresure = $this->getBloodPressure($transaksi_uatama->PRWINO_TRANSAKSI);
+        $bloodPresure = $this->getBloodPressure($transaksi_utama->PRWINO_TRANSAKSI);
         // defaultnya atas persetujuan dokter
         $discharge_status =  1;
-        if ($transaksi_uatama->DISCHARGE_STATUS) {
+        if ($transaksi_utama->DISCHARGE_STATUS) {
             // jika berhasil makan dilakukan join dengan tabel mr_kematian untuk hasil yang lain
-            $discharge_status =  $transaksi_uatama->DISCHARGE_STATUS;
+            $discharge_status =  $transaksi_utama->DISCHARGE_STATUS;
         }
 
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
-            'tgl_masuk' => Carbon::parse($transaksi_uatama->TGL_MASUK)->format('Y-m-d H:i:s'),
-            'tgl_pulang' => $transaksi_uatama->PRWITGL_KELUAR
-                ? Carbon::parse($transaksi_uatama->PRWITGL_KELUAR)->format('Y-m-d H:i:s')
+            'tgl_masuk' => Carbon::parse($transaksi_utama->TGL_MASUK)->format('Y-m-d H:i:s'),
+            'tgl_pulang' => $transaksi_utama->PRWITGL_KELUAR
+                ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)->format('Y-m-d H:i:s')
                 : now()->format('Y-m-d H:i:s'),
-            'jenis_rawat' => 1, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
+            'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
+            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
-            'tarif_rs' => $this->getTotalDetailTarifTransaksi($transaksi_uatama)->tarif_rs,
-            'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($transaksi_uatama)->tarif_poli_eks,
-            'diagnosa' => $this->getAllDiagnosa($transaksi_uatama),
-            'diagnosa_inagrouper' => $this->getAllDiagnosa($transaksi_uatama),
-            'procedure' => $this->getAllProcedure($transaksi_uatama),
-            'procedure_inagrouper' => $this->getAllProcedure($transaksi_uatama),
+            'tarif_rs' => $this->getTotalDetailTarifTransaksi($transaksi_utama)->tarif_rs,
+            'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($transaksi_utama)->tarif_poli_eks,
+            'diagnosa' => $this->getAllDiagnosa($transaksi_utama),
+            'diagnosa_inagrouper' => $this->getAllDiagnosa($transaksi_utama),
+            'procedure' => $this->getAllProcedure($transaksi_utama),
+            'procedure_inagrouper' => $this->getAllProcedure($transaksi_utama),
             'adl_sub_acute' => "",
             'adl_chronic' => "",
-            'nama_dokter' => $transaksi_uatama->FMDDOKTERN,
+            'nama_dokter' => $transaksi_utama->FMDDOKTERN,
             'icu_indikator' => "",
             'icu_los' => "",
             'ventilator_hour' => "",
@@ -144,7 +144,7 @@ class PasienInapEklaimRepository
             'coder_nik' => $user->nik,
             'sistole' => $bloodPresure->sistole ?? 0,
             'diastole' => $bloodPresure->diastole ?? 0,
-            'cara_masuk' => $transaksi_uatama->CARA_MASUK,
+            'cara_masuk' => $transaksi_utama->CARA_MASUK,
         ];
 
         $requestData = json_encode((object)[
@@ -207,7 +207,7 @@ class PasienInapEklaimRepository
 
         DB::connection('sqlsrv')
             ->table('TRANSAKSIPASIENINAP')
-            ->where('FTNO_TRANSAKSI', $transaksi_uatama->PRWINO_TRANSAKSI)
+            ->where('FTNO_TRANSAKSI', $transaksi_utama->PRWINO_TRANSAKSI)
             ->update([
                 'FTKODEINACBG' => $cbg_code,
                 'FTTARIPINACBG' => $tarif_inacbg,
@@ -377,6 +377,8 @@ class PasienInapEklaimRepository
                 ->select(
                     'sep.FMNOSEP',
                     'sep.FMNO_KARTU',
+                    'sep.FMJENISRAWAT',
+                    'sep.FMKODEKELAS',
                     'PRI.PRWINO_TRANSAKSI',
                     'PRI.PRWITGL_KELUAR',
                     'PRI.CARA_MASUK',
