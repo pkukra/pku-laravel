@@ -9,6 +9,7 @@ export default function Index({ pasien, user }) {
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
     const [noSep, setNoSep] = useState(null);
+    const [hakKelas, setHakKelas] = useState(null);
     const [noSepBaru, setNoSepBaru] = useState(null);
     const [modalUpdateNoSEPOpen, setModalUpdateNoSEPOpen] = useState(false);
     const [loadingUpdateNoSep, setLoadingUpdateNoSep] = useState(false);
@@ -23,6 +24,7 @@ export default function Index({ pasien, user }) {
             )
             .then((response) => {
                 setNoSep(response?.data?.data?.FMNOSEP);
+                setHakKelas(response?.data?.data?.FMKODEKELAS);
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
@@ -153,13 +155,16 @@ export default function Index({ pasien, user }) {
     }, []);
 
     let ketSep = "";
+    let ketKelas = "";
     if (
         pasien.PRWIKD_CUSTOMER === "X002" ||
         pasien.PRWIKD_CUSTOMER === "X003"
     ) {
         ketSep = noSep == null ? "Belum ada SEP" : `No SEP: ${noSep}`;
+        ketKelas = hakKelas == null ? "Belum Di Set" : `Hak Kelas: ${hakKelas}`;
     } else {
         ketSep = "Bukan Pasien BPJS";
+        ketKelas = "Bukan Pasien BPJS";
     }
 
     const disabled = !user.eklaim_key;
@@ -168,6 +173,7 @@ export default function Index({ pasien, user }) {
         <>
             <Card title={"INACBG/BPJS/SEP"} loading={loadingSep}>
                 <p>{ketSep}</p>
+                <p>{ketKelas}</p>
 
                 <Tooltip
                     title={

@@ -101,7 +101,7 @@ class PasienInapRepository
         try {
             return DB::connection('sqlsrv')
                 ->table('BPJS_SEP')
-                ->select('BPJS_SEP.FMNOSEP')
+                ->select('FMNOSEP', 'FMKODEKELAS')
                 ->where('BPJS_SEP.FMNOTRANSAKSI', $kode_reg)
                 ->first();
         } catch (\Exception $e) {

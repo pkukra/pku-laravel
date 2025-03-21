@@ -164,7 +164,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         fetchSugestKeadaanKelauarRS();
     }, []);
 
-    alert(JSON.stringify(pasien))
+    alert(JSON.stringify(pasien));
 
     return (
         <>
@@ -174,13 +174,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             >
                 <table style={{ width: "100%" }}>
                     <tbody>
-                        <tr>
-                            <td style={{ width: "25%" }}>Hak Kelas BPJS</td>
-                            <td>
-                                : {pasien?.HAK_KELAS ?? <></>}
-                            </td>
-                        </tr>
-                        
                         <tr>
                             <td style={{ width: "25%" }}>Cara Masuk</td>
                             <td>
@@ -196,7 +189,10 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                         {selectedKeadaanKeluar == 7 && (
                             <tr>
                                 <td>Rujukan Keluar</td>
-                                <td>: {pasien?.PRWIRUJUKLUAR} - {pasien?.RS_RUJUKAN_KELUAR}</td>
+                                <td>
+                                    : {pasien?.PRWIRUJUKLUAR} -{" "}
+                                    {pasien?.RS_RUJUKAN_KELUAR}
+                                </td>
                             </tr>
                         )}
 
