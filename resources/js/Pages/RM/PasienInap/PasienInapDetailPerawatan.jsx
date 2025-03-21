@@ -14,7 +14,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
 
     const [keadaanKeluar, setKeadaanKeluar] = useState(null); //actual keadaan keluar rs dari database
     const [keadaanKeluarLoading, setKeadaanKeluarLoading] = useState(false); //loading actual keadaan keluar rs dari database
-    const [kunjunganPasien, setKunjunganPasien] = useState(null); //actual keadaan keluar rs dari database
 
     const [caraMasukOptions, setCaraMasukOptions] = useState(false);
     const [RSRujukanOptions, setRSRujukanOptions] = useState(false);
@@ -165,29 +164,23 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         fetchSugestKeadaanKelauarRS();
     }, []);
 
-    // Fungsi untuk mendapatkan label berdasarkan value
-    const statusPerawatan = (kode) => {
-        const found = perawatanOptions.find((opt) => opt.value == kode);
-        return found ? found.label : "Tidak Diketahui";
-    };
-
-    // Fungsi untuk mendapatkan label berdasarkan value
-    const statusRujukanKeluar = (kode) => {
-        if (!RSRujukanOptions) {
-            return "Fetching data...";
-        }
-        const found = RSRujukanOptions.find((opt) => opt.value == kode);
-        return found ? found.label : "Tidak ada rujukan";
-    };
+    alert(JSON.stringify(pasien))
 
     return (
         <>
             <Card
-                title="Cara Masuk & Pulang"
+                title="Perawatan"
                 loading={pasienLoading || keadaanKeluarLoading}
             >
                 <table style={{ width: "100%" }}>
                     <tbody>
+                        <tr>
+                            <td style={{ width: "25%" }}>Hak Kelas BPJS</td>
+                            <td>
+                                : {pasien?.HAK_KELAS ?? <></>}
+                            </td>
+                        </tr>
+                        
                         <tr>
                             <td style={{ width: "25%" }}>Cara Masuk</td>
                             <td>
