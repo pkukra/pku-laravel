@@ -164,8 +164,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         fetchSugestKeadaanKelauarRS();
     }, []);
 
-    alert(JSON.stringify(pasien));
-
     return (
         <>
             <Card
