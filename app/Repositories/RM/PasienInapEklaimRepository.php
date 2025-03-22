@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Bpjs\Bridging\Vclaim\BridgeVclaim;
 
 class PasienInapEklaimRepository
 {
@@ -76,6 +77,19 @@ class PasienInapEklaimRepository
      */
     public function bridgingDataProcess($no_sep)
     {
+
+        try {
+            $bridging = new BridgeVclaim();
+            $endpoint = 'SEP/' . $no_sep;
+            $vclaim_detail = json_decode($bridging->getRequest($endpoint));
+        } catch (\Exception $e) {
+            Log::error("Vclaim Err get SEP: " . $e->getMessage());
+            return (object)[
+                "status" => "nok",
+                "error" => "Gagal terhubung ke vclaim, coba beberapa saat lagi."
+            ];
+        }
+
         $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
         if (!$transaksi_utama) {
             return (object)[
@@ -115,15 +129,41 @@ class PasienInapEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_STATUS;
         }
 
+        switch ($vclaim_detail->response->klsRawat) {
+            case "1":
+                $naik_kelas = "vvip";
+                break;
+            case "2":
+                $naik_kelas = "vip";
+                break;
+            case "3":
+                $naik_kelas = "kelas_1";
+                break;
+            case "4":
+                $naik_kelas = "kelas_2";
+                break;
+            default:
+                $naik_kelas = null;
+        }
+
+        $tgl_masuk = Carbon::parse($transaksi_utama->TGL_MASUK);
+        $tgl_pulang = $transaksi_utama->PRWITGL_KELUAR
+            ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)
+            : now(); // Jika belum pulang, pakai waktu sekarang
+        $los = $tgl_masuk->diffInDays($tgl_pulang) ?: 1; // Jika hasilnya 0, set minimal 1 hari
+
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
-            'tgl_masuk' => Carbon::parse($transaksi_utama->TGL_MASUK)->format('Y-m-d H:i:s'),
-            'tgl_pulang' => $transaksi_utama->PRWITGL_KELUAR
-                ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)->format('Y-m-d H:i:s')
-                : now()->format('Y-m-d H:i:s'),
+            'tgl_masuk' => $tgl_masuk->format('Y-m-d H:i:s'),
+            'tgl_pulang' => $tgl_pulang->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
+            'kelas_rawat' => $vclaim_detail->response->klsRawat->klsRawatHak, // kelas rawat BPJS 1,2,3. Tapi ini ambil dari vclaim sekalian saja agar akurat
+
+            "upgrade_class_ind" => ($vclaim_detail->response->klsRawat->klsRawatNaik) ? 1 : 0,
+            "upgrade_class_class" => $naik_kelas,
+            "upgrade_class_los" =>  $los,
+
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($transaksi_utama)->tarif_rs,
