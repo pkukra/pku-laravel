@@ -90,6 +90,7 @@ class PasienInapEklaimRepository
         }
 
         $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+
         if (!$transaksi_utama) {
             return (object)[
                 "status" => "nok",
@@ -145,11 +146,14 @@ class PasienInapEklaimRepository
                 $naik_kelas = null;
         }
 
+        // perhitungan tanggal dan los
         $tgl_masuk = Carbon::parse($transaksi_utama->TGL_MASUK);
         $tgl_pulang = $transaksi_utama->PRWITGL_KELUAR
             ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)
             : now(); // Jika belum pulang, pakai waktu sekarang
         $los = $tgl_masuk->diffInDays($tgl_pulang) ?: 1; // Jika hasilnya 0, set minimal 1 hari
+
+        $ploting_tarif = $this->getTotalDetailTarifTransaksi($transaksi_utama); /// listing dan ploting data dari tabel TRANSAKSIPASIENINAPD
 
         // mapping data
         $data = (object)[
@@ -163,8 +167,8 @@ class PasienInapEklaimRepository
             "upgrade_class_los" =>  $los,
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
-            'tarif_rs' => $this->getTotalDetailTarifTransaksi($transaksi_utama)->tarif_rs,
-            'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($transaksi_utama)->tarif_poli_eks,
+            'tarif_rs' => $ploting_tarif->tarif_rs,
+            'tarif_poli_eks' => $ploting_tarif->tarif_poli_eks,
             'diagnosa' => $this->getAllDiagnosa($transaksi_utama),
             'diagnosa_inagrouper' => $this->getAllDiagnosa($transaksi_utama),
             'procedure' => $this->getAllProcedure($transaksi_utama),
@@ -172,8 +176,8 @@ class PasienInapEklaimRepository
             'adl_sub_acute' => "",
             'adl_chronic' => "",
             'nama_dokter' => $transaksi_utama->FMDDOKTERN,
-            'icu_indikator' => "",
-            'icu_los' => "",
+            'icu_indikator' => ($ploting_tarif->icu_los > 0) ? 1 : 0,
+            'icu_los' => $ploting_tarif->icu_los,
             'ventilator_hour' => "",
             'kode_tarif' => "CS",
             'payor_id' => "3",
@@ -420,6 +424,7 @@ class PasienInapEklaimRepository
                 ->leftJoin('MR_KEMATIAN AS mati', 'sep.FMNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
                 ->leftJoin('MR_KEADAAN_KELUAR_RS', 'mati.MRKKEADAAN_KELUAR', '=', 'MR_KEADAAN_KELUAR_RS.FMKKRSKODE')
                 ->select(
+                    'TPI.FTNO_TRANSAKSI',
                     'sep.FMNOSEP',
                     'sep.FMNO_KARTU',
                     'sep.FMJENISRAWAT',
@@ -497,7 +502,13 @@ class PasienInapEklaimRepository
             return $carry + ($transaksi->FDTQTY * $transaksi->FDTHARGA);
         }, 0);
 
+        $icu_los = 0;
         foreach ($transaksiPasien as $transaksi) {
+            // hitung icu los dulu
+            if ($transaksi->FDTKDPRODUKN == "ADMICU101") {
+                $icu_los += (is_numeric($transaksi->FDTQTY) ? (int) $transaksi->FDTQTY : 0);
+            }
+
             $total = $transaksi->FDTQTY * $transaksi->FDTHARGA;
             switch ($transaksi->FTUKD_EKLAIM) {
                 case '1':
@@ -569,6 +580,7 @@ class PasienInapEklaimRepository
         return (object)[
             "tarif_rs" => $tarif,
             "tarif_poli_eks" => $tarif_poli_eks,
+            "icu_los" => $icu_los,
         ];
     }
 
