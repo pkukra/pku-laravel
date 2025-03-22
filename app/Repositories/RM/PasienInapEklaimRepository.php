@@ -125,7 +125,7 @@ class PasienInapEklaimRepository
         // defaultnya atas persetujuan dokter
         $discharge_status =  1;
         if ($transaksi_utama->DISCHARGE_STATUS) {
-            // jika berhasil makan dilakukan join dengan tabel mr_kematian untuk hasil yang lain
+            // jika berhasil maka dilakukan join dengan tabel mr_kematian untuk hasil yang lain
             $discharge_status =  $transaksi_utama->DISCHARGE_STATUS;
         }
 
