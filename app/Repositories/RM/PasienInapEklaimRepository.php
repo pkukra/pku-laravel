@@ -77,9 +77,8 @@ class PasienInapEklaimRepository
      */
     public function bridgingDataProcess($no_sep)
     {
-
+        $bridging = new BridgeVclaim();
         try {
-            $bridging = new BridgeVclaim();
             $endpoint = 'SEP/' . $no_sep;
             $vclaim_detail = json_decode($bridging->getRequest($endpoint));
         } catch (\Exception $e) {
@@ -129,7 +128,7 @@ class PasienInapEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_STATUS;
         }
 
-        switch ($vclaim_detail->response->klsRawat) {
+        switch ($vclaim_detail->response->klsRawat->klsRawatNaik) {
             case "1":
                 $naik_kelas = "vvip";
                 break;
@@ -159,11 +158,9 @@ class PasienInapEklaimRepository
             'tgl_pulang' => $tgl_pulang->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
             'kelas_rawat' => $vclaim_detail->response->klsRawat->klsRawatHak, // kelas rawat BPJS 1,2,3. Tapi ini ambil dari vclaim sekalian saja agar akurat
-
             "upgrade_class_ind" => ($vclaim_detail->response->klsRawat->klsRawatNaik) ? 1 : 0,
             "upgrade_class_class" => $naik_kelas,
             "upgrade_class_los" =>  $los,
-
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($transaksi_utama)->tarif_rs,
@@ -196,6 +193,10 @@ class PasienInapEklaimRepository
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
+
+        if ($response->response->metadata->code != 200) {
+            return $response;
+        }
 
         $grouper = $this->bridgingGroupStage1Process($no_sep);
         $cbg_code = $grouper->response->response->cbg->code ?? null;
@@ -245,17 +246,21 @@ class PasienInapEklaimRepository
             }
         }
 
-        DB::connection('sqlsrv')
-            ->table('TRANSAKSIPASIENINAP')
-            ->where('FTNO_TRANSAKSI', $transaksi_utama->PRWINO_TRANSAKSI)
-            ->update([
-                'FTKODEINACBG' => $cbg_code,
-                'FTTARIPINACBG' => $tarif_inacbg,
-                'FTTARIPINACBG1' => $tarif_inacbg_1,
-                'FTTARIPINACBG2' => $tarif_inacbg_2,
-                'FTTARIPINACBG3' => $tarif_inacbg_3,
-                'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1') // Incremen FKUNCI_VALIDASI2
-            ]);
+        try {
+            DB::connection('sqlsrv')
+                ->table('TRANSAKSIPASIENINAP')
+                ->where('FTNO_TRANSAKSI', $transaksi_utama->PRWINO_TRANSAKSI)
+                ->update([
+                    'FTKODEINACBG' => $cbg_code,
+                    'FTTARIPINACBG' => $tarif_inacbg,
+                    'FTTARIPINACBG1' => $tarif_inacbg_1,
+                    'FTTARIPINACBG2' => $tarif_inacbg_2,
+                    'FTTARIPINACBG3' => $tarif_inacbg_3,
+                    'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1') // Incremen FKUNCI_VALIDASI2
+                ]);
+        } catch (\Exception $e) {
+            Log::error("bridgingDataProcess update TRANSAKSIPASIENINAP tarif err: " . $e->getMessage());
+        }
 
         return $response;
     }
