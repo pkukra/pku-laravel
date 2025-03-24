@@ -10,8 +10,11 @@ export default function Index({ pasien }) {
 
     const generateLabUrl = async () => {
         try {
-            const response = await axios.get(route("common.lab_url"));
-            setHasilLabUrl(response?.data?.data + pasien.PRWINO_TRANSAKSI);
+            // const response = await axios.get(route("common.lab_url"));
+            // setHasilLabUrl(response?.data?.data + pasien.PRWINO_TRANSAKSI);
+            setHasilLabUrl(
+                `10.10.10.10/emr/index.php/penunjang/lab/hasil_laborat_ranap_lis/${pasien.PRWINO_TRANSAKSI}`
+            );
         } catch (error) {
             console.error("Error fetching lab data:", error);
         }
@@ -46,13 +49,13 @@ export default function Index({ pasien }) {
                     {/* Loading Indicator */}
                     {loadingPdf && (
                         <>
-                            <Skeleton active  />
+                            <Skeleton active />
                         </>
                     )}
 
                     {/* PDF Viewer */}
                     <iframe
-                        src={hasilLabUrl}
+                        src={`http://10.10.10.10/emr/index.php/penunjang/lab/hasil_laborat_ranap_lis/${pasien?.PRWINO_TRANSAKSI}`}
                         width="100%"
                         height="600px"
                         style={{
