@@ -695,4 +695,20 @@ class PasienInapRepository
         }
         return $hasil;
     }
+
+    /**
+     * Get list of berkas RM by kode reg
+     *
+     * @param string $kode_reg
+     * @return \Illuminate\Support\Collection
+     */
+    public function getListBerkasRMByRg($kode_reg)
+    {
+        return DB::connection('sqlsrv')
+            ->table('PKU.dbo.TAC_RM_BERKAS')
+            ->select('*')
+            ->where('FS_KD_REG', $kode_reg)
+            ->orderByDesc('mdd')
+            ->get(); // Menggunakan get() untuk mengembalikan banyak hasil (array)
+    }
 }

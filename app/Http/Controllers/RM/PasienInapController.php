@@ -452,6 +452,15 @@ class PasienInapController extends Controller
             'data' => $data,
         ]);
     }
+    
+    public function get_berkas_rm($kode_reg)
+    {
+        $data = $this->pasienInapRepo->getListBerkasRMByRg($kode_reg);
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 
     /**
      * bridging_data_process
