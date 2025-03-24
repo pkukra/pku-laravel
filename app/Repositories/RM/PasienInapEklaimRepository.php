@@ -77,6 +77,14 @@ class PasienInapEklaimRepository
      */
     public function bridgingDataProcess($no_sep)
     {
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => "Nomer SEP belum tersimpan, simpan sep terlebih dahulu."
+            ];
+        }
+
         $bridging = new BridgeVclaim();
         try {
             $endpoint = 'SEP/' . $no_sep;
@@ -88,8 +96,6 @@ class PasienInapEklaimRepository
                 "error" => "Gagal terhubung ke vclaim, coba beberapa saat lagi."
             ];
         }
-
-        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
 
         if (!$transaksi_utama) {
             return (object)[
@@ -415,24 +421,16 @@ class PasienInapEklaimRepository
             $detailTransaksi = DB::connection('sqlsrv')
                 ->table('BPJS_SEP AS sep')
                 ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'TPI.FTNO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
-                ->join('PASIENRAWATINAP AS PRI', function ($join) {
-                    $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
-                        ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
-                })
-                ->leftJoin('DOKTER AS dr', 'PRI.PRWIKD_DOKTER', '=', 'dr.FMDDOKTER_ID')
-                ->leftJoin('PASIEN AS p', 'PRI.PRWIKD_PASIEN', '=', 'p.KD_PASIEN')
+                ->leftJoin('PASIEN AS p', 'TPI.FTKD_PASIEN', '=', 'p.KD_PASIEN')
                 ->leftJoin('MR_KEMATIAN AS mati', 'sep.FMNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
                 ->leftJoin('MR_KEADAAN_KELUAR_RS', 'mati.MRKKEADAAN_KELUAR', '=', 'MR_KEADAAN_KELUAR_RS.FMKKRSKODE')
                 ->select(
                     'TPI.FTNO_TRANSAKSI',
+                    'TPI.FTNO_URUT',
                     'sep.FMNOSEP',
                     'sep.FMNO_KARTU',
                     'sep.FMJENISRAWAT',
                     'sep.FMKODEKELAS',
-                    'PRI.PRWINO_TRANSAKSI',
-                    'PRI.PRWITGL_KELUAR',
-                    'PRI.CARA_MASUK',
-                    'dr.FMDDOKTERN',
                     'p.NAMAPASIEN',
                     'p.KD_PASIEN',
                     'p.TGL_LAHIR',
@@ -440,15 +438,31 @@ class PasienInapEklaimRepository
                     'MR_KEADAAN_KELUAR_RS.FMKKRSKODE_BPJS AS DISCHARGE_STATUS'
                 )
                 ->where('sep.FMNOSEP', $no_sep)
-                ->orderBy('PRI.PRWITGL_MASUK', "ASC")
                 ->first();
-
             if ($detailTransaksi) {
-                $detailTransaksi->TGL_MASUK = DB::connection('sqlsrv')
-                    ->table('PASIENRAWATINAP')
-                    ->where('PRWINO_TRANSAKSI', $detailTransaksi->PRWINO_TRANSAKSI)
-                    ->select('PRWITGL_MASUK')
-                    ->orderBy('PRWITGL_MASUK', 'ASC')->first()->PRWITGL_MASUK;
+                $detail_pasien_rawat_inap = DB::connection('sqlsrv')
+                    ->table('PASIENRAWATINAP AS PRI')
+                    ->leftJoin('DOKTER AS dr', 'PRI.PRWIKD_DOKTER', '=', 'dr.FMDDOKTER_ID')
+                    ->where('PRI.PRWINO_TRANSAKSI', $detailTransaksi->FTNO_TRANSAKSI)
+                    ->where('PRI.PRWINO_URUT', $detailTransaksi->FTNO_URUT)
+                    ->select(
+                        'PRI.PRWINO_TRANSAKSI',
+                        'PRI.CARA_MASUK',
+                        DB::raw("FORMAT(PRI.PRWITGL_MASUK, 'yyyy-MM-dd') + ' ' + FORMAT(PRI.PRWIKPJAM_MASUK, 'HH:mm:ss') AS PRWI_TGLJAM_MASUK"),
+                        DB::raw("FORMAT(PRI.PRWITGL_KELUAR, 'yyyy-MM-dd') + ' ' + FORMAT(PRI.PRWIJAM_KELUAR, 'HH:mm:ss') AS PRWI_TGLJAM_KELUAR"),
+                        'dr.FMDDOKTERN',
+                    )
+                    ->first();
+                if (!$detail_pasien_rawat_inap) {
+                    // Log the error if data not found
+                    Log::error('getDetailTransactionBySep detail_pasien_rawat_inap return null...');
+                    return false;
+                }
+                $detailTransaksi->PRWINO_TRANSAKSI = $detail_pasien_rawat_inap->PRWINO_TRANSAKSI;
+                $detailTransaksi->TGL_MASUK = $detail_pasien_rawat_inap->PRWI_TGLJAM_MASUK;
+                $detailTransaksi->PRWITGL_KELUAR = $detail_pasien_rawat_inap->PRWI_TGLJAM_KELUAR;
+                $detailTransaksi->FMDDOKTERN = $detail_pasien_rawat_inap->FMDDOKTERN;
+                $detailTransaksi->CARA_MASUK = $detail_pasien_rawat_inap->CARA_MASUK;
             }
         } catch (\Exception $e) {
             // Log the error if any exception occurs
