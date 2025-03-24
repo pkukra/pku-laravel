@@ -170,7 +170,7 @@ class PasienInapEklaimRepository
             'kelas_rawat' => $vclaim_detail->response->klsRawat->klsRawatHak, // kelas rawat BPJS 1,2,3. Tapi ini ambil dari vclaim sekalian saja agar akurat
             "upgrade_class_ind" => ($vclaim_detail->response->klsRawat->klsRawatNaik) ? 1 : 0,
             "upgrade_class_class" => $naik_kelas,
-            "upgrade_class_los" =>  $los,
+            "upgrade_class_los" => ($ploting_tarif->icu_los) ? $los - $ploting_tarif->icu_los : $los, // jika icu_los ada isinya, maka los minus icu_los
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $ploting_tarif->tarif_rs,
@@ -184,7 +184,7 @@ class PasienInapEklaimRepository
             'nama_dokter' => $transaksi_utama->FMDDOKTERN,
             'icu_indikator' => ($ploting_tarif->icu_los > 0) ? 1 : 0,
             'icu_los' => $ploting_tarif->icu_los,
-            'ventilator_hour' => "",
+            'ventilator_hour' => $ploting_tarif->ventilator_hours,
             'kode_tarif' => "CS",
             'payor_id' => "3",
             'payor_cd' => "JKN",
@@ -517,10 +517,16 @@ class PasienInapEklaimRepository
         }, 0);
 
         $icu_los = 0;
+        $ventilator_hours = 0;
         foreach ($transaksiPasien as $transaksi) {
             // hitung icu los dulu
             if ($transaksi->FDTKDPRODUKN == "ADMICU101") {
                 $icu_los += (is_numeric($transaksi->FDTQTY) ? (int) $transaksi->FDTQTY : 0);
+            }
+
+            // hitung icu los dulu
+            if ($transaksi->FDTKDPRODUKN == "ADMICU106" || $transaksi->FDTKDPRODUKN == "SABICU319") {
+                $ventilator_hours += (is_numeric($transaksi->FDTQTY) ? ((int) $transaksi->FDTQTY * 24) : 0);
             }
 
             $total = $transaksi->FDTQTY * $transaksi->FDTHARGA;
@@ -595,6 +601,7 @@ class PasienInapEklaimRepository
             "tarif_rs" => $tarif,
             "tarif_poli_eks" => $tarif_poli_eks,
             "icu_los" => $icu_los,
+            "ventilator_hours" => $ventilator_hours,
         ];
     }
 
