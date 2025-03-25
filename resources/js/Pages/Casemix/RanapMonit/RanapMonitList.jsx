@@ -24,7 +24,7 @@ import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
 import RanapMonitListModalBilling from "./RanapMonitListModalBilling";
 import ModalCPPT from "./ModalCPPT";
 
-export default function Index({ auth }) {
+export default function Index({ auth, bangsal }) {
     const columns = [
         {
             title: "No Transakasi",
@@ -286,6 +286,7 @@ export default function Index({ auth }) {
     const [selectedYearMonth, setSelectedYearMonth] = useState(
         dayjs().format("YYYY-MM")
     );
+    const [selectedBangsal, setSelectedBangsal] = useState("IK042");
 
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(100);
@@ -351,6 +352,7 @@ export default function Index({ auth }) {
                         month,
                         status: selectedStatusRawat,
                         nomer_rm: selectedNoRM,
+                        bangsal_induk: selectedBangsal,
                     },
                 }
             );
@@ -375,6 +377,11 @@ export default function Index({ auth }) {
             setShouldFetch(false); // Matikan trigger setelah fetch
         }
     }, [shouldFetch]);
+
+    const optionsBangsal = bangsal.map((item) => ({
+        value: item.FMKAMAR_ID,
+        label: item.FMKAMARN,
+    }));
 
     return (
         <AuthenticatedLayout
@@ -423,6 +430,14 @@ export default function Index({ auth }) {
                                 },
                                 { value: "semua", label: "Semua" },
                             ]}
+                        />
+                    </Col>
+                    <Col span={3}>
+                        <Select
+                            value={selectedBangsal}
+                            style={{ width: 150 }}
+                            options={optionsBangsal}
+                            onChange={(value) => setSelectedBangsal(value)}
                         />
                     </Col>
                     <Col span={2}>

@@ -394,13 +394,19 @@ class RanapMonitRepository
             ->orderByDesc('a.mdd_date')
             ->orderByDesc('a.mdd_time')
             ->get();
+    }
 
+    /**
+     * Get list kamar induk
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getListKamarIndukRanap()
+    {
         return DB::connection('sqlsrv')
-            ->table('PKU.dbo.TAC_RI_CPPT')
+            ->table('KAMAR_INDUK')
             ->select('*')
-            ->where('FS_KD_REG', $no_transaksi)
-            ->orderBy('mdd_date', 'DESC')
-            ->orderBy('mdd_time', 'DESC')
+            ->where('IS_BANGSAL', 1)
             ->get();
     }
 }

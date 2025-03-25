@@ -26,6 +26,8 @@ Route::middleware('auth')->group(function () {
 
 Route::prefix('casemix')->group(function () {
     Route::middleware('auth')->prefix('ranap-monit')->group(function () {
+        Route::get('/list_kamar_bangsal', [RanapMonitController::class, 'list_kamar_bangsal'])->name('casemix.ranap-monit.list_kamar_bangsal');
+
         Route::get('/', [RanapMonitController::class, 'list_pasien'])->name('casemix.ranap-monit.list_pasien');
         Route::get('/list_pasien_data', [RanapMonitController::class, 'list_pasien_data'])->name('casemix.ranap-monit.list_pasien_data');
         Route::get('/list_billing_temp/{kode_reg}', [RanapMonitController::class, 'list_billing_temp'])->name('casemix.ranap-monit.list_billing_temp');

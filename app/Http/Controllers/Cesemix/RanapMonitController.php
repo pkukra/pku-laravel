@@ -22,7 +22,10 @@ class RanapMonitController extends Controller
 
     public function list_pasien()
     {
-        return Inertia::render('Casemix/RanapMonit/RanapMonitList');
+        $bangsal =  $this->RanapMonitRepo->getListKamarIndukRanap();
+        return Inertia::render('Casemix/RanapMonit/RanapMonitList', [
+            "bangsal" => $bangsal
+        ]);
     }
 
     /**
@@ -31,7 +34,7 @@ class RanapMonitController extends Controller
      */
     public function list_pasien_data(Request $request)
     {
-        $bangsal_induk = $request->bangsal_induk ?? "IK043";
+        $bangsal_induk = $request->bangsal_induk ?? "IK009";
         $status = $request->status ?? "dirawat";
         $nomer_rm = $request->nomer_rm ?? "";
 
@@ -307,6 +310,20 @@ class RanapMonitController extends Controller
     public function get_list_cppt($kode_reg)
     {
         $data = $this->RanapMonitRepo->getCPPTByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * list_kamar_induk
+     * Menampilkan list_kamar_induk yang bangsal pasien aja
+     */
+    public function list_kamar_induk()
+    {
+        $data = $this->RanapMonitRepo->getListKamarIndukRanap();
 
         return response()->json([
             'status' => "ok",
