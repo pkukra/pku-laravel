@@ -22,6 +22,7 @@ import "react-quill/dist/quill.snow.css";
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
 import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
 import RanapMonitListModalBilling from "./RanapMonitListModalBilling";
+import ModalCPPT from "./ModalCPPT";
 
 export default function Index({ auth }) {
     const columns = [
@@ -73,6 +74,19 @@ export default function Index({ auth }) {
                     : moment();
                 return keluar.diff(masuk, "days");
             },
+        },
+        {
+            title: "CPPT",
+            dataIndex: "CPPT",
+            key: "CPPT",
+            render: (text, record) => (
+                <>
+                    <ModalCPPT
+                        kode_reg={record?.FTNO_TRANSAKSI}
+                        pasien={record}
+                    />
+                </>
+            ),
         },
         {
             title: "Pemeriksaan Penunjang",

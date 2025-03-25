@@ -299,4 +299,18 @@ class RanapMonitController extends Controller
             'message' => 'Terjadi kesalahan saat menghapus billing temp',
         ], 500);
     }
+
+    /**
+     * get_list_cppt
+     * Menampilkan list_mr_diagnosa berdasarkan kode transaksi
+     */
+    public function get_list_cppt($kode_reg)
+    {
+        $data = $this->RanapMonitRepo->getCPPTByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 }

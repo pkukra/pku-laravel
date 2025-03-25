@@ -367,4 +367,40 @@ class RanapMonitRepository
             return false;
         }
     }
+
+    /**
+     * Get list CPPT by transaksi
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCPPTByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrv')
+            ->table('PKU.dbo.TAC_RI_CPPT as a')
+            ->selectRaw("
+            a.*, 
+            b.nama_lengkap AS FS_NM_PEG, 
+            d.role_id, 
+            RIGHT(a.mdd_date, 2) AS TGL, 
+            e.nama_lengkap AS FS_NM_MEDIS_VERIF
+        ")
+            ->leftJoin('PKU.dbo.TAC_COM_USER as b', 'a.mdb', '=', 'b.user_name')
+            ->leftJoin('PKU.dbo.TAC_COM_USER as c', 'a.mdb', '=', 'c.user_name')
+            ->leftJoin('PKU.dbo.TAC_COM_ROLE_USER as d', 'c.user_id', '=', 'd.user_id')
+            ->leftJoin('PKU.dbo.TAC_COM_USER as e', 'a.FS_KD_MEDIS_VERIF', '=', 'e.user_name')
+            ->where('a.FS_KD_REG', $no_transaksi)
+            ->where('a.FD_TGL_VOID', '3000-01-01')
+            ->orderByDesc('a.mdd_date')
+            ->orderByDesc('a.mdd_time')
+            ->get();
+
+        return DB::connection('sqlsrv')
+            ->table('PKU.dbo.TAC_RI_CPPT')
+            ->select('*')
+            ->where('FS_KD_REG', $no_transaksi)
+            ->orderBy('mdd_date', 'DESC')
+            ->orderBy('mdd_time', 'DESC')
+            ->get();
+    }
 }
