@@ -18,7 +18,7 @@ class RanapMonitRepository
         $cacheKey = "ranap:$bulan:$tahun:$bangsal_induk:$nomer_rm:$status:$perPage:$offset:$countOnly";
 
         // Ambil dari cache atau eksekusi query jika belum ada
-        $data = Cache::remember($cacheKey, 3600, function () use ($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, $countOnly) {
+        $data = Cache::remember($cacheKey, 300, function () use ($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, $countOnly) {
             $query = DB::connection('sqlsrv')
                 ->table('TRANSAKSIPASIENINAP AS TPI')
                 ->join('PASIENRAWATINAP AS PRI', function ($join) {
@@ -78,76 +78,16 @@ class RanapMonitRepository
                 }
             }
 
-            // $sep = get_sep_by_kode_reg($data_detail->FTNO_TRANSAKSI);
-            // if ($sep) {
-            //     foreach ($sep as $key => $value) {
-            //         $data_detail->$key = $value;
-            //     }
-            // }
+            $sep = get_sep_by_kode_reg($data_detail->FTNO_TRANSAKSI);
+            if ($sep) {
+                foreach ($sep as $key => $value) {
+                    $data_detail->$key = $value;
+                }
+            }
 
             return $data_detail;
         });
     }
-
-    public function getOrCountPasienRanap2($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false)
-    {
-        $query = DB::connection('sqlsrv')
-            ->table('PASIENRAWATINAP AS A')
-            ->leftJoin('PASIEN AS B', 'A.PRWIKD_PASIEN', '=', 'B.KD_PASIEN')
-            ->leftJoin('DOKTER AS C', 'A.PRWIKD_DOKTER', '=', 'C.FMDDOKTER_ID')
-            ->leftJoin('KAMAR AS D', 'A.PRWIKD_KAMAR', '=', 'D.FMKKAMAR_ID')
-            ->whereRaw('MONTH(A.PRWITGL_INAP) = ?', [$bulan])
-            ->whereRaw('YEAR(A.PRWITGL_INAP) = ?', [$tahun])
-            ->where('D.FMKKAMARINDUK', $bangsal_induk)
-            ->when($status === 'dirawat', fn($query) => $query->whereNull('A.PRWITGL_KELUAR'))
-            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('A.PRWITGL_KELUAR'));
-
-        if ($nomer_rm) {
-            $query->where('A.PRWIKD_PASIEN', "$nomer_rm");
-        }
-
-        // Jika hanya ingin menghitung total data
-        if ($countOnly) {
-            return $query->count();
-        }
-
-        // Ambil data dengan limit dan offset
-        $data = $query->select(
-            'A.PRWINO_TRANSAKSI',
-            'A.PRWIKD_KAMAR',
-            'C.FMDDOKTERN',
-            DB::raw('MAX(A.PRWITGL_MASUK) as PRWITGL_MASUK'),
-            DB::raw('MAX(A.PRWITGL_KELUAR) as PRWITGL_KELUAR'),
-            'A.PRWIKD_PASIEN',
-            'B.NAMAPASIEN',
-            'D.FMKKAMARINDUK',
-            DB::raw('CASE 
-                    WHEN MAX(A.PRWITGL_KELUAR) IS NULL THEN DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), GETDATE()) + 1
-                    ELSE DATEDIFF(DAY, MAX(A.PRWITGL_MASUK), MAX(A.PRWITGL_KELUAR)) + 1
-                    END as TOTAL_HARI')
-        )
-            ->groupBy('A.PRWINO_TRANSAKSI', 'A.PRWIKD_KAMAR', 'A.PRWIKD_PASIEN', 'B.NAMAPASIEN', 'C.FMDDOKTERN', 'D.FMKKAMARINDUK')
-            ->orderByDesc('PRWITGL_MASUK')
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
-
-        // Proses hasil dengan cache untuk diagnosa dan casemix ranap
-        return $data->map(function ($pasien) {
-            $cacheKey = "pasien_detail_{$pasien->PRWINO_TRANSAKSI}";
-            return Cache::remember($cacheKey, 30, function () use ($pasien) {
-                $pasien->FS_DIAGNOSA = get_diagnosa_ri($pasien->PRWINO_TRANSAKSI);
-                $ranap = get_casemix_ranap_data($pasien->PRWINO_TRANSAKSI);
-                if ($ranap) {
-                    foreach ($ranap as $key => $value) {
-                        $pasien->$key = $value;
-                    }
-                }
-                return $pasien;
-            });
-        });
-    }
-
 
     /**
      * Update data in CASEMIX_RANAP table
