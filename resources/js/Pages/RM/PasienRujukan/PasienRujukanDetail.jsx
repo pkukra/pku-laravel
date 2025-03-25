@@ -7,6 +7,7 @@ import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList
 import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCatatan";
 import PasienRujukanDetailSEP from "./PasienRujukanDetailSEP";
 import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
+import PasienRujukanDetailAssesmenIGD from "./PasienRujukanDetailAssesmenIGD";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 import { useState } from "react";
@@ -41,7 +42,13 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={12}>
-                            <PasienRujukanDetailResume pasien={pasien} />
+                            {pasien?.FRPUNIT == "PK011" ? (
+                                <PasienRujukanDetailAssesmenIGD
+                                    pasien={pasien}
+                                />
+                            ) : (
+                                <PasienRujukanDetailResume pasien={pasien} />
+                            )}
                         </Col>
                         <Col span={12}>
                             <PasienRujukanDetailHasilLab pasien={pasien} />
