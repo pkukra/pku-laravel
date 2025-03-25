@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 if (!function_exists('get_diagnosa_ri')) {
     function get_diagnosa_ri($kode_reg)
@@ -27,11 +28,15 @@ if (!function_exists('get_casemix_ranap_data')) {
 if (!function_exists('get_pasien_by_no_rm')) {
     function get_pasien_by_no_rm($no_rm)
     {
-        return DB::connection('sqlsrv')
-            ->table('PASIEN')
-            ->where('KD_PASIEN', $no_rm)
-            ->select('NAMAPASIEN')
-            ->first();
+        $cacheKey = "pasien:$no_rm"; // Kunci cache unik untuk tiap pasien
+
+        return Cache::remember($cacheKey, 3600, function () use ($no_rm) { // Simpan cache selama 1 jam (3600 detik)
+            return DB::connection('sqlsrv')
+                ->table('PASIEN')
+                ->where('KD_PASIEN', $no_rm)
+                ->select('NAMAPASIEN')
+                ->first();
+        });
     }
 }
 
@@ -49,13 +54,18 @@ if (!function_exists('get_dokter_by_kode')) {
 if (!function_exists('get_sep_by_kode_reg')) {
     function get_sep_by_kode_reg($kode_reg)
     {
-        return DB::connection('sqlsrv')
-            ->table('BPJS_SEP')
-            ->where('FMNOTRANSAKSI', $kode_reg)
-            ->select('FMKODEKELAS AS KELAS_RAWAT')
-            ->first();
+        $cacheKey = "sep:$kode_reg";
+
+        return Cache::remember($cacheKey, 3600, function () use ($kode_reg) {
+            return DB::connection('sqlsrv')
+                ->table('BPJS_SEP')
+                ->where('FMNOTRANSAKSI', $kode_reg)
+                ->select('FMKODEKELAS AS KELAS_RAWAT')
+                ->first();
+        });
     }
 }
+
 
 if (!function_exists('get_tgl_keluar_inap')) {
     function get_tgl_keluar_inap($kode_reg)

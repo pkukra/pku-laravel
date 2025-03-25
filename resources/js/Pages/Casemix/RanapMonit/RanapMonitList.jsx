@@ -75,56 +75,6 @@ export default function Index({ auth }) {
             },
         },
         {
-            title: "Diagnosa Utama",
-            dataIndex: "FS_DIAGNOSA",
-            key: "FS_DIAGNOSA",
-            render: (text) => (
-                <div dangerouslySetInnerHTML={{ __html: text }} />
-            ),
-        },
-        {
-            title: "Diagnosa Sekunder",
-            dataIndex: "DIAGNOSA_SEKUNDER",
-            key: "DIAGNOSA_SEKUNDER",
-            render: (text, record) => (
-                <>
-                    <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "DIAGNOSA_SEKUNDER",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
-                </>
-            ),
-        },
-        {
-            title: "Tindakan",
-            dataIndex: "TINDAKAN",
-            key: "TINDAKAN",
-            render: (text, record) => (
-                <>
-                    <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "TINDAKAN",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
-                </>
-            ),
-        },
-        {
             title: "Pemeriksaan Penunjang",
             dataIndex: "PEMERIKSAAN_PENUNJANG",
             key: "PEMERIKSAAN_PENUNJANG",
@@ -324,7 +274,7 @@ export default function Index({ auth }) {
     );
 
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(10);
+    const [perPage, setPerPage] = useState(100);
     const [totalData, setTotalData] = useState(0);
 
     const [dataSource, setDataSource] = useState([]);

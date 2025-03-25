@@ -14,43 +14,63 @@ class RanapMonitRepository
      */
     public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false)
     {
-        $query = DB::connection('sqlsrv')
-            ->table('TRANSAKSIPASIENINAP AS TPI')
-            ->join('PASIENRAWATINAP AS PRI', function ($join) {
-                $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
-                    ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
-            })
-            ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
+        // Buat cache key unik berdasarkan parameter pencarian
+        $cacheKey = "ranap:$bulan:$tahun:$bangsal_induk:$nomer_rm:$status:$perPage:$offset:$countOnly";
 
-            ->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
-            ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun])
-            ->where('K.FMKKAMARINDUK', $bangsal_induk)
-            ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
-            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
-        if ($nomer_rm) {
-            $query->where('TPI.FTKD_PASIEN', "$nomer_rm");
-        }
+        // Ambil dari cache atau eksekusi query jika belum ada
+        $data = Cache::remember($cacheKey, 3600, function () use ($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, $countOnly) {
+            $query = DB::connection('sqlsrv')
+                ->table('TRANSAKSIPASIENINAP AS TPI')
+                ->join('PASIENRAWATINAP AS PRI', function ($join) {
+                    $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
+                        ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
+                })
+                ->leftJoin('PASIEN AS P', 'P.KD_PASIEN', '=', 'TPI.FTKD_PASIEN')
+                ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
+                ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
+                ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
 
+                ->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
+                ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun])
+                ->where('K.FMKKAMARINDUK', $bangsal_induk)
+                ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
+                ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
+
+            if ($nomer_rm) {
+                $query->where('TPI.FTKD_PASIEN', $nomer_rm);
+            }
+
+            if ($countOnly) {
+                return $query->count();
+            }
+
+            return $query->select(
+                'TPI.FTNO_TRANSAKSI',
+                'PRI.PRWIKD_KAMAR',
+                'PRI.PRWIKD_KELAS',
+                'PRI.PRWIKD_DOKTER',
+                'PRI.PRWITGL_KELUAR',
+                'TPI.FTTGL_TRANSAKSI',
+                'TPI.FTKD_PASIEN',
+                'P.NAMAPASIEN',
+                'DR.FMDDOKTERN AS DPJP',
+                'FMKODEKELAS AS KELAS_RAWAT'
+            )
+                ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
+                ->offset($offset)
+                ->limit($perPage)
+                ->get();
+        });
+
+        // Jika hanya menghitung total data, langsung return hasilnya
         if ($countOnly) {
-            return $query->count();
+            return $data;
         }
 
-        $data = $query->select(
-            'TPI.FTNO_TRANSAKSI',
-            'PRI.PRWIKD_KAMAR',
-            'PRI.PRWIKD_KELAS',
-            'PRI.PRWIKD_DOKTER',
-            'PRI.PRWITGL_KELUAR',
-            'TPI.FTTGL_TRANSAKSI',
-            'TPI.FTKD_PASIEN',
-        )
-            ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
+        // Lakukan pemrosesan tambahan pada data
+        return collect($data)->map(function ($data_detail) {
+            // $data_detail->FS_DIAGNOSA = get_diagnosa_ri($data_detail->FTNO_TRANSAKSI);
 
-        return $data->map(function ($data_detail) {
-            $data_detail->FS_DIAGNOSA = get_diagnosa_ri($data_detail->FTNO_TRANSAKSI);
             $ranap = get_casemix_ranap_data($data_detail->FTNO_TRANSAKSI);
             if ($ranap) {
                 foreach ($ranap as $key => $value) {
@@ -58,26 +78,12 @@ class RanapMonitRepository
                 }
             }
 
-            $pasien = get_pasien_by_no_rm($data_detail->FTKD_PASIEN);
-            if ($pasien) {
-                foreach ($pasien as $key => $value) {
-                    $data_detail->$key = $value;
-                }
-            }
-
-            $dokter = get_dokter_by_kode($data_detail->PRWIKD_DOKTER);
-            if ($dokter) {
-                foreach ($dokter as $key => $value) {
-                    $data_detail->$key = $value;
-                }
-            }
-
-            $sep = get_sep_by_kode_reg($data_detail->FTNO_TRANSAKSI);
-            if ($sep) {
-                foreach ($sep as $key => $value) {
-                    $data_detail->$key = $value;
-                }
-            }
+            // $sep = get_sep_by_kode_reg($data_detail->FTNO_TRANSAKSI);
+            // if ($sep) {
+            //     foreach ($sep as $key => $value) {
+            //         $data_detail->$key = $value;
+            //     }
+            // }
 
             return $data_detail;
         });
