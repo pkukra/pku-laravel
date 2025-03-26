@@ -60,7 +60,7 @@ if (!function_exists('get_sep_by_kode_reg')) {
             return DB::connection('sqlsrv')
                 ->table('BPJS_SEP')
                 ->where('FMNOTRANSAKSI', $kode_reg)
-                ->select('FMKODEKELAS AS KELAS_RAWAT')
+                ->select('FMKODEKELAS AS KELAS_RAWAT', 'RAWAT_NAIK')
                 ->first();
         });
     }

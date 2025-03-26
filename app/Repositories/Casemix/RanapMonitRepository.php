@@ -52,6 +52,10 @@ class RanapMonitRepository
                 'PRI.PRWITGL_KELUAR',
                 'TPI.FTTGL_TRANSAKSI',
                 'TPI.FTKD_PASIEN',
+                'TPI.FTTARIPINACBG',
+                'TPI.FTTARIPINACBG1',
+                'TPI.FTTARIPINACBG2',
+                'TPI.FTTARIPINACBG3',
                 'P.NAMAPASIEN',
                 'DR.FMDDOKTERN AS DPJP',
                 'FMKODEKELAS AS KELAS_RAWAT'
