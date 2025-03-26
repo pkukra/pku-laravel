@@ -147,16 +147,13 @@ export default function Index({ auth, bangsal }) {
             title: "Kemungkinan Kode Diagnosa",
             dataIndex: "FTNO_TRANSAKSI",
             key: "KODE_DIAGNOSA",
-            render: (kodeReg) => (
+            render: (kodeReg, record) => (
                 <>
-                    {diagnosaData[kodeReg]?.map((diagnosa) => (
-                        <React.Fragment>
-                            {diagnosa?.MRPKD_PENYAKIT} <br />
-                        </React.Fragment>
-                    ))}
-                    <RanapMonitListModalDiagnosa
-                        pasien={{ FTNO_TRANSAKSI: kodeReg }}
-                    />
+                    {diagnosaData[kodeReg] &&
+                        diagnosaData[kodeReg]
+                            .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
+                            .join("  ")}
+                    <RanapMonitListModalDiagnosa pasien={record} />
                 </>
             ),
         },
@@ -164,16 +161,13 @@ export default function Index({ auth, bangsal }) {
             title: "Kemungkinan Kode Prosedur",
             dataIndex: "FTNO_TRANSAKSI",
             key: "KODE_PROCEDURE",
-            render: (kodeReg) => (
+            render: (kodeReg, record) => (
                 <>
-                    {prosedurData[kodeReg]?.map((procedure) => (
-                        <React.Fragment>
-                            {procedure?.MRTKD_TINDAKAN} <br />
-                        </React.Fragment>
-                    ))}
-                    <RanapMonitListModalProcedure
-                        pasien={{ FTNO_TRANSAKSI: kodeReg }}
-                    />
+                    {prosedurData[kodeReg] &&
+                        prosedurData[kodeReg]
+                            .map((procedure) => procedure?.MRTKD_TINDAKAN)
+                            .join("  ")}
+                    <RanapMonitListModalProcedure pasien={record} />
                 </>
             ),
         },
