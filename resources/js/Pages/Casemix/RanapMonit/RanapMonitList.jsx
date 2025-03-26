@@ -167,7 +167,7 @@ export default function Index({ auth, bangsal }) {
                         prosedurData[kodeReg]
                             .map((procedure) => procedure?.MRTKD_TINDAKAN)
                             .join(" - ")}
-                    <RanapMonitListModalProcedure pasien={record} />
+                    <RanapMonitListModalProcedure pasien={record} reFecthListData={fetchData} />
                 </>
             ),
         },

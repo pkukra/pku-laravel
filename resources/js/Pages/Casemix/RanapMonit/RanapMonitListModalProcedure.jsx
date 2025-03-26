@@ -14,7 +14,7 @@ import moment from "moment";
 import axios from "axios";
 import { EditOutlined, PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, reFecthListData }) {
     const [loading, setLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [anotherOptions, setAnotherOptions] = useState([]);
@@ -103,6 +103,7 @@ export default function Index({ pasien }) {
         } catch (error) {
             console.error("Error saving procedure:", error);
         } finally {
+            reFecthListData();
             fetchProcedure();
             setLoadingSaveDiag(false);
             setSelectedProcedureForm(null);
@@ -166,6 +167,7 @@ export default function Index({ pasien }) {
                 console.error("Error fetching procedure data:", error);
             })
             .finally(() => {
+                reFecthListData();
                 setLoadingDeleteProcedure(false);
                 setIsModalHapusProcedureOpen(false);
             });
@@ -232,8 +234,7 @@ export default function Index({ pasien }) {
                 ]}
             >
                 <p>
-                    No RM: <strong>{pasien.FTKD_PASIEN} </strong> No
-                    Transakasi:{" "}
+                    No RM: <strong>{pasien.FTKD_PASIEN} </strong> No Transakasi:{" "}
                     <strong>{pasien.FTNO_TRANSAKSI} </strong>
                     Nama Pasien: <strong>{pasien.NAMAPASIEN}</strong>
                 </p>
