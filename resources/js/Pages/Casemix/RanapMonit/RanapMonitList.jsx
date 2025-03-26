@@ -137,44 +137,43 @@ export default function Index({ auth, bangsal }) {
         },
         {
             title: "Naik Kelas",
-            dataIndex: "NAIK_KELAS",
-            key: "NAIK_KELAS",
+            dataIndex: "RAWAT_NAIK",
+            key: "RAWAT_NAIK",
             render: (text, record) => (
-                <>
-                    <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "NAIK_KELAS",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
-                </>
+                <>{naikKelasSanitize(record?.RAWAT_NAIK)}</>
             ),
         },
         {
-            title: "Kemungkinan Kode Dignosa",
-            dataIndex: "KODE_DIAGNOSA",
+            title: "Kemungkinan Kode Diagnosa",
+            dataIndex: "FTNO_TRANSAKSI",
             key: "KODE_DIAGNOSA",
-            render: (text, record) => (
+            render: (kodeReg) => (
                 <>
-                    <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <RanapMonitListModalDiagnosa pasien={record} />
+                    {diagnosaData[kodeReg]?.map((diagnosa) => (
+                        <React.Fragment>
+                            {diagnosa?.MRPKD_PENYAKIT} <br />
+                        </React.Fragment>
+                    ))}
+                    <RanapMonitListModalDiagnosa
+                        pasien={{ FTNO_TRANSAKSI: kodeReg }}
+                    />
                 </>
             ),
         },
         {
             title: "Kemungkinan Kode Prosedur",
-            dataIndex: "KODE_PROCEDURE",
+            dataIndex: "FTNO_TRANSAKSI",
             key: "KODE_PROCEDURE",
-            render: (text, record) => (
+            render: (kodeReg) => (
                 <>
-                    <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <RanapMonitListModalProcedure pasien={record} />
+                    {prosedurData[kodeReg]?.map((procedure) => (
+                        <React.Fragment>
+                            {procedure?.MRTKD_TINDAKAN} <br />
+                        </React.Fragment>
+                    ))}
+                    <RanapMonitListModalProcedure
+                        pasien={{ FTNO_TRANSAKSI: kodeReg }}
+                    />
                 </>
             ),
         },
@@ -191,8 +190,23 @@ export default function Index({ auth, bangsal }) {
         },
         {
             title: "Perkiraan Klaim",
-            dataIndex: "LOS",
-            key: "DPJP",
+            dataIndex: "klaim",
+            key: "klaim",
+            render: (text, record) => (
+                <>
+                    {!naikKelasSanitize(record?.RAWAT_NAIK) &&
+                        record?.FTTARIPINACBG}
+
+                    {naikKelasSanitize(record?.RAWAT_NAIK) == 1 &&
+                        record?.FTTARIPINACBG1}
+
+                    {naikKelasSanitize(record?.RAWAT_NAIK) == 2 &&
+                        record?.FTTARIPINACBG2}
+
+                    {naikKelasSanitize(record?.RAWAT_NAIK) == "vip" &&
+                        record?.FTTARIPINACBG1}
+                </>
+            ),
         },
         {
             title: "Konfirmasi Koder",
@@ -302,12 +316,79 @@ export default function Index({ auth, bangsal }) {
     const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
     const [modalUpdateValue, setModalUpdateValue] = useState(null);
 
+    const [diagnosaData, setDiagnosaData] = useState({});
+    const [prosedurData, setProsedurData] = useState({});
+
     const handleOpenModal = (param) => {
         setModalUpdateRecord(param?.data_record);
         setModalUpdateKey(param?.key);
         setModalUpdateKodeReg(param?.data_record?.FTNO_TRANSAKSI);
         setModalUpdateValue(param?.value);
         setOpenModalUpdate(true);
+    };
+
+    const fetchDiagnosaProsedur = async (pasienList) => {
+        await Promise.allSettled(
+            pasienList.map(async (pasien) => {
+                try {
+                    const [diagnosaRes, prosedurRes] = await Promise.all([
+                        axios.get(
+                            route("casemix.ranap-monit.list_diagnosa", {
+                                kode_reg: pasien.FTNO_TRANSAKSI,
+                            })
+                        ),
+                        axios.get(
+                            route("casemix.ranap-monit.list_procedure", {
+                                kode_reg: pasien.FTNO_TRANSAKSI,
+                            })
+                        ),
+                    ]);
+
+                    // Update state setelah tiap pasien berhasil di-fetch
+                    setDiagnosaData((prev) => ({
+                        ...prev,
+                        [pasien.FTNO_TRANSAKSI]: diagnosaRes.data?.data || [],
+                    }));
+
+                    console.log(prosedurRes.data?.data);
+
+                    setProsedurData((prev) => ({
+                        ...prev,
+                        [pasien.FTNO_TRANSAKSI]: prosedurRes.data?.data || [],
+                    }));
+                } catch (error) {
+                    console.error(
+                        `Error fetching data for ${pasien.FTNO_TRANSAKSI}`,
+                        error
+                    );
+                }
+            })
+        );
+    };
+
+    const naikKelasSanitize = (naik_kelas) => {
+        if (!naik_kelas) {
+            return null;
+        }
+        if (naik_kelas === "-- Pilih --") {
+            return null;
+        }
+
+        // Pola regex untuk menangkap angka di awal dan teks setelahnya
+        const match = naik_kelas.match(/^(\d+)\.\s*(.+)$/);
+        if (!match) {
+            return null;
+        }
+
+        const [, angka, nama] = match; // Ambil angka dan nama kelas
+        const mapping = {
+            1: "1",
+            2: "vip",
+            3: "1",
+            4: "2",
+        };
+
+        return mapping[angka] || null;
     };
 
     const handleUpdate = () => {
@@ -359,6 +440,8 @@ export default function Index({ auth, bangsal }) {
 
             setDataSource(data.pasiens);
             setTotalData(data.total);
+
+            fetchDiagnosaProsedur(data.pasiens);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {

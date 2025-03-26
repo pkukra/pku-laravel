@@ -35,7 +35,7 @@ Route::prefix('casemix')->group(function () {
         Route::get('/list_procedure/{kode_reg}', [RanapMonitController::class, 'list_procedure'])->name('casemix.ranap-monit.list_procedure');
         Route::post('/save_procedure', [RanapMonitController::class, 'save_procedure'])->name('casemix.ranap-monit.save_procedure');
         Route::delete('/delete_procedure/{id}', [RanapMonitController::class, 'delete_procedure'])->name('casemix.ranap-monit.delete_procedure');
-        
+
         Route::post('/update_monit_row/{kode_reg}', [RanapMonitController::class, 'update_monit_row'])->name('casemix.ranap-monit.update_monit_row');
 
         Route::get('/get_list_cppt/{kode_reg}', [RanapMonitController::class, 'get_list_cppt'])->name('rm.pasien-inap.get_list_cppt');
@@ -44,6 +44,7 @@ Route::prefix('casemix')->group(function () {
         Route::get('/list_diagnosa/{kode_reg}', [RanapMonitController::class, 'list_diagnosa'])->name('casemix.ranap-monit.list_diagnosa');
         Route::post('/save_diagnosa', [RanapMonitController::class, 'save_diagnosa'])->name('casemix.ranap-monit.save_diagnosa');
         Route::delete('/delete_diagnosa/{id}', [RanapMonitController::class, 'delete_diagnosa'])->name('casemix.ranap-monit.delete_diagnosa');
+
     });
 });
 
