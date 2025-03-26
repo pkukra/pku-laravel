@@ -152,8 +152,8 @@ export default function Index({ auth, bangsal }) {
                     {diagnosaData[kodeReg] &&
                         diagnosaData[kodeReg]
                             .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
-                            .join("  ")}
-                    <RanapMonitListModalDiagnosa pasien={record} />
+                            .join(" - ")}
+                    <RanapMonitListModalDiagnosa pasien={record} reFecthListData={fetchData} />
                 </>
             ),
         },
@@ -166,7 +166,7 @@ export default function Index({ auth, bangsal }) {
                     {prosedurData[kodeReg] &&
                         prosedurData[kodeReg]
                             .map((procedure) => procedure?.MRTKD_TINDAKAN)
-                            .join("  ")}
+                            .join(" - ")}
                     <RanapMonitListModalProcedure pasien={record} />
                 </>
             ),
@@ -343,8 +343,6 @@ export default function Index({ auth, bangsal }) {
                         ...prev,
                         [pasien.FTNO_TRANSAKSI]: diagnosaRes.data?.data || [],
                     }));
-
-                    console.log(prosedurRes.data?.data);
 
                     setProsedurData((prev) => ({
                         ...prev,

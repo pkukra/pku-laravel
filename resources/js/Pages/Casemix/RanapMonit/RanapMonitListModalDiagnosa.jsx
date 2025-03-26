@@ -14,7 +14,7 @@ import moment from "moment";
 import axios from "axios";
 import { EditOutlined, PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, reFecthListData }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true);
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
@@ -179,6 +179,7 @@ export default function Index({ pasien }) {
         } catch (error) {
             console.error("Error saving diagnosa:", error);
         } finally {
+            reFecthListData();
             fetchDiagnosaByNoTransakasi();
             setLoadingSaveDiag(false);
             setSelectedDiagnosaForm(null);
@@ -222,6 +223,7 @@ export default function Index({ pasien }) {
             .finally(() => {
                 setLoadingDeleteDiagnosa(false);
                 setIsModalHapusDiagnosaOpen(false);
+                reFecthListData();
             });
     };
 
@@ -243,12 +245,12 @@ export default function Index({ pasien }) {
                 footer={[
                     <Button key="back" onClick={() => setModalOpen(false)}>
                         Cancel
-                    </Button>
+                    </Button>,
                 ]}
             >
                 <p>
-                    No RM: <strong>{pasien.FTKD_PASIEN} </strong> No
-                    Transakasi: <strong>{pasien.FTNO_TRANSAKSI} </strong>
+                    No RM: <strong>{pasien.FTKD_PASIEN} </strong> No Transakasi:{" "}
+                    <strong>{pasien.FTNO_TRANSAKSI} </strong>
                     Nama Pasien: <strong>{pasien.NAMAPASIEN}</strong>
                 </p>
 
