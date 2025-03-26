@@ -77,7 +77,7 @@ export default function Index({ pasien }) {
 
                     {/* PDF Viewer */}
                     <iframe
-                        src={`http://10.10.10.10/emr/index.php/penunjang/lab/hasil_laborat_ranap_lis/${pasien?.PRWINO_TRANSAKSI}`}
+                        src={`http://10.10.10.10/emr/index.php/penunjang/lab_no_auth/hasil_laborat_ranap_lis/${pasien?.PRWINO_TRANSAKSI}`}
                         width="100%"
                         height="600px"
                         style={{

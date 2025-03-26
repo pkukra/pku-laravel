@@ -17,7 +17,7 @@ export default function Index({ pasien }) {
                 )}
                 {/* PDF Viewer */}
                 <iframe
-                    src={`http://10.10.10.10/emr/index.php/rm/rawat_jalan/cetak_rm/${pasien?.FRPNOTRANSAKSI}`}
+                    src={`http://10.10.10.10/emr/index.php/rm/rawat_jalan_no_auth/cetak_rm/${pasien?.FRPNOTRANSAKSI}`}
                     width="100%"
                     height="600px"
                     style={{
