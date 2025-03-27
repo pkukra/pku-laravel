@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, Modal, Skeleton } from "antd";
 
 import PasienInapDetailHasilRadiologi from "./PasienInapDetailHasilRadiologi";
+import PasienInapDetailCPPT from "./PasienInapDetailCPPT";
 
 export default function Index({ pasien }) {
     const [modalOpen, setModalOpen] = useState(false);
@@ -41,13 +42,14 @@ export default function Index({ pasien }) {
 
     return (
         <>
-            <Card title="Hasil Panunjang">
+            <Card title="Berkas Panunjang">
                 {/* Button untuk membuka modal */}
                 <Button type="primary" onClick={() => setModalOpen(true)}>
                     Hasil Lab
                 </Button>
 
                 <PasienInapDetailHasilRadiologi pasien={pasien} />
+                <PasienInapDetailCPPT pasien={pasien} />
 
                 {listBerkasRM.map((berkas) => (
                     <Button

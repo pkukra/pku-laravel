@@ -1,5 +1,8 @@
 import { Head } from "@inertiajs/react";
 import { Col, Row, Card } from "antd";
+import { useState } from "react";
+import axios from "axios";
+
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienInapDetailProfile from "./PasienInapDetailProfile";
 import PasienInapDetailDiagnosaList from "./PasienInapDetailDiagnosaList";
@@ -8,8 +11,6 @@ import PasienInapDetailSEP from "./PasienInapDetailSEP";
 import PasienInapDetailResume from "./PasienInapDetailResume";
 import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
-import { useState } from "react";
-import axios from "axios";
 
 function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\RM\PasienRujukanController;
 use App\Http\Controllers\RM\PasienInapController;
+use App\Http\Controllers\Cesemix\RanapMonitController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('rm')->group(function () {
@@ -71,5 +72,7 @@ Route::prefix('rm')->group(function () {
 
         Route::post('/bridging_data_process/{no_sep}', [PasienInapController::class, 'bridging_data_process'])->name('rm.pasien-inap.bridging_data_process');
         Route::post('/bridging_final_process/{kode_reg}/{no_sep}', [PasienInapController::class, 'bridging_final_process'])->name('rm.pasien-inap.bridging_final_process');
+
+        Route::get('/get_list_cppt/{kode_reg}', [RanapMonitController::class, 'get_list_cppt'])->name('rm.pasien-inap.get_list_cppt');
     });
 });
