@@ -113,6 +113,7 @@ export default function Index({ kode_reg, pasien }) {
 
                 <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
                     <Table
+                        loading={loadingCPPT}
                         dataSource={CPPTData}
                         columns={columns}
                         bordered
