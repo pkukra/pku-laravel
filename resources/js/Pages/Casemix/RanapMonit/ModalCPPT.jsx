@@ -11,7 +11,7 @@ export default function Index({ kode_reg, pasien }) {
         setLoadingCPPT(true);
         try {
             const response = await axios.get(
-                route("rm.pasien-inap.get_list_cppt", {
+                route("casemix.pasien-inap.get_list_cppt", {
                     kode_reg: kode_reg,
                 })
             );
