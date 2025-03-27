@@ -23,6 +23,7 @@ import "react-quill/dist/quill.snow.css";
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
 import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
 import ModalCPPT from "./ModalCPPT";
+import BridgingData from "./BridgingData";
 
 const Textarea = Input.TextArea;
 
@@ -51,7 +52,7 @@ export default function Index({ auth, bangsal }) {
             dataIndex: "DPJP",
             key: "DPJP",
             fixed: "left",
-            width:200
+            width: 200,
         },
         {
             title: "Tanggal Masuk",
@@ -167,7 +168,7 @@ export default function Index({ auth, bangsal }) {
             title: "Kemungkinan Kode Prosedur",
             dataIndex: "FTNO_TRANSAKSI",
             key: "KODE_PROCEDURE",
-            width:200,
+            width: 200,
             render: (kodeReg, record) => (
                 <>
                     {prosedurData[kodeReg] &&
@@ -202,6 +203,12 @@ export default function Index({ auth, bangsal }) {
                         {perkiraanKlaim !== null
                             ? Math.abs(perkiraanKlaim).toLocaleString()
                             : "-"}
+                        {record?.NO_SEP && (
+                            <BridgingData
+                                pasien={record}
+                                refetchData={fetchData}
+                            />
+                        )}
                     </>
                 );
             },
@@ -227,7 +234,11 @@ export default function Index({ auth, bangsal }) {
                 if (perkiraanKlaim === null) {
                     return (
                         <Typography.Text>
-                            <div dangerouslySetInnerHTML={{ __html: Math.abs(text).toLocaleString() }} />
+                            <div
+                                dangerouslySetInnerHTML={{
+                                    __html: Math.abs(text).toLocaleString(),
+                                }}
+                            />
                         </Typography.Text>
                     );
                 }
@@ -586,9 +597,7 @@ export default function Index({ auth, bangsal }) {
                         </Button>
                     </Col>
                 </Row>
-                <small>total data: {totalData}</small>
-                <p>{page}</p>
-                <p>{perPage}</p>
+                <small>total data: {totalData}. Page: {page}. Perpage: {perPage}</small>
                 <Table
                     bordered
                     loading={loadingFetchData}

@@ -55,12 +55,11 @@ if (!function_exists('get_sep_by_kode_reg')) {
     function get_sep_by_kode_reg($kode_reg)
     {
         $cacheKey = "sep:$kode_reg";
-
         return Cache::remember($cacheKey, 300, function () use ($kode_reg) {
             return DB::connection('sqlsrv')
                 ->table('BPJS_SEP')
                 ->where('FMNOTRANSAKSI', $kode_reg)
-                ->select('FMKODEKELAS AS KELAS_RAWAT', 'RAWAT_NAIK')
+                ->select('FMKODEKELAS AS KELAS_RAWAT', 'RAWAT_NAIK', 'FMNOSEP AS NO_SEP')
                 ->first();
         });
     }
