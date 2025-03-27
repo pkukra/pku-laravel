@@ -182,7 +182,7 @@ export default function Index({ auth, bangsal }) {
             ),
         },
         {
-            title: "Perkiraan Klaim",
+            title: "Perkiraan Klaim (Rp)",
             dataIndex: "klaim",
             key: "klaim",
             align: "right",
@@ -207,7 +207,7 @@ export default function Index({ auth, bangsal }) {
             },
         },
         {
-            title: "Billing Sementara",
+            title: "Billing Sementara (Rp)",
             dataIndex: "TOTAL_BILL",
             key: "TOTAL_BILL",
             align: "right",
@@ -227,7 +227,7 @@ export default function Index({ auth, bangsal }) {
                 if (perkiraanKlaim === null) {
                     return (
                         <Typography.Text>
-                            <div dangerouslySetInnerHTML={{ __html: text }} />
+                            <div dangerouslySetInnerHTML={{ __html: Math.abs(text).toLocaleString() }} />
                         </Typography.Text>
                     );
                 }
@@ -345,7 +345,7 @@ export default function Index({ auth, bangsal }) {
     const [selectedBangsal, setSelectedBangsal] = useState("IK042");
 
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(100);
+    const [perPage, setPerPage] = useState(50);
     const [totalData, setTotalData] = useState(0);
 
     const [dataSource, setDataSource] = useState([]);
@@ -587,6 +587,8 @@ export default function Index({ auth, bangsal }) {
                     </Col>
                 </Row>
                 <small>total data: {totalData}</small>
+                <p>{page}</p>
+                <p>{perPage}</p>
                 <Table
                     bordered
                     loading={loadingFetchData}
@@ -599,7 +601,7 @@ export default function Index({ auth, bangsal }) {
                         y: 600,
                     }}
                     pagination={{
-                        // simple: true,
+                        simple: true,
                         current: page,
                         total: totalData,
                         pageSize: perPage,
