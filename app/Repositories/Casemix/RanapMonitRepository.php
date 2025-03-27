@@ -89,6 +89,8 @@ class RanapMonitRepository
                 }
             }
 
+            $data_detail->TOTAL_BILL = get_total_bill($data_detail->FTNO_TRANSAKSI);
+
             return $data_detail;
         });
     }

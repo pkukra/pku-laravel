@@ -77,3 +77,24 @@ if (!function_exists('get_tgl_keluar_inap')) {
             ->value('PRWITGL_KELUAR');
     }
 }
+
+if (!function_exists('get_total_bill')) {
+    function get_total_bill($kode_reg)
+    {
+        $bills = DB::connection('sqlsrv')
+            ->table('TRANSAKSIPASIENINAPD')
+            ->select('FDTQTY', 'FDTHARGA')
+            ->where('FDTNO_TRANSAKSI', $kode_reg)
+            ->where('FDTJENISTRANSAKSI', "DB")
+            ->get();
+
+        $total = 0;
+        foreach ($bills as $bill) {
+            $total += $bill->FDTQTY * $bill->FDTHARGA;
+        }
+        return $total;
+    }
+}
+
+
+// TRANSAKSIPASIENINAPD

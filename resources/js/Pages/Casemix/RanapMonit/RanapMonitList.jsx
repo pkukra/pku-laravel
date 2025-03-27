@@ -11,18 +11,20 @@ import {
     Row,
     Col,
     Select,
+    Typography,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
-import ReactQuill from "react-quill";
+// import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
 import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
-import RanapMonitListModalBilling from "./RanapMonitListModalBilling";
 import ModalCPPT from "./ModalCPPT";
+
+const Textarea = Input.TextArea;
 
 export default function Index({ auth, bangsal }) {
     const columns = [
@@ -49,6 +51,7 @@ export default function Index({ auth, bangsal }) {
             dataIndex: "DPJP",
             key: "DPJP",
             fixed: "left",
+            width:200
         },
         {
             title: "Tanggal Masuk",
@@ -153,7 +156,10 @@ export default function Index({ auth, bangsal }) {
                         diagnosaData[kodeReg]
                             .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
                             .join(" - ")}
-                    <RanapMonitListModalDiagnosa pasien={record} reFecthListData={fetchData} />
+                    <RanapMonitListModalDiagnosa
+                        pasien={record}
+                        reFecthListData={fetchData}
+                    />
                 </>
             ),
         },
@@ -161,24 +167,17 @@ export default function Index({ auth, bangsal }) {
             title: "Kemungkinan Kode Prosedur",
             dataIndex: "FTNO_TRANSAKSI",
             key: "KODE_PROCEDURE",
+            width:200,
             render: (kodeReg, record) => (
                 <>
                     {prosedurData[kodeReg] &&
                         prosedurData[kodeReg]
                             .map((procedure) => procedure?.MRTKD_TINDAKAN)
                             .join(" - ")}
-                    <RanapMonitListModalProcedure pasien={record} reFecthListData={fetchData} />
-                </>
-            ),
-        },
-        {
-            title: "Billing Sementara",
-            dataIndex: "BILLING_TEMP",
-            key: "BILLING_TEMP",
-            render: (text, record) => (
-                <>
-                    <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <RanapMonitListModalBilling pasien={record} />
+                    <RanapMonitListModalProcedure
+                        pasien={record}
+                        reFecthListData={fetchData}
+                    />
                 </>
             ),
         },
@@ -186,21 +185,70 @@ export default function Index({ auth, bangsal }) {
             title: "Perkiraan Klaim",
             dataIndex: "klaim",
             key: "klaim",
-            render: (text, record) => (
-                <>
-                    {!naikKelasSanitize(record?.RAWAT_NAIK) &&
-                        record?.FTTARIPINACBG}
+            align: "right",
+            render: (text, record) => {
+                let perkiraanKlaim = !naikKelasSanitize(record?.RAWAT_NAIK)
+                    ? record?.FTTARIPINACBG
+                    : naikKelasSanitize(record?.RAWAT_NAIK) == 1
+                    ? record?.FTTARIPINACBG1
+                    : naikKelasSanitize(record?.RAWAT_NAIK) == 2
+                    ? record?.FTTARIPINACBG2
+                    : naikKelasSanitize(record?.RAWAT_NAIK) == "vip"
+                    ? record?.FTTARIPINACBG1
+                    : null; // Jika tidak ada klaim, set null
 
-                    {naikKelasSanitize(record?.RAWAT_NAIK) == 1 &&
-                        record?.FTTARIPINACBG1}
+                return (
+                    <>
+                        {perkiraanKlaim !== null
+                            ? Math.abs(perkiraanKlaim).toLocaleString()
+                            : "-"}
+                    </>
+                );
+            },
+        },
+        {
+            title: "Billing Sementara",
+            dataIndex: "TOTAL_BILL",
+            key: "TOTAL_BILL",
+            align: "right",
+            render: (text, record) => {
+                let totalBill = parseFloat(text) || 0;
+                let perkiraanKlaim = !naikKelasSanitize(record?.RAWAT_NAIK)
+                    ? record?.FTTARIPINACBG
+                    : naikKelasSanitize(record?.RAWAT_NAIK) == 1
+                    ? record?.FTTARIPINACBG1
+                    : naikKelasSanitize(record?.RAWAT_NAIK) == 2
+                    ? record?.FTTARIPINACBG2
+                    : naikKelasSanitize(record?.RAWAT_NAIK) == "vip"
+                    ? record?.FTTARIPINACBG1
+                    : null; // Jika bukan BPJS, perkiraan klaim null
 
-                    {naikKelasSanitize(record?.RAWAT_NAIK) == 2 &&
-                        record?.FTTARIPINACBG2}
+                // Jika perkiraan klaim null, tidak perlu hitung selisih
+                if (perkiraanKlaim === null) {
+                    return (
+                        <Typography.Text>
+                            <div dangerouslySetInnerHTML={{ __html: text }} />
+                        </Typography.Text>
+                    );
+                }
 
-                    {naikKelasSanitize(record?.RAWAT_NAIK) == "vip" &&
-                        record?.FTTARIPINACBG1}
-                </>
-            ),
+                let selisih = totalBill - perkiraanKlaim;
+                let color = selisih > 0 ? "red" : "green"; // Rugi (merah) jika totalBill lebih besar
+
+                return (
+                    <div>
+                        <Typography.Text style={{ color }}>
+                            {Math.abs(text).toLocaleString()}
+                        </Typography.Text>
+                        <br />
+                        <Typography.Text style={{ color }}>
+                            {selisih >= 0
+                                ? `-${selisih.toLocaleString()}`
+                                : `+${Math.abs(selisih).toLocaleString()}`}
+                        </Typography.Text>
+                    </div>
+                );
+            },
         },
         {
             title: "Konfirmasi Koder",
@@ -310,8 +358,9 @@ export default function Index({ auth, bangsal }) {
     const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
     const [modalUpdateValue, setModalUpdateValue] = useState(null);
 
-    const [diagnosaData, setDiagnosaData] = useState({});
-    const [prosedurData, setProsedurData] = useState({});
+    const [diagnosaData, setDiagnosaData] = useState([]);
+    const [prosedurData, setProsedurData] = useState([]);
+    const [abortController, setAbortController] = useState(null);
 
     const handleOpenModal = (param) => {
         setModalUpdateRecord(param?.data_record);
@@ -322,6 +371,15 @@ export default function Index({ auth, bangsal }) {
     };
 
     const fetchDiagnosaProsedur = async (pasienList) => {
+        // Batalkan request sebelumnya jika ada
+        if (abortController) {
+            abortController.abort();
+        }
+
+        // Buat AbortController baru
+        const controller = new AbortController();
+        setAbortController(controller);
+
         await Promise.allSettled(
             pasienList.map(async (pasien) => {
                 try {
@@ -329,12 +387,14 @@ export default function Index({ auth, bangsal }) {
                         axios.get(
                             route("casemix.ranap-monit.list_diagnosa", {
                                 kode_reg: pasien.FTNO_TRANSAKSI,
-                            })
+                            }),
+                            { signal: controller.signal }
                         ),
                         axios.get(
                             route("casemix.ranap-monit.list_procedure", {
                                 kode_reg: pasien.FTNO_TRANSAKSI,
-                            })
+                            }),
+                            { signal: controller.signal }
                         ),
                     ]);
 
@@ -349,10 +409,14 @@ export default function Index({ auth, bangsal }) {
                         [pasien.FTNO_TRANSAKSI]: prosedurRes.data?.data || [],
                     }));
                 } catch (error) {
-                    console.error(
-                        `Error fetching data for ${pasien.FTNO_TRANSAKSI}`,
-                        error
-                    );
+                    if (axios.isCancel(error)) {
+                        console.log("Fetch dibatalkan:", pasien.FTNO_TRANSAKSI);
+                    } else {
+                        console.error(
+                            `Error fetching data for ${pasien.FTNO_TRANSAKSI}`,
+                            error
+                        );
+                    }
                 }
             })
         );
@@ -413,6 +477,7 @@ export default function Index({ auth, bangsal }) {
 
     const fetchData = async () => {
         setLoadingFetchData(true);
+
         try {
             const [year, month] = selectedYearMonth.split("-");
             const { data } = await axios.get(
@@ -495,7 +560,7 @@ export default function Index({ auth, bangsal }) {
                     <Col span={3}>
                         <Select
                             defaultValue={selectedStatusRawat}
-                            style={{ width: 150 }}
+                            style={{ width: 200 }}
                             onChange={(value) => setSelectedStatusRawat(value)}
                             options={[
                                 { value: "dirawat", label: "Dirawat" },
@@ -510,7 +575,7 @@ export default function Index({ auth, bangsal }) {
                     <Col span={3}>
                         <Select
                             value={selectedBangsal}
-                            style={{ width: 150 }}
+                            style={{ width: 200 }}
                             options={optionsBangsal}
                             onChange={(value) => setSelectedBangsal(value)}
                         />
@@ -586,10 +651,10 @@ export default function Index({ auth, bangsal }) {
                         onChange={(e) => setModalUpdateValue(e.target.value)}
                     />
                 ) : (
-                    <ReactQuill
+                    <Textarea
                         theme="snow"
                         value={modalUpdateValue}
-                        onChange={setModalUpdateValue}
+                        onChange={(e) => setModalUpdateValue(e.target.value)} // Update the state with the new value
                     />
                 )}
             </Modal>
