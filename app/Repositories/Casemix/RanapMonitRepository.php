@@ -19,7 +19,7 @@ class RanapMonitRepository
 
         // Ambil dari cache atau eksekusi query jika belum ada
         $data = Cache::remember($cacheKey, 300, function () use ($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, $countOnly) {
-            $query = DB::connection('sqlsrv')
+            $query = DB::connection('sqlsrvsimrs')
                 ->table('TRANSAKSIPASIENINAP AS TPI')
                 ->join('PASIENRAWATINAP AS PRI', function ($join) {
                     $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
@@ -105,7 +105,7 @@ class RanapMonitRepository
         ];
 
         try {
-            $pasien = DB::connection('sqlsrv')
+            $pasien = DB::connection('sqlsrvsimrs')
                 ->table('PASIENRAWATINAP AS A')
                 ->where('A.PRWINO_TRANSAKSI', $no_transaksi)
                 ->first();
@@ -116,7 +116,7 @@ class RanapMonitRepository
             }
 
             // Update atau insert data
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('CASEMIX_RANAP')
                 ->updateOrInsert(['NO_TRANSAKSI' => $no_transaksi], $data);
 
@@ -135,7 +135,7 @@ class RanapMonitRepository
      */
     public function getMrDiagnosaByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_DIAGNOSA')
             ->select('MR_DIAGNOSA.*')
             ->where('MR_DIAGNOSA.MRDNO_TRANSAKSI', $no_transaksi)
@@ -150,7 +150,7 @@ class RanapMonitRepository
      */
     public function getDiagnosaByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->join('PENYAKIT', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'PENYAKIT.KD_PENYAKIT')
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
@@ -168,7 +168,7 @@ class RanapMonitRepository
     public function deleteDiagnosaById($id)
     {
         try {
-            $deleted = DB::connection('sqlsrv')
+            $deleted = DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
                 ->where('ID', $id)
                 ->delete();
@@ -193,7 +193,7 @@ class RanapMonitRepository
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
 
         // Get the latest MRPURUT_MASUK value to generate next
-        $lastUrutMasuk = DB::connection('sqlsrv')
+        $lastUrutMasuk = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->where('MRPNO_TRANSAKSI', $no_transaksikj)
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'desc')
@@ -203,7 +203,7 @@ class RanapMonitRepository
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
         try {
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
                 ->insert([
                     'MRPKD_PENYAKIT' => $data['icd10_code'],
@@ -241,7 +241,7 @@ class RanapMonitRepository
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
 
         // Get the latest MRTURUT_MASUK value to generate next
-        $lastUrutMasuk = DB::connection('sqlsrv')
+        $lastUrutMasuk = DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
             ->where('MRTNOTRANSAKSI', $no_transaksikj)
             ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'desc')
@@ -251,7 +251,7 @@ class RanapMonitRepository
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
         try {
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('MR_TINDAKAN')
                 ->insert([
                     'MRTKD_TINDAKAN' => $data['icd9_code'],
@@ -280,7 +280,7 @@ class RanapMonitRepository
      */
     public function getProcedureByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
             ->select('MR_TINDAKAN.*', 'MR_ICD9.FMI9KETERANGAN')
             ->join('MR_ICD9', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'MR_ICD9.FMI9KODE')
@@ -298,7 +298,7 @@ class RanapMonitRepository
     public function deleteProcedureById($id)
     {
         try {
-            $deleted = DB::connection('sqlsrv')
+            $deleted = DB::connection('sqlsrvsimrs')
                 ->table('MR_TINDAKAN')
                 ->where('ID', $id)
                 ->delete();
@@ -318,7 +318,7 @@ class RanapMonitRepository
      */
     public function getListBillingTempByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('CASEMIX_BILLING_TEMP')
             ->orderBy('CREATED_AT', 'ASC')
             ->select('*')
@@ -337,7 +337,7 @@ class RanapMonitRepository
         $user = Auth::user();
 
         try {
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('CASEMIX_BILLING_TEMP')
                 ->insert([
                     'NO_TRANSAKSI' => $data['NO_TRANSAKSI'],
@@ -362,7 +362,7 @@ class RanapMonitRepository
     public function deleteBillingTempById($id)
     {
         try {
-            $deleted = DB::connection('sqlsrv')
+            $deleted = DB::connection('sqlsrvsimrs')
                 ->table('CASEMIX_BILLING_TEMP')
                 ->where('ID', $id)
                 ->delete();
@@ -382,7 +382,7 @@ class RanapMonitRepository
      */
     public function getCPPTByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('PKU.dbo.TAC_RI_CPPT as a')
             ->selectRaw("
             a.*, 
@@ -409,7 +409,7 @@ class RanapMonitRepository
      */
     public function getListKamarIndukRanap()
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('KAMAR_INDUK')
             ->select('*')
             ->where('IS_BANGSAL', 1)

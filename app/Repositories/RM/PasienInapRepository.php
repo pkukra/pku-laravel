@@ -17,7 +17,7 @@ class PasienInapRepository
      */
     public function getPasienInaps($no_rm)
     {
-        $data =  DB::connection('sqlsrv')
+        $data =  DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAP AS TPI')
             ->join('PASIENRAWATINAP AS PRI', function ($join) {
                 $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
@@ -53,7 +53,7 @@ class PasienInapRepository
      */
     public function countPasienInap()
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
             ->count();
     }
@@ -66,7 +66,7 @@ class PasienInapRepository
      */
     public function getPasienInapDetail($kode_reg)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('PASIENRAWATINAP AS PRI')
             ->leftJoin('PASIEN', 'PRI.PRWIKD_PASIEN', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PRI.PRWIKD_DOKTER', '=', 'DOKTER.FMDDOKTER_ID')
@@ -99,7 +99,7 @@ class PasienInapRepository
     public function getSepPasienInap($kode_reg)
     {
         try {
-            return DB::connection('sqlsrv')
+            return DB::connection('sqlsrvsimrs')
                 ->table('BPJS_SEP')
                 ->select('FMNOSEP', 'FMKODEKELAS')
                 ->where('BPJS_SEP.FMNOTRANSAKSI', $kode_reg)
@@ -161,10 +161,10 @@ class PasienInapRepository
         }
 
         // Mulai transaksi database
-        DB::connection('sqlsrv')->beginTransaction();
+        DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
             // Cari apakah salah satu FMNOTRANSAKSI sudah ada
-            $existingRecord = DB::connection('sqlsrv')
+            $existingRecord = DB::connection('sqlsrvsimrs')
                 ->table('BPJS_SEP')
                 ->where('FMNOTRANSAKSI', $kode_reg)
                 ->first();
@@ -180,7 +180,7 @@ class PasienInapRepository
 
             if ($existingRecord) {
                 // Jika sudah ada, update berdasarkan FMNOTRANSAKSI yang ditemukan
-                DB::connection('sqlsrv')
+                DB::connection('sqlsrvsimrs')
                     ->table('BPJS_SEP')
                     ->where('FMNOTRANSAKSI', $existingRecord->FMNOTRANSAKSI)
                     ->update([
@@ -199,7 +199,7 @@ class PasienInapRepository
                     ]);
             } else {
                 // Jika tidak ada, lakukan insert
-                DB::connection('sqlsrv')
+                DB::connection('sqlsrvsimrs')
                     ->table('BPJS_SEP')
                     ->insert([
                         'FMNOTRANSAKSI'   => $kode_reg,
@@ -219,14 +219,14 @@ class PasienInapRepository
             }
 
             // Commit transaksi
-            DB::connection('sqlsrv')->commit();
+            DB::connection('sqlsrvsimrs')->commit();
 
             return [
                 "status" => "ok",
                 "message" => "Update Nomer SEP inap berhasil"
             ];
         } catch (\Exception $e) {
-            DB::connection('sqlsrv')->rollBack();
+            DB::connection('sqlsrvsimrs')->rollBack();
             Log::error("Error update BPJS_SEP inap: " . $e->getMessage());
 
             return [
@@ -245,7 +245,7 @@ class PasienInapRepository
     public function getDiagnosaUtamaPasienInap($kode_reg)
     {
         try {
-            return DB::connection('sqlsrv')
+            return DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
                 ->select('MRPKD_PENYAKIT')
                 ->where('MRPSTAT_DIAG', 5)
@@ -265,7 +265,7 @@ class PasienInapRepository
      */
     public function getKeadaanKeluarByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_KEMATIAN AS a')
             ->join('MR_KEADAAN_KELUAR_RS AS b', 'a.MRKKEADAAN_KELUAR', '=', 'b.FMKKRSKODE')
             ->select('a.*', 'b.FMKKRSKETERANGAN')
@@ -281,7 +281,7 @@ class PasienInapRepository
      */
     public function getKunjunganPasienByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('KUNJUNGANPASIEN AS a')
             ->select('a.*')
             ->where('a.KPNO_TRANSAKSI', $no_transaksi)
@@ -296,7 +296,7 @@ class PasienInapRepository
      */
     public function getDiagnosaByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->join('PENYAKIT', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'PENYAKIT.KD_PENYAKIT')
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
@@ -314,7 +314,7 @@ class PasienInapRepository
      */
     public function searchPenyakit($searchTerm, $page)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('PENYAKIT')
             ->select('PENYAKIT.*')
             ->when($searchTerm, function ($query) use ($searchTerm) {
@@ -339,7 +339,7 @@ class PasienInapRepository
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
 
         // Get the latest MRPURUT_MASUK value to generate next
-        $lastUrutMasuk = DB::connection('sqlsrv')
+        $lastUrutMasuk = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->where('MRPNO_TRANSAKSI', $no_transaksikj)
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'desc')
@@ -349,7 +349,7 @@ class PasienInapRepository
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
         try {
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
                 ->insert([
                     'MRPKD_PENYAKIT' => $data['icd10_code'],
@@ -383,7 +383,7 @@ class PasienInapRepository
     public function deleteDiagnosaById($id)
     {
         try {
-            $deleted = DB::connection('sqlsrv')
+            $deleted = DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
                 ->where('ID', $id)
                 ->delete();
@@ -403,7 +403,7 @@ class PasienInapRepository
      */
     public function getProcedureByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
             ->select('MR_TINDAKAN.*', 'MR_ICD9.FMI9KETERANGAN')
             ->join('MR_ICD9', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'MR_ICD9.FMI9KODE')
@@ -421,7 +421,7 @@ class PasienInapRepository
      */
     public function searchProcedure($searchTerm, $page)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_ICD9')
             ->select('MR_ICD9.*')
             ->when($searchTerm, function ($query) use ($searchTerm) {
@@ -446,7 +446,7 @@ class PasienInapRepository
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
 
         // Get the latest MRTURUT_MASUK value to generate next
-        $lastUrutMasuk = DB::connection('sqlsrv')
+        $lastUrutMasuk = DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
             ->where('MRTNOTRANSAKSI', $no_transaksikj)
             ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'desc')
@@ -456,7 +456,7 @@ class PasienInapRepository
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
         try {
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('MR_TINDAKAN')
                 ->insert([
                     'MRTKD_TINDAKAN' => $data['icd9_code'],
@@ -486,7 +486,7 @@ class PasienInapRepository
     public function deleteProcedureById($id)
     {
         try {
-            $deleted = DB::connection('sqlsrv')
+            $deleted = DB::connection('sqlsrvsimrs')
                 ->table('MR_TINDAKAN')
                 ->where('ID', $id)
                 ->delete();
@@ -507,7 +507,7 @@ class PasienInapRepository
      */
     public function getMrDiagnosaByTransaksi($no_transaksi)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_DIAGNOSA')
             ->select('MR_DIAGNOSA.*')
             ->where('MR_DIAGNOSA.MRDNO_TRANSAKSI', $no_transaksi)
@@ -525,7 +525,7 @@ class PasienInapRepository
     {
         try {
             // Update the MRCATATANKHUSUS field for the given no_transaksi
-            $updated = DB::connection('sqlsrv')
+            $updated = DB::connection('sqlsrvsimrs')
                 ->table('MR_DIAGNOSA')
                 ->where('MRDNO_TRANSAKSI', $no_transaksi)
                 ->update(['MRCATATANKHUSUS' => $catatan_khusus]);
@@ -560,7 +560,7 @@ class PasienInapRepository
      */
     public function getCaraMasukBPJS()
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_CARA_MASUK_BPJS')
             ->select('*')
             ->orderBy('ORDER')
@@ -574,7 +574,7 @@ class PasienInapRepository
      */
     public function getKeadaanKeluarRS()
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_KEADAAN_KELUAR_RS')
             ->orderBy('FMKKRSKODE_BPJS')
             ->select('*')
@@ -588,7 +588,7 @@ class PasienInapRepository
      */
     public function getRSRujukan()
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('MR_RUJUKAN_KELUAR')
             ->select('*')
             ->get();
@@ -600,7 +600,7 @@ class PasienInapRepository
             // Jika keadaan_keluar selain 1, KPRUJUKLUAR harus kosong
             $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : null;
 
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('PASIENRAWATINAP')
                 ->where('PRWINO_TRANSAKSI', $data['no_transaksi'])
                 ->update([
@@ -618,14 +618,14 @@ class PasienInapRepository
             // Jika keadaan_keluar adalah 4 atau 3, gunakan sebab_kematian, selain itu kosongkan
             $arrUpdate['MRKSEBAB'] = in_array($data['keadaan_keluar'], [3, 4]) ? ($data['sebab_kematian'] ?? "") : "";
 
-            $exists = DB::connection('sqlsrv')
+            $exists = DB::connection('sqlsrvsimrs')
                 ->table('MR_KEMATIAN')
                 ->where('MRKNO_TRANSAKSI', $data['no_transaksi'])
                 ->exists();
 
             if ($exists) {
                 // Jika sudah ada, lakukan update
-                DB::connection('sqlsrv')
+                DB::connection('sqlsrvsimrs')
                     ->table('MR_KEMATIAN')
                     ->where('MRKNO_TRANSAKSI', $data['no_transaksi'])
                     ->update($arrUpdate);
@@ -642,7 +642,7 @@ class PasienInapRepository
                     'created_by' => $data['email'],
                 ]);
 
-                DB::connection('sqlsrv')
+                DB::connection('sqlsrvsimrs')
                     ->table('MR_KEMATIAN')
                     ->insert($arrInsert);
             }
@@ -662,7 +662,7 @@ class PasienInapRepository
      */
     public function getResumeByTransaksi($kode_reg)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('PKU.dbo.TAC_RI_MEDIS')
             ->select('*')
             ->where('FS_KD_REG', $kode_reg)
@@ -679,7 +679,7 @@ class PasienInapRepository
     public function getListHasilRadiologiByTransaksi($kode_reg_kj)
     {
         $hasil = [];
-        $transactions = DB::connection('sqlsrv')
+        $transactions = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAPD AS A')
             ->select('A.*')
             ->where('A.FDTNO_TRANSAKSI', $kode_reg_kj)
@@ -687,7 +687,7 @@ class PasienInapRepository
             ->get();
 
         foreach ($transactions as $transaction) {
-            $hasil[] = DB::connection('sqlsrv')
+            $hasil[] = DB::connection('sqlsrvsimrs')
                 ->table('RAD_HASIL AS rad')
                 ->select('rad.*')
                 ->where('rad.MRHNO_TRANSAKSI', $transaction->FDTNO_FAKTUR)
@@ -704,7 +704,7 @@ class PasienInapRepository
      */
     public function getListBerkasRMByRg($kode_reg)
     {
-        return DB::connection('sqlsrv')
+        return DB::connection('sqlsrvsimrs')
             ->table('PKU.dbo.TAC_RM_BERKAS')
             ->select('*')
             ->where('FS_KD_REG', $kode_reg)

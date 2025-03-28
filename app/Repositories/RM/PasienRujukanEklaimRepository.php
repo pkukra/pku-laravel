@@ -303,7 +303,7 @@ class PasienRujukanEklaimRepository
     public function allTransactionsBySep($no_sep)
     {
         try {
-            $detailTransaksi = DB::connection('sqlsrv')
+            $detailTransaksi = DB::connection('sqlsrvsimrs')
                 ->table('BPJS_SEP AS sep')
                 ->leftJoin('PASIEN_RUJUKAN AS pr', function ($join) use ($no_sep) {
                     $join->on('pr.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
@@ -370,7 +370,7 @@ class PasienRujukanEklaimRepository
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
             // mencari list semua transaksi selain kredit
             // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
-            $transaksiPasien = DB::connection('sqlsrv')
+            $transaksiPasien = DB::connection('sqlsrvsimrs')
                 ->table('TRANSAKSIPASIEN AS a')
                 ->leftJoin('TRANSAKSIPASIEND AS b', 'a.FTNO_TRANSAKSI', '=', 'b.FDTNO_TRANSAKSI')
                 ->leftJoin('PRODUK AS p', 'p.FMPPRODUK_ID', '=', 'b.FDTKD_PRODUK')
@@ -442,7 +442,7 @@ class PasienRujukanEklaimRepository
                 }
             }
 
-            $fjinkotaData = DB::connection('sqlsrv')
+            $fjinkotaData = DB::connection('sqlsrvsimrs')
                 ->table('FJINKOTA')
                 ->where('FHFJNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
                 ->where('FHFJKRONIS', '=', 0)
@@ -471,7 +471,7 @@ class PasienRujukanEklaimRepository
     {
         $diagnoses_array = [];
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $diagnosa = DB::connection('sqlsrv')
+            $diagnosa = DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
                 ->where('MRPNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
                 ->pluck('MRPKD_PENYAKIT') // Mengambil hanya kolom MRPKD_PENYAKIT sebagai array
@@ -493,7 +493,7 @@ class PasienRujukanEklaimRepository
     {
         $tindakan_array = [];
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $tindakan = DB::connection('sqlsrv')
+            $tindakan = DB::connection('sqlsrvsimrs')
                 ->table('MR_TINDAKAN')
                 ->where('MRTNOTRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
                 ->pluck('MRTKD_TINDAKAN') // Mengambil hanya kolom MRTKD_TINDAKAN sebagai array
@@ -512,7 +512,7 @@ class PasienRujukanEklaimRepository
      */
     public function getBloodPressure($kode_reg)
     {
-        $vitalSign = DB::connection('sqlsrv')
+        $vitalSign = DB::connection('sqlsrvsimrs')
             ->table('PKU.dbo.TAC_RJ_VITAL_SIGN')
             ->select('FS_TD as sistole', 'FS_TD2 as diastole')
             ->where('FS_KD_REG', $kode_reg)

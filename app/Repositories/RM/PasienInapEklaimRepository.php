@@ -257,7 +257,7 @@ class PasienInapEklaimRepository
         }
 
         try {
-            DB::connection('sqlsrv')
+            DB::connection('sqlsrvsimrs')
                 ->table('TRANSAKSIPASIENINAP')
                 ->where('FTNO_TRANSAKSI', $transaksi_utama->PRWINO_TRANSAKSI)
                 ->update([
@@ -343,7 +343,7 @@ class PasienInapEklaimRepository
         $response = sendRequest($key, $data);
         if ($response->response->metadata->code == 200) {
             try {
-                DB::connection('sqlsrv')
+                DB::connection('sqlsrvsimrs')
                     ->table('TRANSAKSIPASIENINAP')
                     ->where('FTNO_TRANSAKSI', $kode_reg)
                     ->update([
@@ -418,7 +418,7 @@ class PasienInapEklaimRepository
     public function getDetailTransactionBySep($no_sep)
     {
         try {
-            $detailTransaksi = DB::connection('sqlsrv')
+            $detailTransaksi = DB::connection('sqlsrvsimrs')
                 ->table('BPJS_SEP AS sep')
                 ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'TPI.FTNO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
                 ->leftJoin('PASIEN AS p', 'TPI.FTKD_PASIEN', '=', 'p.KD_PASIEN')
@@ -440,7 +440,7 @@ class PasienInapEklaimRepository
                 ->where('sep.FMNOSEP', $no_sep)
                 ->first();
             if ($detailTransaksi) {
-                $detail_pasien_rawat_inap = DB::connection('sqlsrv')
+                $detail_pasien_rawat_inap = DB::connection('sqlsrvsimrs')
                     ->table('PASIENRAWATINAP AS PRI')
                     ->leftJoin('DOKTER AS dr', 'PRI.PRWIKD_DOKTER', '=', 'dr.FMDDOKTER_ID')
                     ->where('PRI.PRWINO_TRANSAKSI', $detailTransaksi->FTNO_TRANSAKSI)
@@ -503,7 +503,7 @@ class PasienInapEklaimRepository
 
         // mencari list semua transaksi selain kredit
         // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
-        $transaksiPasien = DB::connection('sqlsrv')
+        $transaksiPasien = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAPD AS a')
             ->leftJoin('PRODUK AS p', 'p.FMPPRODUK_ID', '=', 'a.FDTKD_PRODUK')
             ->leftJoin('PRODUK_UNIT AS pu', 'p.FMPUNITPRODUK', '=', 'pu.FTUKODE')
@@ -585,7 +585,7 @@ class PasienInapEklaimRepository
             }
         }
 
-        $pendukung = DB::connection('sqlsrv')
+        $pendukung = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAPD')
             ->where('FDTNO_TRANSAKSI', trim($pasien_inap->PRWINO_TRANSAKSI))
             ->whereRaw("LEFT(FDTNO_FAKTUR, 3) = 'FRO'")
@@ -614,7 +614,7 @@ class PasienInapEklaimRepository
     public function getAllDiagnosa($pasien_inap)
     {
         $diagnoses_array = [];
-        $diagnosa = DB::connection('sqlsrv')
+        $diagnosa = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->where('MRPNO_TRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI)
             ->pluck('MRPKD_PENYAKIT') // Mengambil hanya kolom MRPKD_PENYAKIT sebagai array
@@ -634,7 +634,7 @@ class PasienInapEklaimRepository
     public function getAllProcedure($pasien_inap)
     {
         $tindakan_array = [];
-        $tindakan = DB::connection('sqlsrv')
+        $tindakan = DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
             ->where('MRTNOTRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI)
             ->pluck('MRTKD_TINDAKAN') // Mengambil hanya kolom MRTKD_TINDAKAN sebagai array
@@ -652,7 +652,7 @@ class PasienInapEklaimRepository
      */
     public function getBloodPressure($kode_reg)
     {
-        $vitalSign = DB::connection('sqlsrv')
+        $vitalSign = DB::connection('sqlsrvsimrs')
             ->table('PKU.dbo.TAB_PX_PULANG_RESUME')
             ->select('FS_TD')
             ->where('FS_KD_REG', $kode_reg)
