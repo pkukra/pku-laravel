@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Bpjs\Bridging\Vclaim\BridgeVclaim;
 use App\Repositories\RM\RMAuditTrail;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class PasienRujukanRepository
 {
@@ -131,6 +133,7 @@ class PasienRujukanRepository
     public function updateNomerSepPasienRujukan($kode_reg, $kode_reg_kj, $no_rm, $new_sep, $kode_poli, $dpjp)
     {
         $bridging = new BridgeVclaim();
+        $user = Auth::user();
 
         try {
             $endpoint = 'SEP/' . $new_sep;
@@ -230,10 +233,24 @@ class PasienRujukanRepository
                     ]);
             }
 
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $kode_reg_kj,
+                "action_id" => 6,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data" => ["new_sep" => $new_sep],
+            ]);
+            if (!$isrecorded) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return [
+                    "status" => "nok",
+                    "message" => "Terjadi kesalahan saat memperbarui data SEP"
+                ];
+            }
+
             // Commit transaksi
             DB::connection('sqlsrvsimrs')->commit();
-            $this->auditTrail->insert([]);
-
             return [
                 "status" => "ok",
                 "message" => "Update Nomer SEP berhasil"

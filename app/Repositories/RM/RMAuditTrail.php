@@ -20,11 +20,15 @@ class RMAuditTrail
                 ->insert([
                     "object_id" => $data['object_id'],
                     "action_id" => $data['action_id'],
+                    "user_email" => $data['user_email'],
                     "user_id" => $data['user_id'],
+                    "created_at" => $data['created_at'],
                     "data" => json_encode($data['data']),
                 ]);
+            return true;
         } catch (\Exception $e) {
             Log::error('RMAuditTrail insert err: ' . $e->getMessage());
+            return false;
         }
     }
 }

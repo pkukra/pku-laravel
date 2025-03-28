@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('audit_trail_rm', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('object_id')->nullable();
+            $table->string('object_id');
             $table->foreignId('action_id')->constrained('audit_trail_rm_actions');
-            $table->foreignId('user_email');
-            $table->foreignId('user_id')->nullable()->constrained('users');
-            $table->text('data')->nullable();
+            $table->foreignId('user_id')->constrained('users');
+            $table->string('user_email');
+            $table->text('data');
             $table->timestamps();
         });
     }
