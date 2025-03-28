@@ -343,8 +343,9 @@ class PasienRujukanRepository
      */
     public function saveDiagnosa($data)
     {
+        $user = Auth::user();
         $no_transaksikj = $data['no_transaksikj'];
-        $now = now();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
 
         // Get the latest MRPURUT_MASUK value to generate next
@@ -357,29 +358,46 @@ class PasienRujukanRepository
 
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
+        $data_to_save = [
+            'MRPKD_PENYAKIT' => $data['icd10_code'],
+            'MRPNO_TRANSAKSI' => $no_transaksikj,
+            'MRPKD_PASIEN' => $data['no_rm'],
+            'MRPKD_UNIT' => $data['kd_unit'],
+            'MRPTGL_MASUK' => $tgl_masuk,
+            'MRPURUT_MASUK' => $no_urut_masuk,
+            'MRPJENIS' => 'RJ',
+            'MRPSTAT_DIAG' => $data['status_diagnosa'],
+            'MRPKASUS' => $data['kasus'],
+            'USER_ID' => $user->id,
+            'UPDATE_DT' => $now,
+        ];
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
             DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
-                ->insert([
-                    'MRPKD_PENYAKIT' => $data['icd10_code'],
-                    'MRPNO_TRANSAKSI' => $no_transaksikj,
-                    'MRPKD_PASIEN' => $data['no_rm'],
-                    'MRPKD_UNIT' => $data['kd_unit'],
-                    'MRPTGL_MASUK' => $tgl_masuk,
-                    'MRPURUT_MASUK' => $no_urut_masuk,
-                    'MRPJENIS' => 'RJ',
-                    'MRPSTAT_DIAG' => $data['status_diagnosa'],
-                    'MRPKASUS' => $data['kasus'],
-                    // 'STATUS_IMUN' => 1,
-                    // 'MRPIMUNKE' => 1,
-                    'USER_ID' => $data['user_id'], // Assuming user ID is passed
-                    'UPDATE_DT' => $now,
-                ]);
+                ->insert($data_to_save);
+
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $no_transaksikj,
+                "action_id" => 1,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
         } catch (\Exception $e) {
-            // Handle exception (logging, etc.)
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanRepository saveDiagnosa err: " . $e->getMessage());
             return false;
         }
 
+        DB::connection('sqlsrvsimrs')->commit();
         return true;
     }
 
