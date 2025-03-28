@@ -6,9 +6,17 @@ namespace App\Repositories\RM;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Bpjs\Bridging\Vclaim\BridgeVclaim;
+use App\Repositories\RM\RMAuditTrail;
 
 class PasienRujukanRepository
 {
+    protected $auditTrail;
+
+    public function __construct()
+    {
+        $this->auditTrail = new RMAuditTrail();
+    }
+
     /**
      * Get the list of pasien rujukan based on no_rm
      * 
@@ -224,6 +232,7 @@ class PasienRujukanRepository
 
             // Commit transaksi
             DB::connection('sqlsrvsimrs')->commit();
+            $this->auditTrail->insert([]);
 
             return [
                 "status" => "ok",
