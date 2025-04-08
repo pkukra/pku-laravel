@@ -10,5 +10,5 @@ export default defineConfig({
         }),
         react(),
     ],
-    base: "/pku-laravel/build"
+    base: '/pku-laravel/public/build/',
 });
