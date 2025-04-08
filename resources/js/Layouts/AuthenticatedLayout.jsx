@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, usePage } from "@inertiajs/react";
-import { UserOutlined, CodeOutlined, HomeOutlined } from "@ant-design/icons";
+import { UserOutlined, CodeOutlined, HomeOutlined, MonitorOutlined } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 
 const { Sider, Content, Footer } = Layout;
@@ -15,6 +15,11 @@ const items = [
         key: "rm", // Untuk `/rm` dan turunannya
         icon: <CodeOutlined />,
         label: <Link href={route("rm.index")}>RM Jalan</Link>,
+    },
+    {
+        key: "casemix", // Untuk `/casemix` dan turunannya
+        icon: <MonitorOutlined />,
+        label: <Link href={route("casemix.ranap-monit.list_pasien")}>Ranap Monitor</Link>,
     },
     {
         key: "profile", // Untuk `/profile`
