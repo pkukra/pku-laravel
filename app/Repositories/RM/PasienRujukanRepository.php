@@ -409,18 +409,76 @@ class PasienRujukanRepository
      */
     public function deleteDiagnosaById($id)
     {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
         try {
-            $deleted = DB::connection('sqlsrvsimrs')
+            // Mulai transaksi
+            $conn->beginTransaction();
+
+            $deletedDiagnosa = $conn
+                ->table('MR_PENYAKIT')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$deletedDiagnosa) {
+                return [
+                    "status" => "nok",
+                    "message" => "Data diagnosa tidak ditemukan"
+                ];
+            }
+
+            // Hapus data
+            $deleted = $conn
                 ->table('MR_PENYAKIT')
                 ->where('ID', $id)
                 ->delete();
 
-            return $deleted > 0;
+            if (!$deleted) {
+                $conn->rollBack();
+                return [
+                    "status" => "nok",
+                    "message" => "Data gagal dihapus"
+                ];
+            }
+
+            // Catat audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $deletedDiagnosa->MRPNO_TRANSAKSI,
+                "action_id"  => 2,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data"       => $deletedDiagnosa,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("PasienRujukanRepository deleteDiagnosaById error: gagal simpan audittrail" );
+                $conn->rollBack();
+                return [
+                    "status" => "nok",
+                    "message" => "Gagal mencatat audit trail"
+                ];
+            }
+
+            // Jika semuanya sukses
+            $conn->commit();
+
+            return [
+                "status" => "ok",
+                "message" => "Data berhasil dihapus"
+            ];
         } catch (\Exception $e) {
-            // Handle exception (logging, etc.)
-            return false;
+            $conn->rollBack(); // rollback jika ada error
+            Log::error("PasienRujukanRepository deleteDiagnosaById error: " . $e->getMessage());
+            return [
+                "status" => "nok",
+                "message" => "Terjadi kesalahan server"
+            ];
         }
     }
+
+
 
     /**
      * Get procedure penyakit by transaksi (MR_TINDAKAN)
