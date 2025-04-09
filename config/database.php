@@ -110,6 +110,21 @@ return [
             'prefix_indexes' => true,
             'trust_server_certificate' => env('DB_SQLSIMRS_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
+        
+        'sqlsrvemr' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DB_SQLSIMRS_URL'),
+            'host' => env('DB_SQLSIMRS_HOST', 'localhost'),
+            'port' => env('DB_SQLSIMRS_PORT', '1433'),
+            'database' => env('DB_SQLSIMRS_DATABASE', 'laravel'),
+            'username' => env('DB_SQLSIMRS_USERNAME', 'root'),
+            'password' => env('DB_SQLSIMRS_PASSWORD', ''),
+            'charset' => env('DB_SQLSIMRS_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'trust_server_certificate' => env('DB_SQLSIMRS_TRUST_SERVER_CERTIFICATE', 'false'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
