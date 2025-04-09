@@ -422,10 +422,7 @@ class PasienRujukanRepository
                 ->first();
 
             if (!$deletedDiagnosa) {
-                return [
-                    "status" => "nok",
-                    "message" => "Data diagnosa tidak ditemukan"
-                ];
+                return false;
             }
 
             // Hapus data
@@ -436,10 +433,7 @@ class PasienRujukanRepository
 
             if (!$deleted) {
                 $conn->rollBack();
-                return [
-                    "status" => "nok",
-                    "message" => "Data gagal dihapus"
-                ];
+                return false;
             }
 
             // Catat audit trail
@@ -453,28 +447,18 @@ class PasienRujukanRepository
             ]);
 
             if (!$auditSuccess) {
-                Log::error("PasienRujukanRepository deleteDiagnosaById error: gagal simpan audittrail" );
+                Log::error("PasienRujukanRepository deleteDiagnosaById error: gagal simpan audittrail");
                 $conn->rollBack();
-                return [
-                    "status" => "nok",
-                    "message" => "Gagal mencatat audit trail"
-                ];
+                return false;
             }
 
             // Jika semuanya sukses
             $conn->commit();
-
-            return [
-                "status" => "ok",
-                "message" => "Data berhasil dihapus"
-            ];
+            return true;
         } catch (\Exception $e) {
             $conn->rollBack(); // rollback jika ada error
             Log::error("PasienRujukanRepository deleteDiagnosaById error: " . $e->getMessage());
-            return [
-                "status" => "nok",
-                "message" => "Terjadi kesalahan server"
-            ];
+            return false;
         }
     }
 
@@ -527,8 +511,9 @@ class PasienRujukanRepository
     public function saveProcedure($data)
     {
         $no_transaksikj = $data['no_transaksikj'];
-        $now = now();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
+        $user = Auth::user();
 
         // Get the latest MRTURUT_MASUK value to generate next
         $lastUrutMasuk = DB::connection('sqlsrvsimrs')
@@ -540,22 +525,36 @@ class PasienRujukanRepository
 
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
+        $data_to_save = [
+            'MRTKD_TINDAKAN' => $data['icd9_code'],
+            'MRTNOTRANSAKSI' => $no_transaksikj,
+            'MRTKD_PASIEN' => $data['no_rm'],
+            'MRTKD_UNIT' => $data['kd_unit'],
+            'MRTTGL_MASUK' => $tgl_masuk,
+            'MRTURUT_MASUK' => $no_urut_masuk,
+            // 'USER_ID' => $data['user_id'], // Assuming user ID is passed
+            'MRTTGL_TINDAKAN' => $now,
+        ];
+
         try {
             DB::connection('sqlsrvsimrs')
                 ->table('MR_TINDAKAN')
-                ->insert([
-                    'MRTKD_TINDAKAN' => $data['icd9_code'],
-                    'MRTNOTRANSAKSI' => $no_transaksikj,
-                    'MRTKD_PASIEN' => $data['no_rm'],
-                    'MRTKD_UNIT' => $data['kd_unit'],
-                    'MRTTGL_MASUK' => $tgl_masuk,
-                    'MRTURUT_MASUK' => $no_urut_masuk,
-                    // 'USER_ID' => $data['user_id'], // Assuming user ID is passed
-                    'MRTTGL_TINDAKAN' => $now,
-                ]);
+                ->insert($data_to_save);
+
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $no_transaksikj,
+                "action_id" => 6,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data_to_save,
+            ]);
+            if (!$isrecorded) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
         } catch (\Exception $e) {
             Log::error("Error while saving procedure: " . $e->getMessage());
-
             return false;
         }
 
