@@ -64,7 +64,7 @@ export default function Index({ pasien }) {
 
     return (
         <>
-            <Card title="Resume Pasien" loading={loadingResume}>
+            <Card title="Assesmen Pasien" loading={loadingResume}>
                 <table
                     className="tw-table tw-table-xs"
                     style={{ width: "100%" }}

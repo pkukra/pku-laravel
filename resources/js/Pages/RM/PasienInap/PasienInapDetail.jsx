@@ -8,7 +8,7 @@ import PasienInapDetailProfile from "./PasienInapDetailProfile";
 import PasienInapDetailDiagnosaList from "./PasienInapDetailDiagnosaList";
 import PasienInapDetailProcedureList from "./PasienInapDetailProcedureList";
 import PasienInapDetailSEP from "./PasienInapDetailSEP";
-import PasienInapDetailResume from "./PasienInapDetailResume";
+import PasienInapDetailAssesmenAwal from "./PasienInapDetailAssesmenAwal";
 import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
 
@@ -41,7 +41,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={12}>
-                            <PasienInapDetailResume pasien={pasien} />
+                            <PasienInapDetailAssesmenAwal pasien={pasien} />
                         </Col>
                         <Col span={12}>
                             <PasienInapDetailBerkasPenunjang pasien={pasien} />
