@@ -481,4 +481,14 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingFinalProcess($kode_reg, $no_sep);
         return response()->json($data);
     }
+
+    // get_all_obat
+    public function get_all_obat($kode_reg)
+    {
+        $data = $this->pasienInapRepo->getListAllObatByTransaksi($kode_reg);
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 }

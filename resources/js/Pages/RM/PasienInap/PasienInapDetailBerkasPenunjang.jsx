@@ -4,6 +4,7 @@ import { Card, Button, Modal, Skeleton } from "antd";
 import PasienInapDetailHasilRadiologi from "./PasienInapDetailHasilRadiologi";
 import PasienInapDetailResumePulang from "./PasienInapDetailResumePulang";
 import PasienInapDetailCPPT from "./PasienInapDetailCPPT";
+import PasienInapDetailObat from "./PasienInapDetailObat";
 
 export default function Index({ pasien }) {
     const [modalOpen, setModalOpen] = useState(false);
@@ -53,6 +54,7 @@ export default function Index({ pasien }) {
 
                 <PasienInapDetailHasilRadiologi pasien={pasien} />
                 <PasienInapDetailCPPT pasien={pasien} />
+                <PasienInapDetailObat pasien={pasien} />
 
                 {listBerkasRM.map((berkas) => (
                     <Button

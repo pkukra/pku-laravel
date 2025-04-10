@@ -709,6 +709,33 @@ class PasienInapRepository
             ->select('*')
             ->where('FS_KD_REG', $kode_reg)
             ->orderByDesc('mdd')
-            ->get(); // Menggunakan get() untuk mengembalikan banyak hasil (array)
+            ->get();
+    }
+
+    /**
+     * Get list of receipt all no faktur by kode_reg
+     *
+     * @param string $kode_reg
+     * @return \Illuminate\Support\Collection
+     */
+    public function getListAllObatByTransaksi($kode_reg)
+    {
+        $inkota = DB::connection('sqlsrvsimrs')
+            ->table('FJINKOTA')
+            ->select('FHFJBUKTI_ID', 'FHFJDATE')
+            ->where('FHFJNO_TRANSAKSI', $kode_reg)
+            ->get();
+
+        return $inkota->map(function ($data_detail) {
+            $items = DB::connection('sqlsrvsimrs')
+                ->table('FJINKOTAD')
+                ->select('FDFJNOM', 'FDFJBRG_ID', 'FDFJBRGN', 'FDFJSATUAN', 'FDFJQTY')
+                ->where('FDFJBUKTI_ID', $data_detail->FHFJBUKTI_ID)
+                ->get();
+
+            $data_detail->items = $items;
+
+            return $data_detail;
+        });
     }
 }
