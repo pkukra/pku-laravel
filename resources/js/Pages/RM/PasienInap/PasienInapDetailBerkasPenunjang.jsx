@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, Modal, Skeleton } from "antd";
 
 import PasienInapDetailHasilRadiologi from "./PasienInapDetailHasilRadiologi";
+import PasienInapDetailResumePulang from "./PasienInapDetailResumePulang";
 import PasienInapDetailCPPT from "./PasienInapDetailCPPT";
 
 export default function Index({ pasien }) {
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalResumeOpen, setModalResumeOpen] = useState(false);
 
     const [modalBerkasRMOpen, setModalBerkasRMOpen] = useState(false);
     const [selectedBerkasRMFile, setSelectedBerkasRMFile] = useState(null);
@@ -44,10 +44,7 @@ export default function Index({ pasien }) {
     return (
         <>
             <Card title="Berkas Panunjang">
-                {/* Button untuk membuka modal Resume Pulang*/}
-                <Button type="primary" onClick={() => setModalResumeOpen(true)} style={{ marginRight: 2 }}>
-                    Resume
-                </Button>
+                <PasienInapDetailResumePulang pasien={pasien} />
                 
                 {/* Button untuk membuka modal hasil lab*/}
                 <Button type="primary" onClick={() => setModalOpen(true)}>
@@ -68,34 +65,6 @@ export default function Index({ pasien }) {
                     </Button>
                 ))}
 
-                {/* Modal Resume */}
-                <Modal
-                    title="Preview Resume Pulang"
-                    open={modalResumeOpen}
-                    onCancel={() => setModalResumeOpen(false)}
-                    footer={null}
-                    width={800}
-                >
-                    {/* Loading Indicator */}
-                    {loadingPdf && (
-                        <>
-                            <Skeleton active />
-                        </>
-                    )}
-
-                    {/* PDF Viewer */}
-                    <iframe
-                        src={`http://10.10.10.10/emr/index.php/rm/rawat_inap_no_auth/cetak_rm/${pasien?.PRWINO_TRANSAKSI}/2`}
-                        width="100%"
-                        height="600px"
-                        style={{
-                            border: "none",
-                            display: loadingPdf ? "none" : "block",
-                        }}
-                        onLoad={() => setLoadingPdf(false)} // Sembunyikan loading saat PDF selesai dimuat
-                    ></iframe>
-                </Modal>
-                
                 {/* Modal Ant Design */}
                 <Modal
                     title="Preview Hasil Lab"
