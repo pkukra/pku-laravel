@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Button, Modal, Skeleton } from "antd";
 
 import PasienRujukanDetailHasilRadiologi from "./PasienRujukanDetailHasilRadiologi";
+import PasienInapDetailObat from "./PasienInapDetailObat";
 
 export default function Index({ pasien }) {
     const [hasilLabUrl, setHasilLabUrl] = useState(null);
@@ -33,6 +34,8 @@ export default function Index({ pasien }) {
                     Hasil Lab
                 </Button>
 
+                <PasienInapDetailObat pasien={pasien} />
+                
                 <PasienRujukanDetailHasilRadiologi pasien={pasien} />
 
                 {/* Modal Ant Design */}
