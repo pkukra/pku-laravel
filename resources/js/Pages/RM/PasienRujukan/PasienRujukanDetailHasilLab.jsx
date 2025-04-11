@@ -3,6 +3,7 @@ import { Card, Button, Modal, Skeleton } from "antd";
 
 import PasienRujukanDetailHasilRadiologi from "./PasienRujukanDetailHasilRadiologi";
 import PasienRujukanDetailObat from "./PasienRujukanDetailObat";
+import PasienRujukanDetailIMR from "./PasienRujukanDetailIMR";
 
 export default function Index({ pasien }) {
     const [hasilLabUrl, setHasilLabUrl] = useState(null);
@@ -27,6 +28,7 @@ export default function Index({ pasien }) {
             <Card title="Hasil Panunjang">
                 {/* Button untuk membuka modal */}
                 <Button
+                    style={{ margin: 2 }}
                     type="primary"
                     onClick={() => setModalOpen(true)}
                     disabled={!hasilLabUrl}
@@ -35,8 +37,10 @@ export default function Index({ pasien }) {
                 </Button>
 
                 <PasienRujukanDetailObat pasien={pasien} />
-                
+
                 <PasienRujukanDetailHasilRadiologi pasien={pasien} />
+
+                <PasienRujukanDetailIMR pasien={pasien} />
 
                 {/* Modal Ant Design */}
                 <Modal
@@ -49,7 +53,7 @@ export default function Index({ pasien }) {
                     {/* Loading Indicator */}
                     {loadingPdf && (
                         <>
-                            <Skeleton active  />
+                            <Skeleton active />
                         </>
                     )}
 
