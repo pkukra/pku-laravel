@@ -4,7 +4,6 @@ namespace App\Repositories\Casemix;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
 
 class RanapMonitRepository
@@ -14,67 +13,52 @@ class RanapMonitRepository
      */
     public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false)
     {
-        // Buat cache key unik berdasarkan parameter pencarian
-        $cacheKey = "ranap:$bulan:$tahun:$bangsal_induk:$nomer_rm:$status:$perPage:$offset:$countOnly";
+        $query = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIENINAP AS TPI')
+            ->join('PASIENRAWATINAP AS PRI', function ($join) {
+                $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
+                    ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
+            })
+            ->leftJoin('PASIEN AS P', 'P.KD_PASIEN', '=', 'TPI.FTKD_PASIEN')
+            ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
+            ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
+            ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
+            ->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
+            ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun])
+            ->where('K.FMKKAMARINDUK', $bangsal_induk)
+            ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
+            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
 
-        // Ambil dari cache atau eksekusi query jika belum ada
-        $data = Cache::remember($cacheKey, 300, function () use ($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, $countOnly) {
-            $query = DB::connection('sqlsrvsimrs')
-                ->table('TRANSAKSIPASIENINAP AS TPI')
-                ->join('PASIENRAWATINAP AS PRI', function ($join) {
-                    $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
-                        ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
-                })
-                ->leftJoin('PASIEN AS P', 'P.KD_PASIEN', '=', 'TPI.FTKD_PASIEN')
-                ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
-                ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
-                ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
-
-                ->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
-                ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun])
-                ->where('K.FMKKAMARINDUK', $bangsal_induk)
-                ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
-                ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
-
-            if ($nomer_rm) {
-                $query->where('TPI.FTKD_PASIEN', $nomer_rm);
-            }
-
-            if ($countOnly) {
-                return $query->count();
-            }
-
-            return $query->select(
-                'TPI.FTNO_TRANSAKSI',
-                'PRI.PRWIKD_KAMAR',
-                'PRI.PRWIKD_KELAS',
-                'PRI.PRWIKD_DOKTER',
-                'PRI.PRWITGL_KELUAR',
-                'TPI.FTTGL_TRANSAKSI',
-                'TPI.FTKD_PASIEN',
-                'TPI.FTTARIPINACBG',
-                'TPI.FTTARIPINACBG1',
-                'TPI.FTTARIPINACBG2',
-                'TPI.FTTARIPINACBG3',
-                'P.NAMAPASIEN',
-                'DR.FMDDOKTERN AS DPJP',
-                'FMKODEKELAS AS KELAS_RAWAT'
-            )
-                ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
-                ->offset($offset)
-                ->limit($perPage)
-                ->get();
-        });
-
-        // Jika hanya menghitung total data, langsung return hasilnya
-        if ($countOnly) {
-            return $data;
+        if ($nomer_rm) {
+            $query->where('TPI.FTKD_PASIEN', $nomer_rm);
         }
 
-        // Lakukan pemrosesan tambahan pada data
-        return collect($data)->map(function ($data_detail) {
-            // $data_detail->FS_DIAGNOSA = get_diagnosa_ri($data_detail->FTNO_TRANSAKSI);
+        if ($countOnly) {
+            return $query->count();
+        }
 
+        $data = $query->select(
+            'TPI.FTNO_TRANSAKSI',
+            'PRI.PRWIKD_KAMAR',
+            'PRI.PRWIKD_KELAS',
+            'PRI.PRWIKD_DOKTER',
+            'PRI.PRWITGL_KELUAR',
+            'TPI.FTTGL_TRANSAKSI',
+            'TPI.FTKD_PASIEN',
+            'TPI.FTTARIPINACBG',
+            'TPI.FTTARIPINACBG1',
+            'TPI.FTTARIPINACBG2',
+            'TPI.FTTARIPINACBG3',
+            'P.NAMAPASIEN',
+            'DR.FMDDOKTERN AS DPJP',
+            'FMKODEKELAS AS KELAS_RAWAT'
+        )
+            ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
+            ->offset($offset)
+            ->limit($perPage)
+            ->get();
+
+        return collect($data)->map(function ($data_detail) {
             $ranap = get_casemix_ranap_data($data_detail->FTNO_TRANSAKSI);
             if ($ranap) {
                 foreach ($ranap as $key => $value) {
@@ -94,6 +78,7 @@ class RanapMonitRepository
             return $data_detail;
         });
     }
+
 
     /**
      * Update data in CASEMIX_RANAP table
