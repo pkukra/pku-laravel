@@ -724,6 +724,7 @@ class PasienInapRepository
             ->table('FJINKOTA')
             ->select('FHFJBUKTI_ID', 'FHFJDATE')
             ->where('FHFJNO_TRANSAKSI', $kode_reg)
+            ->orderByDesc('FHFJDATE')
             ->get();
 
         return $inkota->map(function ($data_detail) {

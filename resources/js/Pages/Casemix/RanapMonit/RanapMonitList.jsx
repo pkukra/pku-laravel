@@ -22,6 +22,7 @@ import "react-quill/dist/quill.snow.css";
 
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
 import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
+import PasienMonitModalObat from "./PasienMonitModalObat";
 import ModalCPPT from "./ModalCPPT";
 import BridgingData from "./BridgingData";
 
@@ -80,13 +81,18 @@ export default function Index({ auth, bangsal }) {
             },
         },
         {
-            title: "CPPT",
-            dataIndex: "CPPT",
-            key: "CPPT",
+            title: "Rujukan",
+            dataIndex: "Rujukan",
+            key: "Rujukan",
+            width: 110,
             render: (text, record) => (
                 <>
                     <ModalCPPT
                         kode_reg={record?.FTNO_TRANSAKSI}
+                        pasien={record}
+                    />
+                    
+                    <PasienMonitModalObat
                         pasien={record}
                     />
                 </>
