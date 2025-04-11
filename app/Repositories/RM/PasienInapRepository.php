@@ -69,12 +69,14 @@ class PasienInapRepository
     {
         return DB::connection('sqlsrvsimrs')
             ->table('PASIENRAWATINAP AS PRI')
+            ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'PRI.PRWINO_TRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
             ->leftJoin('PASIEN', 'PRI.PRWIKD_PASIEN', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PRI.PRWIKD_DOKTER', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('SPESIALISASI', 'PRI.PRWIKD_SPECIAL', '=', 'SPESIALISASI.FMSPESIALISASI_ID')
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PRI.CARA_MASUK', '=', 'cm.KODE')
             ->leftJoin('MR_RUJUKAN_KELUAR AS rk', 'PRI.PRWIRUJUKLUAR', '=', 'rk.MRKODERUJUKAN')
             ->select(
+                'TPI.*',
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',
                 'PASIEN.GOL_DARAH',

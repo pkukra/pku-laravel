@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Card, Button, Tooltip, notification, Input } from "antd";
 import axios from "axios";
 
-export default function Index({ pasien, user }) {
+export default function Index({ pasien, user, reFetchPasien }) {
     const [loadingSep, setLoadingSep] = useState(false);
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
@@ -67,6 +67,7 @@ export default function Index({ pasien, user }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
+            reFetchPasien();
             setBridgingLoading(false);
             setModalBridgeOpen(false);
         }
@@ -150,6 +151,12 @@ export default function Index({ pasien, user }) {
         }
     };
 
+    const RupiahFormat = (x) => {
+        const number = Number(x);
+        const formatted = new Intl.NumberFormat("id-ID").format(number);
+        return formatted;
+    };
+
     useEffect(() => {
         fetchNoSep();
     }, []);
@@ -174,6 +181,21 @@ export default function Index({ pasien, user }) {
             <Card title={"INACBG/BPJS/SEP"} loading={loadingSep}>
                 <p>{ketSep}</p>
                 <p>{ketKelas}</p>
+                <p>
+                    KODE INAGROUPER: <strong>{pasien?.FTKODEINACBG}</strong>
+                </p>
+                <p>
+                    Tarif INACBG Kelas 3: &nbsp;&nbsp;{" "}
+                    <strong>Rp {RupiahFormat(pasien?.FTTARIPINACBG3)}</strong>
+                </p>
+                <p>
+                    Tarif INACBG Kelas 2: &nbsp;&nbsp;{" "}
+                    <strong>Rp {RupiahFormat(pasien?.FTTARIPINACBG2)}</strong>
+                </p>
+                <p>
+                    Tarif INACBG Kelas 1: &nbsp;&nbsp;{" "}
+                    <strong>Rp {RupiahFormat(pasien?.FTTARIPINACBG1)}</strong>
+                </p>
 
                 <Tooltip
                     title={

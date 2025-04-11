@@ -66,6 +66,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienInapDetailSEP
                                 pasien={pasien}
                                 user={auth.user}
+                                reFetchPasien={reFetchPasien}
                             />
                         </Col>
                     </Row>
