@@ -6,6 +6,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
     const [loadingSep, setLoadingSep] = useState(false);
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
+    const [modalKirimOpen, setModalKirimOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
     const [noSep, setNoSep] = useState(null);
@@ -110,6 +111,14 @@ export default function Index({ pasien, user, reFetchPasien }) {
             setFinalLoading(false);
             setModalFinalOpen(false);
         }
+    };
+
+    const hadleCetakKlaim = () => {
+        const url = route("rm.pasien-inap.bridging_cetak_klaim", {
+            no_sep: noSep,
+        });
+
+        window.open(url, "_blank");
     };
 
     const handleUbahSep = async () => {
@@ -217,7 +226,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
                         type="primary"
                         onClick={() => setModalBridgeOpen(true)}
                         disabled={disabled || !noSep}
-                        style={{ marginRight: 5, backgroundColor: " #33cc33" }}
+                        style={{ margin: 2, backgroundColor: " #33cc33" }}
                     >
                         {!noSep ? "Belum ada SEP" : "Bridge Data"}
                     </Button>
@@ -226,9 +235,27 @@ export default function Index({ pasien, user, reFetchPasien }) {
                         type="primary"
                         onClick={() => setModalFinalOpen(true)}
                         disabled={disabled || !noSep}
-                        style={{ backgroundColor: " #cc66ff" }}
+                        style={{ margin: 2, backgroundColor: " #cc66ff" }}
                     >
                         {!noSep ? "Belum ada SEP" : "Final Data"}
+                    </Button>
+                    
+                    <Button
+                        type="primary"
+                        onClick={() => setModalKirimOpen(true)}
+                        disabled={disabled || !noSep}
+                        style={{ margin: 2, backgroundColor: " #fc0330" }}
+                    >
+                        {!noSep ? "Belum ada SEP" : "Kirim Berkas Klaim"}
+                    </Button>
+
+                    <Button
+                        type="primary"
+                        onClick={() => hadleCetakKlaim()}
+                        disabled={disabled || !noSep}
+                        style={{ margin: 2, backgroundColor: "rgb(0, 170, 255)" }}
+                    >
+                        {!noSep ? "Belum ada SEP" : "Cetak Klaim"}
                     </Button>
                 </Tooltip>
             </Card>
@@ -277,6 +304,32 @@ export default function Index({ pasien, user, reFetchPasien }) {
                         loading={finalLoading}
                         onClick={() => handleFinalData()}
                         style={{ backgroundColor: " #cc66ff" }}
+                    >
+                        Ok, Final Data
+                    </Button>,
+                ]}
+            >
+                {noSep}
+            </Modal>
+            
+            <Modal
+                closable={false}
+                open={modalKirimOpen}
+                title="KIRIM Klaim KE Datacenter BPJS"
+                footer={[
+                    <Button
+                        key="back"
+                        loading={finalLoading}
+                        onClick={() => setModalKirimOpen(false)}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type="primary"
+                        loading={finalLoading}
+                        onClick={() => handleFinalData()}
+                        style={{ backgroundColor: " #fc0330" }}
                     >
                         Ok, Final Data
                     </Button>,

@@ -355,6 +355,46 @@ class PasienInapEklaimRepository
         }
         return $response;
     }
+    
+    /**
+     * Process bridgingKirimKlaimProcess by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingKirimKlaimProcess($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "send_claim_individual"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
+
+    /**
+     * Process bridgingCetakKlaim by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingCetakKlaim($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "claim_print"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
 
     /**
      * Process bridgingUpdatePatien

@@ -74,6 +74,8 @@ Route::prefix('rm')->group(function () {
 
         Route::post('/bridging_data_process/{no_sep}', [PasienInapController::class, 'bridging_data_process'])->name('rm.pasien-inap.bridging_data_process');
         Route::post('/bridging_final_process/{kode_reg}/{no_sep}', [PasienInapController::class, 'bridging_final_process'])->name('rm.pasien-inap.bridging_final_process');
+        Route::get('/bridging_cetak_klaim/{no_sep}', [PasienInapController::class, 'bridging_cetak_klaim'])->name('rm.pasien-inap.bridging_cetak_klaim');
+        Route::get('/bridging_kirim_klaim/{no_sep}', [PasienInapController::class, 'bridging_kirim_klaim'])->name('rm.pasien-inap.bridging_kirim_klaim');
 
         Route::get('/get_list_cppt/{kode_reg}', [RanapMonitController::class, 'get_list_cppt'])->name('rm.pasien-inap.get_list_cppt');
     });

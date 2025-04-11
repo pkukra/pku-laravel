@@ -452,7 +452,7 @@ class PasienInapController extends Controller
             'data' => $data,
         ]);
     }
-    
+
     public function get_berkas_rm($kode_reg)
     {
         $data = $this->pasienInapRepo->getListBerkasRMByRg($kode_reg);
@@ -482,6 +482,16 @@ class PasienInapController extends Controller
         return response()->json($data);
     }
 
+    /**
+     * bridging_kirim_klaim
+     * Process bridging data ke eklaim
+     */
+    public function bridging_kirim_klaim($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingKirimKlaimProcess($no_sep);
+        return response()->json($data);
+    }
+
     // get_all_obat
     public function get_all_obat($kode_reg)
     {
@@ -490,5 +500,31 @@ class PasienInapController extends Controller
             'status' => "ok",
             'data' => $data,
         ]);
+    }
+
+    /**
+     * bridging_cetak_klaim
+     * Process bridging data ke eklaim
+     */
+    public function bridging_cetak_klaim($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingCetakKlaim($no_sep);
+        if (($data->status == "nok")) {
+            return response()->json($data);
+        }
+        if (($data->response->metadata->code != 200)) {
+            return response()->json($data);
+        }
+
+        // Ambil base64 string dari response
+        $base64 = $data->response->data;
+
+        // Decode base64 ke binary
+        $pdfContent = base64_decode($base64);
+
+        // Buat response file PDF
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $no_sep . '.pdf"');
     }
 }
