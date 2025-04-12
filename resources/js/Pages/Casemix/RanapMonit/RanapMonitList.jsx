@@ -91,10 +91,8 @@ export default function Index({ auth, bangsal }) {
                         kode_reg={record?.FTNO_TRANSAKSI}
                         pasien={record}
                     />
-                    
-                    <PasienMonitModalObat
-                        pasien={record}
-                    />
+
+                    <PasienMonitModalObat pasien={record} />
                 </>
             ),
         },
@@ -362,7 +360,7 @@ export default function Index({ auth, bangsal }) {
     const [selectedBangsal, setSelectedBangsal] = useState("IK042");
 
     const [page, setPage] = useState(1);
-    const [perPage, setPerPage] = useState(50);
+    const [perPage, setPerPage] = useState(100);
     const [totalData, setTotalData] = useState(0);
 
     const [dataSource, setDataSource] = useState([]);
@@ -522,8 +520,22 @@ export default function Index({ auth, bangsal }) {
             setLoadingFetchData(false);
         }
     };
+    const hadleCetakKlaim = () => {
+        const [year, month] = selectedYearMonth.split("-");
+
+        const baseUrl = route(
+            "casemix.ranap-monit.download_pasien_data_xls"
+        ).toString();
+        const url = `${baseUrl}?year=${year}&month=${month}&bangsal_induk=${selectedBangsal}`;
+
+        window.open(url, "_blank");
+    };
 
     const handleCari = () => {
+        if(selectedBangsal == 'all') {
+            return alert("Pilih salah satu bangsal");
+        }
+
         setPage(1); // Set nilai page
         setShouldFetch(true); // Aktifkan trigger untuk fetchData()
     };
@@ -535,10 +547,13 @@ export default function Index({ auth, bangsal }) {
         }
     }, [shouldFetch]);
 
-    const optionsBangsal = bangsal.map((item) => ({
-        value: item.FMKAMAR_ID,
-        label: item.FMKAMARN,
-    }));
+    const optionsBangsal = [
+        { value: 'all', label: "Semua" }, // opsi default
+        ...bangsal.map((item) => ({
+            value: item.FMKAMAR_ID,
+            label: item.FMKAMARN,
+        })),
+    ];
 
     return (
         <AuthenticatedLayout
@@ -598,12 +613,19 @@ export default function Index({ auth, bangsal }) {
                         />
                     </Col>
                     <Col span={2}>
-                        <Button type="primary" onClick={handleCari}>
+                        <Button block type="primary" onClick={handleCari}>
                             Cari
                         </Button>
                     </Col>
+                    <Col span={2}>
+                        <Button color="cyan" onClick={hadleCetakKlaim}>
+                            Download XLS
+                        </Button>
+                    </Col>
                 </Row>
-                <small>total data: {totalData}. Page: {page}. Perpage: {perPage}</small>
+                <small>
+                    total data: {totalData}. Page: {page}. Perpage: {perPage}
+                </small>
                 <Table
                     bordered
                     loading={loadingFetchData}

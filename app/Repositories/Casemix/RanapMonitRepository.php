@@ -28,7 +28,7 @@ class RanapMonitRepository
             ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
             ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
 
-        if ($bangsal_induk) {
+        if ($bangsal_induk != 'all') {
             $query->where('K.FMKKAMARINDUK', $bangsal_induk);
         }
 

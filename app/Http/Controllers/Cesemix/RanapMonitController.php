@@ -67,7 +67,7 @@ class RanapMonitController extends Controller
      */
     public function download_pasien_data(Request $request)
     {
-        $bangsal_induk = $request->bangsal_induk ?? null;
+        $bangsal_induk = $request->bangsal_induk ?? 0;
         $status = $request->status ?? "dirawat";
         $nomer_rm = $request->nomer_rm ?? "";
 
@@ -79,7 +79,7 @@ class RanapMonitController extends Controller
 
         // Create and return Excel file
         $export = new PasienRanapExport($data);
-        $downloadFileName = 'pasien_ranap_' . now()->format('Ymd_His') . '.xlsx';
+        $downloadFileName = 'pasien_ranap_' . $bangsal_induk . "_" . now()->format('Ymd_His') . '.xlsx';
         return Excel::download($export, $downloadFileName);
     }
 
