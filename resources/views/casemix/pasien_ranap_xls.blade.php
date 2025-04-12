@@ -43,6 +43,9 @@ function naikKelasSanitize($naik_kelas)
             Hasil Penunjang Abnormal
         </td>
         <td>
+            No SEP
+        </td>
+        <td>
             Hak Kelas
         </td>
         <td>Naik Kelas</td>
@@ -74,12 +77,12 @@ function naikKelasSanitize($naik_kelas)
     @foreach ($data as $val)
 
     <tr>
-        <td>{{ $val->FMKNAMA_KAMAR ?? '-' }}</td>
-        <td>{{ $val->FTNO_TRANSAKSI ?? '-' }}</td>
-        <td>{{ $val->NAMAPASIEN ?? '-' }}</td>
-        <td>{{ $val->FTKD_PASIEN ?? '-' }}</td>
-        <td>{{ $val->DPJP ?? '-' }}</td>
-        <td>{{ $val->FTTGL_TRANSAKSI ? \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->format('d-m-Y') : '-' }}</td>
+        <td>{{ $val->FMKNAMA_KAMAR ?? '' }}</td>
+        <td>{{ $val->FTNO_TRANSAKSI ?? '' }}</td>
+        <td>{{ $val->NAMAPASIEN ?? '' }}</td>
+        <td>{{ $val->FTKD_PASIEN ?? '' }}</td>
+        <td>{{ $val->DPJP ?? '' }}</td>
+        <td>{{ $val->FTTGL_TRANSAKSI ? \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->format('d-m-Y') : '' }}</td>
         <?php
         $tglMasuk = \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->startOfDay();
         $hariIni = now()->startOfDay();
@@ -106,18 +109,23 @@ function naikKelasSanitize($naik_kelas)
         ?>
 
         <td>{{ $selisihHari }}</td>
-        <td>{{ $val->PEMERIKSAAN_PENUNJANG ?? '-' }}</td>
-        <td>{{ $val->HASIL_PENUNJANG_ABNORMAL ?? '-' }}</td>
-        <td>{{ $val->KELAS_RAWAT ?? '-' }}</td>
+        <td>{{ $val->PEMERIKSAAN_PENUNJANG ?? '' }}</td>
+        <td>{{ $val->HASIL_PENUNJANG_ABNORMAL ?? '' }}</td>
+        <td>{{ $val->NO_SEP ?? '' }}</td>
+        <td>{{ $val->KELAS_RAWAT ?? '' }}</td>
         <td>{{ $naikKelas }}</td>
-        <td></td>
-        <td></td>
+        <td>
+            {{ get_diagnosa_by_transaksi($val->FTNO_TRANSAKSI)->pluck('MRPKD_PENYAKIT')->implode(', ') }}
+        </td>
+        <td>
+            {{ get_procedure_by_transaksi($val->FTNO_TRANSAKSI)->pluck('MRTKD_TINDAKAN')->implode(', ') }}
+        </td>
         <td>{{ $perkiraanKlaim }}</td>
-        <td>{{ $val->TOTAL_BILL ?? '-' }}</td>
-        <td>{{ $val->KONFIRMASI_KODER ?? '-' }}</td>
-        <td>{{ $val->KONFIRMASI_DR_BANGSAL ?? '-' }}</td>
-        <td>{{ $val->KONFIRMASI_SPV_BANGSAL ?? '-' }}</td>
-        <td>{{ $val->KONFIRMASI_MPP ?? '-' }}</td>
+        <td>{{ $val->TOTAL_BILL ?? '' }}</td>
+        <td>{{ $val->KONFIRMASI_KODER ?? '' }}</td>
+        <td>{{ $val->KONFIRMASI_DR_BANGSAL ?? '' }}</td>
+        <td>{{ $val->KONFIRMASI_SPV_BANGSAL ?? '' }}</td>
+        <td>{{ $val->KONFIRMASI_MPP ?? '' }}</td>
     </tr>
     @endforeach
 </table>

@@ -77,12 +77,6 @@ class RanapMonitController extends Controller
         // Get all data without pagination
         $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false, true);
 
-        // return response()->json( $data, 200);
-
-        // return view('casemix.pasien_ranap_xls', [
-        //     'data' => $data,
-        // ]);
-
         // Create and return Excel file
         $export = new PasienRanapExport($data);
         $downloadFileName = 'pasien_ranap_' . now()->format('Ymd_His') . '.xlsx';

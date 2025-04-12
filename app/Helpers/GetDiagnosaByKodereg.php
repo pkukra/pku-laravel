@@ -96,5 +96,29 @@ if (!function_exists('get_total_bill')) {
     }
 }
 
+if (!function_exists('get_diagnosa_by_transaksi')) {
+    function get_diagnosa_by_transaksi(string $no_transaksi)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('MR_PENYAKIT')
+            ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
+            ->select('MR_PENYAKIT.MRPKD_PENYAKIT')
+            ->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi)
+            ->get();
+    }
+}
+
+if (!function_exists('get_procedure_by_transaksi')) {
+    function get_procedure_by_transaksi(string $no_transaksi)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('MR_TINDAKAN')
+            ->select('MR_TINDAKAN.MRTKD_TINDAKAN')
+            ->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi)
+            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC')
+            ->get();
+    }
+}
+
 
 // TRANSAKSIPASIENINAPD
