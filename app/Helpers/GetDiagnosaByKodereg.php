@@ -20,6 +20,7 @@ if (!function_exists('get_casemix_ranap_data')) {
     {
         return DB::connection('sqlsrvsimrs')
             ->table('CASEMIX_RANAP')
+            ->select('*')
             ->where('NO_TRANSAKSI', $kode_reg)
             ->first();
     }

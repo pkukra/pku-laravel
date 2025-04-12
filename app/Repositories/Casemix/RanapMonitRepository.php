@@ -25,9 +25,12 @@ class RanapMonitRepository
             ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
             ->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
             ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun])
-            ->where('K.FMKKAMARINDUK', $bangsal_induk)
             ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
             ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
+
+        if ($bangsal_induk) {
+            $query->where('K.FMKKAMARINDUK', $bangsal_induk);
+        }
 
         if ($nomer_rm) {
             $query->where('TPI.FTKD_PASIEN', $nomer_rm);

@@ -44,6 +44,7 @@ Route::prefix('casemix')->group(function () {
         Route::post('/save_diagnosa', [RanapMonitController::class, 'save_diagnosa'])->name('casemix.ranap-monit.save_diagnosa');
         Route::delete('/delete_diagnosa/{id}', [RanapMonitController::class, 'delete_diagnosa'])->name('casemix.ranap-monit.delete_diagnosa');
 
+        Route::get('/download-xls', [RanapMonitController::class, 'download_pasien_data'])->name('ranap-monit.download-pasien');
     });
 });
 

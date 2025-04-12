@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Repositories\Casemix\RanapMonitRepository;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PasienRanapExport;
 
 class RanapMonitController extends Controller
 {
@@ -58,6 +60,35 @@ class RanapMonitController extends Controller
             'page' => $page,
             'per_page' => $perPage,
         ]);
+    }
+
+    /**
+     * Download patient list as Excel
+     */
+    public function download_pasien_data(Request $request)
+    {
+        // $bangsal_induk = $request->bangsal_induk ?? null;
+        $bangsal_induk = $request->bangsal_induk ?? "IK009";
+        // $status = $request->status ?? "dirawat";
+        $status = $request->status ?? "sudah_pulang";
+        $nomer_rm = $request->nomer_rm ?? "";
+
+        $month = $request->month ?? date('m');
+        $year = $request->year ?? date('Y');
+
+        // Get all data without pagination
+        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false);
+
+        // return response()->json( $data, 200);
+
+        return view('casemix.pasien_ranap_xls', [
+            'data' => $data,
+        ]);
+
+        // Create and return Excel file
+        $export = new PasienRanapExport($data);
+        $downloadFileName = 'pasien_ranap_' . now()->format('Ymd_His') . '.xlsx';
+        return Excel::download($export, $downloadFileName);
     }
 
     // update_monit_row
