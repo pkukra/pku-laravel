@@ -62,6 +62,9 @@ function naikKelasSanitize($naik_kelas)
             Billing Sementara (Rp)
         </td>
         <td>
+            selisih (Rp)
+        </td>
+        <td>
             Konfirmasi Koder
         </td>
         <td>
@@ -90,7 +93,7 @@ function naikKelasSanitize($naik_kelas)
         ?>
 
         <?php
-        $perkiraanKlaim = 0;
+        $perkiraanKlaim = null;
         $naikKelas = null;
         if (isset($val->RAWAT_NAIK)) {
             $naikKelas = naikKelasSanitize($val->RAWAT_NAIK);
@@ -108,6 +111,13 @@ function naikKelasSanitize($naik_kelas)
         }
         ?>
 
+        <?php
+        $selisih = null;
+        if (!empty($val->NO_SEP)) {
+            $selisih = $perkiraanKlaim - ($val->TOTAL_BILL ?? 0);
+        }
+        ?>
+
         <td>{{ $selisihHari }}</td>
         <td>{{ $val->PEMERIKSAAN_PENUNJANG ?? '' }}</td>
         <td>{{ $val->HASIL_PENUNJANG_ABNORMAL ?? '' }}</td>
@@ -122,6 +132,7 @@ function naikKelasSanitize($naik_kelas)
         </td>
         <td>{{ $perkiraanKlaim }}</td>
         <td>{{ $val->TOTAL_BILL ?? '' }}</td>
+        <td>{{ $selisih }}</td>
         <td>{{ $val->KONFIRMASI_KODER ?? '' }}</td>
         <td>{{ $val->KONFIRMASI_DR_BANGSAL ?? '' }}</td>
         <td>{{ $val->KONFIRMASI_SPV_BANGSAL ?? '' }}</td>
