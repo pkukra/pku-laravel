@@ -11,7 +11,7 @@ class RanapMonitRepository
     /**
      * Get the list of pasien ranap each bangsal based on bangsal_induk
      */
-    public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false)
+    public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false, $order_kamar = false)
     {
         $query = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAP AS TPI')
@@ -54,12 +54,19 @@ class RanapMonitRepository
             'TPI.FTTARIPINACBG3',
             'P.NAMAPASIEN',
             'DR.FMDDOKTERN AS DPJP',
-            'FMKODEKELAS AS KELAS_RAWAT'
-        )
-            ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
-            ->offset($offset)
+            'FMKODEKELAS AS KELAS_RAWAT',
+            'K.FMKNAMA_KAMAR'
+        );
+        if ($order_kamar) {
+            $query->orderBy('K.FMKKAMARINDUK', 'asc');
+        } else {
+            $query->orderBy('TPI.FTTGL_TRANSAKSI', 'desc');
+        }
+        $data = $data->offset($offset)
             ->limit($perPage)
             ->get();
+
+
 
         return collect($data)->map(function ($data_detail) {
             $ranap = get_casemix_ranap_data($data_detail->FTNO_TRANSAKSI);

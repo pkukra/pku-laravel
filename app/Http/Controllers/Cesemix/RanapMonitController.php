@@ -67,23 +67,21 @@ class RanapMonitController extends Controller
      */
     public function download_pasien_data(Request $request)
     {
-        // $bangsal_induk = $request->bangsal_induk ?? null;
-        $bangsal_induk = $request->bangsal_induk ?? "IK009";
-        // $status = $request->status ?? "dirawat";
-        $status = $request->status ?? "sudah_pulang";
+        $bangsal_induk = $request->bangsal_induk ?? null;
+        $status = $request->status ?? "dirawat";
         $nomer_rm = $request->nomer_rm ?? "";
 
         $month = $request->month ?? date('m');
         $year = $request->year ?? date('Y');
 
         // Get all data without pagination
-        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false);
+        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false, true);
 
         // return response()->json( $data, 200);
 
-        return view('casemix.pasien_ranap_xls', [
-            'data' => $data,
-        ]);
+        // return view('casemix.pasien_ranap_xls', [
+        //     'data' => $data,
+        // ]);
 
         // Create and return Excel file
         $export = new PasienRanapExport($data);
