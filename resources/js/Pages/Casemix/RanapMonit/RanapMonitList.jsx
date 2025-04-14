@@ -287,16 +287,16 @@ export default function Index({ auth, bangsal }) {
             ),
         },
         {
-            title: "Konfirmasi Dokter Bangsal",
-            dataIndex: "KONFIRMASI_DR_BANGSAL",
-            key: "KONFIRMASI_DR_BANGSAL",
+            title: "Rekomendasi Dokter Bangsal",
+            dataIndex: "REKOMENDASI_DOKTER_BANGSAL",
+            key: "REKOMENDASI_DOKTER_BANGSAL",
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
                     <a
                         onClick={() => {
                             handleOpenModal({
-                                key: "KONFIRMASI_DR_BANGSAL",
+                                key: "REKOMENDASI_DOKTER_BANGSAL",
                                 data_record: record,
                                 value: text,
                             });
