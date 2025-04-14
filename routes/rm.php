@@ -4,10 +4,11 @@ use App\Http\Controllers\RM\PasienRujukanController;
 use App\Http\Controllers\RM\PasienInapController;
 use App\Http\Controllers\Cesemix\RanapMonitController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\CheckRole;
 
-Route::prefix('rm')->group(function () {
+Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
-    Route::middleware('auth')->prefix('pasien-rujukan')->group(function () {
+    Route::prefix('pasien-rujukan')->group(function () {
         Route::get('/list/{no_rm}', [PasienRujukanController::class, 'index_data'])->name('rm.pasien-rujukan.list');
         Route::get('/detail/{kode_reg}', [PasienRujukanController::class, 'show'])->name('rm.pasien-rujukan.detail');
         Route::get('/detail_data/{kode_reg}', [PasienRujukanController::class, 'show_data'])->name('rm.pasien-rujukan.detail_data');
@@ -40,7 +41,7 @@ Route::prefix('rm')->group(function () {
         Route::post('/bridging_final_process/{no_sep}', [PasienRujukanController::class, 'bridging_final_process'])->name('rm.pasien-rujukan.bridging_final_process');
     });
 
-    Route::middleware('auth')->prefix('pasien-inap')->group(function () {
+    Route::prefix('pasien-inap')->group(function () {
         Route::get('/list/{no_rm}', [PasienInapController::class, 'index_data'])->name('rm.pasien-inap.list');
         Route::get('/detail/{kode_reg}', [PasienInapController::class, 'show'])->name('rm.pasien-inap.detail');
         Route::get('/detail_data/{kode_reg}', [PasienInapController::class, 'show_data'])->name('rm.pasien-inap.detail_data');

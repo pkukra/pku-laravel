@@ -48,10 +48,6 @@ Route::prefix('casemix')->group(function () {
     });
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/xxx/{no_sep}', [EklaimController::class, 'index_data']);
-});
-
 Route::get('/hasil_lab', function () {
     return response()->json([
         'status' => "ok",
