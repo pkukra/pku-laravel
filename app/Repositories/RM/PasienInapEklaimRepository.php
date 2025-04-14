@@ -6,10 +6,18 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Repositories\RM\RMAuditTrail;
 use Bpjs\Bridging\Vclaim\BridgeVclaim;
 
 class PasienInapEklaimRepository
 {
+    protected $auditTrail;
+
+    public function __construct()
+    {
+        $this->auditTrail = new RMAuditTrail();
+    }
+
     /**
      * Process new claim by nomor kartu
      *
@@ -204,6 +212,15 @@ class PasienInapEklaimRepository
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
 
+        $this->auditTrail->insert([
+            "object_id" => $transaksi_utama->PRWINO_TRANSAKSI,
+            "action_id" => 6,
+            "user_email" => $user->email,
+            "user_id" => $user->id,
+            "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+            "data" => $data,
+        ]);
+
         if ($response->response->metadata->code != 200) {
             return $response;
         }
@@ -355,7 +372,7 @@ class PasienInapEklaimRepository
         }
         return $response;
     }
-    
+
     /**
      * Process bridgingKirimKlaimProcess by no_sep
      * 
