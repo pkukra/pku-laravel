@@ -7,9 +7,20 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Bpjs\Bridging\Vclaim\BridgeVclaim;
+use App\Repositories\RM\RMAuditTrail;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+
 
 class PasienInapRepository
 {
+    protected $auditTrail;
+
+    public function __construct()
+    {
+        $this->auditTrail = new RMAuditTrail();
+    }
+
     /**
      * Get the list of pasien inap based on no_rm
      * 
@@ -337,6 +348,7 @@ class PasienInapRepository
      */
     public function saveDiagnosa($data)
     {
+        $user = Auth::user();
         $no_transaksikj = $data['no_transaksikj'];
         $now = now();
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
@@ -351,29 +363,50 @@ class PasienInapRepository
 
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
+        // Prepare data to insert into MR_PENYAKIT table
+        $data_to_save = [
+            'MRPKD_PENYAKIT' => $data['icd10_code'],
+            'MRPNO_TRANSAKSI' => $no_transaksikj,
+            'MRPKD_PASIEN' => $data['no_rm'],
+            'MRPKD_UNIT' => $data['kd_unit'],
+            'MRPTGL_MASUK' => $tgl_masuk,
+            'MRPURUT_MASUK' => $no_urut_masuk,
+            'MRPJENIS' => 'RI', // Adjust if needed
+            'MRPSTAT_DIAG' => $data['status_diagnosa'],
+            'MRPKASUS' => $data['kasus'],
+            'USER_ID' => $data['user_id'], // Assuming user ID is passed
+            'UPDATE_DT' => $now,
+        ];
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
+            // Insert data into MR_PENYAKIT table
             DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
-                ->insert([
-                    'MRPKD_PENYAKIT' => $data['icd10_code'],
-                    'MRPNO_TRANSAKSI' => $no_transaksikj,
-                    'MRPKD_PASIEN' => $data['no_rm'],
-                    'MRPKD_UNIT' => $data['kd_unit'],
-                    'MRPTGL_MASUK' => $tgl_masuk,
-                    'MRPURUT_MASUK' => $no_urut_masuk,
-                    'MRPJENIS' => 'RJ',
-                    'MRPSTAT_DIAG' => $data['status_diagnosa'],
-                    'MRPKASUS' => $data['kasus'],
-                    // 'STATUS_IMUN' => 1,
-                    // 'MRPIMUNKE' => 1,
-                    'USER_ID' => $data['user_id'], // Assuming user ID is passed
-                    'UPDATE_DT' => $now,
-                ]);
+                ->insert($data_to_save);
+
+            // Insert audit trail
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $no_transaksikj,
+                "action_id" => 1, // Adjust the action_id as per your action mapping
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                Log::error("saveDiagnosaRanap audittrail error");
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
         } catch (\Exception $e) {
-            // Handle exception (logging, etc.)
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("saveDiagnosaRanap error: " . $e->getMessage());
             return false;
         }
 
+        DB::connection('sqlsrvsimrs')->commit();
         return true;
     }
 
