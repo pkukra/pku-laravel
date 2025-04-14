@@ -235,7 +235,7 @@ class PasienRujukanRepository
 
             $isrecorded = $this->auditTrail->insert([
                 "object_id" => $kode_reg_kj,
-                "action_id" => 6,
+                "action_id" => 5,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
                 "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
@@ -341,7 +341,8 @@ class PasienRujukanRepository
      * @param array $data
      * @return boolean
      */
-    public function saveDiagnosa($data)
+    public function 
+    saveDiagnosa($data)
     {
         $user = Auth::user();
         $no_transaksikj = $data['no_transaksikj'];
@@ -543,7 +544,7 @@ class PasienRujukanRepository
 
             $isrecorded = $this->auditTrail->insert([
                 "object_id" => $no_transaksikj,
-                "action_id" => 6,
+                "action_id" => 3,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
                 "created_at" => $now,
