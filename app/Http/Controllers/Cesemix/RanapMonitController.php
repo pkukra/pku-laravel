@@ -214,7 +214,7 @@ class RanapMonitController extends Controller
         ];
 
         // Menyimpan data procedure melalui repository
-        $isSaved = $this->RanapMonitRepo->saveProcedure($data);
+        $isSaved = $this->RanapMonitRepo->saveProcedureRanap($data);
 
         if ($isSaved) {
             return response()->json([

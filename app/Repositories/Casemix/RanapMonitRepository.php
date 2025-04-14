@@ -5,9 +5,18 @@ namespace App\Repositories\Casemix;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use App\Repositories\RM\RMAuditTrail;
 
 class RanapMonitRepository
 {
+    protected $auditTrail;
+
+    public function __construct()
+    {
+        $this->auditTrail = new RMAuditTrail();
+    }
+
     /**
      * Get the list of pasien ranap each bangsal based on bangsal_induk
      */
@@ -106,7 +115,7 @@ class RanapMonitRepository
                 ->first();
 
             if (!$pasien) {
-                Log::error("Pasien dengan transaksi {$no_transaksi} tidak ditemukan.");
+                Log::error("RanapMonitRepository Pasien dengan transaksi {$no_transaksi} tidak ditemukan.");
                 return false;
             }
 
@@ -117,7 +126,7 @@ class RanapMonitRepository
 
             return true;
         } catch (\Exception $e) {
-            Log::error("Error updating CASEMIX_RANAP: " . $e->getMessage());
+            Log::error("RanapMonitRepository Error updating CASEMIX_RANAP: " . $e->getMessage());
             return false;
         }
     }
@@ -229,11 +238,12 @@ class RanapMonitRepository
      * @param array $data
      * @return boolean
      */
-    public function saveProcedure($data)
+    public function saveProcedureRanap($data)
     {
         $no_transaksikj = $data['no_transaksikj'];
-        $now = now();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
+        $user = Auth::user();
 
         // Get the latest MRTURUT_MASUK value to generate next
         $lastUrutMasuk = DB::connection('sqlsrvsimrs')
@@ -245,26 +255,44 @@ class RanapMonitRepository
 
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
-        try {
-            DB::connection('sqlsrvsimrs')
-                ->table('MR_TINDAKAN')
-                ->insert([
-                    'MRTKD_TINDAKAN' => $data['icd9_code'],
-                    'MRTNOTRANSAKSI' => $no_transaksikj,
-                    'MRTKD_PASIEN' => $data['no_rm'],
-                    'MRTKD_UNIT' => $data['kd_unit'],
-                    'MRTTGL_MASUK' => $tgl_masuk,
-                    'MRTURUT_MASUK' => $no_urut_masuk,
-                    // 'USER_ID' => $data['user_id'], // Assuming user ID is passed
-                    'MRTTGL_TINDAKAN' => $now,
-                ]);
-        } catch (\Exception $e) {
-            Log::error("Error while saving procedure: " . $e->getMessage());
+        $data_to_save = [
+            'MRTKD_TINDAKAN' => $data['icd9_code'],
+            'MRTNOTRANSAKSI' => $no_transaksikj,
+            'MRTKD_PASIEN' => $data['no_rm'],
+            'MRTKD_UNIT' => $data['kd_unit'],
+            'MRTTGL_MASUK' => $tgl_masuk,
+            'MRTURUT_MASUK' => $no_urut_masuk,
+            'MRTTGL_TINDAKAN' => $now,
+        ];
 
+        $conn = DB::connection('sqlsrvsimrs');
+        $conn->beginTransaction();
+
+        try {
+            $conn->table('MR_TINDAKAN')->insert($data_to_save);
+
+            $isrecorded = $this->auditTrail->insert([
+                "object_id"  => $no_transaksikj,
+                "action_id"  => 3,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => $now,
+                "data"       => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                Log::error("RanapMonitRepository saveProcedureRanap: Gagal menyimpan audit trail");
+                $conn->rollBack();
+                return false;
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("RanapMonitRepository saveProcedureRanap error: " . $e->getMessage());
             return false;
         }
-
-        return true;
     }
 
     /**
@@ -292,15 +320,56 @@ class RanapMonitRepository
      */
     public function deleteProcedureById($id)
     {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
         try {
-            $deleted = DB::connection('sqlsrvsimrs')
+            // Mulai transaksi
+            $conn->beginTransaction();
+
+            // Ambil data sebelum dihapus
+            $deletedProcedure = $conn
+                ->table('MR_TINDAKAN')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$deletedProcedure) {
+                return false;
+            }
+
+            // Hapus data tindakan
+            $deleted = $conn
                 ->table('MR_TINDAKAN')
                 ->where('ID', $id)
                 ->delete();
 
-            return $deleted > 0;
+            if (!$deleted) {
+                $conn->rollBack();
+                return false;
+            }
+
+            // Simpan ke audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $deletedProcedure->MRTNOTRANSAKSI,
+                "action_id"  => 4,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data"       => $deletedProcedure,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("RanapMonitRepository deleteProcedureByIdranap error: gagal simpan audittrail");
+                $conn->rollBack();
+                return false;
+            }
+
+            // Commit jika semua sukses
+            $conn->commit();
+            return true;
         } catch (\Exception $e) {
-            // Handle exception (logging, etc.)
+            $conn->rollBack();
+            Log::error("RanapMonitRepository deleteProcedureByIdranap error: " . $e->getMessage());
             return false;
         }
     }
@@ -341,7 +410,7 @@ class RanapMonitRepository
                     'CREATED_BY' => $user->email,
                 ]);
         } catch (\Exception $e) {
-            Log::error("Error save CASEMIX_BILLING_TEMP: " . $e->getMessage());
+            Log::error("RanapMonitRepository Error save CASEMIX_BILLING_TEMP: " . $e->getMessage());
             return false;
         }
 
@@ -364,7 +433,7 @@ class RanapMonitRepository
 
             return $deleted > 0;
         } catch (\Exception $e) {
-            Log::error("Error delete CASEMIX_BILLING_TEMP: " . $e->getMessage());
+            Log::error("RanapMonitRepository Error delete CASEMIX_BILLING_TEMP: " . $e->getMessage());
             return false;
         }
     }
