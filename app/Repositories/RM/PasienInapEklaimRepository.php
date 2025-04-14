@@ -370,6 +370,18 @@ class PasienInapEklaimRepository
                 Log::error('Final process TRANSAKSIPASIENINAP FKUNCI_VALIDASI err: ' . $e->getMessage());
             }
         }
+
+        $this->auditTrail->insert([
+            "object_id" => $kode_reg,
+            "action_id" => 7,
+            "user_email" => $user->email,
+            "user_id" => $user->id,
+            "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+            "data" => [
+                "nomor_sep" => $no_sep,
+            ],
+        ]);
+
         return $response;
     }
 
