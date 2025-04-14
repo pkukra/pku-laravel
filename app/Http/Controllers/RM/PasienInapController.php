@@ -293,7 +293,7 @@ class PasienInapController extends Controller
         ];
 
         // Menyimpan data procedure melalui repository
-        $isSaved = $this->pasienInapRepo->saveProcedure($data);
+        $isSaved = $this->pasienInapRepo->saveProcedureRanap($data);
 
         if ($isSaved) {
             return response()->json([

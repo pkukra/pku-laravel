@@ -517,7 +517,7 @@ class PasienInapRepository
      * @param array $data
      * @return boolean
      */
-    public function saveProcedure($data)
+    public function saveProcedureRanap($data)
     {
         $no_transaksikj = $data['no_transaksikj'];
         $now = now();
