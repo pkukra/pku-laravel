@@ -520,8 +520,9 @@ class PasienInapRepository
     public function saveProcedureRanap($data)
     {
         $no_transaksikj = $data['no_transaksikj'];
-        $now = now();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
+        $user = Auth::user();
 
         // Get the latest MRTURUT_MASUK value to generate next
         $lastUrutMasuk = DB::connection('sqlsrvsimrs')
@@ -533,26 +534,44 @@ class PasienInapRepository
 
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
-        try {
-            DB::connection('sqlsrvsimrs')
-                ->table('MR_TINDAKAN')
-                ->insert([
-                    'MRTKD_TINDAKAN' => $data['icd9_code'],
-                    'MRTNOTRANSAKSI' => $no_transaksikj,
-                    'MRTKD_PASIEN' => $data['no_rm'],
-                    'MRTKD_UNIT' => $data['kd_unit'],
-                    'MRTTGL_MASUK' => $tgl_masuk,
-                    'MRTURUT_MASUK' => $no_urut_masuk,
-                    // 'USER_ID' => $data['user_id'], // Assuming user ID is passed
-                    'MRTTGL_TINDAKAN' => $now,
-                ]);
-        } catch (\Exception $e) {
-            Log::error("Error while saving procedure: " . $e->getMessage());
+        $data_to_save = [
+            'MRTKD_TINDAKAN' => $data['icd9_code'],
+            'MRTNOTRANSAKSI' => $no_transaksikj,
+            'MRTKD_PASIEN' => $data['no_rm'],
+            'MRTKD_UNIT' => $data['kd_unit'],
+            'MRTTGL_MASUK' => $tgl_masuk,
+            'MRTURUT_MASUK' => $no_urut_masuk,
+            'MRTTGL_TINDAKAN' => $now,
+        ];
 
+        $conn = DB::connection('sqlsrvsimrs');
+        $conn->beginTransaction();
+
+        try {
+            $conn->table('MR_TINDAKAN')->insert($data_to_save);
+
+            $isrecorded = $this->auditTrail->insert([
+                "object_id"  => $no_transaksikj,
+                "action_id"  => 3,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => $now,
+                "data"       => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                Log::error("saveProcedureRanap: Gagal menyimpan audit trail");
+                $conn->rollBack();
+                return false;
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("saveProcedureRanap error: " . $e->getMessage());
             return false;
         }
-
-        return true;
     }
 
     /**
