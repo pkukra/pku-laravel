@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('nik', 16)->after('email')->nullable(); // Nomor KTP (maks 16 digit)
-            $table->string('eklaim_key', 255)->nullable()->unique()->after('nik'); // Key unik untuk e-Klaim
+            $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('set null');
         });
     }
 
@@ -23,7 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['nik', 'eklaim_key']);
+            $table->dropForeign(['role_id']);
+            $table->dropColumn('role_id');
         });
     }
 };
