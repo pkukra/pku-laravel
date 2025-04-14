@@ -13,13 +13,14 @@ class AuditTrailRmActionsSeeder extends Seeder
     public function run(): void
     {
         $actions = [
-            ['name' => 'add_diagnosis', 'created_at' => now()],
-            ['name' => 'delete_diagnosis', 'created_at' => now()],
-            ['name' => 'add_procedure', 'created_at' => now()],
-            ['name' => 'delete_procedure', 'created_at' => now()],
-            ['name' => 'change_sep', 'created_at' => now()],
-            ['name' => 'bridging_data_inacbg', 'created_at' => now()],
-            ['name' => 'final_data_inacbg', 'created_at' => now()],
+            ['id' => 1, 'name' => 'add_diagnosis', 'created_at' => now()],
+            ['id' => 2, 'name' => 'delete_diagnosis', 'created_at' => now()],
+            ['id' => 3, 'name' => 'add_procedure', 'created_at' => now()],
+            ['id' => 4, 'name' => 'delete_procedure', 'created_at' => now()],
+            ['id' => 5, 'name' => 'change_sep', 'created_at' => now()],
+            ['id' => 6, 'name' => 'bridging_data_inacbg', 'created_at' => now()],
+            ['id' => 7, 'name' => 'final_data_inacbg', 'created_at' => now()],
+            ['id' => 8, 'name' => 'update_perawatan', 'created_at' => now()],
         ];
 
         DB::table('audit_trail_rm_actions')->insert($actions);
