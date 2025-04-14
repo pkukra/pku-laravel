@@ -463,8 +463,6 @@ class PasienRujukanRepository
         }
     }
 
-
-
     /**
      * Get procedure penyakit by transaksi (MR_TINDAKAN)
      *
