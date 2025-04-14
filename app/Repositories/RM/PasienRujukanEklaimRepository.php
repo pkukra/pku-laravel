@@ -6,9 +6,17 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Repositories\RM\RMAuditTrail;
 
 class PasienRujukanEklaimRepository
 {
+    protected $auditTrail;
+
+    public function __construct()
+    {
+        $this->auditTrail = new RMAuditTrail();
+    }
+
     /**
      * Process new claim by nomor kartu
      *
@@ -170,6 +178,15 @@ class PasienRujukanEklaimRepository
             $this->bridgingGroupStage2Process($no_sep, $special_cmg);
         }
 
+        $this->auditTrail->insert([
+            "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+            "action_id" => 6,
+            "user_email" => $user->email,
+            "user_id" => $user->id,
+            "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+            "data" => $data,
+        ]);
+
         return $response;
     }
 
@@ -232,11 +249,43 @@ class PasienRujukanEklaimRepository
         $user = Auth::user();
         $key = $user->eklaim_key;
 
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+
         // Data request
         $data = json_encode([
             "metadata" => ["method" => "claim_final"],
             "data" => ["nomor_sep" => $no_sep, "coder_nik" => $user->nik]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $this->auditTrail->insert([
+            "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+            "action_id" => 7,
+            "user_email" => $user->email,
+            "user_id" => $user->id,
+            "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+            "data" => [
+                "nomor_sep" => $no_sep,
+            ],
+        ]);
 
         return sendRequest($key, $data);
     }
