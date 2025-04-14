@@ -582,15 +582,56 @@ class PasienInapRepository
      */
     public function deleteProcedureById($id)
     {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
         try {
-            $deleted = DB::connection('sqlsrvsimrs')
+            // Mulai transaksi
+            $conn->beginTransaction();
+
+            // Ambil data sebelum dihapus
+            $deletedProcedure = $conn
+                ->table('MR_TINDAKAN')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$deletedProcedure) {
+                return false;
+            }
+
+            // Hapus data tindakan
+            $deleted = $conn
                 ->table('MR_TINDAKAN')
                 ->where('ID', $id)
                 ->delete();
 
-            return $deleted > 0;
+            if (!$deleted) {
+                $conn->rollBack();
+                return false;
+            }
+
+            // Simpan ke audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $deletedProcedure->MRTNOTRANSAKSI,
+                "action_id"  => 4,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data"       => $deletedProcedure,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("deleteProcedureByIdranap error: gagal simpan audittrail");
+                $conn->rollBack();
+                return false;
+            }
+
+            // Commit jika semua sukses
+            $conn->commit();
+            return true;
         } catch (\Exception $e) {
-            // Handle exception (logging, etc.)
+            $conn->rollBack();
+            Log::error("deleteProcedureByIdranap error: " . $e->getMessage());
             return false;
         }
     }
