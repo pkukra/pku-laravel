@@ -171,15 +171,56 @@ class RanapMonitRepository
      */
     public function deleteDiagnosaById($id)
     {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
         try {
-            $deleted = DB::connection('sqlsrvsimrs')
+            // Mulai transaksi
+            $conn->beginTransaction();
+
+            // Ambil data diagnosa sebelum dihapus (untuk audit trail)
+            $deletedDiagnosa = $conn
+                ->table('MR_PENYAKIT')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$deletedDiagnosa) {
+                return false;
+            }
+
+            // Hapus data
+            $deleted = $conn
                 ->table('MR_PENYAKIT')
                 ->where('ID', $id)
                 ->delete();
 
-            return $deleted > 0;
+            if (!$deleted) {
+                $conn->rollBack();
+                return false;
+            }
+
+            // Catat audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $deletedDiagnosa->MRPNO_TRANSAKSI,
+                "action_id"  => 2,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data"       => $deletedDiagnosa,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("RanapMonitRepository deleteDiagnosaById error: gagal simpan audittrail");
+                $conn->rollBack();
+                return false;
+            }
+
+            // Jika semuanya sukses
+            $conn->commit();
+            return true;
         } catch (\Exception $e) {
-            // Handle exception (logging, etc.)
+            $conn->rollBack();
+            Log::error("RanapMonitRepository deleteDiagnosaById error: " . $e->getMessage());
             return false;
         }
     }
@@ -192,6 +233,7 @@ class RanapMonitRepository
      */
     public function saveDiagnosa($data)
     {
+        $user = Auth::user();
         $no_transaksikj = $data['no_transaksikj'];
         $now = now();
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
@@ -206,29 +248,50 @@ class RanapMonitRepository
 
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
+        // Prepare data to insert into MR_PENYAKIT table
+        $data_to_save = [
+            'MRPKD_PENYAKIT' => $data['icd10_code'],
+            'MRPNO_TRANSAKSI' => $no_transaksikj,
+            'MRPKD_PASIEN' => $data['no_rm'],
+            'MRPKD_UNIT' => $data['kd_unit'],
+            'MRPTGL_MASUK' => $tgl_masuk,
+            'MRPURUT_MASUK' => $no_urut_masuk,
+            'MRPJENIS' => 'RI', // Adjust if needed
+            'MRPSTAT_DIAG' => $data['status_diagnosa'],
+            'MRPKASUS' => $data['kasus'],
+            'USER_ID' => $data['user_id'], // Assuming user ID is passed
+            'UPDATE_DT' => $now,
+        ];
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
+            // Insert data into MR_PENYAKIT table
             DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
-                ->insert([
-                    'MRPKD_PENYAKIT' => $data['icd10_code'],
-                    'MRPNO_TRANSAKSI' => $no_transaksikj,
-                    'MRPKD_PASIEN' => $data['no_rm'],
-                    'MRPKD_UNIT' => $data['kd_unit'],
-                    'MRPTGL_MASUK' => $tgl_masuk,
-                    'MRPURUT_MASUK' => $no_urut_masuk,
-                    'MRPJENIS' => 'RJ',
-                    'MRPSTAT_DIAG' => $data['status_diagnosa'],
-                    'MRPKASUS' => $data['kasus'],
-                    // 'STATUS_IMUN' => 1,
-                    // 'MRPIMUNKE' => 1,
-                    'USER_ID' => $data['user_id'], // Assuming user ID is passed
-                    'UPDATE_DT' => $now,
-                ]);
+                ->insert($data_to_save);
+
+            // Insert audit trail
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $no_transaksikj,
+                "action_id" => 1, // Adjust the action_id as per your action mapping
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                Log::error("RanapMonitRepository saveDiagnosaRanap audittrail error");
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
         } catch (\Exception $e) {
-            // Handle exception (logging, etc.)
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("RanapMonitRepository saveDiagnosaRanap error: " . $e->getMessage());
             return false;
         }
 
+        DB::connection('sqlsrvsimrs')->commit();
         return true;
     }
 
