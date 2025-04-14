@@ -36,12 +36,12 @@ function naikKelasSanitize($naik_kelas)
         <td>DPJP</td>
         <td>Tanggal Masuk</td>
         <td>Total Hari Rawat</td>
-        <td>
+        <!-- <td>
             Pemeriksaan Penunjang
         </td>
         <td>
             Hasil Penunjang Abnormal
-        </td>
+        </td> -->
         <td>
             No SEP
         </td>
@@ -64,18 +64,18 @@ function naikKelasSanitize($naik_kelas)
         <td>
             selisih (Rp)
         </td>
-        <td>
+        <!-- <td>
             Konfirmasi Koder
         </td>
         <td>
-            Konfirmasi Dokter Bangsal
+            Rekomendasi Dokter Bangsal
         </td>
         <td>
             Follow Up SPV Bangsal
         </td>
         <td>
             Follow Up MPP
-        </td>
+        </td> -->
     </tr>
     @foreach ($data as $val)
 
@@ -119,8 +119,8 @@ function naikKelasSanitize($naik_kelas)
         ?>
 
         <td>{{ $selisihHari }}</td>
-        <td>{{ $val->PEMERIKSAAN_PENUNJANG ?? '' }}</td>
-        <td>{{ $val->HASIL_PENUNJANG_ABNORMAL ?? '' }}</td>
+        <!-- <td>{{ $val->PEMERIKSAAN_PENUNJANG ?? '' }}</td>
+        <td>{{ $val->HASIL_PENUNJANG_ABNORMAL ?? '' }}</td> -->
         <td>{{ $val->NO_SEP ?? '' }}</td>
         <td>{{ $val->KELAS_RAWAT ?? '' }}</td>
         <td>{{ $naikKelas }}</td>
@@ -133,10 +133,10 @@ function naikKelasSanitize($naik_kelas)
         <td>{{ $perkiraanKlaim }}</td>
         <td>{{ $val->TOTAL_BILL ?? '' }}</td>
         <td>{{ $selisih }}</td>
-        <td>{{ $val->KONFIRMASI_KODER ?? '' }}</td>
-        <td>{{ $val->KONFIRMASI_DR_BANGSAL ?? '' }}</td>
-        <td>{{ $val->KONFIRMASI_SPV_BANGSAL ?? '' }}</td>
-        <td>{{ $val->KONFIRMASI_MPP ?? '' }}</td>
+        <!-- <td>{{ isset($val->KONFIRMASI_KODER)?strip_tags($val->KONFIRMASI_KODER):"" }}</td>
+        <td>{{ isset($val->REKOMENDASI_DOKTER_BANGSAL)?strip_tags($val->REKOMENDASI_DOKTER_BANGSAL):"" }}</td>
+        <td>{{ isset($val->FOLLOW_UP_SPV_BANGSAL)?strip_tags($val->FOLLOW_UP_SPV_BANGSAL):"" }}</td>
+        <td>{{ isset($val->FOLLOW_UP_MPP)?strip_tags($val->FOLLOW_UP_MPP):"" }}</td> -->
     </tr>
     @endforeach
 </table>

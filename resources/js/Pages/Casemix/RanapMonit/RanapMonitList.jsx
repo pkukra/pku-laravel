@@ -17,7 +17,7 @@ import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
-// import ReactQuill from "react-quill";
+import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
@@ -690,10 +690,11 @@ export default function Index({ auth, bangsal }) {
                         onChange={(e) => setModalUpdateValue(e.target.value)}
                     />
                 ) : (
-                    <Textarea
+                    <ReactQuill 
                         theme="snow"
                         value={modalUpdateValue}
-                        onChange={(e) => setModalUpdateValue(e.target.value)} // Update the state with the new value
+                        onChange={setModalUpdateValue}
+                        // onChange={(e) => setModalUpdateValue(e.target.value)} // Update the state with the new value
                     />
                 )}
             </Modal>
