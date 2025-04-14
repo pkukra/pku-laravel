@@ -104,6 +104,8 @@ class RanapMonitRepository
      */
     public function updateCasemixRanap($no_transaksi, $request)
     {
+        $user = Auth::user();
+
         $data = [
             $request->key => $request->data,
         ];
@@ -120,9 +122,21 @@ class RanapMonitRepository
             }
 
             // Update atau insert data
-            DB::connection('sqlsrvsimrs')
+            $is_ok = DB::connection('sqlsrvsimrs')
                 ->table('CASEMIX_RANAP')
                 ->updateOrInsert(['NO_TRANSAKSI' => $no_transaksi], $data);
+
+            if ($is_ok) {
+                // Catat audit trail
+                $this->auditTrail->insert([
+                    "object_id"  => $no_transaksi,
+                    "action_id"  => 10,
+                    "user_email" => $user->email,
+                    "user_id"    => $user->id,
+                    "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    "data"       => $data,
+                ]);
+            }
 
             return true;
         } catch (\Exception $e) {
