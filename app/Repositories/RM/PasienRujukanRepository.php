@@ -648,33 +648,38 @@ class PasienRujukanRepository
      */
     public function updateCatatanKhususByTransaksi($no_transaksi, $catatan_khusus)
     {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
         try {
-            // Update the MRCATATANKHUSUS field for the given no_transaksi
-            $updated = DB::connection('sqlsrvsimrs')
-                ->table('MR_DIAGNOSA')
+            // Mulai transaksi
+            $conn->beginTransaction();
+
+            // Update field MRCATATANKHUSUS
+            $updated = $conn->table('MR_DIAGNOSA')
                 ->where('MRDNO_TRANSAKSI', $no_transaksi)
                 ->update(['MRCATATANKHUSUS' => $catatan_khusus]);
 
             if ($updated) {
-                return response()->json([
-                    'status' => 'ok',
-                    'message' => 'Catatan Khusus berhasil diperbarui',
+                // Simpan audit trail
+                $this->auditTrail->insert([
+                    'object_id'  => $no_transaksi,
+                    'action_id'  => 9,
+                    'user_email' => $user->email,
+                    'user_id'    => $user->id,
+                    'created_at' => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    'data'       => ['catatan_khusus' => $catatan_khusus],
                 ]);
-            } else {
-                return response()->json([
-                    'status' => 'nok',
-                    'message' => 'Tidak ada data yang diubah. Pastikan no_transaksi valid.',
-                ], 404);
             }
-        } catch (\Exception $e) {
-            // Log the error if any exception occurs
-            Log::error('Error updating Catatan Khusus: ' . $e->getMessage());
 
-            return response()->json([
-                'status' => 'nok',
-                'message' => 'Terjadi kesalahan saat memperbarui catatan khusus.',
-                'error' => $e->getMessage(),
-            ], 500);
+            // Commit transaksi
+            $conn->commit();
+
+            return response()->json(['status' => 'ok', 'message' => 'Catatan Khusus berhasil diperbarui']);
+        } catch (\Exception $e) {
+            // Rollback jika terjadi error
+            $conn->rollBack();
+            return response()->json(['status' => 'nok', 'message' => $e->getMessage()], 500);
         }
     }
 

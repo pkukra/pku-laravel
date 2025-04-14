@@ -21,6 +21,7 @@ class AuditTrailRmActionsSeeder extends Seeder
             ['id' => 6, 'name' => 'bridging_data_inacbg', 'created_at' => now()],
             ['id' => 7, 'name' => 'final_data_inacbg', 'created_at' => now()],
             ['id' => 8, 'name' => 'update_perawatan', 'created_at' => now()],
+            ['id' => 9, 'name' => 'update_catatan_khusus', 'created_at' => now()],
         ];
 
         DB::table('audit_trail_rm_actions')->insert($actions);
