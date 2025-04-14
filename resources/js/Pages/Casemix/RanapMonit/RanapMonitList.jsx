@@ -35,6 +35,16 @@ export default function Index({ auth, bangsal }) {
             dataIndex: "FTNO_TRANSAKSI",
             key: "FTNO_TRANSAKSI",
             fixed: "left",
+            render: (text, record) => (
+                // Menambahkan link menggunakan route helper untuk membangun URL dinamis
+                <a
+                    href={route("rm.pasien-inap.detail", {
+                        kode_reg: record?.FTNO_TRANSAKSI,
+                    })}
+                >
+                    {text}
+                </a>
+            ),
         },
         {
             title: "Nama Pasien",
@@ -532,7 +542,7 @@ export default function Index({ auth, bangsal }) {
     };
 
     const handleCari = () => {
-        if(selectedBangsal == 'all') {
+        if (selectedBangsal == "all") {
             return alert("Pilih salah satu bangsal");
         }
 
@@ -548,7 +558,7 @@ export default function Index({ auth, bangsal }) {
     }, [shouldFetch]);
 
     const optionsBangsal = [
-        { value: 'all', label: "Semua" }, // opsi default
+        { value: "all", label: "Semua" }, // opsi default
         ...bangsal.map((item) => ({
             value: item.FMKAMAR_ID,
             label: item.FMKAMARN,
@@ -690,7 +700,7 @@ export default function Index({ auth, bangsal }) {
                         onChange={(e) => setModalUpdateValue(e.target.value)}
                     />
                 ) : (
-                    <ReactQuill 
+                    <ReactQuill
                         theme="snow"
                         value={modalUpdateValue}
                         onChange={setModalUpdateValue}
