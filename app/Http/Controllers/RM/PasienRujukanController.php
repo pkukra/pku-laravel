@@ -302,7 +302,7 @@ class PasienRujukanController extends Controller
         ];
 
         // Menyimpan data procedure melalui repository
-        $isSaved = $this->pasienRujukanRepo->saveProcedure($data);
+        $isSaved = $this->pasienRujukanRepo->saveProcedureRajal($data);
 
         if ($isSaved) {
             return response()->json([

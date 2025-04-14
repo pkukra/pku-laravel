@@ -507,7 +507,7 @@ class PasienRujukanRepository
      * @param array $data
      * @return boolean
      */
-    public function saveProcedure($data)
+    public function saveProcedureRajal($data)
     {
         $no_transaksikj = $data['no_transaksikj'];
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
