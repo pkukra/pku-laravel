@@ -721,68 +721,90 @@ class PasienRujukanRepository
 
     public function updateCaraMasukPulangsByTransaksi(array $data)
     {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
         try {
-            DB::connection('sqlsrvsimrs')
-                ->table('PASIEN_RUJUKAN')
+            // 1. Update PASIEN_RUJUKAN
+            $conn->table('PASIEN_RUJUKAN')
                 ->where('FRPNOTRANSAKSIKJ', $data['no_transaksi_kj'])
                 ->update(['CARA_MASUK' => $data['cara_masuk']]);
 
-            // Jika keadaan_keluar selain 1, KPRUJUKLUAR harus kosong
+            // 2. Update KUNJUNGANPASIEN
             $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : "";
 
-            // Update keperawatan di tabel KUNJUNGANPASIEN
-            DB::connection('sqlsrvsimrs')
-                ->table('KUNJUNGANPASIEN')
+            $conn->table('KUNJUNGANPASIEN')
                 ->where('KPNO_TRANSAKSI', $data['no_transaksi_kj'])
                 ->update([
                     'KPRUJUKLUAR' => $kodeRsRujukKeluar,
                     'KPPERAWATAN' => $data['keperawatan'],
                 ]);
 
+            // 3. Update atau insert MR_KEMATIAN
             $arrUpdate = [
                 'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
-                'updated_at' => $data['now'],
-                'updated_by' => $data['email'],
+                'MRKSEBAB'           => in_array($data['keadaan_keluar'], [3, 4]) ? ($data['sebab_kematian'] ?? "") : "",
+                'updated_at'         => $data['now'],
+                'updated_by'         => $data['email'],
             ];
 
-            // Jika keadaan_keluar adalah 4 atau 3, gunakan sebab_kematian, selain itu kosongkan
-            $arrUpdate['MRKSEBAB'] = in_array($data['keadaan_keluar'], [3, 4]) ? ($data['sebab_kematian'] ?? "") : "";
-
-            $exists = DB::connection('sqlsrvsimrs')
-                ->table('MR_KEMATIAN')
+            $exists = $conn->table('MR_KEMATIAN')
                 ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
                 ->exists();
 
+            $mrPayload = [];
+
             if ($exists) {
-                // Jika sudah ada, lakukan update
-                DB::connection('sqlsrvsimrs')
-                    ->table('MR_KEMATIAN')
+                $conn->table('MR_KEMATIAN')
                     ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
                     ->update($arrUpdate);
+
+                $mrPayload = array_merge(['MRKNO_TRANSAKSI' => $data['no_transaksi_kj']], $arrUpdate);
             } else {
-                // Jika belum ada, lakukan insert
                 $arrInsert = array_merge($arrUpdate, [
                     'MRKNO_TRANSAKSI' => $data['no_transaksi_kj'],
-                    'MRKKD_PASIEN' => $data['kode_pasien'],
-                    'MRKKD_UNIT' => $data['kode_unit'],
-                    'MRKKD_DOKTER' => $data['kode_dokter'],
-                    'MRKTGL_MASUK' => $data['tgl_masuk'],
-                    'MRKTGL_KELUAR' => $data['tgl_masuk'],
-                    'created_at' => $data['now'],
-                    'created_by' => $data['email'],
+                    'MRKKD_PASIEN'    => $data['kode_pasien'],
+                    'MRKKD_UNIT'      => $data['kode_unit'],
+                    'MRKKD_DOKTER'    => $data['kode_dokter'],
+                    'MRKTGL_MASUK'    => $data['tgl_masuk'],
+                    'MRKTGL_KELUAR'   => $data['tgl_masuk'],
+                    'created_at'      => $data['now'],
+                    'created_by'      => $data['email'],
                 ]);
 
-                DB::connection('sqlsrvsimrs')
-                    ->table('MR_KEMATIAN')
-                    ->insert($arrInsert);
+                $conn->table('MR_KEMATIAN')->insert($arrInsert);
+
+                $mrPayload = $arrInsert;
             }
+
+            // 4. Audit Trail
+            $this->auditTrail->insert([
+                'object_id'  => $data['no_transaksi_kj'],
+                'action_id'  => 8, // update_perawatan
+                'user_email' => $user->email,
+                'user_id'    => $user->id,
+                'created_at' => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                'data'       => [
+                    'PASIEN_RUJUKAN' => [
+                        'FRPNOTRANSAKSIKJ' => $data['no_transaksi_kj'],
+                        'CARA_MASUK' => $data['cara_masuk'],
+                    ],
+                    'KUNJUNGANPASIEN' => [
+                        'KPNO_TRANSAKSI' => $data['no_transaksi_kj'],
+                        'KPRUJUKLUAR' => $kodeRsRujukKeluar,
+                        'KPPERAWATAN' => $data['keperawatan'],
+                    ],
+                    'MR_KEMATIAN' => $mrPayload,
+                ],
+            ]);
+
+            return true;
         } catch (\Exception $e) {
             Log::error('Error update/insert Cara masuk: ' . $e->getMessage());
             return false;
         }
-
-        return true;
     }
+
 
     /**
      * Get resume dokter by kode reg
