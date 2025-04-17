@@ -41,6 +41,52 @@ class PasienRujukanRepository
             ->get();
     }
 
+    public function getAllPasienRujukans($date, $page, $per_page, $kode_poly = null, $kode_dokter = null, $no_rm = null, $is_inacbg_final = null)
+    {
+        $baseQuery = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_RUJUKAN')
+            ->join('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
+            ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+            ->when($date, function ($query, $date) {
+                return $query->whereDate('PASIEN_RUJUKAN.FRPTGL', $date);
+            })
+            ->when($kode_poly, function ($query, $kode_poly) {
+                return $query->where('PASIEN_RUJUKAN.FRPUNIT', '=', $kode_poly);
+            })
+            ->when($kode_dokter, function ($query, $kode_dokter) {
+                return $query->where('PASIEN_RUJUKAN.FRPDOKTER_ID', '=', $kode_dokter);
+            })
+            ->when($no_rm, function ($query, $no_rm) {
+                return $query->where('PASIEN_RUJUKAN.FRPPASIEN_ID', '=', $no_rm);
+            })
+            ->when($is_inacbg_final, function ($query, $is_inacbg_final) {
+                if ($is_inacbg_final == "final") {
+                    return $query->where('PASIEN_RUJUKAN.IS_INACBG_FINAL', 1);
+                }
+                return $query->where('PASIEN_RUJUKAN.IS_INACBG_FINAL', null);
+            });
+
+        $total = (clone $baseQuery)->count();
+
+        $data = $baseQuery
+            ->select(
+                'PASIEN.NAMAPASIEN',
+                'PASIEN_RUJUKAN.*',
+                'DOKTER.FMDDOKTERN',
+                'POLIKLINIK.FMPKLINIKN'
+            )
+            ->orderBy('PASIEN_RUJUKAN.FRPJAM', 'asc')
+            ->limit($per_page)
+            ->offset(($page - 1) * $per_page)
+            ->get();
+
+        return [
+            'total' => $total,
+            'data' => $data,
+        ];
+    }
+
     /**
      * Count the number of pasien rujukan
      * 

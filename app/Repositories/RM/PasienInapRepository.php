@@ -59,6 +59,91 @@ class PasienInapRepository
     }
 
     /**
+     * Get the list of pasien inap semuanya
+     * 
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllPasienInaps(
+        $tanggal_masuk,
+        $page,
+        $per_page,
+        $kode_dokter = null,
+        $no_rm = null,
+        $tanggal_keluar = null,
+        $kode_bangsal = null,
+        $is_inacbg_final = null
+    ) {
+        // Subquery untuk ambil baris terakhir berdasarkan TGL_KELUAR atau PRWINO_URUT
+        $subquery = DB::connection('sqlsrvsimrs')
+            ->table('PASIENRAWATINAP')
+            ->select('PRWINO_TRANSAKSI', DB::raw('MAX(PRWITGL_KELUAR) AS TGL_KELUAR'))
+            ->groupBy('PRWINO_TRANSAKSI');
+
+        $latestRowSub = DB::connection('sqlsrvsimrs')
+            ->table('PASIENRAWATINAP AS PRI')
+            ->select('PRI.*')
+            ->joinSub($subquery, 'LAST', function ($join) {
+                $join->on('PRI.PRWINO_TRANSAKSI', '=', 'LAST.PRWINO_TRANSAKSI')
+                    ->on(DB::raw('ISNULL(PRI.PRWITGL_KELUAR, \'1900-01-01\')'), '=', DB::raw('ISNULL(LAST.TGL_KELUAR, \'1900-01-01\')'));
+            });
+
+        $baseQuery = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIENINAP AS TPI')
+            ->joinSub($latestRowSub, 'PRI', function ($join) {
+                $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
+                    ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
+            })
+            ->leftJoin('PASIEN AS P', 'TPI.FTKD_PASIEN', '=', 'P.KD_PASIEN')
+            ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
+            ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
+            ->when($kode_bangsal, function ($query, $kode_bangsal) {
+                return $query->where('K.FMKKAMARINDUK', $kode_bangsal);
+            })
+            ->when($tanggal_masuk, function ($query, $tanggal_masuk) {
+                return $query->whereDate('TPI.FTTGL_TRANSAKSI', $tanggal_masuk);
+            })
+            ->when($kode_dokter, function ($query, $kode_dokter) {
+                return $query->where('PRI.PRWIKD_DOKTER', $kode_dokter);
+            })
+            ->when($no_rm, function ($query, $no_rm) {
+                return $query->where('TPI.FTKD_PASIEN', $no_rm);
+            })
+            ->when($tanggal_keluar, function ($query, $tanggal_keluar) {
+                return $query->whereDate('PRI.PRWITGL_KELUAR', $tanggal_keluar);
+            })
+            ->when($is_inacbg_final, function ($query, $is_inacbg_final) {
+                if ($is_inacbg_final == "final") {
+                    return $query->where('TPI.FKUNCI_VALIDASI', 1);
+                }
+                return $query->where('TPI.FKUNCI_VALIDASI', '!=', 1);
+            });
+
+        $total = (clone $baseQuery)->count();
+
+        $data = $baseQuery
+            ->select(
+                'P.NAMAPASIEN',
+                'TPI.*',
+                'K.FMKNAMA_KAMAR',
+                'PRI.PRWIKD_DOKTER',
+                'PRI.PRWIKD_CUSTOMER',
+                'DR.FMDDOKTERN',
+                'PRI.PRWITGL_KELUAR AS TGL_KELUAR',
+                'TPI.FKUNCI_VALIDASI'
+            )
+            ->orderBy('PRI.PRWITGL_KELUAR', 'asc')
+            ->limit($per_page)
+            ->offset(($page - 1) * $per_page)
+            ->get();
+
+        return [
+            'total' => $total,
+            'data' => $data,
+        ];
+    }
+
+
+    /**
      * Count the number of pasien inap
      * 
      * @return int

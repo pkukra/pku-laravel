@@ -276,18 +276,36 @@ class PasienRujukanEklaimRepository
             "data" => ["nomor_sep" => $no_sep, "coder_nik" => $user->nik]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-        $this->auditTrail->insert([
-            "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
-            "action_id" => 7,
-            "user_email" => $user->email,
-            "user_id" => $user->id,
-            "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            "data" => [
-                "nomor_sep" => $no_sep,
-            ],
-        ]);
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                $this->auditTrail->insert([
+                    "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                    "action_id" => 7,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
 
-        return sendRequest($key, $data);
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_RUJUKAN')
+                    ->where('FRPNOTRANSAKSI', $transaksi_utama->FRPNOTRANSAKSI)
+                    ->update([
+                        'IS_INACBG_FINAL' => 1,
+                    ]);
+                    
+            } catch (\Exception $e) {
+                Log::error('Final process PASIEN_RUJUKAN IS_INACBG_FINAL err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        return $response;
     }
 
     /**
