@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, Button, Table, Row, Col, DatePicker, Input, Select } from "antd";
+import {
+    Card,
+    Button,
+    Table,
+    Row,
+    Col,
+    DatePicker,
+    Input,
+    Select,
+    Typography,
+} from "antd";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
@@ -165,6 +175,9 @@ export default function Index({ auth }) {
             <Card title="Pasien Rawat Jalan" style={{ marginBottom: 5 }}>
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={3}>
+                        <div>
+                            <Typography.Text strong>Tanggal</Typography.Text>
+                        </div>
                         <DatePicker
                             allowClear={false}
                             value={dayjs(date)}
@@ -178,14 +191,20 @@ export default function Index({ auth }) {
                         />
                     </Col>
                     <Col span={3}>
+                        <div>
+                            <Typography.Text strong>No RM</Typography.Text>
+                        </div>
                         <Input
                             allowClear
                             placeholder="No RM"
                             value={noRM}
-                            onChange={(e) => setNoRM(e.target.value)} // Add input for No RM
+                            onChange={(e) => setNoRM(e.target.value)}
                         />
                     </Col>
                     <Col span={3}>
+                        <div>
+                            <Typography.Text strong>Kode Poli</Typography.Text>
+                        </div>
                         <Input
                             allowClear
                             placeholder="Kode Poli"
@@ -194,6 +213,11 @@ export default function Index({ auth }) {
                         />
                     </Col>
                     <Col span={3}>
+                        <div>
+                            <Typography.Text strong>
+                                Kode Dokter
+                            </Typography.Text>
+                        </div>
                         <Input
                             allowClear
                             placeholder="Kode Dokter"
@@ -201,18 +225,27 @@ export default function Index({ auth }) {
                             onChange={(e) => setKodeDokter(e.target.value)}
                         />
                     </Col>
-                    <Col span={3}>
+                    <Col span={4}>
+                        <div>
+                            <Typography.Text strong>
+                                Filter Final INACBG
+                            </Typography.Text>
+                        </div>
                         <Select
                             style={{ width: "100%" }}
                             value={isInacbgFinal}
                             onChange={(value) => setIsInacbgFinal(value)}
                             options={[
-                                { label: "Final", value: "final" },
-                                { label: "Belum Final", value: "not_final" },
+                                { label: "Sudah Di-Final", value: "final" },
+                                { label: "Belum Di-Final", value: "not_final" },
                             ]}
+                            placeholder="Filter Final INACBG"
                         />
                     </Col>
                     <Col span={2}>
+                        <div>
+                            <Typography.Text>&nbsp;</Typography.Text>
+                        </div>
                         <Button
                             block
                             type="primary"
@@ -232,7 +265,6 @@ export default function Index({ auth }) {
                                     "",
                                     `?${params.toString()}`
                                 );
-
                                 setPage(1);
                                 fetchDataPasienRujukan(1, perPage);
                             }}
@@ -240,21 +272,23 @@ export default function Index({ auth }) {
                             Cari
                         </Button>
                     </Col>
-
                     <Col span={2}>
+                        <div>
+                            <Typography.Text>&nbsp;</Typography.Text>
+                        </div>
                         <Button
                             block
                             onClick={() => {
                                 window.location.replace(
                                     `${route("rm.pasien-rujukan.list_rujukan")}`
                                 );
-                                return;
                             }}
                         >
                             Reset
                         </Button>
                     </Col>
                 </Row>
+
                 <small>
                     total data: {totalData}. Page: {page}. Perpage: {perPage}
                 </small>
