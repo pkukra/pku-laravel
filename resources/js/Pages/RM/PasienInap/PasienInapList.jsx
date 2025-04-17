@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, Button, Table, Row, Col, DatePicker, Input, Select } from "antd";
+import { Card, Button, Table, Row, Col, DatePicker, Input, Select, Typography } from "antd";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
@@ -26,6 +26,7 @@ export default function Index({ auth, bangsal }) {
     const [kodeDokter, setKodeDokter] = useState(initialKodeDokter);
     const [noRM, setNoRM] = useState(initialNoRM);
     const [kodeBangsal, setKodeBangsal] = useState(initialKodeBangsal);
+    const [isInacbgFinal, setIsInacbgFinal] = useState("");
 
     const columnsInap = [
         {
@@ -110,7 +111,8 @@ export default function Index({ auth, bangsal }) {
                         per_page: perPageVal,
                         kode_dokter: kodeDokter,
                         no_rm: noRM,
-                        kode_bangsal: kodeBangsal, 
+                        kode_bangsal: kodeBangsal,
+                        is_inacbg_final: isInacbgFinal,
                     },
                 }
             );
@@ -165,6 +167,11 @@ export default function Index({ auth, bangsal }) {
             <Card title="Pasien Rawat Inap" style={{ marginBottom: 5 }}>
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={3}>
+                        <div>
+                            <Typography.Text strong>
+                                Tanggal Keluar
+                            </Typography.Text>
+                        </div>
                         <DatePicker
                             allowClear={false}
                             value={dayjs(tanggalKeluar)}
@@ -178,6 +185,9 @@ export default function Index({ auth, bangsal }) {
                         />
                     </Col>
                     <Col span={3}>
+                        <div>
+                            <Typography.Text strong>No RM</Typography.Text>
+                        </div>
                         <Input
                             allowClear
                             placeholder="No RM"
@@ -186,6 +196,9 @@ export default function Index({ auth, bangsal }) {
                         />
                     </Col>
                     <Col span={4}>
+                        <div>
+                            <Typography.Text strong>Bangsal</Typography.Text>
+                        </div>
                         <Select
                             style={{ width: "100%" }}
                             options={optionsBangsal} // Menampilkan bangsal sebagai opsi
@@ -196,6 +209,11 @@ export default function Index({ auth, bangsal }) {
                         />
                     </Col>
                     <Col span={3}>
+                        <div>
+                            <Typography.Text strong>
+                                Kode Dokter
+                            </Typography.Text>
+                        </div>
                         <Input
                             allowClear
                             placeholder="Kode Dokter"
@@ -203,7 +221,33 @@ export default function Index({ auth, bangsal }) {
                             onChange={(e) => setKodeDokter(e.target.value)}
                         />
                     </Col>
+
+                    <Col span={4}>
+                        <div>
+                            <Typography.Text strong>
+                                Filter Final INACBG
+                            </Typography.Text>
+                        </div>
+                        <Select
+                            style={{ width: "100%" }}
+                            value={isInacbgFinal} // Menyimpan nilai filter FTKODEINACBG
+                            onChange={(value) => setIsInacbgFinal(value)} // Mengubah nilai filter saat dipilih
+                            allowClear
+                            placeholder="Filter Final INACBG"
+                        >
+                            <Select.Option value="final">
+                                Sudah Di-Final
+                            </Select.Option>
+                            <Select.Option value="not_final">
+                                Belum Di-Final
+                            </Select.Option>
+                        </Select>
+                    </Col>
+
                     <Col span={2}>
+                        <div>
+                            <Typography.Text>&nbsp;</Typography.Text>
+                        </div>
                         <Button
                             block
                             type="primary"
@@ -216,7 +260,8 @@ export default function Index({ auth, bangsal }) {
                                 params.set("tanggal_keluar", tanggalKeluar);
                                 params.set("kode_dokter", kodeDokter);
                                 params.set("no_rm", noRM);
-                                params.set("kode_bangsal", kodeBangsal); // Tambahkan kode bangsal ke query params
+                                params.set("kode_bangsal", kodeBangsal);
+                                params.set("is_inacbg_final", isInacbgFinal); // Mengirimkan filter is_inacbg_final
                                 window.history.replaceState(
                                     null,
                                     "",
@@ -231,6 +276,9 @@ export default function Index({ auth, bangsal }) {
                         </Button>
                     </Col>
                     <Col span={2}>
+                        <div>
+                            <Typography.Text>&nbsp;</Typography.Text>
+                        </div>
                         <Button
                             block
                             onClick={() => {

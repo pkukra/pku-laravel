@@ -70,7 +70,8 @@ class PasienInapController extends Controller
         $per_page = (int) $request->get('per_page', 20);
         $kode_dokter = $request->get('kode_dokter');
         $no_rm = $request->get('no_rm');
-        $kode_bangsal = $request->input('kode_bangsal'); // tambahkan ini
+        $kode_bangsal = $request->input('kode_bangsal');
+        $is_inacbg_final = $request->get('is_inacbg_final'); 
 
         $result = $this->pasienInapRepo->getAllPasienInaps(
             $tanggal_masuk,
@@ -79,7 +80,8 @@ class PasienInapController extends Controller
             $kode_dokter,
             $no_rm,
             $tanggal_keluar,
-            $kode_bangsal
+            $kode_bangsal,
+            $is_inacbg_final 
         );
 
         return response()->json([
@@ -88,6 +90,7 @@ class PasienInapController extends Controller
             'data' => $result
         ]);
     }
+
 
     /**
      * show

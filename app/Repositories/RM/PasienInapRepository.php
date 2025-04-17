@@ -63,8 +63,16 @@ class PasienInapRepository
      * 
      * @return \Illuminate\Support\Collection
      */
-    public function getAllPasienInaps($tanggal_masuk, $page, $per_page, $kode_dokter = null, $no_rm = null, $tanggal_keluar = null, $kode_bangsal = null)
-    {
+    public function getAllPasienInaps(
+        $tanggal_masuk,
+        $page,
+        $per_page,
+        $kode_dokter = null,
+        $no_rm = null,
+        $tanggal_keluar = null,
+        $kode_bangsal = null,
+        $is_inacbg_final = null
+    ) {
         // Subquery untuk ambil baris terakhir berdasarkan TGL_KELUAR atau PRWINO_URUT
         $subquery = DB::connection('sqlsrvsimrs')
             ->table('PASIENRAWATINAP')
@@ -86,8 +94,6 @@ class PasienInapRepository
                     ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
             })
             ->leftJoin('PASIEN AS P', 'TPI.FTKD_PASIEN', '=', 'P.KD_PASIEN')
-            // ->leftJoin('SPESIALISASI AS S', 'PRI.PRWIKD_SPECIAL', '=', 'S.FMSPESIALISASI_ID')
-            // ->leftJoin('KAMAR_KELAS AS KK', 'PRI.PRWIKD_KELAS', '=', 'KK.FMKKODEKLAS')
             ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
             ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
             ->when($kode_bangsal, function ($query, $kode_bangsal) {
@@ -104,6 +110,15 @@ class PasienInapRepository
             })
             ->when($tanggal_keluar, function ($query, $tanggal_keluar) {
                 return $query->whereDate('PRI.PRWITGL_KELUAR', $tanggal_keluar);
+            })
+            ->when($is_inacbg_final, function ($query, $is_inacbg_final) {
+                if ($is_inacbg_final == "final") {
+                    return $query->where('TPI.IS_INACBG_FINAL', 1);
+                }
+
+                if ($is_inacbg_final == "not_final") {
+                    return $query->whereNull('TPI.IS_INACBG_FINAL');
+                }
             });
 
         $total = (clone $baseQuery)->count();
@@ -112,13 +127,12 @@ class PasienInapRepository
             ->select(
                 'P.NAMAPASIEN',
                 'TPI.*',
-                // 'KK.FMKKAMARN',
                 'K.FMKNAMA_KAMAR',
-                // 'S.FMSPESIALISASIN',
                 'PRI.PRWIKD_DOKTER',
                 'PRI.PRWIKD_CUSTOMER',
                 'DR.FMDDOKTERN',
                 'PRI.PRWITGL_KELUAR AS TGL_KELUAR',
+                'TPI.IS_INACBG_FINAL'
             )
             ->orderBy('PRI.PRWITGL_KELUAR', 'asc')
             ->limit($per_page)
@@ -130,6 +144,7 @@ class PasienInapRepository
             'data' => $data,
         ];
     }
+
 
     /**
      * Count the number of pasien inap
