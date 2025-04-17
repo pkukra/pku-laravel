@@ -10,7 +10,7 @@ export default function Index({ auth }) {
     const queryParams = new URLSearchParams(window.location.search);
 
     const initialPage = parseInt(queryParams.get("page")) || 1;
-    const initialPerPage = parseInt(queryParams.get("per_page")) || 10;
+    const initialPerPage = parseInt(queryParams.get("per_page")) || 100;
     const initialDate =
         queryParams.get("date") || moment().format("YYYY-MM-DD");
     const initialKodePoly = queryParams.get("kode_poly") || "";

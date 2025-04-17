@@ -45,7 +45,7 @@ class PasienRujukanRepository
     {
         $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
-            ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->join('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
             ->when($date, function ($query, $date) {
@@ -70,7 +70,7 @@ class PasienRujukanRepository
                 'DOKTER.FMDDOKTERN',
                 'POLIKLINIK.FMPKLINIKN'
             )
-            ->orderBy('FRPTGL', 'desc')
+            ->orderBy('PASIEN_RUJUKAN.FRPJAM', 'asc')
             ->limit($per_page)
             ->offset(($page - 1) * $per_page)
             ->get();
