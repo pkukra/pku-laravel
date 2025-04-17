@@ -48,10 +48,36 @@ class PasienInapController extends Controller
     public function list_inap()
     {
         // Mendapatkan detail pasien inap berdasarkan kode_reg
-        // $pasien_inap = $this->pasienInapRepo->getAllPasienInaps();
         return Inertia::render('RM/PasienInap/PasienInapList');
     }
-    
+
+    /**
+     * list_inap_data
+     * Menampilkan daftar pasien inap dalam format JSON
+     */
+    public function list_inap_data(Request $request)
+    {
+        $tanggal_masuk = $request->get('tanggal_masuk');
+        $page = (int) $request->get('page', 1);
+        $per_page = (int) $request->get('per_page', 20);
+        $kode_dokter = $request->get('kode_dokter');
+        $kode_customer = $request->get('kode_customer');
+
+        $pasien_inap = $this->pasienInapRepo->getAllPasienInaps(
+            $tanggal_masuk,
+            $page,
+            $per_page,
+            $kode_dokter,
+            $kode_customer
+        );
+
+        return response()->json([
+            'status' => "ok",
+            'page' => $page,
+            'data' => $pasien_inap,
+        ]);
+    }
+
     /**
      * show
      * Menampilkan detail pasien inap berdasarkan kode_reg

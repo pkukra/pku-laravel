@@ -57,15 +57,15 @@ class PasienInapRepository
             return $data_detail;
         });
     }
-    
+
     /**
-     * Get the list of pasien inap semunya
+     * Get the list of pasien inap semuanya
      * 
      * @return \Illuminate\Support\Collection
      */
-    public function getAllPasienInaps()
+    public function getAllPasienInaps($tanggal_masuk, $page, $per_page, $kode_dokter = null, $kode_customer = null)
     {
-        $data =  DB::connection('sqlsrvsimrs')
+        $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAP AS TPI')
             ->join('PASIENRAWATINAP AS PRI', function ($join) {
                 $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
@@ -75,6 +75,19 @@ class PasienInapRepository
             ->leftJoin('KAMAR_KELAS AS KK', 'PRI.PRWIKD_KELAS', '=', 'KK.FMKKODEKLAS')
             ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
             ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
+            ->when($tanggal_masuk, function ($query, $tanggal_masuk) {
+                return $query->whereDate('TPI.FTTGL_TRANSAKSI', $tanggal_masuk);
+            })
+            ->when($kode_dokter, function ($query, $kode_dokter) {
+                return $query->where('PRI.PRWIKD_DOKTER', '=', $kode_dokter);
+            })
+            ->when($kode_customer, function ($query, $kode_customer) {
+                return $query->where('PRI.PRWIKD_CUSTOMER', '=', $kode_customer);
+            });
+
+        $total = (clone $baseQuery)->count();
+
+        $data = $baseQuery
             ->select(
                 'TPI.*',
                 'KK.FMKKAMARN',
@@ -82,15 +95,23 @@ class PasienInapRepository
                 'S.FMSPESIALISASIN',
                 'PRI.PRWIKD_DOKTER',
                 'PRI.PRWIKD_CUSTOMER',
-                'DR.FMDDOKTERN',
+                'DR.FMDDOKTERN'
             )
-            ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
+            ->orderBy('TPI.FTTGL_TRANSAKSI', 'asc')
+            ->limit($per_page)
+            ->offset(($page - 1) * $per_page)
             ->get();
 
-        return $data->map(function ($data_detail) {
-            $data_detail->TGL_KELUAR = get_tgl_keluar_inap($data_detail->FTNO_TRANSAKSI);
-            return $data_detail;
+        // Hitung tanggal keluar untuk tiap pasien
+        $data->transform(function ($item) {
+            $item->TGL_KELUAR = get_tgl_keluar_inap($item->FTNO_TRANSAKSI);
+            return $item;
         });
+
+        return [
+            'total' => $total,
+            'data' => $data,
+        ];
     }
 
     /**

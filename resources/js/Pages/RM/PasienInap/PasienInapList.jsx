@@ -22,7 +22,6 @@ export default function Index({ auth }) {
     const [page, setPage] = useState(initialPage);
     const [perPage, setPerPage] = useState(initialPerPage);
     const [date, setDate] = useState(initialDate);
-    const [kodePoly, setKodePoly] = useState(initialKodePoly);
     const [kodeDokter, setKodeDokter] = useState(initialKodeDokter);
     const [noRM, setNoRM] = useState(initialNoRM); // Add state for No RM filter
 
@@ -107,9 +106,8 @@ export default function Index({ auth }) {
     ) => {
         setLoading(true);
         try {
-            return;
             const response = await axios.get(
-                route("rm.pasien-rujukan.list_rujukan_data"),
+                route("rm.pasien-inap.list_inap_data"),
                 {
                     params: {
                         date,
@@ -120,6 +118,8 @@ export default function Index({ auth }) {
                     },
                 }
             );
+            console.log(response?.data);
+            
             setDataPasienInaps(response?.data?.data?.data || []);
             setTotalData(response?.data?.data?.total || 0);
         } catch (error) {
@@ -241,7 +241,7 @@ export default function Index({ auth }) {
                     columns={columnsInap}
                     size="small"
                     loading={loading}
-                    rowKey="FRPNOTRANSAKSIKJ"
+                    rowKey="FTNO_TRANSAKSI"
                     scroll={{ x: "max-content" }}
                     pagination={{
                         simple: true,
