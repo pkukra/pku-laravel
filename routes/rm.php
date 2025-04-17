@@ -9,6 +9,10 @@ use App\Http\Middleware\CheckRole;
 Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
     Route::prefix('pasien-rujukan')->group(function () {
+
+        Route::get('/list_rujukan', [PasienRujukanController::class, 'list_rujukan'])->name('rm.pasien-rujukan.list_rujukan');
+        Route::get('/list_rujukan_data', [PasienRujukanController::class, 'list_rujukan_data'])->name('rm.pasien-rujukan.list_rujukan_data');
+
         Route::get('/list/{no_rm}', [PasienRujukanController::class, 'index_data'])->name('rm.pasien-rujukan.list');
         Route::get('/detail/{kode_reg}', [PasienRujukanController::class, 'show'])->name('rm.pasien-rujukan.detail');
         Route::get('/detail_data/{kode_reg}', [PasienRujukanController::class, 'show_data'])->name('rm.pasien-rujukan.detail_data');

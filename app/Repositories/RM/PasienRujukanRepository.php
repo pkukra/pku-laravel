@@ -41,6 +41,46 @@ class PasienRujukanRepository
             ->get();
     }
 
+    public function getAllPasienRujukans($date, $page, $per_page, $kode_poly = null, $kode_dokter = null, $no_rm = null)
+    {
+        $baseQuery = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_RUJUKAN')
+            ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
+            ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+            ->when($date, function ($query, $date) {
+                return $query->whereDate('PASIEN_RUJUKAN.FRPTGL', $date);
+            })
+            ->when($kode_poly, function ($query, $kode_poly) {
+                return $query->where('PASIEN_RUJUKAN.FRPUNIT', '=', $kode_poly); // Mengganti 'like' dengan '='
+            })
+            ->when($kode_dokter, function ($query, $kode_dokter) {
+                return $query->where('PASIEN_RUJUKAN.FRPDOKTER_ID', '=', $kode_dokter); // Mengganti 'like' dengan '='
+            })
+            ->when($no_rm, function ($query, $no_rm) {
+                return $query->where('PASIEN_RUJUKAN.FRPPASIEN_ID', '=', $no_rm); // Mengganti 'like' dengan '='
+            });
+
+        $total = (clone $baseQuery)->count();
+
+        $data = $baseQuery
+            ->select(
+                'PASIEN.NAMAPASIEN',
+                'PASIEN_RUJUKAN.*',
+                'DOKTER.FMDDOKTERN',
+                'POLIKLINIK.FMPKLINIKN'
+            )
+            ->orderBy('FRPTGL', 'desc')
+            ->limit($per_page)
+            ->offset(($page - 1) * $per_page)
+            ->get();
+
+        return [
+            'total' => $total,
+            'data' => $data,
+        ];
+    }
+
     /**
      * Count the number of pasien rujukan
      * 

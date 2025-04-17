@@ -34,6 +34,40 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * list_rujukan
+     * Menampilkan daftar pasien rujukan dalam format JSON
+     */
+    public function list_rujukan()
+    {
+        return Inertia::render('RM/PasienRujukan/PasienRujukanList');
+    }
+
+    public function list_rujukan_data(Request $request)
+    {
+        $date = $request->get('date');
+        $page = (int) $request->get('page', 1);
+        $per_page = (int) $request->get('per_page', 20);
+        $kode_poly = $request->get('kode_poly'); // filter kode poli
+        $kode_dokter = $request->get('kode_dokter'); // filter kode dokter
+        $no_rm = $request->get('no_rm'); // filter no rekam medis
+
+        $pasien_rujukans = $this->pasienRujukanRepo->getAllPasienRujukans(
+            $date,
+            $page,
+            $per_page,
+            $kode_poly,
+            $kode_dokter,
+            $no_rm
+        );
+
+        return response()->json([
+            'status' => "ok",
+            'page' => $page,
+            'data' => $pasien_rujukans
+        ]);
+    }
+
+    /**
      * index_data
      * Menampilkan daftar pasien rujukan dalam format JSON
      */
