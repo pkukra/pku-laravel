@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, Button, Table, Row, Col, DatePicker, Input } from "antd";
+import { Card, Button, Table, Row, Col, DatePicker, Input, Select } from "antd";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
@@ -15,7 +15,10 @@ export default function Index({ auth }) {
         queryParams.get("date") || moment().format("YYYY-MM-DD");
     const initialKodePoly = queryParams.get("kode_poly") || "";
     const initialKodeDokter = queryParams.get("kode_dokter") || "";
-    const initialNoRM = queryParams.get("no_rm") || ""; // Add for No RM filter
+    const initialNoRM = queryParams.get("no_rm") || "";
+    const initialIsInacbgFinal =
+        queryParams.get("is_inacbg_final") || "not_final";
+    const [isInacbgFinal, setIsInacbgFinal] = useState(initialIsInacbgFinal);
 
     const [loading, setLoading] = useState(false);
     const [dataPasienRujukans, setDataPasienRujukans] = useState([]);
@@ -25,7 +28,7 @@ export default function Index({ auth }) {
     const [date, setDate] = useState(initialDate);
     const [kodePoly, setKodePoly] = useState(initialKodePoly);
     const [kodeDokter, setKodeDokter] = useState(initialKodeDokter);
-    const [noRM, setNoRM] = useState(initialNoRM); // Add state for No RM filter
+    const [noRM, setNoRM] = useState(initialNoRM);
 
     const columnsRujukan = [
         {
@@ -74,6 +77,13 @@ export default function Index({ auth }) {
             key: "FRPCUSTOMER_ID",
         },
         {
+            title: "Final INACBG",
+            dataIndex: "IS_INACBG_FINAL",
+            key: "IS_INACBG_FINAL",
+            align: "center",
+            render: (_, record) => <>{record?.IS_INACBG_FINAL ? "✅" : "❌"}</>,
+        },
+        {
             title: "Action",
             dataIndex: "action",
             key: "action",
@@ -106,7 +116,8 @@ export default function Index({ auth }) {
                         per_page: perPageVal,
                         kode_poly: kodePoly,
                         kode_dokter: kodeDokter,
-                        no_rm: noRM, // Pass the No RM filter
+                        no_rm: noRM,
+                        is_inacbg_final: isInacbgFinal,
                     },
                 }
             );
@@ -190,6 +201,17 @@ export default function Index({ auth }) {
                             onChange={(e) => setKodeDokter(e.target.value)}
                         />
                     </Col>
+                    <Col span={3}>
+                        <Select
+                            style={{ width: "100%" }}
+                            value={isInacbgFinal}
+                            onChange={(value) => setIsInacbgFinal(value)}
+                            options={[
+                                { label: "Final", value: "final" },
+                                { label: "Belum Final", value: "not_final" },
+                            ]}
+                        />
+                    </Col>
                     <Col span={2}>
                         <Button
                             block
@@ -203,7 +225,8 @@ export default function Index({ auth }) {
                                 params.set("date", date);
                                 params.set("kode_poly", kodePoly);
                                 params.set("kode_dokter", kodeDokter);
-                                params.set("no_rm", noRM); // Add No RM to the query params
+                                params.set("no_rm", noRM);
+                                params.set("is_inacbg_final", isInacbgFinal);
                                 window.history.replaceState(
                                     null,
                                     "",

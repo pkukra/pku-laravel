@@ -50,6 +50,7 @@ class PasienRujukanController extends Controller
         $kode_poly = $request->get('kode_poly'); // filter kode poli
         $kode_dokter = $request->get('kode_dokter'); // filter kode dokter
         $no_rm = $request->get('no_rm'); // filter no rekam medis
+        $is_inacbg_final = $request->get('is_inacbg_final'); // filter no rekam medis
 
         $pasien_rujukans = $this->pasienRujukanRepo->getAllPasienRujukans(
             $date,
@@ -57,7 +58,7 @@ class PasienRujukanController extends Controller
             $per_page,
             $kode_poly,
             $kode_dokter,
-            $no_rm
+            $no_rm, $is_inacbg_final
         );
 
         return response()->json([

@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, Button, Table, Row, Col, DatePicker, Input, Select, Typography } from "antd";
+import {
+    Card,
+    Button,
+    Table,
+    Row,
+    Col,
+    DatePicker,
+    Input,
+    Select,
+    Typography,
+} from "antd";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
@@ -77,6 +87,15 @@ export default function Index({ auth, bangsal }) {
             title: "Kelompok",
             dataIndex: "PRWIKD_CUSTOMER",
             key: "PRWIKD_CUSTOMER",
+        },
+        {
+            title: "Final INACBG",
+            dataIndex: "FKUNCI_VALIDASI",
+            key: "FKUNCI_VALIDASI",
+            align: "center",
+            render: (_, record) => (
+                <>{record?.FKUNCI_VALIDASI == 1 ? "✅" : "❌"}</>
+            ),
         },
         {
             title: "Action",

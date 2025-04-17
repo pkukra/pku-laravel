@@ -41,7 +41,7 @@ class PasienRujukanRepository
             ->get();
     }
 
-    public function getAllPasienRujukans($date, $page, $per_page, $kode_poly = null, $kode_dokter = null, $no_rm = null)
+    public function getAllPasienRujukans($date, $page, $per_page, $kode_poly = null, $kode_dokter = null, $no_rm = null, $is_inacbg_final = null)
     {
         $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
@@ -52,13 +52,19 @@ class PasienRujukanRepository
                 return $query->whereDate('PASIEN_RUJUKAN.FRPTGL', $date);
             })
             ->when($kode_poly, function ($query, $kode_poly) {
-                return $query->where('PASIEN_RUJUKAN.FRPUNIT', '=', $kode_poly); // Mengganti 'like' dengan '='
+                return $query->where('PASIEN_RUJUKAN.FRPUNIT', '=', $kode_poly);
             })
             ->when($kode_dokter, function ($query, $kode_dokter) {
-                return $query->where('PASIEN_RUJUKAN.FRPDOKTER_ID', '=', $kode_dokter); // Mengganti 'like' dengan '='
+                return $query->where('PASIEN_RUJUKAN.FRPDOKTER_ID', '=', $kode_dokter);
             })
             ->when($no_rm, function ($query, $no_rm) {
-                return $query->where('PASIEN_RUJUKAN.FRPPASIEN_ID', '=', $no_rm); // Mengganti 'like' dengan '='
+                return $query->where('PASIEN_RUJUKAN.FRPPASIEN_ID', '=', $no_rm);
+            })
+            ->when($is_inacbg_final, function ($query, $is_inacbg_final) {
+                if ($is_inacbg_final == "final") {
+                    return $query->where('PASIEN_RUJUKAN.IS_INACBG_FINAL', 1);
+                }
+                return $query->where('PASIEN_RUJUKAN.IS_INACBG_FINAL', null);
             });
 
         $total = (clone $baseQuery)->count();
