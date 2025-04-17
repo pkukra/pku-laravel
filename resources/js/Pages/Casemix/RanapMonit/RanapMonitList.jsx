@@ -31,31 +31,29 @@ const Textarea = Input.TextArea;
 export default function Index({ auth, bangsal }) {
     const columns = [
         {
-            title: "No Transakasi",
+            title: "No RM & Kode Reg",
             dataIndex: "FTNO_TRANSAKSI",
             key: "FTNO_TRANSAKSI",
             fixed: "left",
+            width: 115,
             render: (text, record) => (
                 // Menambahkan link menggunakan route helper untuk membangun URL dinamis
-                <a
-                    href={route("rm.pasien-inap.detail", {
-                        kode_reg: record?.FTNO_TRANSAKSI,
-                    })}
-                >
-                    {text}
-                </a>
+                <>
+                    {record?.FTKD_PASIEN} <br />
+                    <a
+                        href={route("rm.pasien-inap.detail", {
+                            kode_reg: record?.FTNO_TRANSAKSI,
+                        })}
+                    >
+                        {text}
+                    </a>
+                </>
             ),
         },
         {
             title: "Nama Pasien",
             dataIndex: "NAMAPASIEN",
             key: "NAMAPASIEN",
-            fixed: "left",
-        },
-        {
-            title: "Nomer RM",
-            dataIndex: "FTKD_PASIEN",
-            key: "FTKD_PASIEN",
             fixed: "left",
         },
         {
@@ -599,10 +597,10 @@ export default function Index({ auth, bangsal }) {
                             }}
                         />
                     </Col>
-                    <Col span={3}>
+                    <Col span={4}>
                         <Select
                             defaultValue={selectedStatusRawat}
-                            style={{ width: 200 }}
+                            style={{ width: "100%" }}
                             onChange={(value) => setSelectedStatusRawat(value)}
                             options={[
                                 { value: "dirawat", label: "Dirawat" },
@@ -614,10 +612,10 @@ export default function Index({ auth, bangsal }) {
                             ]}
                         />
                     </Col>
-                    <Col span={3}>
+                    <Col span={4}>
                         <Select
                             value={selectedBangsal}
-                            style={{ width: 200 }}
+                            style={{ width: "100%" }}
                             options={optionsBangsal}
                             onChange={(value) => setSelectedBangsal(value)}
                         />
