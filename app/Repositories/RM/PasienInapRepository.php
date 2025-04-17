@@ -61,7 +61,6 @@ class PasienInapRepository
     /**
      * Get the list of pasien inap semuanya
      * 
-     * @return \Illuminate\Support\Collection
      */
     public function getAllPasienInaps(
         $tanggal_masuk,
