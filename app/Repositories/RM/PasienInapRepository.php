@@ -113,11 +113,11 @@ class PasienInapRepository
             })
             ->when($is_inacbg_final, function ($query, $is_inacbg_final) {
                 if ($is_inacbg_final == "final") {
-                    return $query->where('TPI.IS_INACBG_FINAL', 1);
+                    return $query->where('TPI.FKUNCI_VALIDASI', 1);
                 }
 
                 if ($is_inacbg_final == "not_final") {
-                    return $query->whereNull('TPI.IS_INACBG_FINAL');
+                    return $query->where('TPI.FKUNCI_VALIDASI', '!=', 1);
                 }
             });
 
@@ -132,7 +132,7 @@ class PasienInapRepository
                 'PRI.PRWIKD_CUSTOMER',
                 'DR.FMDDOKTERN',
                 'PRI.PRWITGL_KELUAR AS TGL_KELUAR',
-                'TPI.IS_INACBG_FINAL'
+                'TPI.FKUNCI_VALIDASI'
             )
             ->orderBy('PRI.PRWITGL_KELUAR', 'asc')
             ->limit($per_page)
