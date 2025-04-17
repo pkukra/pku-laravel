@@ -42,6 +42,17 @@ class PasienInapController extends Controller
     }
 
     /**
+     * list_inap
+     * Menampilkan detail pasien inap semuanya
+     */
+    public function list_inap()
+    {
+        // Mendapatkan detail pasien inap berdasarkan kode_reg
+        // $pasien_inap = $this->pasienInapRepo->getAllPasienInaps();
+        return Inertia::render('RM/PasienInap/PasienInapList');
+    }
+    
+    /**
      * show
      * Menampilkan detail pasien inap berdasarkan kode_reg
      */

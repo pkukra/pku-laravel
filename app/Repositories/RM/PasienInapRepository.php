@@ -57,6 +57,41 @@ class PasienInapRepository
             return $data_detail;
         });
     }
+    
+    /**
+     * Get the list of pasien inap semunya
+     * 
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllPasienInaps()
+    {
+        $data =  DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIENINAP AS TPI')
+            ->join('PASIENRAWATINAP AS PRI', function ($join) {
+                $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
+                    ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
+            })
+            ->leftJoin('SPESIALISASI AS S', 'PRI.PRWIKD_SPECIAL', '=', 'S.FMSPESIALISASI_ID')
+            ->leftJoin('KAMAR_KELAS AS KK', 'PRI.PRWIKD_KELAS', '=', 'KK.FMKKODEKLAS')
+            ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
+            ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
+            ->select(
+                'TPI.*',
+                'KK.FMKKAMARN',
+                'K.FMKNAMA_KAMAR',
+                'S.FMSPESIALISASIN',
+                'PRI.PRWIKD_DOKTER',
+                'PRI.PRWIKD_CUSTOMER',
+                'DR.FMDDOKTERN',
+            )
+            ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
+            ->get();
+
+        return $data->map(function ($data_detail) {
+            $data_detail->TGL_KELUAR = get_tgl_keluar_inap($data_detail->FTNO_TRANSAKSI);
+            return $data_detail;
+        });
+    }
 
     /**
      * Count the number of pasien inap

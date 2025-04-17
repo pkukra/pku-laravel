@@ -31,7 +31,7 @@ const items = [
             },
             {
                 key: "rm-ranap",
-                label: <Link href={route("rm.index")}>List Ranap</Link>,
+                label: <Link href={route("rm.pasien-inap.list_inap")}>List Ranap</Link>,
             },
         ],
     },

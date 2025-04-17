@@ -46,6 +46,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])-
     });
 
     Route::prefix('pasien-inap')->group(function () {
+        Route::get('/list_inap', [PasienInapController::class, 'list_inap'])->name('rm.pasien-inap.list_inap');
         Route::get('/list/{no_rm}', [PasienInapController::class, 'index_data'])->name('rm.pasien-inap.list');
         Route::get('/detail/{kode_reg}', [PasienInapController::class, 'show'])->name('rm.pasien-inap.detail');
         Route::get('/detail_data/{kode_reg}', [PasienInapController::class, 'show_data'])->name('rm.pasien-inap.detail_data');
