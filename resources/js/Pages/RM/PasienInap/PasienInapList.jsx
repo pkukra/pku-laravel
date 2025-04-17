@@ -25,7 +25,7 @@ export default function Index({ auth, bangsal }) {
         queryParams.get("tanggal_keluar") || moment().format("YYYY-MM-DD");
     const initialKodeDokter = queryParams.get("kode_dokter") || "";
     const initialNoRM = queryParams.get("no_rm") || "";
-    const initialKodeBangsal = queryParams.get("kode_bangsal") || "";
+    const initialKodeBangsal = queryParams.get("kode_bangsal") || null;
 
     const [loading, setLoading] = useState(false);
     const [dataPasienInaps, setDataPasienInaps] = useState([]);
@@ -36,7 +36,9 @@ export default function Index({ auth, bangsal }) {
     const [kodeDokter, setKodeDokter] = useState(initialKodeDokter);
     const [noRM, setNoRM] = useState(initialNoRM);
     const [kodeBangsal, setKodeBangsal] = useState(initialKodeBangsal);
-    const [isInacbgFinal, setIsInacbgFinal] = useState("");
+    const [isInacbgFinal, setIsInacbgFinal] = useState(
+        queryParams.get("is_inacbg_final") || "not_final"
+    );
 
     const columnsInap = [
         {
