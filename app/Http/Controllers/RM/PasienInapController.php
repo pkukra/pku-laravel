@@ -9,19 +9,23 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Repositories\RM\PasienInapRepository;
 use App\Repositories\RM\PasienInapEklaimRepository;
+use App\Repositories\Casemix\RanapMonitRepository;
 
 class PasienInapController extends Controller
 {
     protected $pasienInapRepo;
     protected $bridgingEKlaimRepo;
+    protected $RanapMonitRepo;
 
     // Dependency Injection Repository
     public function __construct(
         PasienInapRepository $pasienInapRepo,
         PasienInapEklaimRepository $bridgingEKlaimRepo,
+        RanapMonitRepository $RanapMonitRepo,
     ) {
         $this->pasienInapRepo = $pasienInapRepo;
         $this->bridgingEKlaimRepo = $bridgingEKlaimRepo;
+        $this->RanapMonitRepo = $RanapMonitRepo;
     }
 
     /**
@@ -48,7 +52,10 @@ class PasienInapController extends Controller
     public function list_inap()
     {
         // Mendapatkan detail pasien inap berdasarkan kode_reg
-        return Inertia::render('RM/PasienInap/PasienInapList');
+        $bangsal =  $this->RanapMonitRepo->getListKamarIndukRanap();
+        return Inertia::render('RM/PasienInap/PasienInapList', [
+            'bangsal' => $bangsal,
+        ]);
     }
 
     /**
@@ -58,23 +65,27 @@ class PasienInapController extends Controller
     public function list_inap_data(Request $request)
     {
         $tanggal_masuk = $request->get('tanggal_masuk');
+        $tanggal_keluar = $request->get('tanggal_keluar');
         $page = (int) $request->get('page', 1);
         $per_page = (int) $request->get('per_page', 20);
         $kode_dokter = $request->get('kode_dokter');
-        $kode_customer = $request->get('kode_customer');
+        $no_rm = $request->get('no_rm');
+        $kode_bangsal = $request->input('kode_bangsal'); // tambahkan ini
 
-        $pasien_inap = $this->pasienInapRepo->getAllPasienInaps(
+        $result = $this->pasienInapRepo->getAllPasienInaps(
             $tanggal_masuk,
             $page,
             $per_page,
             $kode_dokter,
-            $kode_customer
+            $no_rm,
+            $tanggal_keluar,
+            $kode_bangsal
         );
 
         return response()->json([
             'status' => "ok",
             'page' => $page,
-            'data' => $pasien_inap,
+            'data' => $result
         ]);
     }
 

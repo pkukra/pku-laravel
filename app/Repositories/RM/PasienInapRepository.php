@@ -63,50 +63,67 @@ class PasienInapRepository
      * 
      * @return \Illuminate\Support\Collection
      */
-    public function getAllPasienInaps($tanggal_masuk, $page, $per_page, $kode_dokter = null, $kode_customer = null)
+    public function getAllPasienInaps($tanggal_masuk, $page, $per_page, $kode_dokter = null, $no_rm = null, $tanggal_keluar = null, $kode_bangsal = null)
     {
+        // Subquery untuk ambil baris terakhir berdasarkan TGL_KELUAR atau PRWINO_URUT
+        $subquery = DB::connection('sqlsrvsimrs')
+            ->table('PASIENRAWATINAP')
+            ->select('PRWINO_TRANSAKSI', DB::raw('MAX(PRWITGL_KELUAR) AS TGL_KELUAR'))
+            ->groupBy('PRWINO_TRANSAKSI');
+
+        $latestRowSub = DB::connection('sqlsrvsimrs')
+            ->table('PASIENRAWATINAP AS PRI')
+            ->select('PRI.*')
+            ->joinSub($subquery, 'LAST', function ($join) {
+                $join->on('PRI.PRWINO_TRANSAKSI', '=', 'LAST.PRWINO_TRANSAKSI')
+                    ->on(DB::raw('ISNULL(PRI.PRWITGL_KELUAR, \'1900-01-01\')'), '=', DB::raw('ISNULL(LAST.TGL_KELUAR, \'1900-01-01\')'));
+            });
+
         $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAP AS TPI')
-            ->join('PASIENRAWATINAP AS PRI', function ($join) {
+            ->joinSub($latestRowSub, 'PRI', function ($join) {
                 $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
                     ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
             })
-            ->leftJoin('SPESIALISASI AS S', 'PRI.PRWIKD_SPECIAL', '=', 'S.FMSPESIALISASI_ID')
-            ->leftJoin('KAMAR_KELAS AS KK', 'PRI.PRWIKD_KELAS', '=', 'KK.FMKKODEKLAS')
+            ->leftJoin('PASIEN AS P', 'TPI.FTKD_PASIEN', '=', 'P.KD_PASIEN')
+            // ->leftJoin('SPESIALISASI AS S', 'PRI.PRWIKD_SPECIAL', '=', 'S.FMSPESIALISASI_ID')
+            // ->leftJoin('KAMAR_KELAS AS KK', 'PRI.PRWIKD_KELAS', '=', 'KK.FMKKODEKLAS')
             ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
             ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
+            ->when($kode_bangsal, function ($query, $kode_bangsal) {
+                return $query->where('K.FMKKAMARINDUK', $kode_bangsal);
+            })
             ->when($tanggal_masuk, function ($query, $tanggal_masuk) {
                 return $query->whereDate('TPI.FTTGL_TRANSAKSI', $tanggal_masuk);
             })
             ->when($kode_dokter, function ($query, $kode_dokter) {
-                return $query->where('PRI.PRWIKD_DOKTER', '=', $kode_dokter);
+                return $query->where('PRI.PRWIKD_DOKTER', $kode_dokter);
             })
-            ->when($kode_customer, function ($query, $kode_customer) {
-                return $query->where('PRI.PRWIKD_CUSTOMER', '=', $kode_customer);
+            ->when($no_rm, function ($query, $no_rm) {
+                return $query->where('TPI.FTKD_PASIEN', $no_rm);
+            })
+            ->when($tanggal_keluar, function ($query, $tanggal_keluar) {
+                return $query->whereDate('PRI.PRWITGL_KELUAR', $tanggal_keluar);
             });
 
         $total = (clone $baseQuery)->count();
 
         $data = $baseQuery
             ->select(
+                'P.NAMAPASIEN',
                 'TPI.*',
-                'KK.FMKKAMARN',
+                // 'KK.FMKKAMARN',
                 'K.FMKNAMA_KAMAR',
-                'S.FMSPESIALISASIN',
+                // 'S.FMSPESIALISASIN',
                 'PRI.PRWIKD_DOKTER',
                 'PRI.PRWIKD_CUSTOMER',
-                'DR.FMDDOKTERN'
+                'DR.FMDDOKTERN',
+                'PRI.PRWITGL_KELUAR AS TGL_KELUAR',
             )
-            ->orderBy('TPI.FTTGL_TRANSAKSI', 'asc')
+            ->orderBy('PRI.PRWITGL_KELUAR', 'asc')
             ->limit($per_page)
             ->offset(($page - 1) * $per_page)
             ->get();
-
-        // Hitung tanggal keluar untuk tiap pasien
-        $data->transform(function ($item) {
-            $item->TGL_KELUAR = get_tgl_keluar_inap($item->FTNO_TRANSAKSI);
-            return $item;
-        });
 
         return [
             'total' => $total,

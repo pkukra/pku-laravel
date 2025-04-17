@@ -1,42 +1,59 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, Button, Table, Row, Col, DatePicker, Input } from "antd";
+import { Card, Button, Table, Row, Col, DatePicker, Input, Select } from "antd";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
 
-export default function Index({ auth }) {
+export default function Index({ auth, bangsal }) {
     const queryParams = new URLSearchParams(window.location.search);
 
     const initialPage = parseInt(queryParams.get("page")) || 1;
     const initialPerPage = parseInt(queryParams.get("per_page")) || 100;
-    const initialDate =
-        queryParams.get("date") || moment().format("YYYY-MM-DD");
+    const initialTanggalKeluar =
+        queryParams.get("tanggal_keluar") || moment().format("YYYY-MM-DD");
     const initialKodeDokter = queryParams.get("kode_dokter") || "";
-    const initialNoRM = queryParams.get("no_rm") || ""; // Add for No RM filter
+    const initialNoRM = queryParams.get("no_rm") || "";
+    const initialKodeBangsal = queryParams.get("kode_bangsal") || "";
 
     const [loading, setLoading] = useState(false);
     const [dataPasienInaps, setDataPasienInaps] = useState([]);
     const [totalData, setTotalData] = useState(0);
     const [page, setPage] = useState(initialPage);
     const [perPage, setPerPage] = useState(initialPerPage);
-    const [date, setDate] = useState(initialDate);
+    const [tanggalKeluar, setTanggalKeluar] = useState(initialTanggalKeluar);
     const [kodeDokter, setKodeDokter] = useState(initialKodeDokter);
-    const [noRM, setNoRM] = useState(initialNoRM); // Add state for No RM filter
+    const [noRM, setNoRM] = useState(initialNoRM);
+    const [kodeBangsal, setKodeBangsal] = useState(initialKodeBangsal);
 
     const columnsInap = [
         {
-            title: "Spesialisasi",
-            dataIndex: "FMSPESIALISASIN",
-            key: "FMSPESIALISASIN",
-            fixed: "left",
+            title: "Tanggal Masuk",
+            dataIndex: "FTTGL_TRANSAKSI",
+            render: (_, record) => (
+                <>{moment(record?.FTTGL_TRANSAKSI).format("DD/MM/YYYY")}</>
+            ),
         },
         {
-            title: "Kelas Kamar",
-            dataIndex: "FMKKAMARN",
-            key: "FMKKAMARN",
-            fixed: "left",
+            title: "Tanggal Keluar",
+            dataIndex: "TGL_KELUAR",
+            render: (_, record) => (
+                <>
+                    {record?.TGL_KELUAR &&
+                        moment(record?.TGL_KELUAR).format("DD/MM/YYYY")}
+                </>
+            ),
+        },
+        {
+            title: "No RM / Nama Pasien",
+            dataIndex: "NAMAPASIEN",
+            render: (_, record) => (
+                <>
+                    {record.FTKD_PASIEN} /<br />
+                    {record.NAMAPASIEN}
+                </>
+            ),
         },
         {
             title: "Kamar",
@@ -45,42 +62,20 @@ export default function Index({ auth }) {
             fixed: "left",
         },
         {
-            title: "Tanggal Masuk",
-            dataIndex: "FTTGL_TRANSAKSI",
-            render: (_, record) => (
-                <>
-                {moment(record?.FTTGL_TRANSAKSI).format("DD/MM/YYYY")}
-                </>
-            ),
-        },
-        {
-            title: "Tanggal Keluar",
-            dataIndex: "TGL_KELUAR",
-            render: (_, record) => (
-                <>
-                {
-                    (record?.TGL_KELUAR)
-                    &&
-                    moment(record?.TGL_KELUAR).format("DD/MM/YYYY")
-                }
-                </>
-            ),
-        },
-        {
             title: "Dokter",
             dataIndex: "FMDDOKTERN",
             key: "FMDDOKTERN",
             fixed: "left",
+            render: (_, record) => (
+                <>
+                    {record?.PRWIKD_DOKTER} - {record?.FMDDOKTERN}
+                </>
+            ),
         },
         {
             title: "Kelompok",
             dataIndex: "PRWIKD_CUSTOMER",
             key: "PRWIKD_CUSTOMER",
-        },
-        {
-            title: "No Transaksi",
-            dataIndex: "FTNO_TRANSAKSI",
-            key: "FTNO_TRANSAKSI",
         },
         {
             title: "Action",
@@ -110,16 +105,16 @@ export default function Index({ auth }) {
                 route("rm.pasien-inap.list_inap_data"),
                 {
                     params: {
-                        date,
+                        tanggal_keluar: tanggalKeluar,
                         page: pageVal,
                         per_page: perPageVal,
                         kode_dokter: kodeDokter,
-                        no_rm: noRM, // Pass the No RM filter
+                        no_rm: noRM,
+                        kode_bangsal: kodeBangsal, 
                     },
                 }
             );
-            console.log(response?.data);
-            
+
             setDataPasienInaps(response?.data?.data?.data || []);
             setTotalData(response?.data?.data?.total || 0);
         } catch (error) {
@@ -136,9 +131,9 @@ export default function Index({ auth }) {
         const params = new URLSearchParams(window.location.search);
         params.set("page", newPage);
         params.set("per_page", newPerPage);
-        params.set("date", date);
+        params.set("tanggal_keluar", tanggalKeluar);
         params.set("kode_dokter", kodeDokter);
-        params.set("no_rm", noRM); // Update No RM in URL
+        params.set("no_rm", noRM);
         window.history.replaceState(null, "", `?${params.toString()}`);
 
         setPage(newPage);
@@ -149,6 +144,13 @@ export default function Index({ auth }) {
     useEffect(() => {
         fetchDataPasienInap();
     }, []);
+
+    const optionsBangsal = [
+        ...bangsal.map((item) => ({
+            value: item.FMKAMAR_ID,
+            label: item.FMKAMARN,
+        })),
+    ];
 
     return (
         <AuthenticatedLayout
@@ -165,11 +167,11 @@ export default function Index({ auth }) {
                     <Col span={3}>
                         <DatePicker
                             allowClear={false}
-                            value={dayjs(date)}
+                            value={dayjs(tanggalKeluar)}
                             onChange={(dateMoment, dateString) =>
-                                setDate(dateString)
+                                setTanggalKeluar(dateString)
                             }
-                            placeholder="Pilih tanggal"
+                            placeholder="Tanggal Keluar"
                             disabledDate={(current) =>
                                 current && current > moment().endOf("day")
                             }
@@ -180,7 +182,17 @@ export default function Index({ auth }) {
                             allowClear
                             placeholder="No RM"
                             value={noRM}
-                            onChange={(e) => setNoRM(e.target.value)} // Add input for No RM
+                            onChange={(e) => setNoRM(e.target.value)}
+                        />
+                    </Col>
+                    <Col span={4}>
+                        <Select
+                            style={{ width: "100%" }}
+                            options={optionsBangsal} // Menampilkan bangsal sebagai opsi
+                            value={kodeBangsal} // Nilai yang dipilih
+                            onChange={(value) => setKodeBangsal(value)} // Perbarui state ketika ada perubahan
+                            allowClear
+                            placeholder="Pilih Bangsal"
                         />
                     </Col>
                     <Col span={3}>
@@ -201,9 +213,10 @@ export default function Index({ auth }) {
                                 );
                                 params.set("page", 1);
                                 params.set("per_page", perPage);
-                                params.set("date", date);
+                                params.set("tanggal_keluar", tanggalKeluar);
                                 params.set("kode_dokter", kodeDokter);
-                                params.set("no_rm", noRM); // Add No RM to the query params
+                                params.set("no_rm", noRM);
+                                params.set("kode_bangsal", kodeBangsal); // Tambahkan kode bangsal ke query params
                                 window.history.replaceState(
                                     null,
                                     "",
@@ -217,21 +230,20 @@ export default function Index({ auth }) {
                             Cari
                         </Button>
                     </Col>
-
                     <Col span={2}>
                         <Button
                             block
                             onClick={() => {
                                 window.location.replace(
-                                    `${route("rm.pasien-rujukan.list_rujukan")}`
+                                    `${route("rm.pasien-inap.list_inap")}`
                                 );
-                                return;
                             }}
                         >
                             Reset
                         </Button>
                     </Col>
                 </Row>
+
                 <small>
                     total data: {totalData}. Page: {page}. Perpage: {perPage}
                 </small>
