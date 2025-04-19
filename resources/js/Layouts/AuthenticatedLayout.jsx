@@ -5,6 +5,7 @@ import {
     CodeOutlined,
     HomeOutlined,
     MonitorOutlined,
+    PoweroffOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 
@@ -27,11 +28,17 @@ const items = [
             },
             {
                 key: "rm/pasien-rujukan/list_rujukan",
-                label: <a href={route("rm.pasien-rujukan.list_rujukan")}>List Rajal</a>,
+                label: (
+                    <a href={route("rm.pasien-rujukan.list_rujukan")}>
+                        List Rajal
+                    </a>
+                ),
             },
             {
                 key: "rm-ranap",
-                label: <a href={route("rm.pasien-inap.list_inap")}>List Ranap</a>,
+                label: (
+                    <a href={route("rm.pasien-inap.list_inap")}>List Ranap</a>
+                ),
             },
         ],
     },
@@ -39,15 +46,18 @@ const items = [
         key: "casemix", // Untuk `/casemix` dan turunannya
         icon: <MonitorOutlined />,
         label: (
-            <a href={route("casemix.ranap-monit.list_pasien")}>
-                Ranap Monitor
-            </a>
+            <a href={route("casemix.ranap-monit.list_pasien")}>Ranap Monitor</a>
         ),
     },
     {
-        key: "profile", // Untuk `/profile`
+        key: "profile",
         icon: <UserOutlined />,
         label: <a href={route("profile.edit")}>Profile</a>,
+    },
+    {
+        key: "logout",
+        icon: <PoweroffOutlined />,
+        label: <a href={route("logout")}>Logout</a>,
     },
 ];
 
