@@ -162,6 +162,8 @@ export default function Index({ pasien }) {
             setLoadingSaveDiag(false);
             setSelectedProcedureForm(null);
             setSelectedProcedureDisplay(null);
+
+            inputRefStatusProcedure.current?.focus();
         }
         return;
     };
