@@ -173,19 +173,37 @@ class PasienRujukanEklaimRepository
         $response =  sendRequest($key, $requestData);
 
         $grouper = $this->bridgingGroupStage1Process($no_sep);
+        $cbg_code = $grouper->response->response->cbg->code ?? null;
+        $tarif_inacbg = $grouper->response->response->cbg->tariff ?? 0;
+
         $special_cmg = implode('#', array_column($grouper->response->special_cmg_option ?? [], 'code'));
         if (!empty($specialCmg)) {
-            $this->bridgingGroupStage2Process($no_sep, $special_cmg);
+            $grouper2 = $this->bridgingGroupStage2Process($no_sep, $special_cmg);
+            $cbg_code = $grouper2->response->response->cbg->code ?? null;
+            $tarif_inacbg = $grouper2->response->response->cbg->tariff ?? 0;
         }
 
-        $this->auditTrail->insert([
-            "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
-            "action_id" => 6,
-            "user_email" => $user->email,
-            "user_id" => $user->id,
-            "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            "data" => $data,
-        ]);
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('TRANSAKSIPASIEN')
+                ->where('FTNO_TRANSAKSI', $transaksi_utama->FRPNOTRANSAKSIKJ)
+                ->update([
+                    'FTKODEINACBG' => $cbg_code,
+                    'FTTARIPINACBG' => (float) $tarif_inacbg,
+                    'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1')
+                ]);
+
+            $this->auditTrail->insert([
+                "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                "action_id" => 6,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data" => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("PasienRujukanEklaimRepository bridgingDataProcess err: " . $e->getMessage());
+        }
 
         return $response;
     }
@@ -296,7 +314,6 @@ class PasienRujukanEklaimRepository
                     ->update([
                         'IS_INACBG_FINAL' => 1,
                     ]);
-                    
             } catch (\Exception $e) {
                 Log::error('Final process PASIEN_RUJUKAN IS_INACBG_FINAL err: ' . $e->getMessage());
                 return (object)[
