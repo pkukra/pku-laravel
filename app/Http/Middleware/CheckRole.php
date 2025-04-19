@@ -14,11 +14,11 @@ class CheckRole
         $user = Auth::user();
 
         // Log user dan role yang ada
-        Log::info('User Role Check', [
-            'user_id' => $user ? $user->id : 'No user',
-            'role' => $user && $user->role ? $user->role->name : 'No role',
-            'allowed_roles' => $roles
-        ]);
+        // Log::info('User Role Check', [
+        //     'user_id' => $user ? $user->id : 'No user',
+        //     'role' => $user && $user->role ? $user->role->name : 'No role',
+        //     'allowed_roles' => $roles
+        // ]);
 
         if (!$user || !$user->role) {
             abort(403, 'Akses ditolak.');
