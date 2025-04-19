@@ -388,8 +388,14 @@ class PasienRujukanRepository
             ->table('PENYAKIT')
             ->select('PENYAKIT.*')
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                return $query->where('PENYAKIT.KD_PENYAKIT', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('PENYAKIT.PENYAKIT', 'like', '%' . $searchTerm . '%');
+                return $query->whereRaw(
+                    "REPLACE(PENYAKIT.KD_PENYAKIT, '.', '') like ?",
+                    ['%' . str_replace('.', '', $searchTerm) . '%']
+                )
+                    ->orWhereRaw(
+                        "REPLACE(PENYAKIT.PENYAKIT, '.', '') like ?",
+                        ['%' . str_replace('.', '', $searchTerm) . '%']
+                    );
             })
             ->skip(($page - 1) * 20) // Skip based on current page
             ->take(20) // Limit results per page
@@ -554,8 +560,15 @@ class PasienRujukanRepository
             ->table('MR_ICD9')
             ->select('MR_ICD9.*')
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                return $query->where('MR_ICD9.FMI9KODE', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('MR_ICD9.FMI9KETERANGAN', 'like', '%' . $searchTerm . '%');
+                $searchTermWithoutDot = str_replace('.', '', $searchTerm); // Menghapus titik dari search term
+                return $query->whereRaw(
+                    "REPLACE(MR_ICD9.FMI9KODE, '.', '') like ?",
+                    ['%' . $searchTermWithoutDot . '%']
+                )
+                    ->orWhereRaw(
+                        "REPLACE(MR_ICD9.FMI9KETERANGAN, '.', '') like ?",
+                        ['%' . $searchTermWithoutDot . '%']
+                    );
             })
             ->skip(($page - 1) * 20) // Skip based on current page
             ->take(20) // Limit results per page
