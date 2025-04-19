@@ -116,6 +116,7 @@ class PasienRujukanRepository
     {
         return DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
+            ->leftJoin('TRANSAKSIPASIEN', 'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'TRANSAKSIPASIEN.FTNO_TRANSAKSI')
             ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
@@ -129,7 +130,9 @@ class PasienRujukanRepository
                 'PASIEN_RUJUKAN.*',
                 'DOKTER.FMDDOKTERN',
                 'POLIKLINIK.FMPKLINIKN',
-                'cm.KETERANGAN AS CARA_MASUK_BPJS'
+                'cm.KETERANGAN AS CARA_MASUK_BPJS',
+                'TRANSAKSIPASIEN.FTTARIPINACBG',
+                'TRANSAKSIPASIEN.FTKODEINACBG'
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
             ->first();  // Menggunakan `first` karena hanya mengambil satu data

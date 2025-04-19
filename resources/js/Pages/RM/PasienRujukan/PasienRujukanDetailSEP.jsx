@@ -148,12 +148,18 @@ export default function Index({ pasien, user }) {
         }
     };
 
+    const RupiahFormat = (x) => {
+        const number = Number(x);
+        const formatted = new Intl.NumberFormat("id-ID").format(number);
+        return formatted;
+    };
+
     useEffect(() => {
         fetchNoSep();
     }, []);
 
     let ketSep = "";
-    if (pasien.FRPCUSTOMER_ID === "X002" || pasien.FRPCUSTOMER_ID === "X003") {
+    if (pasien.FRPCUSTOMER_ID == "X002" || pasien.FRPCUSTOMER_ID == "X003") {
         ketSep = noSep == null ? "Belum ada SEP" : `No SEP: ${noSep}`;
     } else {
         ketSep = "Bukan Pasien BPJS";
@@ -165,6 +171,22 @@ export default function Index({ pasien, user }) {
         <>
             <Card title={"INACBG/BPJS/SEP"} loading={loadingSep}>
                 <p>{ketSep} </p>
+
+                {ketSep == "Bukan Pasien BPJS" ? (
+                    <>
+                    </>
+                ) : (
+                    <><p>
+                    KODE INAGROUPER:{" "}
+                    <strong>{pasien?.FTKODEINACBG}</strong>
+                </p>
+                <p>
+                    Tarif INACBG: &nbsp;&nbsp;{" "}
+                    <strong>
+                        Rp {RupiahFormat(pasien?.FTTARIPINACBG)}
+                    </strong>
+                </p></>
+                )}
 
                 <Tooltip
                     title={
