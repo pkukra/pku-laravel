@@ -114,7 +114,10 @@ class PasienInapRepository
                 if ($is_inacbg_final == "final") {
                     return $query->where('TPI.FKUNCI_VALIDASI', 1);
                 }
-                return $query->where('TPI.FKUNCI_VALIDASI', '!=', 1);
+                return $query->where(function ($subQuery) {
+                    $subQuery->whereNull('TPI.FKUNCI_VALIDASI')
+                        ->orWhere('TPI.FKUNCI_VALIDASI', 0);
+                });
             });
 
         $total = (clone $baseQuery)->count();
