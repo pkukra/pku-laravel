@@ -72,14 +72,15 @@ export default function Index({ auth }) {
             ),
         },
         {
-            title: "Kode Poly",
-            dataIndex: "FRPUNIT",
-            key: "FRPUNIT",
-        },
-        {
-            title: "Nama Poly",
+            title: "Kode - Nama Poly",
             dataIndex: "FMPKLINIKN",
             key: "FMPKLINIKN",
+            render: (_, record) => (
+                <>
+                    {record.FRPUNIT} /<br />
+                    {record.FMPKLINIKN}
+                </>
+            ),
         },
         {
             title: "Kode Dokter",

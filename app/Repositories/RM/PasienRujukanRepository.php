@@ -45,7 +45,13 @@ class PasienRujukanRepository
     {
         $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
-            ->join('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->join(
+                DB::raw('(SELECT FS_KD_REG FROM PKU.dbo.TAC_RJ_MEDIS GROUP BY FS_KD_REG) AS TAC_RJ_MEDIS'),
+                'PASIEN_RUJUKAN.FRPNOTRANSAKSI',
+                '=',
+                'TAC_RJ_MEDIS.FS_KD_REG'
+            )
+            ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
             ->when($date, function ($query, $date) {
