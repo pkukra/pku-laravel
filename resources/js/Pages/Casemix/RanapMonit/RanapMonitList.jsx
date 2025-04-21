@@ -12,6 +12,7 @@ import {
     Col,
     Select,
     Typography,
+    notification,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -489,12 +490,21 @@ export default function Index({ auth, bangsal }) {
             )
             .then((response) => {
                 console.log(response?.data);
-            })
-            .catch((error) => {})
-            .finally(() => {
                 setLoadingSave(false);
                 setOpenModalUpdate(false);
                 fetchData();
+                return notification.success({
+                    placement: "bottomRight",
+                    message: "Sukses",
+                    description: "Data berhasil disimpan",
+                });
+            })
+            .catch((error) => {
+                return notification.error({
+                    placement: "bottomRight",
+                    message: "Gagal Memperbarui Data",
+                    description: error.response?.data?.message,
+                });
             });
     };
 
