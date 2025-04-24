@@ -113,16 +113,16 @@ return [
         
         'sqlsrvemr' => [
             'driver' => 'sqlsrv',
-            'url' => env('DB_EMR_URL'),
-            'host' => env('DB_EMR_HOST', 'localhost'),
-            'port' => env('DB_EMR_PORT', '1433'),
-            'database' => env('DB_EMR_DATABASE', 'laravel'),
-            'username' => env('DB_EMR_USERNAME', 'root'),
-            'password' => env('DB_EMR_PASSWORD', ''),
-            'charset' => env('DB_EMR_CHARSET', 'utf8'),
+            'url' => env('DB_SQLEMR_URL'),
+            'host' => env('DB_SQLEMR_HOST', 'localhost'),
+            'port' => env('DB_SQLEMR_PORT', '1433'),
+            'database' => env('DB_SQLEMR_DATABASE', 'laravel'),
+            'username' => env('DB_SQLEMR_USERNAME', 'root'),
+            'password' => env('DB_SQLEMR_PASSWORD', ''),
+            'charset' => env('DB_SQLEMR_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'trust_server_certificate' => env('DB_EMR_TRUST_SERVER_CERTIFICATE', 'false'),
+            'trust_server_certificate' => env('DB_SQLEMR_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
         'sqlsrv' => [
