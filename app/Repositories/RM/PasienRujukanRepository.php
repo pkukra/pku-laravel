@@ -891,7 +891,7 @@ class PasienRujukanRepository
      */
     public function getResumeByTransaksi($kode_reg)
     {
-        return DB::connection('sqlsrvsimrs')
+        return DB::connection('sqlsrvemr')
             ->table('PKU.dbo.TAC_RJ_MEDIS')
             ->select('*')
             ->where('FS_KD_REG', $kode_reg)
