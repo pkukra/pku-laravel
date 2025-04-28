@@ -29,7 +29,9 @@ import BridgingData from "./BridgingData";
 
 const Textarea = Input.TextArea;
 
-export default function Index({ auth, bangsal }) {
+export default function Index({ auth, role, bangsal }) {
+    const { name: rolename } = role;
+
     const columns = [
         {
             title: "No RM & Kode Reg",
@@ -112,17 +114,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "PEMERIKSAAN_PENUNJANG",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {(rolename == "perawat" || rolename == "spv_bangsal") && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "PEMERIKSAAN_PENUNJANG",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -133,17 +137,20 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "HASIL_PENUNJANG_ABNORMAL",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "perawat" ||
+                        (rolename == "spv_bangsal" && (
+                            <a
+                                onClick={() => {
+                                    handleOpenModal({
+                                        key: "HASIL_PENUNJANG_ABNORMAL",
+                                        data_record: record,
+                                        value: text,
+                                    });
+                                }}
+                            >
+                                <EditOutlined />
+                            </a>
+                        ))}
                 </>
             ),
         },
@@ -170,10 +177,12 @@ export default function Index({ auth, bangsal }) {
                         diagnosaData[kodeReg]
                             .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
                             .join(" - ")}
-                    <RanapMonitListModalDiagnosa
-                        pasien={record}
-                        reFecthListData={fetchData}
-                    />
+                    {rolename == "koder" && (
+                        <RanapMonitListModalDiagnosa
+                            pasien={record}
+                            reFecthListData={fetchData}
+                        />
+                    )}
                 </>
             ),
         },
@@ -188,10 +197,12 @@ export default function Index({ auth, bangsal }) {
                         prosedurData[kodeReg]
                             .map((procedure) => procedure?.MRTKD_TINDAKAN)
                             .join(" - ")}
-                    <RanapMonitListModalProcedure
-                        pasien={record}
-                        reFecthListData={fetchData}
-                    />
+                    {rolename == "koder" && (
+                        <RanapMonitListModalProcedure
+                            pasien={record}
+                            reFecthListData={fetchData}
+                        />
+                    )}
                 </>
             ),
         },
@@ -216,7 +227,7 @@ export default function Index({ auth, bangsal }) {
                         {perkiraanKlaim !== null
                             ? Math.abs(perkiraanKlaim).toLocaleString()
                             : "-"}
-                        {record?.NO_SEP && (
+                        {record?.NO_SEP && rolename == "koder" && (
                             <BridgingData
                                 pasien={record}
                                 refetchData={fetchData}
@@ -281,17 +292,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "KONFIRMASI_KODER",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "koder" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "KONFIRMASI_KODER",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -302,17 +315,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "REKOMENDASI_DOKTER_BANGSAL",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "dokter" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "REKOMENDASI_DOKTER_BANGSAL",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -323,17 +338,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "FOLLOW_UP_SPV_BANGSAL",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "spv_bangsal" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "FOLLOW_UP_SPV_BANGSAL",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -344,17 +361,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "FOLLOW_UP_MPP",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "mpp" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "FOLLOW_UP_MPP",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
