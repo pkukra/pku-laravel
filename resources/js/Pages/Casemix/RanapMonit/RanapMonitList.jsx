@@ -137,20 +137,19 @@ export default function Index({ auth, role, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    {rolename == "perawat" ||
-                        (rolename == "spv_bangsal" && (
-                            <a
-                                onClick={() => {
-                                    handleOpenModal({
-                                        key: "HASIL_PENUNJANG_ABNORMAL",
-                                        data_record: record,
-                                        value: text,
-                                    });
-                                }}
-                            >
-                                <EditOutlined />
-                            </a>
-                        ))}
+                    {(rolename == "perawat" || rolename == "spv_bangsal") && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "HASIL_PENUNJANG_ABNORMAL",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
