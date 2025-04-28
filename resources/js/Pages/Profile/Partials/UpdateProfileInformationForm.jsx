@@ -138,7 +138,7 @@ export default function UpdateProfileInformation({
             <Card className={className} style={{ marginTop: 15 }}>
                 <Typography.Text>
                     Access Role
-                    <Input value={user.role.name} disabled/>
+                    <Input value={user?.role?.name} disabled/>
                 </Typography.Text>
             </Card>
         </>
