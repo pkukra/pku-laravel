@@ -88,7 +88,12 @@ export default function Index({ auth, role, bangsal }) {
                 const keluar = record.PRWITGL_KELUAR
                     ? moment(record.PRWITGL_KELUAR)
                     : moment();
-                return keluar.diff(masuk, "days");
+
+                // Calculate the difference in days and ensure at least 1 day is counted
+                const totalDays = keluar.diff(masuk, "days");
+
+                // If masuk is today, we need to add 1 to make sure it's counted as 1 day
+                return totalDays > 0 ? totalDays + 1 : 1; // Ensure it's at least 1 day
             },
         },
         {
