@@ -30,7 +30,7 @@ import BridgingData from "./BridgingData";
 const Textarea = Input.TextArea;
 
 export default function Index({ auth, role, bangsal }) {
-    const { name: rolename } = role;
+    const rolename = role?.name ?? null;
 
     const columns = [
         {
@@ -595,6 +595,21 @@ export default function Index({ auth, role, bangsal }) {
             label: item.FMKAMARN,
         })),
     ];
+
+    if (!rolename) {
+        return (
+            <AuthenticatedLayout
+                user={auth.user}
+                header={
+                    <p className="font-semibold text-lg text-gray-800 leading-tight">
+                        Pasien Ranap
+                    </p>
+                }
+            >
+                Akses tidak dijikan
+            </AuthenticatedLayout>
+        );
+    }
 
     return (
         <AuthenticatedLayout
