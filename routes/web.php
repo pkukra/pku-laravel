@@ -37,7 +37,7 @@ Route::prefix('casemix')->group(function () {
         Route::post('/save_procedure', [RanapMonitController::class, 'save_procedure'])->middleware(['auth', CheckRole::class.':superadmin,koder'])->name('casemix.ranap-monit.save_procedure');
         Route::delete('/delete_procedure/{id}', [RanapMonitController::class, 'delete_procedure'])->middleware(['auth', CheckRole::class.':superadmin,koder'])->name('casemix.ranap-monit.delete_procedure');
 
-        Route::post('/update_monit_row/{kode_reg}', [RanapMonitController::class, 'update_monit_row'])->middleware(['auth', CheckRole::class.':superadmin,koder,perawat'])->name('casemix.ranap-monit.update_monit_row');
+        Route::post('/update_monit_row/{kode_reg}', [RanapMonitController::class, 'update_monit_row'])->middleware(['auth'])->name('casemix.ranap-monit.update_monit_row');
 
         Route::get('/get_list_cppt/{kode_reg}', [RanapMonitController::class, 'get_list_cppt'])->name('casemix.pasien-inap.get_list_cppt');
 
