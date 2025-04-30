@@ -496,7 +496,7 @@ export default function Index({ auth, role, bangsal }) {
 
     const handleUpdate = () => {
         if (modalUpdateValue?.length > 300) {
-            return alert("Maksimal karakter 300");
+            return alert("Maksimal karakter 250");
         }
 
         setLoadingSave(true);
