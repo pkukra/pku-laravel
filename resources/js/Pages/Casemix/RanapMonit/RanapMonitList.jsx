@@ -630,7 +630,7 @@ export default function Index({ auth, role, bangsal }) {
             <Head title="Pasien Ranap" />
             <Card title="Pasien Ranap">
                 <Row gutter={16} style={{ marginBottom: 10 }}>
-                    <Col span={2}>
+                    <Col span={3}>
                         <DatePicker
                             allowClear={false}
                             value={dayjs(selectedYearMonth, "YYYY-MM")}
@@ -639,12 +639,15 @@ export default function Index({ auth, role, bangsal }) {
                             }}
                             picker="month"
                             placeholder="Pilih Bulan/Tahun"
+                            disabledDate={(current) =>
+                                current && current > moment().endOf("day")
+                            }
                         />
                     </Col>
-                    <Col span={2}>
+                    <Col span={3}>
                         <Input
                             allowClear
-                            placeholder="Cari Nomor RM"
+                            placeholder="Nomor RM"
                             value={selectedNoRM}
                             onChange={(e) => {
                                 const value = e.target.value;
@@ -688,7 +691,6 @@ export default function Index({ auth, role, bangsal }) {
                 </Row>
                 <small>
                     total data: {totalData}. Page: {page}. Perpage: {perPage}
-                    <p>scrollY: {scrollY}</p>
                 </small>
                 <Table
                     bordered
