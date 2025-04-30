@@ -77,7 +77,8 @@ const App = ({ children }) => {
         localStorage.setItem("collapsed", JSON.stringify(value));
     };
 
-    const currentKey = url.split("/")[1] || "";
+    const currentKey = url.split("/")[3] || "";
+
 
     return (
         <Layout style={{ minHeight: "100vh" }}>

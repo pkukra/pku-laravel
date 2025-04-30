@@ -38,7 +38,7 @@ export default function Index({ auth, role, bangsal }) {
             dataIndex: "FTNO_TRANSAKSI",
             key: "FTNO_TRANSAKSI",
             fixed: "left",
-            width: 115,
+            // width: 115,
             render: (text, record) => (
                 // Menambahkan link menggunakan route helper untuk membangun URL dinamis
                 <>
@@ -64,7 +64,6 @@ export default function Index({ auth, role, bangsal }) {
             dataIndex: "DPJP",
             key: "DPJP",
             fixed: "left",
-            width: 200,
         },
         {
             title: "Tanggal Masuk",
@@ -383,6 +382,7 @@ export default function Index({ auth, role, bangsal }) {
         },
     ];
 
+    const [scrollY, setScrollY] = useState(360); // default scroll height
     const [shouldFetch, setShouldFetch] = useState(false);
     const [selectedStatusRawat, setSelectedStatusRawat] = useState("dirawat");
     const [selectedNoRM, setSelectedNoRM] = useState(null);
@@ -582,6 +582,13 @@ export default function Index({ auth, role, bangsal }) {
     };
 
     useEffect(() => {
+        const screenWidth = window.innerWidth;
+        if (screenWidth > 1280) {
+            setScrollY(500); // Untuk layar besar
+        } else {
+            setScrollY(365); // Untuk layar kecil
+        }
+
         if (shouldFetch) {
             fetchData();
             setShouldFetch(false); // Matikan trigger setelah fetch
@@ -681,6 +688,7 @@ export default function Index({ auth, role, bangsal }) {
                 </Row>
                 <small>
                     total data: {totalData}. Page: {page}. Perpage: {perPage}
+                    <p>scrollY: {scrollY}</p>
                 </small>
                 <Table
                     bordered
@@ -691,7 +699,7 @@ export default function Index({ auth, role, bangsal }) {
                     rowKey="FTNO_TRANSAKSI"
                     scroll={{
                         x: 2000,
-                        y: 600,
+                        y: scrollY,
                     }}
                     pagination={{
                         simple: true,
