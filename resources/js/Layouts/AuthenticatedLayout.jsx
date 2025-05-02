@@ -97,10 +97,6 @@ const App = ({ children }) => {
             </Sider>
             <Layout>
                 <Content style={{ margin: "16px" }}>{children}</Content>
-                <Footer style={{ textAlign: "center" }}>
-                    X App PKU Muhammadiyah Karanganyar ©{" "}
-                    {new Date().getFullYear()} Created By IT Team
-                </Footer>
             </Layout>
         </Layout>
     );
