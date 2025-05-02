@@ -42,8 +42,8 @@ class RanapMonitController extends Controller
         $status = $request->status ?? "dirawat";
         $nomer_rm = $request->nomer_rm ?? "";
 
-        $month = $request->month ?? date('m');
-        $year = $request->year ?? date('Y');
+        $month = $request->month;
+        $year = $request->year;
 
         $perPage = $request->get('per_page', 10);
         $page = $request->get('page', 1);

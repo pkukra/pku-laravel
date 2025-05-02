@@ -22,62 +22,60 @@ class RanapMonitRepository
      */
     public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false, $order_kamar = false)
     {
-        $query = DB::connection('sqlsrvsimrs')
-            ->table('TRANSAKSIPASIENINAP AS TPI')
-            ->join('PASIENRAWATINAP AS PRI', function ($join) {
-                $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
-                    ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
-            })
-            ->leftJoin('PASIEN AS P', 'P.KD_PASIEN', '=', 'TPI.FTKD_PASIEN')
-            ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
-            ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
-            ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
-            ->when($bulan != null && $tahun != null, function ($query) use ($bulan, $tahun) {
-                return $query->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
-                    ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun]);
-            })
-            ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
-            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
+        $subQuery = DB::connection('sqlsrvsimrs')
+            ->table('PASIENRAWATINAP')
+            ->select('PRWINO_TRANSAKSI', DB::raw('MAX(PRWITGL_KELUAR) AS TGL_KELUAR'))
+            ->groupBy('PRWINO_TRANSAKSI');
 
-        if ($bangsal_induk != 'all') {
-            $query->where('K.FMKKAMARINDUK', $bangsal_induk);
-        }
+        $latestRowSub = DB::connection('sqlsrvsimrs')
+            ->table('PASIENRAWATINAP AS PRI')
+            ->select('PRI.*')
+            ->joinSub($subQuery, 'LAST', function ($join) {
+                $join->on('PRI.PRWINO_TRANSAKSI', '=', 'LAST.PRWINO_TRANSAKSI')
+                    ->on(DB::raw("ISNULL(PRI.PRWITGL_KELUAR, '1900-01-01')"), '=', DB::raw("ISNULL(LAST.TGL_KELUAR, '1900-01-01')"));
+            });
 
-        if ($nomer_rm) {
-            $query->where('TPI.FTKD_PASIEN', $nomer_rm);
-        }
+        $baseQuery = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN AS P')
+            ->joinSub($latestRowSub, 'PRI', function ($join) {
+                $join->on('PRI.PRWIKD_PASIEN', '=', 'P.KD_PASIEN');
+            })
+            ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
+            ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
+            ->when($bangsal_induk, function ($query, $kode_bangsal) {
+                return $query->where('K.FMKKAMARINDUK', $kode_bangsal);
+            })
+            ->when($status == 'dirawat', function ($query) {
+                return $query->whereNull('PRI.PRWITGL_KELUAR');
+            })
+            ->when($status == 'sudah_pulang', function ($query) {
+                return $query->whereNotNull('PRI.PRWITGL_KELUAR');
+            })
+            ->whereMonth('PRI.PRWITGL_INAP', '=', $bulan)
+            ->whereYear('PRI.PRWITGL_INAP', '=', $tahun);
 
         if ($countOnly) {
-            return $query->count();
+            $total = (clone $baseQuery)->count(DB::raw('DISTINCT PRI.PRWINO_TRANSAKSI'));
+            return $total;
         }
 
-        $data = $query->select(
-            'TPI.FTNO_TRANSAKSI',
-            'PRI.PRWIKD_KAMAR',
-            'PRI.PRWIKD_KELAS',
-            'PRI.PRWIKD_DOKTER',
-            'PRI.PRWITGL_KELUAR',
-            'TPI.FTTGL_TRANSAKSI',
-            'TPI.FTKD_PASIEN',
-            'TPI.FTTARIPINACBG',
-            'TPI.FTTARIPINACBG1',
-            'TPI.FTTARIPINACBG2',
-            'TPI.FTTARIPINACBG3',
-            'P.NAMAPASIEN',
-            'DR.FMDDOKTERN AS DPJP',
-            'FMKODEKELAS AS KELAS_RAWAT',
-            'K.FMKNAMA_KAMAR'
-        );
-        if ($order_kamar) {
-            $query->orderBy('K.FMKKAMARINDUK', 'asc');
-        } else {
-            $query->orderBy('TPI.FTTGL_TRANSAKSI', 'desc');
-        }
-        $data = $data->offset($offset)
-            ->limit($perPage)
+        // Ambil data detail jika count = false
+        $data = $baseQuery
+            ->select(
+                'PRI.PRWINO_TRANSAKSI',
+                'PRI.PRWIKD_PASIEN',
+                'P.NAMAPASIEN',
+                'DR.FMDDOKTERN',
+                DB::raw('MAX(PRI.PRWITGL_MASUK) AS PRWITGL_MASUK'),
+                DB::raw('MAX(PRI.PRWITGL_KELUAR) AS PRWITGL_KELUAR'),
+                DB::raw("CASE 
+            WHEN MAX(PRI.PRWITGL_KELUAR) IS NULL THEN DATEDIFF(DAY, MAX(PRI.PRWITGL_MASUK), GETDATE()) + 1
+            ELSE DATEDIFF(DAY, MAX(PRI.PRWITGL_MASUK), MAX(PRI.PRWITGL_KELUAR)) + 1
+        END AS TOTAL_HARI")
+            )
+            ->groupBy('PRI.PRWINO_TRANSAKSI', 'PRI.PRWIKD_PASIEN', 'P.NAMAPASIEN', 'DR.FMDDOKTERN')
+            ->orderByDesc('PRWITGL_MASUK')
             ->get();
-
-
 
         return collect($data)->map(function ($data_detail) {
             $ranap = get_casemix_ranap_data($data_detail->FTNO_TRANSAKSI);

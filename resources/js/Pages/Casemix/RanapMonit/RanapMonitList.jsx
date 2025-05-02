@@ -382,13 +382,14 @@ export default function Index({ auth, role, bangsal }) {
         },
     ];
 
-    const [scrollY, setScrollY] = useState(360); // default scroll height
+    const [scrollY, setScrollY] = useState(400); // default scroll height
     const [shouldFetch, setShouldFetch] = useState(false);
     const [selectedStatusRawat, setSelectedStatusRawat] = useState("dirawat");
     const [selectedNoRM, setSelectedNoRM] = useState(null);
-    const [selectedYearMonth, setSelectedYearMonth] = useState(
-        dayjs().format("YYYY-MM")
-    );
+    const [selectedYearMonth, setSelectedYearMonth] = useState(null);
+    // const [selectedYearMonth, setSelectedYearMonth] = useState(
+    //     dayjs().format("YYYY-MM")
+    // );
     const [selectedBangsal, setSelectedBangsal] = useState("IK042");
 
     const [page, setPage] = useState(1);
@@ -533,17 +534,18 @@ export default function Index({ auth, role, bangsal }) {
 
     const fetchData = async () => {
         setLoadingFetchData(true);
-
         try {
-            const [year, month] = selectedYearMonth.split("-");
+            const [year, month] = selectedYearMonth
+                ? selectedYearMonth.split("-")
+                : [null, null];
             const { data } = await axios.get(
                 route("casemix.ranap-monit.list_pasien_data"),
                 {
                     params: {
                         page: page,
                         per_page: perPage,
-                        year,
-                        month,
+                        year: year,
+                        month: month,
                         status: selectedStatusRawat,
                         nomer_rm: selectedNoRM,
                         bangsal_induk: selectedBangsal,
@@ -561,6 +563,7 @@ export default function Index({ auth, role, bangsal }) {
             setLoadingFetchData(false);
         }
     };
+
     const hadleCetakKlaim = () => {
         const [year, month] = selectedYearMonth.split("-");
 
@@ -586,7 +589,7 @@ export default function Index({ auth, role, bangsal }) {
         if (screenWidth > 1280) {
             setScrollY(500); // Untuk layar besar
         } else {
-            setScrollY(365); // Untuk layar kecil
+            setScrollY(400); // Untuk layar kecil
         }
 
         if (shouldFetch) {
@@ -631,9 +634,15 @@ export default function Index({ auth, role, bangsal }) {
             <Card title="Pasien Ranap">
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={3}>
+                        <Typography.Text strong>Bulan Masuk</Typography.Text>
                         <DatePicker
-                            allowClear={false}
-                            value={dayjs(selectedYearMonth, "YYYY-MM")}
+                            style={{ width: "100%" }}
+                            allowClear
+                            value={
+                                selectedYearMonth
+                                    ? dayjs(selectedYearMonth, "YYYY-MM")
+                                    : null
+                            }
                             onChange={(date, dateString) => {
                                 setSelectedYearMonth(dateString);
                             }}
@@ -645,6 +654,7 @@ export default function Index({ auth, role, bangsal }) {
                         />
                     </Col>
                     <Col span={3}>
+                        <Typography.Text strong>Nomer RM</Typography.Text>
                         <Input
                             allowClear
                             placeholder="Nomor RM"
@@ -656,6 +666,7 @@ export default function Index({ auth, role, bangsal }) {
                         />
                     </Col>
                     <Col span={4}>
+                        <Typography.Text strong>Status</Typography.Text>
                         <Select
                             defaultValue={selectedStatusRawat}
                             style={{ width: "100%" }}
@@ -671,6 +682,7 @@ export default function Index({ auth, role, bangsal }) {
                         />
                     </Col>
                     <Col span={4}>
+                        <Typography.Text strong>Bangsal</Typography.Text>
                         <Select
                             value={selectedBangsal}
                             style={{ width: "100%" }}
@@ -679,12 +691,14 @@ export default function Index({ auth, role, bangsal }) {
                         />
                     </Col>
                     <Col span={2}>
+                        <Typography.Text strong>&nbsp;</Typography.Text>
                         <Button block type="primary" onClick={handleCari}>
                             Cari
                         </Button>
                     </Col>
                     <Col span={2}>
-                        <Button color="cyan" onClick={hadleCetakKlaim}>
+                        <Typography.Text strong>&nbsp;</Typography.Text>
+                        <Button block onClick={hadleCetakKlaim}>
                             Download XLS
                         </Button>
                     </Col>
