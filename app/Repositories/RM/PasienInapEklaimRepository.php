@@ -654,17 +654,22 @@ class PasienInapEklaimRepository
             }
         }
 
-        $pendukung = DB::connection('sqlsrvsimrs')
-            ->table('TRANSAKSIPASIENINAPD')
-            ->where('FDTNO_TRANSAKSI', trim($pasien_inap->PRWINO_TRANSAKSI))
-            ->whereRaw("LEFT(FDTNO_FAKTUR, 3) = 'FRO'")
-            ->select('FDTNO_TRANSAKSI', DB::raw('SUM(FDTKREDIT) as KREDIT'))
-            ->groupBy('FDTNO_TRANSAKSI')
-            ->first();
+        // mencari retur obat lama, jika lihat di masa depan hapus saja. sudah digantikan dibawahnya XD
+        // $pendukung = DB::connection('sqlsrvsimrs')
+        //     ->table('TRANSAKSIPASIENINAPD')
+        //     ->where('FDTNO_TRANSAKSI', trim($pasien_inap->PRWINO_TRANSAKSI))
+        //     ->whereRaw("LEFT(FDTNO_FAKTUR, 3) = 'FRO'")
+        //     ->select('FDTNO_TRANSAKSI', DB::raw('SUM(FDTKREDIT) as KREDIT'))
+        //     ->groupBy('FDTNO_TRANSAKSI')
+        //     ->first();
 
-        if ($pendukung) {
-            $tarif['obat'] = $tarif['obat'] - $pendukung->KREDIT;
-        }
+        // mencari retur obat jika ada maka dikurangi dari total obat. langsung dari tabel RETURJIN
+        $obatRetur = (int) DB::connection('sqlsrvsimrs')
+            ->table('RETURJIN')
+            ->where('FHRJNO_TRANSAKSI', trim($pasien_inap->PRWINO_TRANSAKSI))
+            ->sum('FHRJTOTAL');
+
+        $tarif['obat'] = $tarif['obat'] - $obatRetur;
 
         return (object)[
             "tarif_rs" => $tarif,
