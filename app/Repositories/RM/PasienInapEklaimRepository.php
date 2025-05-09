@@ -143,21 +143,32 @@ class PasienInapEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_STATUS;
         }
 
-        switch ($vclaim_detail->response->klsRawat->klsRawatNaik) {
-            case "1":
-                $naik_kelas = "vvip";
-                break;
-            case "2":
+        $naik_kelas = null;
+        if ($vclaim_detail->response->klsRawat->klsRawatNaik) {
+            $klsRawat = $vclaim_detail->response->klsRawat;
+            if ($klsRawat->klsRawatHak === "1") {
+                // Jika hak kelas 1, maka naik kelas otomatis VIP
                 $naik_kelas = "vip";
-                break;
-            case "3":
-                $naik_kelas = "kelas_1";
-                break;
-            case "4":
-                $naik_kelas = "kelas_2";
-                break;
-            default:
-                $naik_kelas = null;
+            } else {
+                // Jika hak kelas bukan 1, tentukan naik kelas dari klsRawatNaik
+                switch ($klsRawat->klsRawatNaik) {
+                    case "1":
+                        $naik_kelas = "vvip";
+                        break;
+                    case "2":
+                        $naik_kelas = "vip";
+                        break;
+                    case "3":
+                        $naik_kelas = "kelas_1";
+                        break;
+                    case "4":
+                        $naik_kelas = "kelas_2";
+                        break;
+                    default:
+                        $naik_kelas = null;
+                        break;
+                }
+            }
         }
 
         // perhitungan tanggal dan los
