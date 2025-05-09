@@ -565,14 +565,18 @@ export default function Index({ auth, role, bangsal }) {
     };
 
     const hadleCetakKlaim = () => {
-        const [year, month] = selectedYearMonth.split("-");
-
+        const [year, month] = selectedYearMonth?.split("-") || [];
         const baseUrl = route(
             "casemix.ranap-monit.download_pasien_data_xls"
         ).toString();
-        const url = `${baseUrl}?year=${year}&month=${month}&bangsal_induk=${selectedBangsal}`;
 
-        window.open(url, "_blank");
+        const query = new URLSearchParams({
+            ...(year && { year }),
+            ...(month && { month }),
+            ...(selectedBangsal && { bangsal_induk: selectedBangsal }),
+        });
+
+        window.open(`${baseUrl}?${query}`, "_blank");
     };
 
     const handleCari = () => {
