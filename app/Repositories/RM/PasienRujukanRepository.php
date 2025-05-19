@@ -385,22 +385,21 @@ class PasienRujukanRepository
     public function searchPenyakit($searchTerm, $page)
     {
         return DB::connection('sqlsrvsimrs')
-            ->table('PENYAKIT')
-            ->select('PENYAKIT.*')
+            ->table('ICD')
+            ->select('ICD.*')
+            ->where('system', 'ICD_10_2010_IM') // <- Ini harus string
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                return $query->whereRaw(
-                    "REPLACE(PENYAKIT.KD_PENYAKIT, '.', '') like ?",
-                    ['%' . str_replace('.', '', $searchTerm) . '%']
-                )
-                    ->orWhereRaw(
-                        "REPLACE(PENYAKIT.PENYAKIT, '.', '') like ?",
-                        ['%' . str_replace('.', '', $searchTerm) . '%']
-                    );
+                $search = str_replace('.', '', $searchTerm);
+                return $query->where(function ($q) use ($search) {
+                    $q->whereRaw("REPLACE(ICD.code, '.', '') LIKE ?", ["%$search%"])
+                        ->orWhereRaw("REPLACE(CAST(ICD.description AS VARCHAR(MAX)), '.', '') LIKE ?", ["%$search%"]);
+                });
             })
-            ->skip(($page - 1) * 20) // Skip based on current page
-            ->take(20) // Limit results per page
+            ->skip(($page - 1) * 20)
+            ->take(20)
             ->get();
     }
+
 
     /**
      * Save diagnosa for pasien rujukan

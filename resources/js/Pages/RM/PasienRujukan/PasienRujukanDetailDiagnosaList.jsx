@@ -298,28 +298,28 @@ export default function Index({ pasien }) {
                             setSelectedDiagnosaForm(null); // Clear the stored code
                             setSelectedDiagnosaDisplay(""); // Clear the display value
                         }}
-                        options={anotherOptions.map((item) => ({
-                            value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`, // Display both code and name
-                            label: (
-                                <div
-                                    style={{
-                                        wordBreak: "break-word", // Ensure text wraps
-                                        whiteSpace: "normal", // Allow wrapping long words
-                                        overflowWrap: "break-word", // Break long words if necessary
-                                        display: "block", // Ensure block level behavior for wrapping
-                                    }}
-                                >
-                                    <strong>{item.KD_PENYAKIT}</strong> -{" "}
-                                    <span>{item.PENYAKIT}</span>
-                                </div>
-                            ),
-                            disabled: selectedDiagnosa.includes(
-                                item.KD_PENYAKIT
-                            ), // Disable if already selected
-                        }))}
+                        options={anotherOptions.map((item) => {
+                            return {
+                                value: `${item.code} - ${item.description}`, // Display both code and name
+                                label: (
+                                    <div
+                                        style={{
+                                            wordBreak: "break-word", // Ensure text wraps
+                                            whiteSpace: "normal", // Allow wrapping long words
+                                            overflowWrap: "break-word", // Break long words if necessary
+                                            display: "block", // Ensure block level behavior for wrapping
+                                        }}
+                                    >
+                                        <strong>{item.code}</strong> -{" "}
+                                        <span>{item.description}</span>
+                                    </div>
+                                ),
+                                disabled: selectedDiagnosa.includes(item.code), // Disable if already selected
+                            };
+                        })}
                         style={{ width: "100%" }}
                         onSelect={(value) => {
-                            const kdPenyakit = value.split(" - ")[0]; // Extract KD_PENYAKIT
+                            const kdPenyakit = value.split(" - ")[0]; // Extract code
                             const displayValue = value; // Full display value with name and code
                             setSelectedDiagnosaForm(kdPenyakit); // Store only the code
                             setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
@@ -331,7 +331,7 @@ export default function Index({ pasien }) {
                         onClick={(text) => {
                             fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
                         }}
-                        placeholder="Cari Diagnosa/Penyakit"
+                        placeholder="Cari Diagnosa/Penyakit (ICD10)"
                         onScroll={onScroll} // Attach scroll event for lazy loading
                         value={selectedDiagnosaDisplay} // Show both code and name in the input
                     />
