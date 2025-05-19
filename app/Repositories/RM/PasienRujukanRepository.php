@@ -368,9 +368,9 @@ class PasienRujukanRepository
     {
         return DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
-            ->join('PENYAKIT', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'PENYAKIT.KD_PENYAKIT')
+            ->join('ICD', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'ICD.code')
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
-            ->select('MR_PENYAKIT.*', 'PENYAKIT.PENYAKIT')
+            ->select('MR_PENYAKIT.*', 'ICD.description')
             ->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi)
             ->get();
     }

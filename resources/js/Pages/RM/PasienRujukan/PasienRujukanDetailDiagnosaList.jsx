@@ -34,8 +34,8 @@ export default function Index({ pasien }) {
         },
         {
             title: "Penyakit",
-            dataIndex: "PENYAKIT",
-            key: "PENYAKIT",
+            dataIndex: "description",
+            key: "description",
         },
         {
             title: "Action",
