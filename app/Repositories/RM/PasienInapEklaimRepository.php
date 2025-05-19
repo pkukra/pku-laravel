@@ -143,21 +143,32 @@ class PasienInapEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_STATUS;
         }
 
-        switch ($vclaim_detail->response->klsRawat->klsRawatNaik) {
-            case "1":
-                $naik_kelas = "vvip";
-                break;
-            case "2":
+        $naik_kelas = null;
+        if ($vclaim_detail->response->klsRawat->klsRawatNaik) {
+            $klsRawat = $vclaim_detail->response->klsRawat;
+            if ($klsRawat->klsRawatHak === "1") {
+                // Jika hak kelas 1, maka naik kelas otomatis VIP
                 $naik_kelas = "vip";
-                break;
-            case "3":
-                $naik_kelas = "kelas_1";
-                break;
-            case "4":
-                $naik_kelas = "kelas_2";
-                break;
-            default:
-                $naik_kelas = null;
+            } else {
+                // Jika hak kelas bukan 1, tentukan naik kelas dari klsRawatNaik
+                switch ($klsRawat->klsRawatNaik) {
+                    case "1":
+                        $naik_kelas = "vvip";
+                        break;
+                    case "2":
+                        $naik_kelas = "vip";
+                        break;
+                    case "3":
+                        $naik_kelas = "kelas_1";
+                        break;
+                    case "4":
+                        $naik_kelas = "kelas_2";
+                        break;
+                    default:
+                        $naik_kelas = null;
+                        break;
+                }
+            }
         }
 
         // perhitungan tanggal dan los
@@ -654,17 +665,22 @@ class PasienInapEklaimRepository
             }
         }
 
-        $pendukung = DB::connection('sqlsrvsimrs')
-            ->table('TRANSAKSIPASIENINAPD')
-            ->where('FDTNO_TRANSAKSI', trim($pasien_inap->PRWINO_TRANSAKSI))
-            ->whereRaw("LEFT(FDTNO_FAKTUR, 3) = 'FRO'")
-            ->select('FDTNO_TRANSAKSI', DB::raw('SUM(FDTKREDIT) as KREDIT'))
-            ->groupBy('FDTNO_TRANSAKSI')
-            ->first();
+        // mencari retur obat lama, jika lihat di masa depan hapus saja. sudah digantikan dibawahnya XD
+        // $pendukung = DB::connection('sqlsrvsimrs')
+        //     ->table('TRANSAKSIPASIENINAPD')
+        //     ->where('FDTNO_TRANSAKSI', trim($pasien_inap->PRWINO_TRANSAKSI))
+        //     ->whereRaw("LEFT(FDTNO_FAKTUR, 3) = 'FRO'")
+        //     ->select('FDTNO_TRANSAKSI', DB::raw('SUM(FDTKREDIT) as KREDIT'))
+        //     ->groupBy('FDTNO_TRANSAKSI')
+        //     ->first();
 
-        if ($pendukung) {
-            $tarif['obat'] = $tarif['obat'] - $pendukung->KREDIT;
-        }
+        // mencari retur obat jika ada maka dikurangi dari total obat. langsung dari tabel RETURJIN
+        $obatRetur = (int) DB::connection('sqlsrvsimrs')
+            ->table('RETURJIN')
+            ->where('FHRJNO_TRANSAKSI', trim($pasien_inap->PRWINO_TRANSAKSI))
+            ->sum('FHRJTOTAL');
+
+        $tarif['obat'] = $tarif['obat'] - $obatRetur;
 
         return (object)[
             "tarif_rs" => $tarif,

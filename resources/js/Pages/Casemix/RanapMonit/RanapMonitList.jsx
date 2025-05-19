@@ -12,6 +12,7 @@ import {
     Col,
     Select,
     Typography,
+    notification,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -28,14 +29,16 @@ import BridgingData from "./BridgingData";
 
 const Textarea = Input.TextArea;
 
-export default function Index({ auth, bangsal }) {
+export default function Index({ auth, role, bangsal }) {
+    const rolename = role?.name ?? null;
+
     const columns = [
         {
             title: "No RM & Kode Reg",
             dataIndex: "FTNO_TRANSAKSI",
             key: "FTNO_TRANSAKSI",
             fixed: "left",
-            width: 115,
+            // width: 115,
             render: (text, record) => (
                 // Menambahkan link menggunakan route helper untuk membangun URL dinamis
                 <>
@@ -61,7 +64,6 @@ export default function Index({ auth, bangsal }) {
             dataIndex: "DPJP",
             key: "DPJP",
             fixed: "left",
-            width: 200,
         },
         {
             title: "Tanggal Masuk",
@@ -85,7 +87,12 @@ export default function Index({ auth, bangsal }) {
                 const keluar = record.PRWITGL_KELUAR
                     ? moment(record.PRWITGL_KELUAR)
                     : moment();
-                return keluar.diff(masuk, "days");
+
+                // Calculate the difference in days and ensure at least 1 day is counted
+                const totalDays = keluar.diff(masuk, "days");
+
+                // If masuk is today, we need to add 1 to make sure it's counted as 1 day
+                return totalDays > 0 ? totalDays + 1 : 1; // Ensure it's at least 1 day
             },
         },
         {
@@ -111,17 +118,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "PEMERIKSAAN_PENUNJANG",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {(rolename == "perawat" || rolename == "spv_bangsal") && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "PEMERIKSAAN_PENUNJANG",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -132,17 +141,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "HASIL_PENUNJANG_ABNORMAL",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {(rolename == "perawat" || rolename == "spv_bangsal") && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "HASIL_PENUNJANG_ABNORMAL",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -169,10 +180,12 @@ export default function Index({ auth, bangsal }) {
                         diagnosaData[kodeReg]
                             .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
                             .join(" - ")}
-                    <RanapMonitListModalDiagnosa
-                        pasien={record}
-                        reFecthListData={fetchData}
-                    />
+                    {rolename == "koder" && (
+                        <RanapMonitListModalDiagnosa
+                            pasien={record}
+                            reFecthListData={fetchData}
+                        />
+                    )}
                 </>
             ),
         },
@@ -187,10 +200,12 @@ export default function Index({ auth, bangsal }) {
                         prosedurData[kodeReg]
                             .map((procedure) => procedure?.MRTKD_TINDAKAN)
                             .join(" - ")}
-                    <RanapMonitListModalProcedure
-                        pasien={record}
-                        reFecthListData={fetchData}
-                    />
+                    {rolename == "koder" && (
+                        <RanapMonitListModalProcedure
+                            pasien={record}
+                            reFecthListData={fetchData}
+                        />
+                    )}
                 </>
             ),
         },
@@ -215,7 +230,7 @@ export default function Index({ auth, bangsal }) {
                         {perkiraanKlaim !== null
                             ? Math.abs(perkiraanKlaim).toLocaleString()
                             : "-"}
-                        {record?.NO_SEP && (
+                        {record?.NO_SEP && rolename == "koder" && (
                             <BridgingData
                                 pasien={record}
                                 refetchData={fetchData}
@@ -280,17 +295,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "KONFIRMASI_KODER",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "koder" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "KONFIRMASI_KODER",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -301,17 +318,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "REKOMENDASI_DOKTER_BANGSAL",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "dokter" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "REKOMENDASI_DOKTER_BANGSAL",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -322,17 +341,19 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "FOLLOW_UP_SPV_BANGSAL",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "spv_bangsal" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "FOLLOW_UP_SPV_BANGSAL",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
@@ -343,28 +364,32 @@ export default function Index({ auth, bangsal }) {
             render: (text, record) => (
                 <>
                     <div dangerouslySetInnerHTML={{ __html: text }} />
-                    <a
-                        onClick={() => {
-                            handleOpenModal({
-                                key: "FOLLOW_UP_MPP",
-                                data_record: record,
-                                value: text,
-                            });
-                        }}
-                    >
-                        <EditOutlined />
-                    </a>
+                    {rolename == "mpp" && (
+                        <a
+                            onClick={() => {
+                                handleOpenModal({
+                                    key: "FOLLOW_UP_MPP",
+                                    data_record: record,
+                                    value: text,
+                                });
+                            }}
+                        >
+                            <EditOutlined />
+                        </a>
+                    )}
                 </>
             ),
         },
     ];
 
+    const [scrollY, setScrollY] = useState(400); // default scroll height
     const [shouldFetch, setShouldFetch] = useState(false);
     const [selectedStatusRawat, setSelectedStatusRawat] = useState("dirawat");
     const [selectedNoRM, setSelectedNoRM] = useState(null);
-    const [selectedYearMonth, setSelectedYearMonth] = useState(
-        dayjs().format("YYYY-MM")
-    );
+    const [selectedYearMonth, setSelectedYearMonth] = useState(null);
+    // const [selectedYearMonth, setSelectedYearMonth] = useState(
+    //     dayjs().format("YYYY-MM")
+    // );
     const [selectedBangsal, setSelectedBangsal] = useState("IK042");
 
     const [page, setPage] = useState(1);
@@ -471,8 +496,8 @@ export default function Index({ auth, bangsal }) {
     };
 
     const handleUpdate = () => {
-        if (modalUpdateValue?.length > 160) {
-            return alert("Maksimal karakter 160");
+        if (modalUpdateValue?.length > 300) {
+            return alert("Maksimal karakter 250");
         }
 
         setLoadingSave(true);
@@ -489,28 +514,38 @@ export default function Index({ auth, bangsal }) {
             )
             .then((response) => {
                 console.log(response?.data);
-            })
-            .catch((error) => {})
-            .finally(() => {
                 setLoadingSave(false);
                 setOpenModalUpdate(false);
                 fetchData();
+                return notification.success({
+                    placement: "bottomRight",
+                    message: "Sukses",
+                    description: "Data berhasil disimpan",
+                });
+            })
+            .catch((error) => {
+                return notification.error({
+                    placement: "bottomRight",
+                    message: "Gagal Memperbarui Data",
+                    description: error.response?.data?.message,
+                });
             });
     };
 
     const fetchData = async () => {
         setLoadingFetchData(true);
-
         try {
-            const [year, month] = selectedYearMonth.split("-");
+            const [year, month] = selectedYearMonth
+                ? selectedYearMonth.split("-")
+                : [null, null];
             const { data } = await axios.get(
                 route("casemix.ranap-monit.list_pasien_data"),
                 {
                     params: {
                         page: page,
                         per_page: perPage,
-                        year,
-                        month,
+                        year: year,
+                        month: month,
                         status: selectedStatusRawat,
                         nomer_rm: selectedNoRM,
                         bangsal_induk: selectedBangsal,
@@ -528,15 +563,20 @@ export default function Index({ auth, bangsal }) {
             setLoadingFetchData(false);
         }
     };
-    const hadleCetakKlaim = () => {
-        const [year, month] = selectedYearMonth.split("-");
 
+    const hadleCetakKlaim = () => {
+        const [year, month] = selectedYearMonth?.split("-") || [];
         const baseUrl = route(
             "casemix.ranap-monit.download_pasien_data_xls"
         ).toString();
-        const url = `${baseUrl}?year=${year}&month=${month}&bangsal_induk=${selectedBangsal}`;
 
-        window.open(url, "_blank");
+        const query = new URLSearchParams({
+            ...(year && { year }),
+            ...(month && { month }),
+            ...(selectedBangsal && { bangsal_induk: selectedBangsal }),
+        });
+
+        window.open(`${baseUrl}?${query}`, "_blank");
     };
 
     const handleCari = () => {
@@ -549,6 +589,13 @@ export default function Index({ auth, bangsal }) {
     };
 
     useEffect(() => {
+        const screenWidth = window.innerWidth;
+        if (screenWidth > 1280) {
+            setScrollY(500); // Untuk layar besar
+        } else {
+            setScrollY(400); // Untuk layar kecil
+        }
+
         if (shouldFetch) {
             fetchData();
             setShouldFetch(false); // Matikan trigger setelah fetch
@@ -563,6 +610,21 @@ export default function Index({ auth, bangsal }) {
         })),
     ];
 
+    if (!rolename) {
+        return (
+            <AuthenticatedLayout
+                user={auth.user}
+                header={
+                    <p className="font-semibold text-lg text-gray-800 leading-tight">
+                        Pasien Ranap
+                    </p>
+                }
+            >
+                Akses tidak dijikan
+            </AuthenticatedLayout>
+        );
+    }
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -575,21 +637,31 @@ export default function Index({ auth, bangsal }) {
             <Head title="Pasien Ranap" />
             <Card title="Pasien Ranap">
                 <Row gutter={16} style={{ marginBottom: 10 }}>
-                    <Col span={2}>
+                    <Col span={3}>
+                        <Typography.Text strong>Bulan Masuk</Typography.Text>
                         <DatePicker
-                            allowClear={false}
-                            value={dayjs(selectedYearMonth, "YYYY-MM")}
+                            style={{ width: "100%" }}
+                            allowClear
+                            value={
+                                selectedYearMonth
+                                    ? dayjs(selectedYearMonth, "YYYY-MM")
+                                    : null
+                            }
                             onChange={(date, dateString) => {
                                 setSelectedYearMonth(dateString);
                             }}
                             picker="month"
                             placeholder="Pilih Bulan/Tahun"
+                            disabledDate={(current) =>
+                                current && current > moment().endOf("day")
+                            }
                         />
                     </Col>
-                    <Col span={2}>
+                    <Col span={3}>
+                        <Typography.Text strong>Nomer RM</Typography.Text>
                         <Input
                             allowClear
-                            placeholder="Cari Nomor RM"
+                            placeholder="Nomor RM"
                             value={selectedNoRM}
                             onChange={(e) => {
                                 const value = e.target.value;
@@ -598,6 +670,7 @@ export default function Index({ auth, bangsal }) {
                         />
                     </Col>
                     <Col span={4}>
+                        <Typography.Text strong>Status</Typography.Text>
                         <Select
                             defaultValue={selectedStatusRawat}
                             style={{ width: "100%" }}
@@ -613,6 +686,7 @@ export default function Index({ auth, bangsal }) {
                         />
                     </Col>
                     <Col span={4}>
+                        <Typography.Text strong>Bangsal</Typography.Text>
                         <Select
                             value={selectedBangsal}
                             style={{ width: "100%" }}
@@ -621,12 +695,14 @@ export default function Index({ auth, bangsal }) {
                         />
                     </Col>
                     <Col span={2}>
+                        <Typography.Text strong>&nbsp;</Typography.Text>
                         <Button block type="primary" onClick={handleCari}>
                             Cari
                         </Button>
                     </Col>
                     <Col span={2}>
-                        <Button color="cyan" onClick={hadleCetakKlaim}>
+                        <Typography.Text strong>&nbsp;</Typography.Text>
+                        <Button block onClick={hadleCetakKlaim}>
                             Download XLS
                         </Button>
                     </Col>
@@ -643,7 +719,7 @@ export default function Index({ auth, bangsal }) {
                     rowKey="FTNO_TRANSAKSI"
                     scroll={{
                         x: 2000,
-                        y: 600,
+                        y: scrollY,
                     }}
                     pagination={{
                         simple: true,

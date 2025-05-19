@@ -5,6 +5,7 @@ import {
     CodeOutlined,
     HomeOutlined,
     MonitorOutlined,
+    PoweroffOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 
@@ -14,24 +15,30 @@ const items = [
     {
         key: "", // Root path
         icon: <HomeOutlined />,
-        label: <Link href={route("dashboard")}>Home</Link>,
+        label: <a href={route("dashboard")}>Home</a>,
     },
     {
         key: "rm-parent", // Untuk `/rm` dan turunannya
         icon: <CodeOutlined />,
-        label: <Link href={route("rm.index")}>RM</Link>,
+        label: <a href={route("rm.index")}>RM</a>,
         children: [
             {
                 key: "no-rm",
-                label: <Link href={route("rm.index")}>By No RM</Link>,
+                label: <a href={route("rm.index")}>By No RM</a>,
             },
             {
                 key: "rm/pasien-rujukan/list_rujukan",
-                label: <Link href={route("rm.pasien-rujukan.list_rujukan")}>List Rajal</Link>,
+                label: (
+                    <a href={route("rm.pasien-rujukan.list_rujukan")}>
+                        List Rajal
+                    </a>
+                ),
             },
             {
                 key: "rm-ranap",
-                label: <Link href={route("rm.pasien-inap.list_inap")}>List Ranap</Link>,
+                label: (
+                    <a href={route("rm.pasien-inap.list_inap")}>List Ranap</a>
+                ),
             },
         ],
     },
@@ -39,15 +46,18 @@ const items = [
         key: "casemix", // Untuk `/casemix` dan turunannya
         icon: <MonitorOutlined />,
         label: (
-            <Link href={route("casemix.ranap-monit.list_pasien")}>
-                Ranap Monitor
-            </Link>
+            <a href={route("casemix.ranap-monit.list_pasien")}>Ranap Monitor</a>
         ),
     },
     {
-        key: "profile", // Untuk `/profile`
+        key: "profile",
         icon: <UserOutlined />,
-        label: <Link href={route("profile.edit")}>Profile</Link>,
+        label: <a href={route("profile.edit")}>Profile</a>,
+    },
+    {
+        key: "logout",
+        icon: <PoweroffOutlined />,
+        label: <a href={route("logout")}>Logout</a>,
     },
 ];
 
@@ -67,7 +77,8 @@ const App = ({ children }) => {
         localStorage.setItem("collapsed", JSON.stringify(value));
     };
 
-    const currentKey = url.split("/")[1] || "";
+    const currentKey = url.split("/")[3] || "";
+
 
     return (
         <Layout style={{ minHeight: "100vh" }}>
@@ -86,10 +97,6 @@ const App = ({ children }) => {
             </Sider>
             <Layout>
                 <Content style={{ margin: "16px" }}>{children}</Content>
-                <Footer style={{ textAlign: "center" }}>
-                    X App PKU Muhammadiyah Karanganyar ©{" "}
-                    {new Date().getFullYear()} Created By IT Team
-                </Footer>
             </Layout>
         </Layout>
     );

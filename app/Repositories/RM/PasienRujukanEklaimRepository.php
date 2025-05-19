@@ -309,6 +309,13 @@ class PasienRujukanEklaimRepository
                 ]);
 
                 DB::connection('sqlsrvsimrs')
+                    ->table('TRANSAKSIPASIEN')
+                    ->where('FTNO_TRANSAKSI', $transaksi_utama->FRPNOTRANSAKSIKJ)
+                    ->update([
+                        'FKUNCI_VALIDASI' => 1,
+                    ]);
+
+                DB::connection('sqlsrvsimrs')
                     ->table('PASIEN_RUJUKAN')
                     ->where('FRPNOTRANSAKSI', $transaksi_utama->FRPNOTRANSAKSI)
                     ->update([

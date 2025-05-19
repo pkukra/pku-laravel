@@ -25,8 +25,10 @@ class RanapMonitController extends Controller
     public function list_pasien()
     {
         $bangsal =  $this->RanapMonitRepo->getListKamarIndukRanap();
+        
         return Inertia::render('Casemix/RanapMonit/RanapMonitList', [
-            "bangsal" => $bangsal
+            "bangsal" => $bangsal,
+            'role' => Auth::user()->role,
         ]);
     }
 
@@ -40,8 +42,8 @@ class RanapMonitController extends Controller
         $status = $request->status ?? "dirawat";
         $nomer_rm = $request->nomer_rm ?? "";
 
-        $month = $request->month ?? date('m');
-        $year = $request->year ?? date('Y');
+        $month = $request->month;
+        $year = $request->year;
 
         $perPage = $request->get('per_page', 10);
         $page = $request->get('page', 1);
@@ -67,7 +69,7 @@ class RanapMonitController extends Controller
      */
     public function download_pasien_data(Request $request)
     {
-        $bangsal_induk = $request->bangsal_induk ?? 0;
+        $bangsal_induk = $request->bangsal_induk ?? "IK009";
         $status = $request->status ?? "dirawat";
         $nomer_rm = $request->nomer_rm ?? "";
 
@@ -75,12 +77,10 @@ class RanapMonitController extends Controller
         $year = $request->year ?? date('Y');
 
         // Get all data without pagination
-        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false, true);
+        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false);
 
         // Create and return Excel file
-        $export = new PasienRanapExport($data);
-        $downloadFileName = 'pasien_ranap_' . $bangsal_induk . "_" . now()->format('Ymd_His') . '.xlsx';
-        return Excel::download($export, $downloadFileName);
+        return Excel::download(new PasienRanapExport($data), 'pasien-ranap-'.date('Y-m-d').'.xlsx');
     }
 
     // update_monit_row

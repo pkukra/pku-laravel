@@ -175,6 +175,8 @@ export default function Index({ pasien }) {
             setSelectedStatusDiagForm(null);
             setSelectedKasusForm(null);
             setSelectedDiagnosaDisplay(null);
+
+            inputRefStatusDdiagnosa.current?.focus();
         }
         return;
     };

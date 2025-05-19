@@ -45,7 +45,19 @@ class PasienRujukanRepository
     {
         $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
-            ->join('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->where(function ($query) {
+                $query->whereExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('PKU.dbo.TAC_RJ_MEDIS')
+                        ->whereColumn('PKU.dbo.TAC_RJ_MEDIS.FS_KD_REG', 'PASIEN_RUJUKAN.FRPNOTRANSAKSI');
+                })
+                    ->orWhereExists(function ($sub) {
+                        $sub->select(DB::raw(1))
+                            ->from('PKU.dbo.TAC_IGD_MEDIS')
+                            ->whereColumn('PKU.dbo.TAC_IGD_MEDIS.KD_REG', 'PASIEN_RUJUKAN.FRPNOTRANSAKSI');
+                    });
+            })
+            ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
             ->when($date, function ($query, $date) {
@@ -110,6 +122,7 @@ class PasienRujukanRepository
     {
         return DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
+            ->leftJoin('TRANSAKSIPASIEN', 'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'TRANSAKSIPASIEN.FTNO_TRANSAKSI')
             ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
@@ -123,7 +136,9 @@ class PasienRujukanRepository
                 'PASIEN_RUJUKAN.*',
                 'DOKTER.FMDDOKTERN',
                 'POLIKLINIK.FMPKLINIKN',
-                'cm.KETERANGAN AS CARA_MASUK_BPJS'
+                'cm.KETERANGAN AS CARA_MASUK_BPJS',
+                'TRANSAKSIPASIEN.FTTARIPINACBG',
+                'TRANSAKSIPASIEN.FTKODEINACBG'
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
             ->first();  // Menggunakan `first` karena hanya mengambil satu data
@@ -373,8 +388,14 @@ class PasienRujukanRepository
             ->table('PENYAKIT')
             ->select('PENYAKIT.*')
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                return $query->where('PENYAKIT.KD_PENYAKIT', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('PENYAKIT.PENYAKIT', 'like', '%' . $searchTerm . '%');
+                return $query->whereRaw(
+                    "REPLACE(PENYAKIT.KD_PENYAKIT, '.', '') like ?",
+                    ['%' . str_replace('.', '', $searchTerm) . '%']
+                )
+                    ->orWhereRaw(
+                        "REPLACE(PENYAKIT.PENYAKIT, '.', '') like ?",
+                        ['%' . str_replace('.', '', $searchTerm) . '%']
+                    );
             })
             ->skip(($page - 1) * 20) // Skip based on current page
             ->take(20) // Limit results per page
@@ -539,8 +560,15 @@ class PasienRujukanRepository
             ->table('MR_ICD9')
             ->select('MR_ICD9.*')
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                return $query->where('MR_ICD9.FMI9KODE', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('MR_ICD9.FMI9KETERANGAN', 'like', '%' . $searchTerm . '%');
+                $searchTermWithoutDot = str_replace('.', '', $searchTerm); // Menghapus titik dari search term
+                return $query->whereRaw(
+                    "REPLACE(MR_ICD9.FMI9KODE, '.', '') like ?",
+                    ['%' . $searchTermWithoutDot . '%']
+                )
+                    ->orWhereRaw(
+                        "REPLACE(MR_ICD9.FMI9KETERANGAN, '.', '') like ?",
+                        ['%' . $searchTermWithoutDot . '%']
+                    );
             })
             ->skip(($page - 1) * 20) // Skip based on current page
             ->take(20) // Limit results per page
@@ -863,7 +891,7 @@ class PasienRujukanRepository
      */
     public function getResumeByTransaksi($kode_reg)
     {
-        return DB::connection('sqlsrvsimrs')
+        return DB::connection('sqlsrvemr')
             ->table('PKU.dbo.TAC_RJ_MEDIS')
             ->select('*')
             ->where('FS_KD_REG', $kode_reg)

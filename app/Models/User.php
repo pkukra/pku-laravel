@@ -1,8 +1,8 @@
 <?php
 
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -36,9 +36,22 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /**
+     * Define the relationship between User and Role.
+     */
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Get the role name for the user.
+     *
+     * @return string
+     */
+    public function getRoleName()
+    {
+        return $this->role ? $this->role->name : null;
     }
 
     /**

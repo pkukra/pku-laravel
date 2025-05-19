@@ -6,6 +6,10 @@ use App\Http\Controllers\Cesemix\RanapMonitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckRole;
 
+Route::prefix('rm')->middleware(['auth'])->group(function () {
+    Route::get('/pasien-inap/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
+});
+
 Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
     Route::prefix('pasien-rujukan')->group(function () {
@@ -69,8 +73,6 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])-
         Route::get('/get_resume/{kode_reg}', [PasienInapController::class, 'get_resume'])->name('rm.pasien-inap.get_resume');
         Route::get('/get_hasil_radiologi/{kode_reg}', [PasienInapController::class, 'get_hasil_radiologi'])->name('rm.pasien-inap.get_hasil_radiologi');
         Route::get('/get_berkas_rm/{kode_reg}', [PasienInapController::class, 'get_berkas_rm'])->name('rm.pasien-inap.get_berkas_rm');
-
-        Route::get('/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
 
         Route::get('/get_nomer_sep/{kode_reg}', [PasienInapController::class, 'get_nomer_sep'])->name('rm.pasien-inap.get_nomer_sep');
         Route::put('/update_nomer_sep/{kode_reg}', [PasienInapController::class, 'update_nomer_sep'])->name('rm.pasien-inap.update_nomer_sep');

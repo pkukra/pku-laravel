@@ -16,6 +16,16 @@ import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
 
+// Fungsi untuk menghapus nilai kosong/null dari object
+const cleanParams = (params) => {
+    return Object.fromEntries(
+        Object.entries(params).filter(
+            ([_, value]) =>
+                value !== undefined && value !== null && value !== ""
+        )
+    );
+};
+
 export default function Index({ auth }) {
     const queryParams = new URLSearchParams(window.location.search);
 
@@ -28,8 +38,8 @@ export default function Index({ auth }) {
     const initialNoRM = queryParams.get("no_rm") || "";
     const initialIsInacbgFinal =
         queryParams.get("is_inacbg_final") || "not_final";
-    const [isInacbgFinal, setIsInacbgFinal] = useState(initialIsInacbgFinal);
 
+    const [isInacbgFinal, setIsInacbgFinal] = useState(initialIsInacbgFinal);
     const [loading, setLoading] = useState(false);
     const [dataPasienRujukans, setDataPasienRujukans] = useState([]);
     const [totalData, setTotalData] = useState(0);
@@ -62,14 +72,15 @@ export default function Index({ auth }) {
             ),
         },
         {
-            title: "Kode Poly",
-            dataIndex: "FRPUNIT",
-            key: "FRPUNIT",
-        },
-        {
-            title: "Nama Poly",
+            title: "Kode - Nama Poly",
             dataIndex: "FMPKLINIKN",
             key: "FMPKLINIKN",
+            render: (_, record) => (
+                <>
+                    {record.FRPUNIT} /<br />
+                    {record.FMPKLINIKN}
+                </>
+            ),
         },
         {
             title: "Kode Dokter",
@@ -117,18 +128,20 @@ export default function Index({ auth }) {
     ) => {
         setLoading(true);
         try {
+            const filters = cleanParams({
+                date,
+                page: pageVal,
+                per_page: perPageVal,
+                kode_poly: kodePoly,
+                kode_dokter: kodeDokter,
+                no_rm: noRM,
+                is_inacbg_final: isInacbgFinal,
+            });
+
             const response = await axios.get(
                 route("rm.pasien-rujukan.list_rujukan_data"),
                 {
-                    params: {
-                        date,
-                        page: pageVal,
-                        per_page: perPageVal,
-                        kode_poly: kodePoly,
-                        kode_dokter: kodeDokter,
-                        no_rm: noRM,
-                        is_inacbg_final: isInacbgFinal,
-                    },
+                    params: filters,
                 }
             );
             setDataPasienRujukans(response?.data?.data?.data || []);
@@ -144,14 +157,18 @@ export default function Index({ auth }) {
         const newPage = pagination.current;
         const newPerPage = pagination.pageSize;
 
-        const params = new URLSearchParams(window.location.search);
-        params.set("page", newPage);
-        params.set("per_page", newPerPage);
-        params.set("date", date);
-        params.set("kode_poly", kodePoly);
-        params.set("kode_dokter", kodeDokter);
-        params.set("no_rm", noRM); // Update No RM in URL
-        window.history.replaceState(null, "", `?${params.toString()}`);
+        const query = cleanParams({
+            page: newPage,
+            per_page: newPerPage,
+            date,
+            kode_poly: kodePoly,
+            kode_dokter: kodeDokter,
+            no_rm: noRM,
+            is_inacbg_final: isInacbgFinal,
+        });
+
+        const queryString = new URLSearchParams(query).toString();
+        window.history.replaceState(null, "", `?${queryString}`);
 
         setPage(newPage);
         setPerPage(newPerPage);
@@ -250,21 +267,25 @@ export default function Index({ auth }) {
                             block
                             type="primary"
                             onClick={() => {
-                                const params = new URLSearchParams(
-                                    window.location.search
-                                );
-                                params.set("page", 1);
-                                params.set("per_page", perPage);
-                                params.set("date", date);
-                                params.set("kode_poly", kodePoly);
-                                params.set("kode_dokter", kodeDokter);
-                                params.set("no_rm", noRM);
-                                params.set("is_inacbg_final", isInacbgFinal);
+                                const filters = cleanParams({
+                                    page: 1,
+                                    per_page: perPage,
+                                    date,
+                                    kode_poly: kodePoly,
+                                    kode_dokter: kodeDokter,
+                                    no_rm: noRM,
+                                    is_inacbg_final: isInacbgFinal,
+                                });
+
+                                const queryString = new URLSearchParams(
+                                    filters
+                                ).toString();
                                 window.history.replaceState(
                                     null,
                                     "",
-                                    `?${params.toString()}`
+                                    `?${queryString}`
                                 );
+
                                 setPage(1);
                                 fetchDataPasienRujukan(1, perPage);
                             }}

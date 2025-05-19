@@ -110,7 +110,7 @@ export default function Index({ pasien }) {
                             <td
                                 style={{ verticalAlign: "top" }}
                                 dangerouslySetInnerHTML={{
-                                    __html: resumeData?.FS_PLANNING,
+                                    __html: resumeData?.FS_TINDAKAN,
                                 }}
                             ></td>
                         </tr>
