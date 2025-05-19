@@ -237,7 +237,7 @@ export default function Index({ pasien }) {
                                 setSelectedProcedureDisplay(""); // Clear the display value
                             }}
                             options={anotherOptions.map((item) => ({
-                                value: `${item.FMI9KODE} - ${item.FMI9KETERANGAN}`, // Display both code and name
+                                value: `${item.code} - ${item.description}`, // Display both code and name
                                 label: (
                                     <div
                                         style={{
@@ -247,17 +247,17 @@ export default function Index({ pasien }) {
                                             display: "block", // Ensure block level behavior for wrapping
                                         }}
                                     >
-                                        <strong>{item.FMI9KODE}</strong> -{" "}
-                                        <span>{item.FMI9KETERANGAN}</span>
+                                        <strong>{item.code}</strong> -{" "}
+                                        <span>{item.description}</span>
                                     </div>
                                 ),
                                 disabled: selectedProcedure.includes(
-                                    item.FMI9KODE
+                                    item.code
                                 ), // Disable if already selected
                             }))}
                             style={{ width: "100%" }}
                             onSelect={(value) => {
-                                const kdPenyakit = value.split(" - ")[0]; // Extract FMI9KODE
+                                const kdPenyakit = value.split(" - ")[0]; // Extract code
                                 const displayValue = value; // Full display value with name and code
                                 setSelectedProcedureForm(kdPenyakit); // Store only the code
                                 setSelectedProcedureDisplay(displayValue); // Display both the code and name

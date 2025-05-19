@@ -400,7 +400,6 @@ class PasienRujukanRepository
             ->get();
     }
 
-
     /**
      * Save diagnosa for pasien rujukan
      * 
@@ -556,23 +555,26 @@ class PasienRujukanRepository
     public function searchProcedure($searchTerm, $page)
     {
         return DB::connection('sqlsrvsimrs')
-            ->table('MR_ICD9')
-            ->select('MR_ICD9.*')
+            ->table('ICD')
+            ->select('ICD.*')
+            ->where('system', 'ICD_9CM_2010_IM') // <- ini sudah benar, Laravel akan quote otomatis
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                $searchTermWithoutDot = str_replace('.', '', $searchTerm); // Menghapus titik dari search term
-                return $query->whereRaw(
-                    "REPLACE(MR_ICD9.FMI9KODE, '.', '') like ?",
-                    ['%' . $searchTermWithoutDot . '%']
-                )
-                    ->orWhereRaw(
-                        "REPLACE(MR_ICD9.FMI9KETERANGAN, '.', '') like ?",
+                $searchTermWithoutDot = str_replace('.', '', $searchTerm);
+                return $query->where(function ($q) use ($searchTermWithoutDot) {
+                    $q->whereRaw(
+                        "REPLACE(CAST(ICD.code AS VARCHAR(100)), '.', '') LIKE ?",
+                        ['%' . $searchTermWithoutDot . '%']
+                    )->orWhereRaw(
+                        "REPLACE(CAST(ICD.description AS VARCHAR(MAX)), '.', '') LIKE ?",
                         ['%' . $searchTermWithoutDot . '%']
                     );
+                });
             })
-            ->skip(($page - 1) * 20) // Skip based on current page
-            ->take(20) // Limit results per page
+            ->skip(($page - 1) * 20)
+            ->take(20)
             ->get();
     }
+
 
     /**
      * Save procedure for pasien rujukan
