@@ -538,8 +538,8 @@ class PasienRujukanRepository
     {
         return DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
-            ->select('MR_TINDAKAN.*', 'MR_ICD9.FMI9KETERANGAN')
-            ->join('MR_ICD9', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'MR_ICD9.FMI9KODE')
+            ->select('MR_TINDAKAN.*', 'ICD.description')
+            ->join('ICD', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'ICD.code')
             ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC')
             ->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi)
             ->get();

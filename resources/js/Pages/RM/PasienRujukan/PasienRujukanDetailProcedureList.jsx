@@ -24,8 +24,8 @@ export default function Index({ pasien }) {
         },
         {
             title: "Tindakan",
-            dataIndex: "FMI9KETERANGAN",
-            key: "FMI9KETERANGAN",
+            dataIndex: "description",
+            key: "description",
             width: "70%",
         },
         {
