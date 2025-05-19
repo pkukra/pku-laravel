@@ -5,8 +5,13 @@ use Inertia\Inertia;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Cesemix\RanapMonitController;
-use App\Http\Controllers\RM\EklaimController;
 use App\Http\Middleware\CheckRole;
+
+
+use App\Http\Controllers\ICDImportController;
+
+Route::get('/icd-import', [ICDImportController::class, 'form']);
+Route::post('/icd-import', [ICDImportController::class, 'import'])->name('icd.import');
 
 Route::get('/', function () {
     return Inertia::render('Dashboard');
