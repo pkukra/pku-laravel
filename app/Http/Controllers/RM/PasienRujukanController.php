@@ -209,6 +209,25 @@ class PasienRujukanController extends Controller
             'page' => $page,
         ]);
     }
+    
+    /**
+     * cari_penyakit_im
+     * Pencarian penyakit/diagnosa IM di database berdasarkan input (ICD-10 IM)
+     */
+    public function cari_penyakit_im(Request $request)
+    {
+        $searchTerm = $request->input('query');
+        $page = $request->input('page', 1); // Halaman saat ini (default 1)
+
+        // Mendapatkan data penyakit berdasarkan pencarian
+        $penyakit = $this->pasienRujukanRepo->searchPenyakitIM($searchTerm, $page);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $penyakit,
+            'page' => $page,
+        ]);
+    }
 
     /**
      * save_diagnosa

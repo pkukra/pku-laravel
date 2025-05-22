@@ -403,6 +403,34 @@ class PasienRujukanRepository
     }
 
     /**
+     * Search penyakit in PENYAKIT IM table with a query (ICD_10_2010_IM)
+     * 
+     * @param string $searchTerm
+     * @param int $page
+     * @return \Illuminate\Support\Collection
+     */
+    public function searchPenyakitIM($searchTerm, $page)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('ICD')
+            ->select('ICD.*')
+            ->where('ICD.system', 'ICD_10_2010_IM')
+            ->when($searchTerm, function ($query) use ($searchTerm) {
+                return $query->whereRaw(
+                    "REPLACE(CAST(ICD.code AS VARCHAR(MAX)), '.', '') like ?",
+                    ['%' . str_replace('.', '', $searchTerm) . '%']
+                )
+                    ->orWhereRaw(
+                        "REPLACE(CAST(ICD.description AS VARCHAR(MAX)), '.', '') like ?",
+                        ['%' . str_replace('.', '', $searchTerm) . '%']
+                    );
+            })
+            ->skip(($page - 1) * 20) // Skip based on current page
+            ->take(20) // Limit results per page
+            ->get();
+    }
+
+    /**
      * Save diagnosa for pasien rujukan
      * 
      * @param array $data

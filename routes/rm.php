@@ -10,7 +10,7 @@ Route::prefix('rm')->middleware(['auth'])->group(function () {
     Route::get('/pasien-inap/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
 });
 
-Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])->group(function () {
+Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
     Route::prefix('pasien-rujukan')->group(function () {
 
@@ -47,6 +47,8 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])-
 
         Route::post('/bridging_data_process/{no_sep}', [PasienRujukanController::class, 'bridging_data_process'])->name('rm.pasien-rujukan.bridging_data_process');
         Route::post('/bridging_final_process/{no_sep}', [PasienRujukanController::class, 'bridging_final_process'])->name('rm.pasien-rujukan.bridging_final_process');
+
+        Route::post('/cari_penyakit_im', [PasienRujukanController::class, 'cari_penyakit_im'])->name('rm.pasien-rujukan.cari_penyakit_im');
     });
 
     Route::prefix('pasien-inap')->group(function () {

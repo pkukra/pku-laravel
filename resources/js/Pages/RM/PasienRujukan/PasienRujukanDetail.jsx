@@ -10,6 +10,10 @@ import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailAssesmenIGD from "./PasienRujukanDetailAssesmenIGD";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
+
+import PasienRujukanDetailDiagnosaListIDRG from "./IDRG/PasienRujukanDetailDiagnosaListIDRG";
+import PasienRujukanDetailProcedureListIDRG from "./IDRG/PasienRujukanDetailProcedureListIDRG";
+
 import { useState } from "react";
 import axios from "axios";
 
@@ -19,10 +23,10 @@ function IDRG({ pasien }) {
             <p><strong>iDRG</strong></p>
             <Row gutter={[5, 5]}>
                 <Col span={12}>
-                    <PasienRujukanDetailDiagnosaList pasien={pasien} />
+                    <PasienRujukanDetailDiagnosaListIDRG pasien={pasien} />
                 </Col>
                 <Col span={12}>
-                    <PasienRujukanDetailProcedureList pasien={pasien} />
+                    <PasienRujukanDetailProcedureListIDRG pasien={pasien} />
                 </Col>
             </Row>
         </>
