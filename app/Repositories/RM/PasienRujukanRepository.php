@@ -386,7 +386,7 @@ class PasienRujukanRepository
         return DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM')
             ->join('ICD', 'PASIEN_DIAGNOSA_IM.code', '=', 'ICD.code')
-            ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.*')
+            ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.code', 'ICD.description')
             ->orderBy('PASIEN_DIAGNOSA_IM.is_primary', 'DESC')
             ->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi)
             ->get();
@@ -627,6 +627,92 @@ class PasienRujukanRepository
             return false;
         }
     }
+
+    /**
+     * Delete diagnosa by ID from PASIEN_DIAGNOSA_IM table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteDiagnosaIDRGById($id)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
+        try {
+            $conn->beginTransaction();
+
+            $deletedDiagnosa = $conn
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$deletedDiagnosa) {
+                return false;
+            }
+
+            // Cek apakah diagnosa yang akan dihapus adalah primary
+            $isPrimary = $deletedDiagnosa->is_primary == 1;
+            $noTransaksi = $deletedDiagnosa->no_transaksi;
+            $pasienId = $deletedDiagnosa->pasien_id;
+
+            // Hapus diagnosa
+            $deleted = $conn
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->delete();
+
+            if (!$deleted) {
+                $conn->rollBack();
+                return false;
+            }
+
+            // Jika yang dihapus adalah primary, cari diagnosa lain untuk dijadikan primary
+            if ($isPrimary) {
+                $newPrimary = $conn
+                    ->table('PASIEN_DIAGNOSA_IM')
+                    ->where('no_transaksi', $noTransaksi)
+                    ->where('pasien_id', $pasienId)
+                    ->orderBy('created_at', 'asc')
+                    ->first();
+
+                if ($newPrimary) {
+                    $conn
+                        ->table('PASIEN_DIAGNOSA_IM')
+                        ->where('ID', $newPrimary->id)
+                        ->update([
+                            'is_primary' => 1,
+                            'updated_by' => $user->email,
+                            'updated_at' => now(),
+                        ]);
+                }
+            }
+
+            // Audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $noTransaksi,
+                "action_id"  => 12,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data"       => $deletedDiagnosa,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("PasienRujukanRepository deleteDiagnosaById iDRG error: gagal simpan audittrail");
+                $conn->rollBack();
+                return false;
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository deleteDiagnosaById iDRG error: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Get procedure penyakit by transaksi (MR_TINDAKAN)

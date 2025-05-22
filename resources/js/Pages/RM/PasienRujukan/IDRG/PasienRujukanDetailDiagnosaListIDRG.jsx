@@ -45,7 +45,7 @@ export default function Index({ pasien }) {
             render: (_, record) => (
                 <Button
                     disabled={
-                        loadingDeleteDiagnosa && record.ID === deleteDiagnosaId
+                        loadingDeleteDiagnosa && record.id === deleteDiagnosaId
                     }
                     size="small"
                     variant="outlined"
@@ -177,7 +177,7 @@ export default function Index({ pasien }) {
 
     // Function to show the modal with the diagnosa info for deletion
     const showDeleteConfirm = (item) => {
-        setDeleteDiagnosaId(item.ID); // Set the current diagnosa to be deleted
+        setDeleteDiagnosaId(item.id); // Set the current diagnosa to be deleted
         setIsModalHapusDiagnosaOpen(true); // Show the modal
     };
 
@@ -191,7 +191,7 @@ export default function Index({ pasien }) {
         setLoadingDeleteDiagnosa(true); // Set loading true saat mulai menghapus
         axios
             .delete(
-                route("rm.pasien-rujukan.delete_diagnosa", {
+                route("rm.pasien-rujukan.delete_diagnosa_idrg", {
                     id: id,
                 })
             )
@@ -236,6 +236,7 @@ export default function Index({ pasien }) {
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={20}>
                     <AutoComplete
+                        loading={loading}
                         allowClear
                         onChange={() => {
                             setSelectedDiagnosaForm(null); // Clear the stored code
@@ -306,7 +307,7 @@ export default function Index({ pasien }) {
                     dataSource={diagnosa}
                     size="small"
                     loading={loadingFetchDiagnosa}
-                    rowKey="ID"
+                    rowKey="id"
                 />
             </>
             {/* Modal for Confirming Deletion */}
