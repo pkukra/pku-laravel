@@ -19,23 +19,24 @@ export default function Index({ pasien }) {
     const columns = [
         {
             title: "Status",
-            dataIndex: "MRPSTAT_DIAG",
-            key: "ID",
-        },
-        {
-            title: "Lama/Baru",
-            dataIndex: "MRPKASUS",
-            key: "ID",
+            dataIndex: "is_primary",
+            key: "is_primary",
+            render: (_, record) => {
+                if (record?.is_primary == "1") {
+                    return <>Primary</>;
+                }
+                return <>Secondary</>;
+            },
         },
         {
             title: "Kode",
-            dataIndex: "MRPKD_PENYAKIT",
-            key: "MRPKD_PENYAKIT",
+            dataIndex: "code",
+            key: "code",
         },
         {
             title: "Penyakit",
-            dataIndex: "PENYAKIT",
-            key: "PENYAKIT",
+            dataIndex: "description",
+            key: "description",
         },
         {
             title: "Action",
@@ -62,8 +63,6 @@ export default function Index({ pasien }) {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [selectedDiagnosaForm, setSelectedDiagnosaForm] = useState(null);
-    const [selectedStatusDiagForm, setSelectedStatusDiagForm] = useState(null);
-    const [selectedKasusForm, setSelectedKasusForm] = useState(null);
     const [loadingSaveDiag, setLoadingSaveDiag] = useState(false); // Loading state for each diagnosa
     const [selectedDiagnosaDisplay, setSelectedDiagnosaDisplay] = useState(""); // Stores the full value for display
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
@@ -79,13 +78,13 @@ export default function Index({ pasien }) {
         setLoadingFetchDiagnosa(true);
         axios
             .get(
-                route("rm.pasien-rujukan.list_diagnosa", {
+                route("rm.pasien-rujukan.list_diagnosa_idrg", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
                 })
             )
             .then((response) => {
                 setSelectedDiagnosa(
-                    response.data.data.map((item) => item.MRPKD_PENYAKIT)
+                    response.data.data.map((item) => item.code)
                 );
                 setDiagnosa(response?.data?.data || []); // Simpan data yang diterima ke dalam state
             })
@@ -143,27 +142,23 @@ export default function Index({ pasien }) {
         setLoadingSaveDiag(true);
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.save_diagnosa"),
+                route("rm.pasien-rujukan.save_diagnosa_idrg"),
                 {
-                    icd10_code: selectedDiagnosaForm,
+                    code: selectedDiagnosaForm,
                     no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    no_rm: pasien.FRPPASIEN_ID,
-                    kd_unit: pasien.FRPUNIT,
-                    tgl_masuk: pasien.FRPTGL,
-                    status_diagnosa: selectedStatusDiagForm,
-                    kasus: selectedKasusForm,
+                    pasien_id: pasien.FRPPASIEN_ID,
                 }
             );
 
             if (response?.data?.status === "ok") {
                 return notification.success({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     message: "Sukses!",
                     description: "Diagnosa berhasil ditambahkan.",
                 });
             }
             return notification.error({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Terjadi Kesalahan!",
                 description: "Diagnosa gagal ditambahkan.",
             });
@@ -173,8 +168,6 @@ export default function Index({ pasien }) {
             fetchDiagnosa();
             setLoadingSaveDiag(false);
             setSelectedDiagnosaForm(null);
-            setSelectedStatusDiagForm(null);
-            setSelectedKasusForm(null);
             setSelectedDiagnosaDisplay(null);
 
             inputRefStatusDdiagnosa.current?.focus();
@@ -241,58 +234,7 @@ export default function Index({ pasien }) {
     return (
         <Card title={`Diagnosa`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
-                <Col span={5}>
-                    <Tooltip
-                        title="Shift+F1 untuk shortcut"
-                        placement="topLeft"
-                    >
-                        <Select
-                            autoFocus
-                            ref={inputRefStatusDdiagnosa}
-                            showSearch
-                            style={{ width: "100%" }}
-                            placeholder="STATUS DIAGNOSA"
-                            filterOption={(input, option) =>
-                                (option?.label ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                            options={[
-                                { value: "5", label: "5-Diagnosa Akhir" },
-                                { value: "1", label: "1-Diagnosa Lain" },
-                                { value: "2", label: "2-Komplikasi" },
-                                { value: "0", label: "0-Diagnosa Awal" },
-                                { value: "3", label: "3-Penyebab Luar" },
-                                { value: "4", label: "4-Penyebeb Kematian" },
-                            ]}
-                            onChange={(value) => {
-                                setSelectedStatusDiagForm(value);
-                            }}
-                            value={selectedStatusDiagForm}
-                        />
-                    </Tooltip>
-                </Col>
-                <Col span={4}>
-                    <Select
-                        showSearch
-                        style={{ width: "100%" }}
-                        placeholder="Lama Baru"
-                        filterOption={(input, option) =>
-                            (option?.label ?? "")
-                                .toLowerCase()
-                                .includes(input.toLowerCase())
-                        }
-                        options={[
-                            { value: "0", label: "0 Baru" },
-                            { value: "1", label: "1 Lama" },
-                        ]}
-                        onChange={(value) => {
-                            setSelectedKasusForm(value);
-                        }}
-                        value={selectedKasusForm}
-                    />
-                </Col>
-                <Col span={11}>
+                <Col span={20}>
                     <AutoComplete
                         allowClear
                         onChange={() => {
@@ -314,9 +256,7 @@ export default function Index({ pasien }) {
                                     <span>{item.description}</span>
                                 </div>
                             ),
-                            disabled: selectedDiagnosa.includes(
-                                item.code
-                            ), // Disable if already selected
+                            disabled: selectedDiagnosa.includes(item.code), // Disable if already selected
                         }))}
                         style={{ width: "100%" }}
                         onSelect={(value) => {
@@ -345,8 +285,6 @@ export default function Index({ pasien }) {
                         onClick={saveDiagnosa}
                         disabled={
                             loadingSaveDiag ||
-                            selectedKasusForm === null ||
-                            selectedStatusDiagForm === null ||
                             selectedDiagnosaForm === null
                         }
                     >

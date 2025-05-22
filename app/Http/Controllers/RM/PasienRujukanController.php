@@ -190,6 +190,21 @@ class PasienRujukanController extends Controller
             'data' => $diagnosa,
         ]);
     }
+    
+    /**
+     * list_diagnosa_idrg
+     * Menampilkan diagnosa berdasarkan kode transaksi
+     */
+    public function list_diagnosa_idrg($kode_reg)
+    {
+        // Mendapatkan diagnosa berdasarkan kode transaksi
+        $diagnosa = $this->pasienRujukanRepo->getDiagnosaIDRGByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $diagnosa,
+        ]);
+    }
 
     /**
      * cari_penyakit
@@ -260,6 +275,35 @@ class PasienRujukanController extends Controller
 
         // Menyimpan data diagnosa melalui repository
         $isSaved = $this->pasienRujukanRepo->saveDiagnosa($data);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
+        ], 500);
+    }
+    
+    /**
+     * save_diagnosa_idrg
+     * Menyimpan data diagnosa versi IDRG untuk pasien rujukan 
+     */
+    public function save_diagnosa_idrg(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'code' => 'required|string|max:10',
+            'no_transaksikj' => 'required|string|max:20',
+            'pasien_id' => 'required|string|max:20',
+        ]);
+
+        // Menyimpan data diagnosa melalui repository
+        $isSaved = $this->pasienRujukanRepo->saveDiagnosaIDRG($validated);
 
         if ($isSaved) {
             return response()->json([

@@ -376,6 +376,23 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get diagnosa IDRG penyakit by transaksi (MR_PENYAKIT)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getDiagnosaIDRGByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_DIAGNOSA_IM')
+            ->join('ICD', 'PASIEN_DIAGNOSA_IM.code', '=', 'ICD.code')
+            ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.*')
+            ->orderBy('PASIEN_DIAGNOSA_IM.is_primary', 'DESC')
+            ->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi)
+            ->get();
+    }
+
+    /**
      * Search penyakit in PENYAKIT table with a query
      * 
      * @param string $searchTerm
@@ -414,19 +431,16 @@ class PasienRujukanRepository
         return DB::connection('sqlsrvsimrs')
             ->table('ICD')
             ->select('ICD.*')
-            ->where('ICD.system', 'ICD_10_2010_IM')
+            ->where('system', 'ICD_10_2010_IM')
             ->when($searchTerm, function ($query) use ($searchTerm) {
-                return $query->whereRaw(
-                    "REPLACE(CAST(ICD.code AS VARCHAR(MAX)), '.', '') like ?",
-                    ['%' . str_replace('.', '', $searchTerm) . '%']
-                )
-                    ->orWhereRaw(
-                        "REPLACE(CAST(ICD.description AS VARCHAR(MAX)), '.', '') like ?",
-                        ['%' . str_replace('.', '', $searchTerm) . '%']
-                    );
+                $search = str_replace('.', '', $searchTerm);
+                return $query->where(function ($q) use ($search) {
+                    $q->whereRaw("REPLACE(ICD.code, '.', '') LIKE ?", ["%$search%"])
+                        ->orWhereRaw("REPLACE(CAST(ICD.description AS VARCHAR(MAX)), '.', '') LIKE ?", ["%$search%"]);
+                });
             })
-            ->skip(($page - 1) * 20) // Skip based on current page
-            ->take(20) // Limit results per page
+            ->skip(($page - 1) * 20)
+            ->take(20)
             ->get();
     }
 
@@ -477,6 +491,62 @@ class PasienRujukanRepository
             $isrecorded = $this->auditTrail->insert([
                 "object_id" => $no_transaksikj,
                 "action_id" => 1,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanRepository saveDiagnosa err: " . $e->getMessage());
+            return false;
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return true;
+    }
+
+
+    /**
+     * Save diagnosa for pasien rujukan
+     * 
+     * @param array $data
+     * @return boolean
+     */
+    public function saveDiagnosaIDRG($data)
+    {
+        $user = Auth::user();
+        $no_transaksikj = $data['no_transaksikj'];
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        $counts = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_DIAGNOSA_IM')
+            ->where('no_transaksi', $no_transaksikj)
+            ->count();
+
+        $data_to_save = [
+            'code' => $data['code'],
+            'no_transaksi' => $data['no_transaksikj'],
+            'pasien_id' => $data['pasien_id'],
+            'created_by' => $user->email,
+            'created_at' => $now,
+            'is_primary' => $counts == 0 ? 1 : 0,
+        ];
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->insert($data_to_save);
+
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $no_transaksikj,
+                "action_id" => 11,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
                 "created_at" => $now,
