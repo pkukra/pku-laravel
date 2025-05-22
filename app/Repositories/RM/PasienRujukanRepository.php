@@ -376,6 +376,23 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get diagnosa IDRG penyakit by transaksi (MR_PENYAKIT)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getDiagnosaIDRGByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_DIAGNOSA_IM')
+            ->join('ICD', 'PASIEN_DIAGNOSA_IM.code', '=', 'ICD.code')
+            ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.code', 'ICD.description')
+            ->orderBy('PASIEN_DIAGNOSA_IM.is_primary', 'DESC')
+            ->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi)
+            ->get();
+    }
+
+    /**
      * Search penyakit in PENYAKIT table with a query
      * 
      * @param string $searchTerm
@@ -399,6 +416,31 @@ class PasienRujukanRepository
             })
             ->skip(($page - 1) * 20) // Skip based on current page
             ->take(20) // Limit results per page
+            ->get();
+    }
+
+    /**
+     * Search penyakit in PENYAKIT IM table with a query (ICD_10_2010_IM)
+     * 
+     * @param string $searchTerm
+     * @param int $page
+     * @return \Illuminate\Support\Collection
+     */
+    public function searchPenyakitIM($searchTerm, $page)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('ICD')
+            ->select('ICD.*')
+            ->where('system', 'ICD_10_2010_IM')
+            ->when($searchTerm, function ($query) use ($searchTerm) {
+                $search = str_replace('.', '', $searchTerm);
+                return $query->where(function ($q) use ($search) {
+                    $q->whereRaw("REPLACE(ICD.code, '.', '') LIKE ?", ["%$search%"])
+                        ->orWhereRaw("REPLACE(CAST(ICD.description AS VARCHAR(MAX)), '.', '') LIKE ?", ["%$search%"]);
+                });
+            })
+            ->skip(($page - 1) * 20)
+            ->take(20)
             ->get();
     }
 
@@ -449,6 +491,62 @@ class PasienRujukanRepository
             $isrecorded = $this->auditTrail->insert([
                 "object_id" => $no_transaksikj,
                 "action_id" => 1,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanRepository saveDiagnosa err: " . $e->getMessage());
+            return false;
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return true;
+    }
+
+
+    /**
+     * Save diagnosa for pasien rujukan
+     * 
+     * @param array $data
+     * @return boolean
+     */
+    public function saveDiagnosaIDRG($data)
+    {
+        $user = Auth::user();
+        $no_transaksikj = $data['no_transaksikj'];
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        $counts = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_DIAGNOSA_IM')
+            ->where('no_transaksi', $no_transaksikj)
+            ->count();
+
+        $data_to_save = [
+            'code' => $data['code'],
+            'no_transaksi' => $data['no_transaksikj'],
+            'pasien_id' => $data['pasien_id'],
+            'created_by' => $user->email,
+            'created_at' => $now,
+            'is_primary' => $counts == 0 ? 1 : 0,
+        ];
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->insert($data_to_save);
+
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $no_transaksikj,
+                "action_id" => 11,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
                 "created_at" => $now,
@@ -529,6 +627,159 @@ class PasienRujukanRepository
             return false;
         }
     }
+
+    /**
+     * Delete diagnosa by ID from PASIEN_DIAGNOSA_IM table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteDiagnosaIDRGById($id)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+
+        try {
+            $conn->beginTransaction();
+
+            $deletedDiagnosa = $conn
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$deletedDiagnosa) {
+                return false;
+            }
+
+            // Cek apakah diagnosa yang akan dihapus adalah primary
+            $isPrimary = $deletedDiagnosa->is_primary == 1;
+            $noTransaksi = $deletedDiagnosa->no_transaksi;
+            $pasienId = $deletedDiagnosa->pasien_id;
+
+            // Hapus diagnosa
+            $deleted = $conn
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->delete();
+
+            if (!$deleted) {
+                $conn->rollBack();
+                return false;
+            }
+
+            // Jika yang dihapus adalah primary, cari diagnosa lain untuk dijadikan primary
+            if ($isPrimary) {
+                $newPrimary = $conn
+                    ->table('PASIEN_DIAGNOSA_IM')
+                    ->where('no_transaksi', $noTransaksi)
+                    ->where('pasien_id', $pasienId)
+                    ->orderBy('created_at', 'asc')
+                    ->first();
+
+                if ($newPrimary) {
+                    $conn
+                        ->table('PASIEN_DIAGNOSA_IM')
+                        ->where('ID', $newPrimary->id)
+                        ->update([
+                            'is_primary' => 1,
+                            'updated_by' => $user->email,
+                            'updated_at' => now(),
+                        ]);
+                }
+            }
+
+            // Audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $noTransaksi,
+                "action_id"  => 12,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                "data"       => $deletedDiagnosa,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("PasienRujukanRepository deleteDiagnosaById iDRG error: gagal simpan audittrail");
+                $conn->rollBack();
+                return false;
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository deleteDiagnosaById iDRG error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Set a diagnosa as primary in PASIEN_DIAGNOSA_IM table
+     * and unset is_primary for all other diagnosa with the same no_transaksi
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function setDiagnosaIDRGPrimary($id)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            $conn->beginTransaction();
+
+            // Ambil data diagnosa yang akan diset sebagai primary
+            $targetDiagnosa = $conn
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$targetDiagnosa) {
+                return false;
+            }
+
+            $noTransaksi = $targetDiagnosa->no_transaksi;
+            $pasienId = $targetDiagnosa->pasien_id;
+
+            // Set semua diagnosa lain ke is_primary = 0
+            $conn->table('PASIEN_DIAGNOSA_IM')
+                ->where('no_transaksi', $noTransaksi)
+                ->where('pasien_id', $pasienId)
+                ->update([
+                    'is_primary' => 0,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            // Set diagnosa yang dipilih ke is_primary = 1
+            $conn->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->update([
+                    'is_primary' => 1,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            // Audit trail
+            $this->auditTrail->insert([
+                "object_id"  => $noTransaksi,
+                "action_id"  => 13,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => $now,
+                "data"       => $targetDiagnosa,
+            ]);
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository setDiagnosaPrimary error: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Get procedure penyakit by transaksi (MR_TINDAKAN)

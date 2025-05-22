@@ -190,6 +190,21 @@ class PasienRujukanController extends Controller
             'data' => $diagnosa,
         ]);
     }
+    
+    /**
+     * list_diagnosa_idrg
+     * Menampilkan diagnosa berdasarkan kode transaksi
+     */
+    public function list_diagnosa_idrg($kode_reg)
+    {
+        // Mendapatkan diagnosa berdasarkan kode transaksi
+        $diagnosa = $this->pasienRujukanRepo->getDiagnosaIDRGByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $diagnosa,
+        ]);
+    }
 
     /**
      * cari_penyakit
@@ -202,6 +217,25 @@ class PasienRujukanController extends Controller
 
         // Mendapatkan data penyakit berdasarkan pencarian
         $penyakit = $this->pasienRujukanRepo->searchPenyakit($searchTerm, $page);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $penyakit,
+            'page' => $page,
+        ]);
+    }
+    
+    /**
+     * cari_penyakit_im
+     * Pencarian penyakit/diagnosa IM di database berdasarkan input (ICD-10 IM)
+     */
+    public function cari_penyakit_im(Request $request)
+    {
+        $searchTerm = $request->input('query');
+        $page = $request->input('page', 1); // Halaman saat ini (default 1)
+
+        // Mendapatkan data penyakit berdasarkan pencarian
+        $penyakit = $this->pasienRujukanRepo->searchPenyakitIM($searchTerm, $page);
 
         return response()->json([
             'status' => "ok",
@@ -254,6 +288,35 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
         ], 500);
     }
+    
+    /**
+     * save_diagnosa_idrg
+     * Menyimpan data diagnosa versi IDRG untuk pasien rujukan 
+     */
+    public function save_diagnosa_idrg(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'code' => 'required|string|max:10',
+            'no_transaksikj' => 'required|string|max:20',
+            'pasien_id' => 'required|string|max:20',
+        ]);
+
+        // Menyimpan data diagnosa melalui repository
+        $isSaved = $this->pasienRujukanRepo->saveDiagnosaIDRG($validated);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
+        ], 500);
+    }
 
     /**
      * delete_diagnosa
@@ -274,6 +337,50 @@ class PasienRujukanController extends Controller
         return response()->json([
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat menghapus diagnosa',
+        ], 500);
+    }
+    
+    /**
+     * delete_diagnosa_idrg
+     * Hapus diagnosa berdasarkan ID
+     */
+    public function delete_diagnosa_idrg($id)
+    {
+        // Hapus diagnosa berdasarkan ID dari tabel PASIEN_DIAGNOSA_IM
+        $deleted = $this->pasienRujukanRepo->deleteDiagnosaIDRGById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus diagnosa',
+        ], 500);
+    }
+
+    /**
+     * set primary diagnosa im
+     * Hapus diagnosa berdasarkan ID
+     */
+    public function diagnosa_idrg_set_primary($id)
+    {
+        // Hapus diagnosa berdasarkan ID dari tabel PASIEN_DIAGNOSA_IM
+        $deleted = $this->pasienRujukanRepo->setDiagnosaIDRGPrimary($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil di set primary',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat set primary diagnosa',
         ], 500);
     }
 

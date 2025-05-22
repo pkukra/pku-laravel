@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/react";
-import { Col, Row, Card } from "antd";
+import { Col, Row, Card, Tabs } from "antd";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
 import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
@@ -10,8 +10,44 @@ import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailAssesmenIGD from "./PasienRujukanDetailAssesmenIGD";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
+
+import PasienRujukanDetailDiagnosaListIDRG from "./IDRG/PasienRujukanDetailDiagnosaListIDRG";
+import PasienRujukanDetailProcedureListIDRG from "./IDRG/PasienRujukanDetailProcedureListIDRG";
+
 import { useState } from "react";
 import axios from "axios";
+
+function IDRG({ pasien }) {
+    return (
+        <>
+            <p><strong>iDRG</strong></p>
+            <Row gutter={[5, 5]}>
+                <Col span={12}>
+                    <PasienRujukanDetailDiagnosaListIDRG pasien={pasien} />
+                </Col>
+                <Col span={12}>
+                    <PasienRujukanDetailProcedureListIDRG pasien={pasien} />
+                </Col>
+            </Row>
+        </>
+    );
+}
+
+function INACBG({ pasien }) {
+    return (
+        <>
+            <p><strong>INACBG</strong></p>
+            <Row gutter={[5, 5]}>
+                <Col span={12}>
+                    <PasienRujukanDetailDiagnosaList pasien={pasien} />
+                </Col>
+                <Col span={12}>
+                    <PasienRujukanDetailProcedureList pasien={pasien} />
+                </Col>
+            </Row>
+        </>
+    );
+}
 
 function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
@@ -27,6 +63,19 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
             )
             .finally(() => setPasienLoading(false));
     };
+
+    const menu = [
+        {
+            label: "IDRG",
+            key: "1",
+            children: <IDRG pasien={pasien} />,
+        },
+        {
+            label: "INACBG",
+            key: "2",
+            children: <INACBG pasien={pasien} />,
+        },
+    ];
 
     return (
         <>
@@ -54,12 +103,24 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienRujukanDetailHasilLab pasien={pasien} />
                         </Col>
 
-                        <Col span={12}>
+                        <Col span={24}>
+                            <Card>
+                                <Tabs
+                                    defaultActiveKey="1"
+                                    type="card"
+                                    size={"small"}
+                                    style={{ marginBottom: 32 }}
+                                    items={menu}
+                                />
+                            </Card>
+                        </Col>
+
+                        {/* <Col span={12}>
                             <PasienRujukanDetailDiagnosaList pasien={pasien} />
                         </Col>
                         <Col span={12}>
                             <PasienRujukanDetailProcedureList pasien={pasien} />
-                        </Col>
+                        </Col> */}
 
                         <Col span={12}>
                             <PasienRujukanDetailAmnanesaCatatan
