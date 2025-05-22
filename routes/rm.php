@@ -52,6 +52,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/cari_penyakit_im', [PasienRujukanController::class, 'cari_penyakit_im'])->name('rm.pasien-rujukan.cari_penyakit_im');
         Route::post('/save-diagnosa-idrg', [PasienRujukanController::class, 'save_diagnosa_idrg'])->name('rm.pasien-rujukan.save_diagnosa_idrg');
         Route::delete('/diagnosa_idrg/{id}', [PasienRujukanController::class, 'delete_diagnosa_idrg'])->name('rm.pasien-rujukan.delete_diagnosa_idrg');
+        Route::post('/diagnosa_idrg_set_primary/{id}', [PasienRujukanController::class, 'diagnosa_idrg_set_primary'])->name('rm.pasien-rujukan.diagnosa_idrg_set_primary');
     });
 
     Route::prefix('pasien-inap')->group(function () {

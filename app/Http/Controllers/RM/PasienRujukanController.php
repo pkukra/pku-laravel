@@ -363,6 +363,28 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * set primary diagnosa im
+     * Hapus diagnosa berdasarkan ID
+     */
+    public function diagnosa_idrg_set_primary($id)
+    {
+        // Hapus diagnosa berdasarkan ID dari tabel PASIEN_DIAGNOSA_IM
+        $deleted = $this->pasienRujukanRepo->setDiagnosaIDRGPrimary($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil di set primary',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat set primary diagnosa',
+        ], 500);
+    }
+
+    /**
      * list_procedure
      * Menampilkan procedure berdasarkan kode transaksi
      */

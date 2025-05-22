@@ -713,6 +713,73 @@ class PasienRujukanRepository
         }
     }
 
+    /**
+     * Set a diagnosa as primary in PASIEN_DIAGNOSA_IM table
+     * and unset is_primary for all other diagnosa with the same no_transaksi
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function setDiagnosaIDRGPrimary($id)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            $conn->beginTransaction();
+
+            // Ambil data diagnosa yang akan diset sebagai primary
+            $targetDiagnosa = $conn
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$targetDiagnosa) {
+                return false;
+            }
+
+            $noTransaksi = $targetDiagnosa->no_transaksi;
+            $pasienId = $targetDiagnosa->pasien_id;
+
+            // Set semua diagnosa lain ke is_primary = 0
+            $conn->table('PASIEN_DIAGNOSA_IM')
+                ->where('no_transaksi', $noTransaksi)
+                ->where('pasien_id', $pasienId)
+                ->update([
+                    'is_primary' => 0,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            // Set diagnosa yang dipilih ke is_primary = 1
+            $conn->table('PASIEN_DIAGNOSA_IM')
+                ->where('ID', $id)
+                ->update([
+                    'is_primary' => 1,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            // Audit trail
+            $this->auditTrail->insert([
+                "object_id"  => $noTransaksi,
+                "action_id"  => 13,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => $now,
+                "data"       => $targetDiagnosa,
+            ]);
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository setDiagnosaPrimary error: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Get procedure penyakit by transaksi (MR_TINDAKAN)

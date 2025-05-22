@@ -3,14 +3,12 @@ import {
     Modal,
     Spin,
     Card,
-    Select,
     AutoComplete,
     Row,
     Col,
     notification,
     Table,
     Button,
-    Tooltip,
 } from "antd";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -43,17 +41,28 @@ export default function Index({ pasien }) {
             key: "action",
             align: "center",
             render: (_, record) => (
-                <Button
-                    disabled={
-                        loadingDeleteDiagnosa && record.id === deleteDiagnosaId
-                    }
-                    size="small"
-                    variant="outlined"
-                    color="danger"
-                    onClick={() => showDeleteConfirm(record)}
-                >
-                    hapus
-                </Button>
+                <>
+                    <Button
+                        disabled={record?.is_primary == "1" || loadingPrimaryDiagnosa}
+                        size="small"
+                        variant="outlined"
+                        onClick={() => showSetPrimaryConfirm(record)}
+                    >
+                        Set Primary
+                    </Button>{" "}
+                    <Button
+                        disabled={
+                            loadingDeleteDiagnosa &&
+                            record.id === deleteDiagnosaId
+                        }
+                        size="small"
+                        variant="outlined"
+                        color="danger"
+                        onClick={() => showDeleteConfirm(record)}
+                    >
+                        hapus
+                    </Button>
+                </>
             ),
         },
     ];
@@ -65,10 +74,16 @@ export default function Index({ pasien }) {
     const [selectedDiagnosaForm, setSelectedDiagnosaForm] = useState(null);
     const [loadingSaveDiag, setLoadingSaveDiag] = useState(false); // Loading state for each diagnosa
     const [selectedDiagnosaDisplay, setSelectedDiagnosaDisplay] = useState(""); // Stores the full value for display
+    
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [isModalHapusDiagnosaOpen, setIsModalHapusDiagnosaOpen] =
-        useState(false); // Modal visibility state
+        useState(false);
     const [loadingDeleteDiagnosa, setLoadingDeleteDiagnosa] = useState(false); // State loading untuk penghapusan diagnosa
+
+    const [primaryDiagnosaId, setPrimaryDiagnosaId] = useState(null); // Track which diagnosa is being deleted
+    const [isModalSetPrimaryOpen, setIsModalSetPrimaryOpen] = useState(false);
+    const [loadingPrimaryDiagnosa, setLoadingPrimaryDiagnosa] = useState(false); // State loading untuk penghapusan diagnosa
+
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
@@ -181,6 +196,12 @@ export default function Index({ pasien }) {
         setIsModalHapusDiagnosaOpen(true); // Show the modal
     };
 
+    // Function to show the modal with the diagnosa info for deletion
+    const showSetPrimaryConfirm = (item) => {
+        setPrimaryDiagnosaId(item.id); // Set the current diagnosa to be deleted
+        setIsModalSetPrimaryOpen(true); // Show the modal
+    };
+
     // Function to handle cancel (closing the modal)
     const handleCancelDelDiagnosa = () => {
         setIsModalHapusDiagnosaOpen(false); // Close the modal
@@ -208,6 +229,27 @@ export default function Index({ pasien }) {
             .finally(() => {
                 setLoadingDeleteDiagnosa(false);
                 setIsModalHapusDiagnosaOpen(false);
+            });
+    };
+
+    // Fungsi untuk menhapus diagnosa setia detail pasien by id
+    const makePrimaryDiagnoda = (id) => {
+        setLoadingDeleteDiagnosa(true); // Set loading true saat mulai menghapus
+        axios
+            .post(
+                route("rm.pasien-rujukan.diagnosa_idrg_set_primary", {
+                    id: id,
+                })
+            )
+            .then((response) => {
+                fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setIsModalSetPrimaryOpen(false);
+                setLoadingPrimaryDiagnosa(false);
             });
     };
 
@@ -285,8 +327,7 @@ export default function Index({ pasien }) {
                         style={{ width: "100%" }}
                         onClick={saveDiagnosa}
                         disabled={
-                            loadingSaveDiag ||
-                            selectedDiagnosaForm === null
+                            loadingSaveDiag || selectedDiagnosaForm === null
                         }
                     >
                         {loadingSaveDiag ? (
@@ -324,6 +365,26 @@ export default function Index({ pasien }) {
                 okButtonProps={{ danger: true }}
             >
                 <p>Apakah anda yakin ingin menghapus diagnosa ini?</p>
+            </Modal>
+
+            {/* Modal for set primary */}
+            <Modal
+                title="Set Primary Diagnosa"
+                open={isModalSetPrimaryOpen}
+                onOk={() => {
+                    primaryDiagnosaId &&
+                        makePrimaryDiagnoda(
+                            primaryDiagnosaId
+                        );
+                }}
+                onCancel={() => {
+                    setIsModalSetPrimaryOpen(false);
+                }}
+                okText="Ya"
+                cancelText="Tidak"
+                okButtonProps={{ primary: true }}
+            >
+                <p>Apakah anda yakin ingin menjadikan diagnosa ini primary?</p>
             </Modal>
         </Card>
     );
