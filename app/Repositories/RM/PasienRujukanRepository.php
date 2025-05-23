@@ -799,6 +799,23 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get procedure IDRG penyakit by transaksi (PASIEN_TINDAKAN_IM)
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getProcedureIDRGByTransaksi($no_transaksi)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_TINDAKAN_IM')
+            ->join('ICD', 'PASIEN_TINDAKAN_IM.code', '=', 'ICD.code')
+            ->select('PASIEN_TINDAKAN_IM.*', 'ICD.code', 'ICD.description')
+            ->orderBy('PASIEN_TINDAKAN_IM.is_primary', 'DESC')
+            ->where('PASIEN_TINDAKAN_IM.no_transaksi', $no_transaksi)
+            ->get();
+    }
+
+    /**
      * Search procedure in MR_ICD9 table with a query
      * 
      * @param string $searchTerm
@@ -823,6 +840,31 @@ class PasienRujukanRepository
             })
             ->skip(($page - 1) * 20) // Skip based on current page
             ->take(20) // Limit results per page
+            ->get();
+    }
+
+    /**
+     * Search procedure in ICD IM table with a query (ICD_9CM_2010_IM)
+     * 
+     * @param string $searchTerm
+     * @param int $page
+     * @return \Illuminate\Support\Collection
+     */
+    public function searchProcedureIM($searchTerm, $page)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('ICD')
+            ->select('ICD.*')
+            ->where('system', 'ICD_9CM_2010_IM')
+            ->when($searchTerm, function ($query) use ($searchTerm) {
+                $search = str_replace('.', '', $searchTerm);
+                return $query->where(function ($q) use ($search) {
+                    $q->whereRaw("REPLACE(ICD.code, '.', '') LIKE ?", ["%$search%"])
+                        ->orWhereRaw("REPLACE(CAST(ICD.description AS VARCHAR(MAX)), '.', '') LIKE ?", ["%$search%"]);
+                });
+            })
+            ->skip(($page - 1) * 20)
+            ->take(20)
             ->get();
     }
 
@@ -882,6 +924,62 @@ class PasienRujukanRepository
             return false;
         }
 
+        return true;
+    }
+
+    /**
+     * Save Procedure for pasien rujukan
+     * 
+     * @param array $data
+     * @return boolean
+     */
+    public function saveProcedureIDRG($data)
+    {
+        $user = Auth::user();
+        $no_transaksikj = $data['no_transaksikj'];
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        $counts = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_TINDAKAN_IM')
+            ->where('no_transaksi', $no_transaksikj)
+            ->count();
+
+        $data_to_save = [
+            'code' => $data['code'],
+            'multiplicity' => $data['multiplicity'],
+            'no_transaksi' => $data['no_transaksikj'],
+            'pasien_id' => $data['pasien_id'],
+            'created_by' => $user->email,
+            'created_at' => $now,
+            'is_primary' => $counts == 0 ? 1 : 0,
+        ];
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_TINDAKAN_IM')
+                ->insert($data_to_save);
+
+            $isrecorded = $this->auditTrail->insert([
+                "object_id" => $no_transaksikj,
+                "action_id" => 14,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data_to_save,
+            ]);
+
+            if (!$isrecorded) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanRepository saveProcedure err: " . $e->getMessage());
+            return false;
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
         return true;
     }
 
@@ -946,6 +1044,208 @@ class PasienRujukanRepository
         }
     }
 
+    /**
+     * Delete tindakan by ID from PASIEN_TINDAKAN_IM table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteProcedureIDRGById($id)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+        $now = now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            $conn->beginTransaction();
+
+            $deletedProcedure = $conn
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('id', $id)
+                ->first();
+
+            if (!$deletedProcedure) {
+                return false;
+            }
+
+            // Cek apakah tindakan yang akan dihapus adalah primary
+            $isPrimary = $deletedProcedure->is_primary == 1;
+            $noTransaksi = $deletedProcedure->no_transaksi;
+            $pasienId = $deletedProcedure->pasien_id;
+
+            // Hapus tindakan
+            $deleted = $conn
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('id', $id)
+                ->delete();
+
+            if (!$deleted) {
+                $conn->rollBack();
+                return false;
+            }
+
+            // Jika yang dihapus adalah primary, cari tindakan lain untuk dijadikan primary
+            if ($isPrimary) {
+                $newPrimary = $conn
+                    ->table('PASIEN_TINDAKAN_IM')
+                    ->where('no_transaksi', $noTransaksi)
+                    ->where('pasien_id', $pasienId)
+                    ->orderBy('created_at', 'asc')
+                    ->first();
+
+                if ($newPrimary) {
+                    $conn
+                        ->table('PASIEN_TINDAKAN_IM')
+                        ->where('id', $newPrimary->id)
+                        ->update([
+                            'is_primary' => 1,
+                            'updated_by' => $user->email,
+                            'updated_at' => $now,
+                        ]);
+                }
+            }
+
+            // Audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $noTransaksi,
+                "action_id"  => 15,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => $now,
+                "data"       => $deletedProcedure,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("PasienRujukanRepository deleteProcedureById iDRG error: gagal simpan audittrail");
+                $conn->rollBack();
+                return false;
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository deleteProcedureById iDRG error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Set a procedure as primary in PASIEN_TINDAKAN_IM table
+     * and unset is_primary for all other procedure with the same no_transaksi
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function setProcedureIDRGPrimary($id)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            $conn->beginTransaction();
+
+            // Ambil data procedure yang akan diset sebagai primary
+            $targetProcedure = $conn
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$targetProcedure) {
+                return false;
+            }
+
+            $noTransaksi = $targetProcedure->no_transaksi;
+            $pasienId = $targetProcedure->pasien_id;
+
+            // Set semua procedure lain ke is_primary = 0
+            $conn->table('PASIEN_TINDAKAN_IM')
+                ->where('no_transaksi', $noTransaksi)
+                ->where('pasien_id', $pasienId)
+                ->update([
+                    'is_primary' => 0,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            // Set procedure yang dipilih ke is_primary = 1
+            $conn->table('PASIEN_TINDAKAN_IM')
+                ->where('ID', $id)
+                ->update([
+                    'is_primary' => 1,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            // Audit trail
+            $this->auditTrail->insert([
+                "object_id"  => $noTransaksi,
+                "action_id"  => 16,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => $now,
+                "data"       => $targetProcedure,
+            ]);
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository setProcedurePrimary error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * @param int $id
+     * @return bool
+     */
+    public function procedureIDRGUpdatemultiplicity($id, $multiplicity)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            $conn->beginTransaction();
+
+            $targetProcedure = $conn
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$targetProcedure) {
+                return false;
+            }
+
+            $updated = $conn->table('PASIEN_TINDAKAN_IM')
+                ->where('id', $id)
+                ->update([
+                    'multiplicity' => $multiplicity,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            if ($updated) {
+                $this->auditTrail->insert([
+                    'object_id'  => $targetProcedure->no_transaksi,
+                    'action_id'  => 17,
+                    'user_email' => $user->email,
+                    'user_id'    => $user->id,
+                    'created_at' => $now,
+                    'data'       => ['multiplicity' => $multiplicity],
+                ]);
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository setProcedurePrimary error: " . $e->getMessage());
+            return false;
+        }
+    }
 
     /**
      * Get procedure penyakit by transaksi (MR_DIAGNOSA)

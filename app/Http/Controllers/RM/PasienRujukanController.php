@@ -58,7 +58,8 @@ class PasienRujukanController extends Controller
             $per_page,
             $kode_poly,
             $kode_dokter,
-            $no_rm, $is_inacbg_final
+            $no_rm,
+            $is_inacbg_final
         );
 
         return response()->json([
@@ -190,7 +191,7 @@ class PasienRujukanController extends Controller
             'data' => $diagnosa,
         ]);
     }
-    
+
     /**
      * list_diagnosa_idrg
      * Menampilkan diagnosa berdasarkan kode transaksi
@@ -224,7 +225,7 @@ class PasienRujukanController extends Controller
             'page' => $page,
         ]);
     }
-    
+
     /**
      * cari_penyakit_im
      * Pencarian penyakit/diagnosa IM di database berdasarkan input (ICD-10 IM)
@@ -288,7 +289,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
         ], 500);
     }
-    
+
     /**
      * save_diagnosa_idrg
      * Menyimpan data diagnosa versi IDRG untuk pasien rujukan 
@@ -339,7 +340,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menghapus diagnosa',
         ], 500);
     }
-    
+
     /**
      * delete_diagnosa_idrg
      * Hapus diagnosa berdasarkan ID
@@ -400,6 +401,21 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * list_procedure_idrg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function list_procedure_idrg($kode_reg)
+    {
+        // Mendapatkan procedure berdasarkan kode transaksi
+        $procedure = $this->pasienRujukanRepo->getProcedureIDRGByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+        ]);
+    }
+
+    /**
      * cari_procedure
      * Pencarian procedure/diagnosa di database berdasarkan input
      */
@@ -410,6 +426,25 @@ class PasienRujukanController extends Controller
 
         // Mendapatkan data procedure berdasarkan pencarian
         $procedure = $this->pasienRujukanRepo->searchProcedure($searchTerm, $page);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+            'page' => $page,
+        ]);
+    }
+
+    /**
+     * cari_procedure_im
+     * Pencarian procedure/diagnosa di database berdasarkan input
+     */
+    public function cari_procedure_im(Request $request)
+    {
+        $searchTerm = $request->input('query');
+        $page = $request->input('page', 1); // Halaman saat ini (default 1)
+
+        // Mendapatkan data procedure berdasarkan pencarian
+        $procedure = $this->pasienRujukanRepo->searchProcedureIM($searchTerm, $page);
 
         return response()->json([
             'status' => "ok",
@@ -460,6 +495,36 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * save_procedure_idrg
+     * Menyimpan data procedure versi IDRG untuk pasien rujukan 
+     */
+    public function save_procedure_idrg(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'code' => 'required|string|max:10',
+            'no_transaksikj' => 'required|string|max:20',
+            'pasien_id' => 'required|string|max:20',
+            'multiplicity' => 'required|int|min:1',
+        ]);
+
+        // Menyimpan data procedure melalui repository
+        $isSaved = $this->pasienRujukanRepo->saveProcedureIDRG($validated);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan procedure',
+        ], 500);
+    }
+
+    /**
      * delete_procedure
      * Hapus procedure berdasarkan ID
      */
@@ -478,6 +543,74 @@ class PasienRujukanController extends Controller
         return response()->json([
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat menghapus procedure',
+        ], 500);
+    }
+
+    /**
+     * delete_procedure_idrg
+     * Hapus procedure berdasarkan ID
+     */
+    public function delete_procedure_idrg($id)
+    {
+        // Hapus procedure_idrg berdasarkan ID dari tabel PASIEN_TINDAKAN_IM
+        $deleted = $this->pasienRujukanRepo->deleteProcedureIDRGById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure iDRG berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus procedure iDRG',
+        ], 500);
+    }
+
+    /**
+     * set primary procedure im
+     * 
+     */
+    public function procedure_idrg_set_primary($id)
+    {
+        $deleted = $this->pasienRujukanRepo->setProcedureIDRGPrimary($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure berhasil di set primary',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat set primary procedure',
+        ], 500);
+    }
+    
+    /**
+     * update multiplicity procedure im
+     * 
+     */
+    public function procedure_idrg_udpate_multiplicity(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required',
+            'multiplicity' => 'required|min:1',
+        ]);
+
+        $updated = $this->pasienRujukanRepo->procedureIDRGUpdatemultiplicity($validated['id'], $validated['multiplicity']);
+        if ($updated) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Update miltiplicity berhasil',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat update miltiplicity',
         ], 500);
     }
 
