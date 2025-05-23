@@ -18,22 +18,19 @@ import axios from "axios";
 export default function Index({ pasien }) {
     const columns = [
         {
-            title: "Status",
-            dataIndex: "is_primary",
-            key: "is_primary",
-            render: (_, record) => {
-                if (record?.is_primary == "1") {
-                    return <>Primary</>;
-                }
-                return <>Secondary</>;
-            },
-            width: 100,
-        },
-        {
             title: "Kode",
             dataIndex: "code",
             key: "code",
-            width: 50,
+            width: 30,
+            render: (_, record) => {
+                return (
+                    <>
+                        {record.code} <br />
+                        {record.is_primary == "1" ? <small>Primary</small> : <small>Secondary</small>}
+                    </>
+                );
+            },
+            width: 100,
         },
         {
             title: "Penyakit",
@@ -45,6 +42,14 @@ export default function Index({ pasien }) {
             dataIndex: "multiplicity",
             key: "multiplicity",
             width: 20,
+            align: "center",
+            render: (item, record) => {
+                return (
+                    <>
+                        <a>{item}</a>
+                    </>
+                );
+            },
         },
         {
             title: "Action",
@@ -101,7 +106,8 @@ export default function Index({ pasien }) {
 
     const [primaryProcedureId, setPrimaryProcedureId] = useState(null); // Track which diagnosa is being deleted
     const [isModalSetPrimaryOpen, setIsModalSetPrimaryOpen] = useState(false);
-    const [loadingPrimaryProcedure, setLoadingPrimaryProcedure] = useState(false);
+    const [loadingPrimaryProcedure, setLoadingPrimaryProcedure] =
+        useState(false);
 
     const [loadingDeleteProcedure, setLoadingDeleteProcedure] = useState(false); // State loading untuk penghapusan procedure
     const [selectedProcedure, setSelectedProcedure] = useState([]); // untuk disable procedure terpiluh, agar saat menampilkan list procedure tidak terpilih 2 kali
@@ -257,7 +263,7 @@ export default function Index({ pasien }) {
             )
             .then((response) => {
                 console.log(response.data);
-                
+
                 fetchProcedure(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
             })
             .catch((error) => {
@@ -403,7 +409,8 @@ export default function Index({ pasien }) {
                 title="Set Primary Procedure"
                 open={isModalSetPrimaryOpen}
                 onOk={() => {
-                    primaryProcedureId && makePrimaryProcedure(primaryProcedureId);
+                    primaryProcedureId &&
+                        makePrimaryProcedure(primaryProcedureId);
                 }}
                 onCancel={() => {
                     setIsModalSetPrimaryOpen(false);
