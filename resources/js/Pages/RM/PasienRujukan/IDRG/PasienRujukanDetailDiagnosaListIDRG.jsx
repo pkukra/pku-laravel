@@ -17,22 +17,23 @@ import axios from "axios";
 export default function Index({ pasien }) {
     const columns = [
         {
-            title: "Status",
-            dataIndex: "is_primary",
-            key: "is_primary",
-            render: (_, record) => {
-                if (record?.is_primary == "1") {
-                    return <>Primary</>;
-                }
-                return <>Secondary</>;
-            },
-            width: 100,
-        },
-        {
             title: "Kode",
             dataIndex: "code",
             key: "code",
-            width: 50,
+            width: 30,
+            render: (_, record) => {
+                return (
+                    <>
+                        {record.code} <br />
+                        {record.is_primary == "1" ? (
+                            <small>Primary</small>
+                        ) : (
+                            <small>Secondary</small>
+                        )}
+                    </>
+                );
+            },
+            width: 100,
         },
         {
             title: "Penyakit",
