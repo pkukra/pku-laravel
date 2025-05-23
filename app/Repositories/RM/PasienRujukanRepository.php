@@ -1044,6 +1044,92 @@ class PasienRujukanRepository
         }
     }
 
+    /**
+     * Delete tindakan by ID from PASIEN_TINDAKAN_IM table
+     * 
+     * @param int $id
+     * @return boolean
+     */
+    public function deleteProcedureIDRGById($id)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+        $now = now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            $conn->beginTransaction();
+
+            $deletedProcedure = $conn
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('id', $id)
+                ->first();
+
+            if (!$deletedProcedure) {
+                return false;
+            }
+
+            // Cek apakah tindakan yang akan dihapus adalah primary
+            $isPrimary = $deletedProcedure->is_primary == 1;
+            $noTransaksi = $deletedProcedure->no_transaksi;
+            $pasienId = $deletedProcedure->pasien_id;
+
+            // Hapus tindakan
+            $deleted = $conn
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('id', $id)
+                ->delete();
+
+            if (!$deleted) {
+                $conn->rollBack();
+                return false;
+            }
+
+            // Jika yang dihapus adalah primary, cari tindakan lain untuk dijadikan primary
+            if ($isPrimary) {
+                $newPrimary = $conn
+                    ->table('PASIEN_TINDAKAN_IM')
+                    ->where('no_transaksi', $noTransaksi)
+                    ->where('pasien_id', $pasienId)
+                    ->orderBy('created_at', 'asc')
+                    ->first();
+
+                if ($newPrimary) {
+                    $conn
+                        ->table('PASIEN_TINDAKAN_IM')
+                        ->where('id', $newPrimary->id)
+                        ->update([
+                            'is_primary' => 1,
+                            'updated_by' => $user->email,
+                            'updated_at' => $now,
+                        ]);
+                }
+            }
+
+            // Audit trail
+            $auditSuccess = $this->auditTrail->insert([
+                "object_id"  => $noTransaksi,
+                "action_id"  => 15,
+                "user_email" => $user->email,
+                "user_id"    => $user->id,
+                "created_at" => $now,
+                "data"       => $deletedProcedure,
+            ]);
+
+            if (!$auditSuccess) {
+                Log::error("PasienRujukanRepository deleteProcedureById iDRG error: gagal simpan audittrail");
+                $conn->rollBack();
+                return false;
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository deleteProcedureById iDRG error: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     /**
      * Get procedure penyakit by transaksi (MR_DIAGNOSA)

@@ -544,6 +544,28 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menghapus procedure',
         ], 500);
     }
+    
+    /**
+     * delete_procedure_idrg
+     * Hapus procedure berdasarkan ID
+     */
+    public function delete_procedure_idrg($id)
+    {
+        // Hapus procedure_idrg berdasarkan ID dari tabel PASIEN_TINDAKAN_IM
+        $deleted = $this->pasienRujukanRepo->deleteProcedureIDRGById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure iDRG berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus procedure iDRG',
+        ], 500);
+    }
 
 
     /**

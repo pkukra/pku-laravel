@@ -220,7 +220,7 @@ export default function Index({ pasien }) {
         setLoadingDeleteProcedure(true); // Set loading true saat mulai menghapus
         axios
             .delete(
-                route("rm.pasien-rujukan.delete_procedure", {
+                route("rm.pasien-rujukan.delete_procedure_idrg", {
                     id: id,
                 })
             )
