@@ -1198,6 +1198,56 @@ class PasienRujukanRepository
     }
 
     /**
+     * @param int $id
+     * @return bool
+     */
+    public function procedureIDRGUpdatemultiplicity($id, $multiplicity)
+    {
+        $user = Auth::user();
+        $conn = DB::connection('sqlsrvsimrs');
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            $conn->beginTransaction();
+
+            $targetProcedure = $conn
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$targetProcedure) {
+                return false;
+            }
+
+            $updated = $conn->table('PASIEN_TINDAKAN_IM')
+                ->where('id', $id)
+                ->update([
+                    'multiplicity' => $multiplicity,
+                    'updated_by' => $user->email,
+                    'updated_at' => $now,
+                ]);
+
+            if ($updated) {
+                $this->auditTrail->insert([
+                    'object_id'  => $targetProcedure->no_transaksi,
+                    'action_id'  => 17,
+                    'user_email' => $user->email,
+                    'user_id'    => $user->id,
+                    'created_at' => $now,
+                    'data'       => ['multiplicity' => $multiplicity],
+                ]);
+            }
+
+            $conn->commit();
+            return true;
+        } catch (\Exception $e) {
+            $conn->rollBack();
+            Log::error("PasienRujukanRepository setProcedurePrimary error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Get procedure penyakit by transaksi (MR_DIAGNOSA)
      *
      * @param string $no_transaksi

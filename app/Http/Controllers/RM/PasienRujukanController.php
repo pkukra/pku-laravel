@@ -570,11 +570,10 @@ class PasienRujukanController extends Controller
 
     /**
      * set primary procedure im
-     * Hapus procedure berdasarkan ID
+     * 
      */
     public function procedure_idrg_set_primary($id)
     {
-        // Hapus procedure berdasarkan ID dari tabel PASIEN_DIAGNOSA_IM
         $deleted = $this->pasienRujukanRepo->setProcedureIDRGPrimary($id);
 
         if ($deleted) {
@@ -587,6 +586,31 @@ class PasienRujukanController extends Controller
         return response()->json([
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat set primary procedure',
+        ], 500);
+    }
+    
+    /**
+     * update multiplicity procedure im
+     * 
+     */
+    public function procedure_idrg_udpate_multiplicity(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required',
+            'multiplicity' => 'required|min:1',
+        ]);
+
+        $updated = $this->pasienRujukanRepo->procedureIDRGUpdatemultiplicity($validated['id'], $validated['multiplicity']);
+        if ($updated) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Update miltiplicity berhasil',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat update miltiplicity',
         ], 500);
     }
 

@@ -26,7 +26,11 @@ export default function Index({ pasien }) {
                 return (
                     <>
                         {record.code} <br />
-                        {record.is_primary == "1" ? <small>Primary</small> : <small>Secondary</small>}
+                        {record.is_primary == "1" ? (
+                            <small>Primary</small>
+                        ) : (
+                            <small>Secondary</small>
+                        )}
                     </>
                 );
             },
@@ -46,7 +50,16 @@ export default function Index({ pasien }) {
             render: (item, record) => {
                 return (
                     <>
-                        <a>{item}</a>
+                        <a
+                            onClick={() => {
+                                setMultiplicityUpdate(record?.multiplicity);
+                                setIsModalSetMultiplicityOpen(true);
+                                setMultiplicityProcedureData(record);
+                                return;
+                            }}
+                        >
+                            {item}
+                        </a>
                     </>
                 );
             },
@@ -103,14 +116,20 @@ export default function Index({ pasien }) {
     const [deleteProcedureId, setDeleteProcedureId] = useState(null); // Track which procedure is being deleted
     const [isModalHapusProcedureOpen, setIsModalHapusProcedureOpen] =
         useState(false); // Modal visibility state
+    const [loadingDeleteProcedure, setLoadingDeleteProcedure] = useState(false); // State loading untuk penghapusan procedure
+    const [selectedProcedure, setSelectedProcedure] = useState([]); // untuk disable procedure terpiluh, agar saat menampilkan list procedure tidak terpilih 2 kali
 
-    const [primaryProcedureId, setPrimaryProcedureId] = useState(null); // Track which diagnosa is being deleted
+    const [multiplicityProcedureData, setMultiplicityProcedureData] =
+        useState(null);
+    const [multiplicityUpdate, setMultiplicityUpdate] = useState(1);
+    const [isModalSetMultiplicityOpen, setIsModalSetMultiplicityOpen] =
+        useState(false);
+
+    const [primaryProcedureId, setPrimaryProcedureId] = useState(null);
     const [isModalSetPrimaryOpen, setIsModalSetPrimaryOpen] = useState(false);
     const [loadingPrimaryProcedure, setLoadingPrimaryProcedure] =
         useState(false);
 
-    const [loadingDeleteProcedure, setLoadingDeleteProcedure] = useState(false); // State loading untuk penghapusan procedure
-    const [selectedProcedure, setSelectedProcedure] = useState([]); // untuk disable procedure terpiluh, agar saat menampilkan list procedure tidak terpilih 2 kali
     const [procedure, setProcedure] = useState([]); // State untuk menyimpan data procedure
     const [loadingFetchProcedure, setLoadingFetchProcedure] = useState(true); // Loading state
 
@@ -264,15 +283,36 @@ export default function Index({ pasien }) {
             .then((response) => {
                 console.log(response.data);
 
-                fetchProcedure(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
+                fetchProcedure(); // Memanggil ulang untuk mendapatkan data procedure terbaru
             })
             .catch((error) => {
-                console.error("Error fetching diagnosa data:", error);
+                console.error("Error fetching procedure data:", error);
             })
             .finally(() => {
                 setIsModalSetPrimaryOpen(false);
                 setLoadingPrimaryProcedure(false);
             });
+    };
+
+    const updateMultiplicity = async () => {
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.procedure_idrg_udpate_multiplicity"),
+                {
+                    id: multiplicityProcedureData?.id,
+                    multiplicity: multiplicityUpdate,
+                }
+            );
+            fetchProcedure();
+            console.log(response.data);
+        } catch (error) {
+            console.error("Error updating multiplicity:", error);
+        } finally {
+            setMultiplicityProcedureData(null);
+            setMultiplicityUpdate(null);
+            setIsModalSetMultiplicityOpen(false);
+        }
+        return;
     };
 
     const inputRefStatusProcedure = useRef(null);
@@ -418,8 +458,47 @@ export default function Index({ pasien }) {
                 okText="Ya"
                 cancelText="Tidak"
                 okButtonProps={{ primary: true }}
+                loading={loadingPrimaryProcedure}
             >
-                <p>Apakah anda yakin ingin menjadikan diagnosa ini primary?</p>
+                <p>Apakah anda yakin ingin menjadikan procedure ini primary?</p>
+            </Modal>
+
+            {/* Modal update multiplicity */}
+            <Modal
+                title="Update Multiplicity"
+                open={isModalSetMultiplicityOpen}
+                onOk={() => {
+                    updateMultiplicity();
+                }}
+                onCancel={() => {
+                    setIsModalSetMultiplicityOpen(false);
+                }}
+                okText="Simpan"
+                cancelText="Cancel"
+                okButtonProps={{ primary: true }}
+                loading={loadingPrimaryProcedure}
+            >
+                <Row gutter={16} style={{ marginBottom: 10 }}>
+                    <Col span={5}>Kode</Col>
+                    <Col>: {multiplicityProcedureData?.code}</Col>
+                </Row>
+
+                <Row gutter={16} style={{ marginBottom: 10 }}>
+                    <Col span={5}>Description</Col>
+                    <Col>: {multiplicityProcedureData?.description}</Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col span={5}>Multiplicity</Col>
+                    <Col>
+                        :{" "}
+                        <InputNumber
+                            min={1}
+                            value={multiplicityUpdate}
+                            onChange={setMultiplicityUpdate}
+                        />
+                    </Col>
+                </Row>
             </Modal>
         </Card>
     );
