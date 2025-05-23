@@ -58,7 +58,8 @@ class PasienRujukanController extends Controller
             $per_page,
             $kode_poly,
             $kode_dokter,
-            $no_rm, $is_inacbg_final
+            $no_rm,
+            $is_inacbg_final
         );
 
         return response()->json([
@@ -190,7 +191,7 @@ class PasienRujukanController extends Controller
             'data' => $diagnosa,
         ]);
     }
-    
+
     /**
      * list_diagnosa_idrg
      * Menampilkan diagnosa berdasarkan kode transaksi
@@ -224,7 +225,7 @@ class PasienRujukanController extends Controller
             'page' => $page,
         ]);
     }
-    
+
     /**
      * cari_penyakit_im
      * Pencarian penyakit/diagnosa IM di database berdasarkan input (ICD-10 IM)
@@ -288,7 +289,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
         ], 500);
     }
-    
+
     /**
      * save_diagnosa_idrg
      * Menyimpan data diagnosa versi IDRG untuk pasien rujukan 
@@ -339,7 +340,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menghapus diagnosa',
         ], 500);
     }
-    
+
     /**
      * delete_diagnosa_idrg
      * Hapus diagnosa berdasarkan ID
@@ -398,7 +399,7 @@ class PasienRujukanController extends Controller
             'data' => $procedure,
         ]);
     }
-    
+
     /**
      * list_procedure_idrg
      * Menampilkan procedure berdasarkan kode transaksi
@@ -432,7 +433,7 @@ class PasienRujukanController extends Controller
             'page' => $page,
         ]);
     }
-    
+
     /**
      * cari_procedure_im
      * Pencarian procedure/diagnosa di database berdasarkan input
@@ -544,7 +545,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menghapus procedure',
         ], 500);
     }
-    
+
     /**
      * delete_procedure_idrg
      * Hapus procedure berdasarkan ID
@@ -564,6 +565,52 @@ class PasienRujukanController extends Controller
         return response()->json([
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat menghapus procedure iDRG',
+        ], 500);
+    }
+
+    /**
+     * set primary procedure im
+     * 
+     */
+    public function procedure_idrg_set_primary($id)
+    {
+        $deleted = $this->pasienRujukanRepo->setProcedureIDRGPrimary($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure berhasil di set primary',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat set primary procedure',
+        ], 500);
+    }
+    
+    /**
+     * update multiplicity procedure im
+     * 
+     */
+    public function procedure_idrg_udpate_multiplicity(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required',
+            'multiplicity' => 'required|min:1',
+        ]);
+
+        $updated = $this->pasienRujukanRepo->procedureIDRGUpdatemultiplicity($validated['id'], $validated['multiplicity']);
+        if ($updated) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Update miltiplicity berhasil',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat update miltiplicity',
         ], 500);
     }
 

@@ -17,22 +17,23 @@ import axios from "axios";
 export default function Index({ pasien }) {
     const columns = [
         {
-            title: "Status",
-            dataIndex: "is_primary",
-            key: "is_primary",
-            render: (_, record) => {
-                if (record?.is_primary == "1") {
-                    return <>Primary</>;
-                }
-                return <>Secondary</>;
-            },
-            width: 100,
-        },
-        {
             title: "Kode",
             dataIndex: "code",
             key: "code",
-            width: 50,
+            width: 30,
+            render: (_, record) => {
+                return (
+                    <>
+                        {record.code} <br />
+                        {record.is_primary == "1" ? (
+                            <small>Primary</small>
+                        ) : (
+                            <small>Secondary</small>
+                        )}
+                    </>
+                );
+            },
+            width: 100,
         },
         {
             title: "Penyakit",
@@ -92,7 +93,7 @@ export default function Index({ pasien }) {
 
     const [primaryDiagnosaId, setPrimaryDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [isModalSetPrimaryOpen, setIsModalSetPrimaryOpen] = useState(false);
-    const [loadingPrimaryDiagnosa, setLoadingPrimaryDiagnosa] = useState(false); // State loading untuk penghapusan diagnosa
+    const [loadingPrimaryDiagnosa, setLoadingPrimaryDiagnosa] = useState(false);
 
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
@@ -242,7 +243,6 @@ export default function Index({ pasien }) {
             });
     };
 
-    // Fungsi untuk menhapus diagnosa setia detail pasien by id
     const makePrimaryDiagnoda = (id) => {
         setLoadingDeleteDiagnosa(true); // Set loading true saat mulai menghapus
         axios
