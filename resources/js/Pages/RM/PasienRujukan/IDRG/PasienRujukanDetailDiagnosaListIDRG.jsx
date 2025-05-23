@@ -25,11 +25,13 @@ export default function Index({ pasien }) {
                 }
                 return <>Secondary</>;
             },
+            width: 100,
         },
         {
             title: "Kode",
             dataIndex: "code",
             key: "code",
+            width: 50,
         },
         {
             title: "Penyakit",
@@ -40,21 +42,28 @@ export default function Index({ pasien }) {
             title: "Action",
             key: "action",
             align: "center",
+            width: 100,
             render: (_, record) => (
                 <>
                     <Button
-                        disabled={record?.is_primary == "1" || loadingPrimaryDiagnosa}
+                        disabled={
+                            record?.is_primary == "1" || loadingPrimaryDiagnosa
+                        }
                         size="small"
+                        block
                         variant="outlined"
                         onClick={() => showSetPrimaryConfirm(record)}
                     >
                         Set Primary
                     </Button>{" "}
+                    <br />
                     <Button
+                        style={{ marginTop: 5 }}
                         disabled={
                             loadingDeleteDiagnosa &&
                             record.id === deleteDiagnosaId
                         }
+                        block
                         size="small"
                         variant="outlined"
                         color="danger"
@@ -74,7 +83,7 @@ export default function Index({ pasien }) {
     const [selectedDiagnosaForm, setSelectedDiagnosaForm] = useState(null);
     const [loadingSaveDiag, setLoadingSaveDiag] = useState(false); // Loading state for each diagnosa
     const [selectedDiagnosaDisplay, setSelectedDiagnosaDisplay] = useState(""); // Stores the full value for display
-    
+
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [isModalHapusDiagnosaOpen, setIsModalHapusDiagnosaOpen] =
         useState(false);
@@ -278,6 +287,7 @@ export default function Index({ pasien }) {
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={20}>
                     <AutoComplete
+                        ref={inputRefStatusDdiagnosa}
                         loading={loading}
                         allowClear
                         onChange={() => {
@@ -372,10 +382,7 @@ export default function Index({ pasien }) {
                 title="Set Primary Diagnosa"
                 open={isModalSetPrimaryOpen}
                 onOk={() => {
-                    primaryDiagnosaId &&
-                        makePrimaryDiagnoda(
-                            primaryDiagnosaId
-                        );
+                    primaryDiagnosaId && makePrimaryDiagnoda(primaryDiagnosaId);
                 }}
                 onCancel={() => {
                     setIsModalSetPrimaryOpen(false);
