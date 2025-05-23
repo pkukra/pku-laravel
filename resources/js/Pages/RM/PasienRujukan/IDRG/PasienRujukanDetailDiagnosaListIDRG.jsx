@@ -8,6 +8,7 @@ import {
     Col,
     notification,
     Table,
+    Tooltip,
     Button,
 } from "antd";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
@@ -286,49 +287,54 @@ export default function Index({ pasien }) {
         <Card title={`Diagnosa`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={20}>
-                    <AutoComplete
-                        ref={inputRefStatusDdiagnosa}
-                        loading={loading}
-                        allowClear
-                        onChange={() => {
-                            setSelectedDiagnosaForm(null); // Clear the stored code
-                            setSelectedDiagnosaDisplay(""); // Clear the display value
-                        }}
-                        options={anotherOptions.map((item) => ({
-                            value: `${item.code} - ${item.description}`, // Display both code and name
-                            label: (
-                                <div
-                                    style={{
-                                        wordBreak: "break-word", // Ensure text wraps
-                                        whiteSpace: "normal", // Allow wrapping long words
-                                        overflowWrap: "break-word", // Break long words if necessary
-                                        display: "block", // Ensure block level behavior for wrapping
-                                    }}
-                                >
-                                    <strong>{item.code}</strong> -{" "}
-                                    <span>{item.description}</span>
-                                </div>
-                            ),
-                            disabled: selectedDiagnosa.includes(item.code), // Disable if already selected
-                        }))}
-                        style={{ width: "100%" }}
-                        onSelect={(value) => {
-                            const kdPenyakit = value.split(" - ")[0]; // Extract code
-                            const displayValue = value; // Full display value with name and code
-                            setSelectedDiagnosaForm(kdPenyakit); // Store only the code
-                            setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
-                        }}
-                        onSearch={(text) => {
-                            setSelectedDiagnosaDisplay(text); // Update the display value during search
-                            fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
-                        }}
-                        onClick={(text) => {
-                            fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
-                        }}
-                        placeholder="Cari Diagnosa/Penyakit"
-                        onScroll={onScroll} // Attach scroll event for lazy loading
-                        value={selectedDiagnosaDisplay} // Show both code and name in the input
-                    />
+                    <Tooltip
+                        title={"Shift+F1 untuk shortcut"}
+                        placement="topLeft"
+                    >
+                        <AutoComplete
+                            ref={inputRefStatusDdiagnosa}
+                            loading={loading}
+                            allowClear
+                            onChange={() => {
+                                setSelectedDiagnosaForm(null); // Clear the stored code
+                                setSelectedDiagnosaDisplay(""); // Clear the display value
+                            }}
+                            options={anotherOptions.map((item) => ({
+                                value: `${item.code} - ${item.description}`, // Display both code and name
+                                label: (
+                                    <div
+                                        style={{
+                                            wordBreak: "break-word", // Ensure text wraps
+                                            whiteSpace: "normal", // Allow wrapping long words
+                                            overflowWrap: "break-word", // Break long words if necessary
+                                            display: "block", // Ensure block level behavior for wrapping
+                                        }}
+                                    >
+                                        <strong>{item.code}</strong> -{" "}
+                                        <span>{item.description}</span>
+                                    </div>
+                                ),
+                                disabled: selectedDiagnosa.includes(item.code), // Disable if already selected
+                            }))}
+                            style={{ width: "100%" }}
+                            onSelect={(value) => {
+                                const kdPenyakit = value.split(" - ")[0]; // Extract code
+                                const displayValue = value; // Full display value with name and code
+                                setSelectedDiagnosaForm(kdPenyakit); // Store only the code
+                                setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
+                            }}
+                            onSearch={(text) => {
+                                setSelectedDiagnosaDisplay(text); // Update the display value during search
+                                fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
+                            }}
+                            onClick={(text) => {
+                                fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
+                            }}
+                            placeholder="Cari Diagnosa/Penyakit"
+                            onScroll={onScroll} // Attach scroll event for lazy loading
+                            value={selectedDiagnosaDisplay} // Show both code and name in the input
+                        />
+                    </Tooltip>
                 </Col>
                 <Col span={4}>
                     <Button
