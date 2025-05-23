@@ -92,7 +92,7 @@ export default function Index({ pasien }) {
 
     const [primaryDiagnosaId, setPrimaryDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [isModalSetPrimaryOpen, setIsModalSetPrimaryOpen] = useState(false);
-    const [loadingPrimaryDiagnosa, setLoadingPrimaryDiagnosa] = useState(false); // State loading untuk penghapusan diagnosa
+    const [loadingPrimaryDiagnosa, setLoadingPrimaryDiagnosa] = useState(false);
 
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
@@ -242,7 +242,6 @@ export default function Index({ pasien }) {
             });
     };
 
-    // Fungsi untuk menhapus diagnosa setia detail pasien by id
     const makePrimaryDiagnoda = (id) => {
         setLoadingDeleteDiagnosa(true); // Set loading true saat mulai menghapus
         axios
