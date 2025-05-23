@@ -53,13 +53,14 @@ export default function Index({ pasien }) {
             render: (_, record) => (
                 <>
                     <Button
-                        disabled={
-                            record?.is_primary == "1" || loading
-                        }
+                        disabled={record?.is_primary == "1" || loading}
                         size="small"
                         block
                         variant="outlined"
-                        onClick={() => showSetPrimaryConfirm(record)}
+                        onClick={() => {
+                            setPrimaryProcedureId(record.id);
+                            setIsModalSetPrimaryOpen(true);
+                        }}
                     >
                         Set Primary
                     </Button>{" "}
@@ -97,6 +98,11 @@ export default function Index({ pasien }) {
     const [deleteProcedureId, setDeleteProcedureId] = useState(null); // Track which procedure is being deleted
     const [isModalHapusProcedureOpen, setIsModalHapusProcedureOpen] =
         useState(false); // Modal visibility state
+
+    const [primaryProcedureId, setPrimaryProcedureId] = useState(null); // Track which diagnosa is being deleted
+    const [isModalSetPrimaryOpen, setIsModalSetPrimaryOpen] = useState(false);
+    const [loadingPrimaryProcedure, setLoadingPrimaryProcedure] = useState(false);
+
     const [loadingDeleteProcedure, setLoadingDeleteProcedure] = useState(false); // State loading untuk penghapusan procedure
     const [selectedProcedure, setSelectedProcedure] = useState([]); // untuk disable procedure terpiluh, agar saat menampilkan list procedure tidak terpilih 2 kali
     const [procedure, setProcedure] = useState([]); // State untuk menyimpan data procedure
@@ -241,6 +247,28 @@ export default function Index({ pasien }) {
             });
     };
 
+    const makePrimaryProcedure = (id) => {
+        setLoadingDeleteProcedure(true); // Set loading true saat mulai menghapus
+        axios
+            .post(
+                route("rm.pasien-rujukan.procedure_idrg_set_primary", {
+                    id: id,
+                })
+            )
+            .then((response) => {
+                console.log(response.data);
+                
+                fetchProcedure(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setIsModalSetPrimaryOpen(false);
+                setLoadingPrimaryProcedure(false);
+            });
+    };
+
     const inputRefStatusProcedure = useRef(null);
 
     useEffect(() => {
@@ -368,6 +396,23 @@ export default function Index({ pasien }) {
                 okButtonProps={{ danger: true }}
             >
                 <p>Apakah anda yakin ingin menghapus procedure ini?</p>
+            </Modal>
+
+            {/* Modal for set primary */}
+            <Modal
+                title="Set Primary Procedure"
+                open={isModalSetPrimaryOpen}
+                onOk={() => {
+                    primaryProcedureId && makePrimaryProcedure(primaryProcedureId);
+                }}
+                onCancel={() => {
+                    setIsModalSetPrimaryOpen(false);
+                }}
+                okText="Ya"
+                cancelText="Tidak"
+                okButtonProps={{ primary: true }}
+            >
+                <p>Apakah anda yakin ingin menjadikan diagnosa ini primary?</p>
             </Modal>
         </Card>
     );

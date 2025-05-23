@@ -1181,7 +1181,7 @@ class PasienRujukanRepository
             // Audit trail
             $this->auditTrail->insert([
                 "object_id"  => $noTransaksi,
-                "action_id"  => 13,
+                "action_id"  => 16,
                 "user_email" => $user->email,
                 "user_id"    => $user->id,
                 "created_at" => $now,
