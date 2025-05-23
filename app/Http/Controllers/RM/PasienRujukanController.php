@@ -398,6 +398,21 @@ class PasienRujukanController extends Controller
             'data' => $procedure,
         ]);
     }
+    
+    /**
+     * list_procedure_idrg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function list_procedure_idrg($kode_reg)
+    {
+        // Mendapatkan procedure berdasarkan kode transaksi
+        $procedure = $this->pasienRujukanRepo->getProcedureIDRGByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+        ]);
+    }
 
     /**
      * cari_procedure
@@ -410,6 +425,25 @@ class PasienRujukanController extends Controller
 
         // Mendapatkan data procedure berdasarkan pencarian
         $procedure = $this->pasienRujukanRepo->searchProcedure($searchTerm, $page);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+            'page' => $page,
+        ]);
+    }
+    
+    /**
+     * cari_procedure_im
+     * Pencarian procedure/diagnosa di database berdasarkan input
+     */
+    public function cari_procedure_im(Request $request)
+    {
+        $searchTerm = $request->input('query');
+        $page = $request->input('page', 1); // Halaman saat ini (default 1)
+
+        // Mendapatkan data procedure berdasarkan pencarian
+        $procedure = $this->pasienRujukanRepo->searchProcedureIM($searchTerm, $page);
 
         return response()->json([
             'status' => "ok",
@@ -460,6 +494,36 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * save_procedure_idrg
+     * Menyimpan data procedure versi IDRG untuk pasien rujukan 
+     */
+    public function save_procedure_idrg(Request $request)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'code' => 'required|string|max:10',
+            'no_transaksikj' => 'required|string|max:20',
+            'pasien_id' => 'required|string|max:20',
+            'multiplicity' => 'required|int|min:1',
+        ]);
+
+        // Menyimpan data procedure melalui repository
+        $isSaved = $this->pasienRujukanRepo->saveProcedureIDRG($validated);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure berhasil disimpan',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menyimpan procedure',
+        ], 500);
+    }
+
+    /**
      * delete_procedure
      * Hapus procedure berdasarkan ID
      */
@@ -478,6 +542,28 @@ class PasienRujukanController extends Controller
         return response()->json([
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat menghapus procedure',
+        ], 500);
+    }
+    
+    /**
+     * delete_procedure_idrg
+     * Hapus procedure berdasarkan ID
+     */
+    public function delete_procedure_idrg($id)
+    {
+        // Hapus procedure_idrg berdasarkan ID dari tabel PASIEN_TINDAKAN_IM
+        $deleted = $this->pasienRujukanRepo->deleteProcedureIDRGById($id);
+
+        if ($deleted) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure iDRG berhasil dihapus',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat menghapus procedure iDRG',
         ], 500);
     }
 

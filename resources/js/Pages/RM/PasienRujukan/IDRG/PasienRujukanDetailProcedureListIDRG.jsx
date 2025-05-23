@@ -10,6 +10,7 @@ import {
     Table,
     Button,
     Tooltip,
+    InputNumber,
 } from "antd";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -17,34 +18,67 @@ import axios from "axios";
 export default function Index({ pasien }) {
     const columns = [
         {
-            title: "Kode",
-            dataIndex: "MRTKD_TINDAKAN",
-            key: "MRTKD_TINDAKAN",
-            width: "10%",
+            title: "Status",
+            dataIndex: "is_primary",
+            key: "is_primary",
+            render: (_, record) => {
+                if (record?.is_primary == "1") {
+                    return <>Primary</>;
+                }
+                return <>Secondary</>;
+            },
+            width: 100,
         },
         {
-            title: "Tindakan",
-            dataIndex: "FMI9KETERANGAN",
-            key: "FMI9KETERANGAN",
-            width: "70%",
+            title: "Kode",
+            dataIndex: "code",
+            key: "code",
+            width: 50,
+        },
+        {
+            title: "Penyakit",
+            dataIndex: "description",
+            key: "description",
+        },
+        {
+            title: "Multiplicity",
+            dataIndex: "multiplicity",
+            key: "multiplicity",
+            width: 20,
         },
         {
             title: "Action",
             key: "action",
             align: "center",
             render: (_, record) => (
-                <Button
-                    disabled={
-                        loadingDeleteProcedure &&
-                        record.ID === deleteProcedureId
-                    }
-                    size="small"
-                    variant="outlined"
-                    color="danger"
-                    onClick={() => showDeleteConfirm(record)}
-                >
-                    hapus
-                </Button>
+                <>
+                    <Button
+                        disabled={
+                            record?.is_primary == "1" || loading
+                        }
+                        size="small"
+                        block
+                        variant="outlined"
+                        onClick={() => showSetPrimaryConfirm(record)}
+                    >
+                        Set Primary
+                    </Button>{" "}
+                    <br />
+                    <Button
+                        style={{ marginTop: 5 }}
+                        disabled={
+                            loadingDeleteProcedure &&
+                            record.id === deleteProcedureId
+                        }
+                        block
+                        size="small"
+                        variant="outlined"
+                        color="danger"
+                        onClick={() => showDeleteConfirm(record)}
+                    >
+                        hapus
+                    </Button>
+                </>
             ),
         },
     ];
@@ -53,7 +87,10 @@ export default function Index({ pasien }) {
     const [anotherOptions, setAnotherOptions] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+
     const [selectedProcedureForm, setSelectedProcedureForm] = useState(null);
+    const [multiplicityForm, setMultiplicityForm] = useState(1);
+
     const [loadingSaveDiag, setLoadingSaveDiag] = useState(false); // Loading state for each procedure
     const [selectedProcedureDisplay, setSelectedProcedureDisplay] =
         useState(""); // Stores the full value for display
@@ -70,13 +107,13 @@ export default function Index({ pasien }) {
         setLoadingFetchProcedure(true);
         axios
             .get(
-                route("rm.pasien-rujukan.list_procedure", {
+                route("rm.pasien-rujukan.list_procedure_idrg", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
                 })
             )
             .then((response) => {
                 setSelectedProcedure(
-                    response.data.data.map((item) => item.MRTKD_TINDAKAN)
+                    response.data.data.map((item) => item.code)
                 );
                 setProcedure(response?.data?.data || []); // Simpan data yang diterima ke dalam state
             })
@@ -93,7 +130,7 @@ export default function Index({ pasien }) {
         setLoading(true);
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.cari_procedure"),
+                route("rm.pasien-rujukan.cari_procedure_im"),
                 {
                     query,
                     page: pageNumber,
@@ -133,25 +170,24 @@ export default function Index({ pasien }) {
         setLoadingSaveDiag(true);
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.save_procedure"),
+                route("rm.pasien-rujukan.save_procedure_idrg"),
                 {
-                    icd9_code: selectedProcedureForm,
+                    code: selectedProcedureForm,
                     no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    no_rm: pasien.FRPPASIEN_ID,
-                    kd_unit: pasien.FRPUNIT,
-                    tgl_masuk: pasien.FRPTGL,
+                    pasien_id: pasien.FRPPASIEN_ID,
+                    multiplicity: multiplicityForm,
                 }
             );
 
-            if (response?.data?.status === "ok") {
+            if (response?.data?.status == "ok") {
                 return notification.success({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     message: "Sukses!",
                     description: "Procedure berhasil ditambahkan.",
                 });
             }
             return notification.error({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Terjadi Kesalahan!",
                 description: "Procedure gagal ditambahkan.",
             });
@@ -170,7 +206,7 @@ export default function Index({ pasien }) {
 
     // Function to show the modal with the procedure info for deletion
     const showDeleteConfirm = (item) => {
-        setDeleteProcedureId(item.ID); // Set the current procedure to be deleted
+        setDeleteProcedureId(item.id); // Set the current procedure to be deleted
         setIsModalHapusProcedureOpen(true); // Show the modal
     };
 
@@ -184,7 +220,7 @@ export default function Index({ pasien }) {
         setLoadingDeleteProcedure(true); // Set loading true saat mulai menghapus
         axios
             .delete(
-                route("rm.pasien-rujukan.delete_procedure", {
+                route("rm.pasien-rujukan.delete_procedure_idrg", {
                     id: id,
                 })
             )
@@ -227,8 +263,11 @@ export default function Index({ pasien }) {
     return (
         <Card title={`Procedure`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
-                <Col span={20}>
-                    <Tooltip title={"Shift+F2 untuk shortcut"} placement="topLeft">
+                <Col span={17}>
+                    <Tooltip
+                        title={"Shift+F2 untuk shortcut"}
+                        placement="topLeft"
+                    >
                         <AutoComplete
                             ref={inputRefStatusProcedure}
                             allowClear
@@ -237,7 +276,7 @@ export default function Index({ pasien }) {
                                 setSelectedProcedureDisplay(""); // Clear the display value
                             }}
                             options={anotherOptions.map((item) => ({
-                                value: `${item.FMI9KODE} - ${item.FMI9KETERANGAN}`, // Display both code and name
+                                value: `${item.code} - ${item.description}`, // Display both code and name
                                 label: (
                                     <div
                                         style={{
@@ -247,17 +286,15 @@ export default function Index({ pasien }) {
                                             display: "block", // Ensure block level behavior for wrapping
                                         }}
                                     >
-                                        <strong>{item.FMI9KODE}</strong> -{" "}
-                                        <span>{item.FMI9KETERANGAN}</span>
+                                        <strong>{item.code}</strong> -{" "}
+                                        <span>{item.description}</span>
                                     </div>
                                 ),
-                                disabled: selectedProcedure.includes(
-                                    item.FMI9KODE
-                                ), // Disable if already selected
+                                disabled: selectedProcedure.includes(item.code), // Disable if already selected
                             }))}
                             style={{ width: "100%" }}
                             onSelect={(value) => {
-                                const kdPenyakit = value.split(" - ")[0]; // Extract FMI9KODE
+                                const kdPenyakit = value.split(" - ")[0]; // Extract code
                                 const displayValue = value; // Full display value with name and code
                                 setSelectedProcedureForm(kdPenyakit); // Store only the code
                                 setSelectedProcedureDisplay(displayValue); // Display both the code and name
@@ -271,6 +308,15 @@ export default function Index({ pasien }) {
                             value={selectedProcedureDisplay} // Show both code and name in the input
                         />
                     </Tooltip>
+                </Col>
+                <Col span={3}>
+                    <InputNumber
+                        placeholder="Multiplicity"
+                        value={multiplicityForm}
+                        style={{ width: "100%" }}
+                        onChange={setMultiplicityForm}
+                        min={1}
+                    />
                 </Col>
                 <Col span={4}>
                     <Button
@@ -301,7 +347,7 @@ export default function Index({ pasien }) {
                     dataSource={procedure}
                     size="small"
                     loading={loadingFetchProcedure}
-                    rowKey="ID"
+                    rowKey="id"
                 />
             </>
             {/* Modal for Confirming Deletion */}
