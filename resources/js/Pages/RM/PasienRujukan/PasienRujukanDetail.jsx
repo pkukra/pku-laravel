@@ -11,27 +11,10 @@ import PasienRujukanDetailAssesmenIGD from "./PasienRujukanDetailAssesmenIGD";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 
-import PasienRujukanDetailDiagnosaListIDRG from "./IDRG/PasienRujukanDetailDiagnosaListIDRG";
-import PasienRujukanDetailProcedureListIDRG from "./IDRG/PasienRujukanDetailProcedureListIDRG";
+import IndexTabIDRG from "./IDRG/IndexTabIDRG";
 
 import { useState } from "react";
 import axios from "axios";
-
-function IDRG({ pasien }) {
-    return (
-        <>
-            <p><strong>iDRG</strong></p>
-            <Row gutter={[5, 5]}>
-                <Col span={12}>
-                    <PasienRujukanDetailDiagnosaListIDRG pasien={pasien} />
-                </Col>
-                <Col span={12}>
-                    <PasienRujukanDetailProcedureListIDRG pasien={pasien} />
-                </Col>
-            </Row>
-        </>
-    );
-}
 
 function INACBG({ pasien }) {
     return (
@@ -68,7 +51,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         {
             label: "IDRG",
             key: "1",
-            children: <IDRG pasien={pasien} />,
+            children: <IndexTabIDRG pasien={pasien} />,
         },
         {
             label: "INACBG",

@@ -68,6 +68,7 @@ export default function Index({ pasien }) {
             title: "Action",
             key: "action",
             align: "center",
+            width: 100,
             render: (_, record) => (
                 <>
                     <Button
