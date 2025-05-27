@@ -2,6 +2,7 @@
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Facades\Log;
 
 if (! function_exists('mc_encrypt')) {
@@ -83,7 +84,9 @@ if (! function_exists('sendRequest')) {
                     'Content-Type' => 'application/x-www-form-urlencoded',
                     'Accept' => 'application/json'
                 ],
-                'body' => $encryptedData
+                'body' => $encryptedData,
+                'timeout' => 5,  // Maksimal waktu tunggu response 5 detik
+                'connect_timeout' => 5, // Maksimal waktu koneksi 5 detik
             ]);
 
             $responseBody = $response->getBody()->getContents();
@@ -101,15 +104,27 @@ if (! function_exists('sendRequest')) {
                 "error" => null,
                 "response" => json_decode($decryptedResponse)
             ];
+        } catch (ConnectException $ce) {
+            Log::error('Error e-klaim helper sendRequest ConnectException (server down?): ' . $ce->getMessage());
+            return (object)[
+                "status" => "nok",
+                "error" => "Tidak dapat terhubung ke server e-Klaim."
+            ];
         } catch (RequestException $e) {
-            $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
-            Log::error('Error heleper send req RequestException: ' . $e->getMessage());
+            $message = $e->getMessage();
+            if (str_contains(strtolower($message), 'timed out')) {
+                $error = "Request ke server e-Klaim timed out.";
+            } else {
+                $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $message;
+            }
+
+            Log::error('Error e-klaim helper sendRequest RequestException: ' . $message);
             return (object)[
                 "status" => "nok",
                 "error" => $error
             ];
         } catch (\Throwable $th) {
-            Log::error('Error heleper send req Throwable: ' . $th->getMessage());
+            Log::error('Error e-klaim helper sendRequest Throwable: ' . $th->getMessage());
             return (object)[
                 "status" => "nok",
                 "error" => $th->getMessage()

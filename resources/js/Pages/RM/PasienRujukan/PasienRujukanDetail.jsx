@@ -19,7 +19,9 @@ import axios from "axios";
 function INACBG({ pasien }) {
     return (
         <>
-            <p><strong>INACBG</strong></p>
+            <p>
+                <strong>INACBG</strong>
+            </p>
             <Row gutter={[5, 5]}>
                 <Col span={12}>
                     <PasienRujukanDetailDiagnosaList pasien={pasien} />
@@ -34,6 +36,7 @@ function INACBG({ pasien }) {
 
 function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
+    const [golbalSEP, setGolbalSEP] = useState(null);
     const [pasienLoading, setPasienLoading] = useState(false);
 
     const reFetchPasien = () => {
@@ -51,7 +54,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         {
             label: "IDRG",
             key: "1",
-            children: <IndexTabIDRG pasien={pasien} />,
+            children: <IndexTabIDRG pasien={pasien} golbalSEP={golbalSEP} />,
         },
         {
             label: "INACBG",
@@ -118,6 +121,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
                         <Col span={12}>
                             <PasienRujukanDetailSEP
+                                setGolbalSEP={setGolbalSEP}
                                 pasien={pasien}
                                 user={auth.user}
                             />

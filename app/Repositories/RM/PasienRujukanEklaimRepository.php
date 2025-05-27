@@ -362,6 +362,56 @@ class PasienRujukanEklaimRepository
     }
 
     /**
+     * Process idrgDiagnosaSet
+     * 
+     * @param string $nomor_sep, $diagnosa ("B45.1#G02.1")
+     */
+    public function idrgDiagnosaSet($nomor_sep, $diagnosa)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "idrg_diagnosa_set",
+                "nomor_sep" => $nomor_sep,
+            ],
+            "data" => [
+                "diagnosa" => $diagnosa
+
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        return sendRequest($key, $data);
+    }
+
+    /**
+     * Process idrgProcedureSet
+     * 
+     * @param string $nomor_sep, $procedure ("88.01#90.090+2#90.090")
+     */
+    public function idrgProcedureSet($nomor_sep, $procedure)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "idrg_procedure_set",
+                "nomor_sep" => $nomor_sep,
+            ],
+            "data" => [
+                "procedure" => $procedure
+
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        return sendRequest($key, $data);
+    }
+
+    /**
      * Process bridgingReEditClaim
      * 
      * @param string $nomor_rm, $nomor_kartu, $nama_pasien, $tgl_lahir, $gender
@@ -603,6 +653,63 @@ class PasienRujukanEklaimRepository
     }
 
     /**
+     * Get all diagnosa idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
+     * 
+     * @param array $array_pasien_rujukan
+     * @return string Diagnosa dalam format "S71.0#A00.1"
+     */
+    public function getAllDiagnosaIDRG($array_pasien_rujukan)
+    {
+        $diagnoses_array = [];
+        foreach ($array_pasien_rujukan as $pasien_rujukan) {
+            $diagnosa = DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('no_transaksi', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->pluck('code') // Ambil kolom code sebagai array
+                ->toArray();
+
+            // Bersihkan spasi tiap kode sebelum gabung
+            $diagnosa = array_map('trim', $diagnosa);
+
+            $diagnoses_array = array_merge($diagnoses_array, $diagnosa);
+        }
+
+        // Hilangkan duplikat dan gabungkan dengan '#'
+        return implode('#', array_unique($diagnoses_array));
+    }
+
+    /**
+     * Get all procedure idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
+     * 
+     * @param array $array_pasien_rujukan
+     * @return string Procedure dalam format "S71.0#A00.1"
+     */
+    public function getAllProcedureIDRG($array_pasien_rujukan)
+    {
+        $procedures_array = [];
+        foreach ($array_pasien_rujukan as $pasien_rujukan) {
+            $diagnosa = DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('no_transaksi', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->select('code', 'multiplicity')
+                ->get();
+
+            foreach ($diagnosa as $item) {
+                $code = trim($item->code);
+                $multiplicity = trim($item->multiplicity);
+
+                if ($multiplicity > 1) {
+                    $procedures_array[] = $code . '+' . $multiplicity;
+                } else {
+                    $procedures_array[] = $code;
+                }
+            }
+        }
+
+        return implode('#', $procedures_array);
+    }
+
+    /**
      * Get sistole and diastole based on kode_reg
      * 
      * @param string $kode_reg
@@ -621,5 +728,99 @@ class PasienRujukanEklaimRepository
             'sistole' => $vitalSign->sistole ?? 0, // Default 0 jika tidak ada data
             'diastole' => $vitalSign->diastole ?? 0 // Default 0 jika tidak ada data
         ];
+    }
+
+    /**
+     * Process bridgingDataProcess by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingDataIDRG($no_sep)
+    {
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return false;
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+
+        // update/reedit claim
+        $update_claim = $this->bridgingReEditClaim($no_sep);
+        if($update_claim->status != 'ok') {
+            return $update_claim;
+        }
+
+        // buat new claim dulu
+        $new_claim = $this->bridgingNewClaimProcess(
+            $transaksi_utama->FMNO_KARTU,
+            $transaksi_utama->FMNOSEP,
+            $transaksi_utama->FRPPASIEN_ID,
+            $transaksi_utama->NAMAPASIEN,
+            $transaksi_utama->TGL_LAHIR,
+            $transaksi_utama->JENIS_KELAMIN,
+        );
+        if($new_claim->status != 'ok') {
+            return $new_claim;
+        }
+
+        $user = Auth::user();
+        $bloodPresure = $this->getBloodPressure($transaksi_utama->FRPNOTRANSAKSI);
+        // defaultnya atas persetujuan dokter
+        $discharge_status =  1;
+        if ($transaksi_utama->DISCHARGE_SRARTUS) {
+            // jika berhasil di join dengan tabel mr_kematian untuk hasil yang lain
+            $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
+        }
+
+        // mapping data
+        $data = (object)[
+            'nomor_sep' => $no_sep,
+            'tgl_masuk' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
+            'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
+            'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
+            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
+            'birth_weight' => 0,
+            'discharge_status' => $discharge_status,
+            'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
+            'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
+            'adl_sub_acute' => "",
+            'adl_chronic' => "",
+            'nama_dokter' => $transaksi_utama->FMDDOKTERN,
+            'icu_indikator' => "",
+            'icu_los' => "",
+            'ventilator_hour' => "",
+            'kode_tarif' => "CS",
+            'payor_id' => "3",
+            'payor_cd' => "JKN",
+            'coder_nik' => $user->nik,
+            'sistole' => $bloodPresure->sistole,
+            'diastole' => $bloodPresure->diastole,
+            'cara_masuk' => $transaksi_utama->CARA_MASUK,
+        ];
+
+        $requestData = json_encode((object)[
+            'metadata' => (object)[
+                'method' => 'set_claim_data',
+                'nomor_sep' => $no_sep,
+            ],
+            'data' => $data
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $key = $user->eklaim_key;
+        $response =  sendRequest($key, $requestData);
+
+        $this->idrgDiagnosaSet($no_sep, $this->getAllDiagnosaIDRG($semua_transaksi));
+        $this->idrgProcedureSet($no_sep, $this->getAllProcedureIDRG($semua_transaksi));
+
+        return $response;
     }
 }

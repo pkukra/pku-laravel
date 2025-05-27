@@ -63,6 +63,8 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/procedure_idrg_set_primary/{id}', [PasienRujukanController::class, 'procedure_idrg_set_primary'])->name('rm.pasien-rujukan.procedure_idrg_set_primary');
         Route::post('/procedure_idrg_udpate_multiplicity', [PasienRujukanController::class, 'procedure_idrg_udpate_multiplicity'])->name('rm.pasien-rujukan.procedure_idrg_udpate_multiplicity');
 
+        Route::post('/bridging_data_idrg/{no_sep}', [PasienRujukanController::class, 'bridging_data_idrg'])->name('rm.pasien-rujukan.bridging_data_idrg');
+
     });
 
     Route::prefix('pasien-inap')->group(function () {
