@@ -103,13 +103,13 @@ if (! function_exists('sendRequest')) {
             ];
         } catch (RequestException $e) {
             $error = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : $e->getMessage();
-            Log::error('Error heleper send req RequestException: ' . $e->getMessage());
+            Log::error('Error e-klaim helper sendRequest RequestException: ' . $e->getMessage());
             return (object)[
                 "status" => "nok",
                 "error" => $error
             ];
         } catch (\Throwable $th) {
-            Log::error('Error heleper send req Throwable: ' . $th->getMessage());
+            Log::error('Error e-klaim helper sendRequest Throwable: ' . $th->getMessage());
             return (object)[
                 "status" => "nok",
                 "error" => $th->getMessage()
