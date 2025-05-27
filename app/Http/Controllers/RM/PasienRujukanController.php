@@ -588,7 +588,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat set primary procedure',
         ], 500);
     }
-    
+
     /**
      * update multiplicity procedure im
      * 
@@ -754,6 +754,16 @@ class PasienRujukanController extends Controller
     public function bridging_final_process($no_sep)
     {
         $data = $this->bridgingEKlaimRepo->bridgingFinalProcess($no_sep);
+        return response()->json($data);
+    }
+
+    /**
+     * bridging_data_idrg
+     * Process bridging data ke eklaim
+     */
+    public function bridging_data_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingDataIDRG($no_sep);
         return response()->json($data);
     }
 }
