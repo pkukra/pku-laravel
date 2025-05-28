@@ -12,6 +12,9 @@ function Index({ pasien, golbalSEP }) {
     const [idrgGroupData, setIdrgGroupData] = useState(null);
     const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
 
+    const [modalFinalOpen, setModalFinalOpen] = useState(false);
+    const [finalLoading, setFinalLoading] = useState(false);
+
     const handleBridgingData = async () => {
         setBridgingLoading(true);
         try {
@@ -49,6 +52,43 @@ function Index({ pasien, golbalSEP }) {
         }
     };
 
+    const handleFinalData = async () => {
+        setFinalLoading(true);
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.bridging_final_idrg", {
+                    no_sep: golbalSEP,
+                })
+            );
+
+            if (response?.data?.status === "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.error,
+                });
+            }
+
+            if (response?.data?.response?.metadata?.code === 400) {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.response?.metadata?.message,
+                });
+            }
+
+            return notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: response?.data?.response?.metadata?.message,
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setFinalLoading(false);
+            setModalFinalOpen(false);
+            fetchIDRGData();
+        }
+    };
+
     const fetchIDRGData = async () => {
         setLoadingFetchGroupData(true);
         axios
@@ -71,6 +111,9 @@ function Index({ pasien, golbalSEP }) {
     };
 
     const disableBridgeButton = () => {
+        if (is_final) {
+            return true; // Disable if already finalized
+        }
         if (diagnosaTab.length === 0) {
             return true; // Disable if no diagnoses
         }
@@ -81,6 +124,9 @@ function Index({ pasien, golbalSEP }) {
     };
 
     const disableFinalButton = () => {
+        if (is_final) {
+            return true; // Disable if already finalized
+        }
         if (eklaim_group_data?.mdc_number === "36") {
             return true;
         }
@@ -98,6 +144,8 @@ function Index({ pasien, golbalSEP }) {
         idrgGroupData?.response_eklaim || "{}"
     );
 
+    const is_final = idrgGroupData?.is_final == 1;
+
     return (
         <>
             <p>
@@ -106,15 +154,15 @@ function Index({ pasien, golbalSEP }) {
             <Row gutter={[5, 5]}>
                 <Col span={12}>
                     <DiagnosaListIDRG
+                        is_final={is_final}
                         pasien={pasien}
                         setDiagnosaTab={setDiagnosaTab}
                     />
                 </Col>
                 <Col span={12}>
-                    <ProcedureListIDRG pasien={pasien} />
+                    <ProcedureListIDRG pasien={pasien} is_final={is_final} />
                 </Col>
             </Row>
-
             <Row gutter={[5, 5]}>
                 <Col span={12}></Col>
                 <Col span={12}>
@@ -130,6 +178,10 @@ function Index({ pasien, golbalSEP }) {
                             }}
                         >
                             <tbody>
+                                <tr>
+                                    <td style={{ width: "15%" }}>Status Final</td>
+                                    <td>{(is_final)?<strong>Sudah Final</strong>:<>Belum Final</>}</td>
+                                </tr>
                                 <tr>
                                     <td style={{ width: "15%" }}>MDC Number</td>
                                     <td>{eklaim_group_data?.mdc_number}</td>
@@ -179,7 +231,10 @@ function Index({ pasien, golbalSEP }) {
 
                     <Button
                         type="primary"
-                        onClick={() => alert("ok")}
+                        onClick={() => {
+                            setModalFinalOpen(true);
+                            return;
+                        }}
                         disabled={disableFinalButton()}
                         style={{ backgroundColor: " #cc66ff" }}
                     >
@@ -187,10 +242,9 @@ function Index({ pasien, golbalSEP }) {
                     </Button>
                 </Col>
             </Row>
-
             <Modal
                 open={modalBridgeOpen}
-                title="Bridging Data Ke INACBG"
+                title="Bridging Data IDRG"
                 onCancel={() => setModalBridgeOpen(false)}
                 footer={[
                     <Button
@@ -209,6 +263,42 @@ function Index({ pasien, golbalSEP }) {
                         style={{ backgroundColor: " #33cc33" }}
                     >
                         Ok, Bridging Data
+                    </Button>,
+                ]}
+            >
+                {golbalSEP ? (
+                    <div>
+                        <p>
+                            <strong>Nomor SEP:</strong> {golbalSEP}
+                        </p>
+                    </div>
+                ) : (
+                    <p>
+                        <strong>Belum ada data SEP</strong>
+                    </p>
+                )}
+            </Modal>
+            <Modal
+                open={modalFinalOpen}
+                title="Final Data IDRG"
+                onCancel={() => setModalFinalOpen(false)}
+                footer={[
+                    <Button
+                        key="back"
+                        onClick={() => setModalFinalOpen(false)}
+                        loading={finalLoading}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        disabled={golbalSEP !== null ? false : true}
+                        key="submit"
+                        type="primary"
+                        loading={finalLoading}
+                        onClick={() => handleFinalData()}
+                        style={{ backgroundColor: " #cc66ff" }}
+                    >
+                        Ok, Final Data
                     </Button>,
                 ]}
             >

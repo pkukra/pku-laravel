@@ -766,6 +766,16 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingDataIDRG($no_sep);
         return response()->json($data);
     }
+    
+    /**
+     * bridging_final_idrg
+     * Process bridging final idrg ke eklaim
+     */
+    public function bridging_final_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingFinalIDRG($no_sep);
+        return response()->json($data);
+    }
 
     /**
      * get_idrg_group_data

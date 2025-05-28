@@ -15,7 +15,7 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, is_final }) {
     const columns = [
         {
             title: "Kode",
@@ -51,6 +51,7 @@ export default function Index({ pasien }) {
                 return (
                     <>
                         <a
+                            disabled={is_final}
                             onClick={() => {
                                 setMultiplicityUpdate(record?.multiplicity);
                                 setIsModalSetMultiplicityOpen(true);
@@ -72,7 +73,9 @@ export default function Index({ pasien }) {
             render: (_, record) => (
                 <>
                     <Button
-                        disabled={record?.is_primary == "1" || loading}
+                        disabled={
+                            record?.is_primary == "1" || loading || is_final
+                        }
                         size="small"
                         block
                         variant="outlined"
@@ -87,8 +90,9 @@ export default function Index({ pasien }) {
                     <Button
                         style={{ marginTop: 5 }}
                         disabled={
-                            loadingDeleteProcedure &&
-                            record.id === deleteProcedureId
+                            is_final ||
+                            (loadingDeleteProcedure &&
+                                record.id === deleteProcedureId)
                         }
                         block
                         size="small"
@@ -345,6 +349,7 @@ export default function Index({ pasien }) {
                         placement="topLeft"
                     >
                         <AutoComplete
+                            disabled={is_final}
                             ref={inputRefStatusProcedure}
                             allowClear
                             onChange={() => {
@@ -387,6 +392,7 @@ export default function Index({ pasien }) {
                 </Col>
                 <Col span={3}>
                     <InputNumber
+                        disabled={is_final}
                         placeholder="Multiplicity"
                         value={multiplicityForm}
                         style={{ width: "100%" }}
