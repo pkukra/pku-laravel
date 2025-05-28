@@ -978,6 +978,12 @@ class PasienRujukanRepository
                 ->table('PASIEN_TINDAKAN_IM')
                 ->insert($data_to_save);
 
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_IDRG')
+                ->where('no_transaksi', $no_transaksikj)
+                ->delete();
+
             $isrecorded = $this->auditTrail->insert([
                 "object_id" => $no_transaksikj,
                 "action_id" => 14,
@@ -1123,6 +1129,11 @@ class PasienRujukanRepository
                 }
             }
 
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
+            $conn->table('PASIEN_IDRG')
+                ->where('no_transaksi', $noTransaksi)
+                ->delete();
+
             // Audit trail
             $auditSuccess = $this->auditTrail->insert([
                 "object_id"  => $noTransaksi,
@@ -1196,6 +1207,11 @@ class PasienRujukanRepository
                     'updated_at' => $now,
                 ]);
 
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
+            $conn->table('PASIEN_IDRG')
+                ->where('no_transaksi', $noTransaksi)
+                ->delete();
+
             // Audit trail
             $this->auditTrail->insert([
                 "object_id"  => $noTransaksi,
@@ -1246,6 +1262,11 @@ class PasienRujukanRepository
                 ]);
 
             if ($updated) {
+                // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
+                $conn->table('PASIEN_IDRG')
+                    ->where('no_transaksi', $targetProcedure->no_transaksi)
+                    ->delete();
+
                 $this->auditTrail->insert([
                     'object_id'  => $targetProcedure->no_transaksi,
                     'action_id'  => 17,

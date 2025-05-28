@@ -15,7 +15,7 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, isFinalIDRG }) {
+export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
     const columns = [
         {
             title: "Kode",
@@ -230,6 +230,7 @@ export default function Index({ pasien, isFinalIDRG }) {
         } catch (error) {
             console.error("Error saving procedure:", error);
         } finally {
+            fetchIDRGData(); // Fetch the latest IDRG data after saving
             fetchProcedure();
             setLoadingSaveDiag(false);
             setSelectedProcedureForm(null);
@@ -266,6 +267,7 @@ export default function Index({ pasien, isFinalIDRG }) {
                 setSelectedProcedure((prevSelectedProcedure) =>
                     prevSelectedProcedure.filter((item) => item !== kode)
                 );
+                fetchIDRGData(); // Fetch the latest IDRG data after saving
                 fetchProcedure(); // Memanggil ulang untuk mendapatkan data procedure terbaru
             })
             .catch((error) => {
@@ -285,9 +287,8 @@ export default function Index({ pasien, isFinalIDRG }) {
                     id: id,
                 })
             )
-            .then((response) => {
-                console.log(response.data);
-
+            .then(() => {
+                fetchIDRGData(); // Fetch the latest IDRG data after saving
                 fetchProcedure(); // Memanggil ulang untuk mendapatkan data procedure terbaru
             })
             .catch((error) => {
@@ -308,6 +309,7 @@ export default function Index({ pasien, isFinalIDRG }) {
                     multiplicity: multiplicityUpdate,
                 }
             );
+            fetchIDRGData(); // Fetch the latest IDRG data after saving
             fetchProcedure();
             console.log(response.data);
         } catch (error) {

@@ -201,7 +201,11 @@ function Index({ pasien, golbalSEP }) {
                     />
                 </Col>
                 <Col span={12}>
-                    <ProcedureListIDRG pasien={pasien} isFinalIDRG={isFinalIDRG} />
+                    <ProcedureListIDRG
+                        pasien={pasien}
+                        isFinalIDRG={isFinalIDRG}
+                        fetchIDRGData={fetchIDRGData}
+                    />
                 </Col>
             </Row>
             <Row gutter={[5, 5]}>
