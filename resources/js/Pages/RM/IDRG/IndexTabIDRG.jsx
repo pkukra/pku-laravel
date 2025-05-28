@@ -80,11 +80,23 @@ function Index({ pasien, golbalSEP }) {
         return false; // Enable otherwise
     };
 
+    const disableFinalButton = () => {
+        if (eklaim_group_data?.mdc_number === "36") {
+            return true;
+        }
+        if (idrgGroupData === null) {
+            return true;
+        }
+        return false; // Enable otherwise
+    };
+
     useEffect(() => {
         fetchIDRGData();
     }, []);
 
-    const eklaim_group_data = JSON.parse(idrgGroupData?.response_eklaim || "{}");
+    const eklaim_group_data = JSON.parse(
+        idrgGroupData?.response_eklaim || "{}"
+    );
 
     return (
         <>
@@ -163,6 +175,15 @@ function Index({ pasien, golbalSEP }) {
                         style={{ marginRight: 5, backgroundColor: " #33cc33" }}
                     >
                         Bridge iDRG
+                    </Button>
+
+                    <Button
+                        type="primary"
+                        onClick={() => alert("ok")}
+                        disabled={disableFinalButton()}
+                        style={{ backgroundColor: " #cc66ff" }}
+                    >
+                        Final Data
                     </Button>
                 </Col>
             </Row>
