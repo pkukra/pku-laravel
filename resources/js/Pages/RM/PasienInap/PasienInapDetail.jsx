@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/react";
-import { Col, Row, Card } from "antd";
+import { Col, Row, Card,Tabs } from "antd";
 import { useState } from "react";
 import axios from "axios";
 
@@ -12,8 +12,29 @@ import PasienInapDetailAssesmenAwal from "./PasienInapDetailAssesmenAwal";
 import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
 
+import IndexTabIDRG from "../IDRG/IndexTabIDRG";
+
+function INACBG({ pasien }) {
+    return (
+        <>
+            <p>
+                <strong>INACBG</strong>
+            </p>
+            <Row gutter={[5, 5]}>
+                <Col span={12}>
+                    <PasienInapDetailDiagnosaList pasien={pasien} />
+                </Col>
+                <Col span={12}>
+                    <PasienInapDetailProcedureList pasien={pasien} />
+                </Col>
+            </Row>
+        </>
+    );
+}
+
 function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
+    const [golbalSEP, setGolbalSEP] = useState(null);
     const [pasienLoading, setPasienLoading] = useState(false);
 
     const reFetchPasien = () => {
@@ -26,6 +47,19 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
             )
             .finally(() => setPasienLoading(false));
     };
+
+    const menu = [
+        {
+            label: "IDRG",
+            key: "1",
+            children: <IndexTabIDRG pasien={pasien} golbalSEP={golbalSEP} />,
+        },
+        {
+            label: "INACBG",
+            key: "2",
+            children: <INACBG pasien={pasien} />,
+        },
+    ];
 
     return (
         <>
@@ -47,12 +81,24 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienInapDetailBerkasPenunjang pasien={pasien} />
                         </Col>
 
-                        <Col span={12}>
+                         <Col span={24}>
+                            <Card>
+                                <Tabs
+                                    defaultActiveKey="1"
+                                    type="card"
+                                    size={"small"}
+                                    style={{ marginBottom: 32 }}
+                                    items={menu}
+                                />
+                            </Card>
+                        </Col>
+
+                        {/* <Col span={12}>
                             <PasienInapDetailDiagnosaList pasien={pasien} />
                         </Col>
                         <Col span={12}>
                             <PasienInapDetailProcedureList pasien={pasien} />
-                        </Col>
+                        </Col> */}
 
                         <Col span={12}>
                             <PasienInapDetailPerawatan
