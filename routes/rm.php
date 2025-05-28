@@ -64,6 +64,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/procedure_idrg_udpate_multiplicity', [PasienRujukanController::class, 'procedure_idrg_udpate_multiplicity'])->name('rm.pasien-rujukan.procedure_idrg_udpate_multiplicity');
 
         Route::post('/bridging_data_idrg/{no_sep}', [PasienRujukanController::class, 'bridging_data_idrg'])->name('rm.pasien-rujukan.bridging_data_idrg');
+        Route::get('/get_idrg_group_data/{kode_reg_kj}', [PasienRujukanController::class, 'get_idrg_group_data'])->name('rm.pasien-rujukan.get_idrg_group_data');
 
     });
 

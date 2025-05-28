@@ -766,4 +766,19 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingDataIDRG($no_sep);
         return response()->json($data);
     }
+
+    /**
+     * get_idrg_group_data
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function get_idrg_group_data($kode_reg)
+    {
+        // Mendapatkan procedure berdasarkan kode transaksi
+        $procedure = $this->pasienRujukanRepo->getIDRGGroupDataByTransaksi($kode_reg);
+
+        return response()->json([
+            'status' => "ok",
+            'data' => $procedure,
+        ]);
+    }
 }

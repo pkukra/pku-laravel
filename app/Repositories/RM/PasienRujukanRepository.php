@@ -1475,4 +1475,19 @@ class PasienRujukanRepository
         }
         return $hasil;
     }
+
+    /**
+     * Get response grouping idrg by kode reg kj
+     *
+     * @param string $kode_reg_kj
+     * @return \Illuminate\Support\Collection
+     */
+    public function getIDRGGroupDataByTransaksi($kode_reg_kj)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_IDRG AS A')
+            ->select('A.*')
+            ->where('A.no_transaksi', $kode_reg_kj)
+            ->first();
+    }
 }

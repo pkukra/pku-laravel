@@ -9,6 +9,8 @@ function Index({ pasien, golbalSEP }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [diagnosaTab, setDiagnosaTab] = useState([]);
+    const [idrgGroupData, setIdrgGroupData] = useState(null);
+    const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
 
     const handleBridgingData = async () => {
         setBridgingLoading(true);
@@ -43,7 +45,29 @@ function Index({ pasien, golbalSEP }) {
         } finally {
             setBridgingLoading(false);
             setModalBridgeOpen(false);
+            fetchIDRGData();
         }
+    };
+
+    const fetchIDRGData = async () => {
+        setLoadingFetchGroupData(true);
+        axios
+            .get(
+                route("rm.pasien-rujukan.get_idrg_group_data", {
+                    kode_reg_kj: pasien.FRPNOTRANSAKSIKJ,
+                })
+            )
+            .then((response) => {
+                setIdrgGroupData(response?.data?.data || null);
+                setLoadingFetchGroupData(false);
+            })
+            .catch((error) => {
+                setLoadingFetchGroupData(false);
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setLoadingFetchGroupData(false);
+            });
     };
 
     const disableBridgeButton = () => {
@@ -51,12 +75,16 @@ function Index({ pasien, golbalSEP }) {
             return true; // Disable if no diagnoses
         }
         if (pasien.FRPCUSTOMER_ID !== "X002") {
-            return true; // Disable unless specific customer
+            return true; // Disable unless specific customer (BPJS Cust ONLY)
         }
         return false; // Enable otherwise
     };
 
-    const eklaim_group_data = JSON.parse(pasien?.response_eklaim || "{}");
+    useEffect(() => {
+        fetchIDRGData();
+    }, []);
+
+    const eklaim_group_data = JSON.parse(idrgGroupData?.response_eklaim || "{}");
 
     return (
         <>
@@ -79,44 +107,51 @@ function Index({ pasien, golbalSEP }) {
                 <Col span={12}></Col>
                 <Col span={12}>
                     <Divider> Hasil Grouping iDRG </Divider>
-                    <table
-                        style={{
-                            borderCollapse: "collapse",
-                            width: "100%",
-                            margin: 10,
-                        }}
-                    >
-                        <tbody>
-                            <tr>
-                                <td style={{ width: "15%" }}>MDC Number</td>
-                                <td>{eklaim_group_data?.mdc_number}</td>
-                            </tr>
-                            <tr>
-                                <td
-                                    style={{
-                                        verticalAlign: "top",
-                                    }}
-                                >
-                                    MDC Description
-                                </td>
-                                <td
-                                    style={{
-                                        verticalAlign: "top",
-                                    }}
-                                >
-                                    {eklaim_group_data?.mdc_description}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>DRG Code</td>
-                                <td>{eklaim_group_data?.drg_code}</td>
-                            </tr>
-                            <tr>
-                                <td>DRG Description</td>
-                                <td>{eklaim_group_data?.drg_description}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    {loadingFetchGroupData ? (
+                        <p>Loading...</p>
+                    ) : (
+                        <table
+                            style={{
+                                borderCollapse: "collapse",
+                                width: "100%",
+                                margin: 10,
+                            }}
+                        >
+                            <tbody>
+                                <tr>
+                                    <td style={{ width: "15%" }}>MDC Number</td>
+                                    <td>{eklaim_group_data?.mdc_number}</td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style={{
+                                            verticalAlign: "top",
+                                        }}
+                                    >
+                                        MDC Description
+                                    </td>
+                                    <td
+                                        style={{
+                                            verticalAlign: "top",
+                                        }}
+                                    >
+                                        {eklaim_group_data?.mdc_description}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>DRG Code</td>
+                                    <td>{eklaim_group_data?.drg_code}</td>
+                                </tr>
+                                <tr>
+                                    <td>DRG Description</td>
+                                    <td>
+                                        {eklaim_group_data?.drg_description}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    )}
+
                     <Divider />
                     <Button
                         disabled={disableBridgeButton()}
