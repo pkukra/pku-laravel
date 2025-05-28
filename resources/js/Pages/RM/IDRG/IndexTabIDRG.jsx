@@ -197,6 +197,7 @@ function Index({ pasien, golbalSEP }) {
                         isFinalIDRG={isFinalIDRG}
                         pasien={pasien}
                         setDiagnosaTab={setDiagnosaTab}
+                        fetchIDRGData={fetchIDRGData}
                     />
                 </Col>
                 <Col span={12}>
@@ -220,13 +221,25 @@ function Index({ pasien, golbalSEP }) {
                             <tbody>
                                 <tr>
                                     <td style={{ width: "15%" }}>
+                                        Status Grouping
+                                    </td>
+                                    <td>
+                                        {idrgGroupData ? (
+                                            <strong>Sudah Grouping</strong>
+                                        ) : (
+                                            <strong>Belum Grouping</strong>
+                                        )}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style={{ width: "15%" }}>
                                         Status Final
                                     </td>
                                     <td>
                                         {isFinalIDRG ? (
                                             <strong>Sudah Final</strong>
                                         ) : (
-                                            <>Belum Final</>
+                                            <strong>Belum Final</strong>
                                         )}
                                     </td>
                                 </tr>

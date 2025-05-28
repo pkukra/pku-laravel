@@ -14,7 +14,12 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, setDiagnosaTab, isFinalIDRG }) {
+export default function Index({
+    pasien,
+    setDiagnosaTab,
+    isFinalIDRG,
+    fetchIDRGData,
+}) {
     const columns = [
         {
             title: "Kode",
@@ -200,6 +205,7 @@ export default function Index({ pasien, setDiagnosaTab, isFinalIDRG }) {
         } catch (error) {
             console.error("Error saving diagnosa:", error);
         } finally {
+            fetchIDRGData();
             fetchDiagnosa();
             setLoadingSaveDiag(false);
             setSelectedDiagnosaForm(null);
@@ -242,6 +248,7 @@ export default function Index({ pasien, setDiagnosaTab, isFinalIDRG }) {
                     prevSelectedDiagnosa.filter((item) => item !== kode)
                 );
                 fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
+                fetchIDRGData();
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
@@ -262,6 +269,7 @@ export default function Index({ pasien, setDiagnosaTab, isFinalIDRG }) {
             )
             .then((response) => {
                 fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
+                fetchIDRGData();
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);

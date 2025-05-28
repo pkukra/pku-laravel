@@ -553,6 +553,12 @@ class PasienRujukanRepository
                 "data" => $data_to_save,
             ]);
 
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_IDRG')
+                ->where('no_transaksi', $no_transaksikj)
+                ->delete();
+
             if (!$isrecorded) {
                 DB::connection('sqlsrvsimrs')->rollBack();
                 return false;
@@ -688,6 +694,12 @@ class PasienRujukanRepository
                 }
             }
 
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_IDRG')
+                ->where('no_transaksi', $noTransaksi)
+                ->delete();
+
             // Audit trail
             $auditSuccess = $this->auditTrail->insert([
                 "object_id"  => $noTransaksi,
@@ -760,6 +772,12 @@ class PasienRujukanRepository
                     'updated_by' => $user->email,
                     'updated_at' => $now,
                 ]);
+
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_IDRG')
+                ->where('no_transaksi', $noTransaksi)
+                ->delete();
 
             // Audit trail
             $this->auditTrail->insert([
