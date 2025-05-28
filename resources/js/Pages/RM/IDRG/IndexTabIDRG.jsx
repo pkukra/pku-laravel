@@ -4,8 +4,8 @@ import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
 
-import PasienRujukanDetailDiagnosaListIDRG from "./PasienRujukanDetailDiagnosaListIDRG";
-import PasienRujukanDetailProcedureListIDRG from "./PasienRujukanDetailProcedureListIDRG";
+import DiagnosaListIDRG from "./DiagnosaListIDRG";
+import ProcedureListIDRG from "./ProcedureListIDRG";
 
 function Index({ pasien, golbalSEP }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
@@ -54,10 +54,10 @@ function Index({ pasien, golbalSEP }) {
             </p>
             <Row gutter={[5, 5]}>
                 <Col span={12}>
-                    <PasienRujukanDetailDiagnosaListIDRG pasien={pasien} />
+                    <DiagnosaListIDRG pasien={pasien} />
                 </Col>
                 <Col span={12}>
-                    <PasienRujukanDetailProcedureListIDRG pasien={pasien} />
+                    <ProcedureListIDRG pasien={pasien} />
                 </Col>
             </Row>
             <Row gutter={[5, 5]} style={{ marginTop: 20 }}>
