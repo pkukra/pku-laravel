@@ -791,4 +791,14 @@ class PasienRujukanController extends Controller
             'data' => $procedure,
         ]);
     }
+    
+    /**
+     * edit_ulang_idrg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function edit_ulang_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingEditUlangIDRG($no_sep);
+        return response()->json($data);
+    }
 }

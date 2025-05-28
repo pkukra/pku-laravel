@@ -15,6 +15,9 @@ function Index({ pasien, golbalSEP }) {
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
 
+    const [modalReEditIDRGOpen, setModalReEditIDRGOpen] = useState(false);
+    const [reeditLoading, setReeditLoading] = useState(false);
+
     const handleBridgingData = async () => {
         setBridgingLoading(true);
         try {
@@ -89,6 +92,43 @@ function Index({ pasien, golbalSEP }) {
         }
     };
 
+    const handleEditUlangData = async () => {
+        setReeditLoading(true);
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.edit_ulang_idrg", {
+                    no_sep: golbalSEP,
+                })
+            );
+
+            if (response?.data?.status === "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.error,
+                });
+            }
+
+            if (response?.data?.response?.metadata?.code === 400) {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.response?.metadata?.message,
+                });
+            }
+
+            return notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: response?.data?.response?.metadata?.message,
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setReeditLoading(false);
+            setModalReEditIDRGOpen(false);
+            fetchIDRGData();
+        }
+    };
+
     const fetchIDRGData = async () => {
         setLoadingFetchGroupData(true);
         axios
@@ -110,8 +150,10 @@ function Index({ pasien, golbalSEP }) {
             });
     };
 
+    const isFinalIDRG = idrgGroupData?.is_final == 1;
+
     const disableBridgeButton = () => {
-        if (is_final) {
+        if (isFinalIDRG) {
             return true; // Disable if already finalized
         }
         if (diagnosaTab.length === 0) {
@@ -124,7 +166,7 @@ function Index({ pasien, golbalSEP }) {
     };
 
     const disableFinalButton = () => {
-        if (is_final) {
+        if (isFinalIDRG) {
             return true; // Disable if already finalized
         }
         if (eklaim_group_data?.mdc_number === "36") {
@@ -144,8 +186,6 @@ function Index({ pasien, golbalSEP }) {
         idrgGroupData?.response_eklaim || "{}"
     );
 
-    const is_final = idrgGroupData?.is_final == 1;
-
     return (
         <>
             <p>
@@ -154,13 +194,13 @@ function Index({ pasien, golbalSEP }) {
             <Row gutter={[5, 5]}>
                 <Col span={12}>
                     <DiagnosaListIDRG
-                        is_final={is_final}
+                        isFinalIDRG={isFinalIDRG}
                         pasien={pasien}
                         setDiagnosaTab={setDiagnosaTab}
                     />
                 </Col>
                 <Col span={12}>
-                    <ProcedureListIDRG pasien={pasien} is_final={is_final} />
+                    <ProcedureListIDRG pasien={pasien} isFinalIDRG={isFinalIDRG} />
                 </Col>
             </Row>
             <Row gutter={[5, 5]}>
@@ -179,8 +219,16 @@ function Index({ pasien, golbalSEP }) {
                         >
                             <tbody>
                                 <tr>
-                                    <td style={{ width: "15%" }}>Status Final</td>
-                                    <td>{(is_final)?<strong>Sudah Final</strong>:<>Belum Final</>}</td>
+                                    <td style={{ width: "15%" }}>
+                                        Status Final
+                                    </td>
+                                    <td>
+                                        {isFinalIDRG ? (
+                                            <strong>Sudah Final</strong>
+                                        ) : (
+                                            <>Belum Final</>
+                                        )}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td style={{ width: "15%" }}>MDC Number</td>
@@ -228,18 +276,30 @@ function Index({ pasien, golbalSEP }) {
                     >
                         Bridge iDRG
                     </Button>
-
-                    <Button
-                        type="primary"
-                        onClick={() => {
-                            setModalFinalOpen(true);
-                            return;
-                        }}
-                        disabled={disableFinalButton()}
-                        style={{ backgroundColor: " #cc66ff" }}
-                    >
-                        Final Data
-                    </Button>
+                    {!isFinalIDRG ? (
+                        <Button
+                            type="primary"
+                            onClick={() => {
+                                setModalFinalOpen(true);
+                                return;
+                            }}
+                            disabled={disableFinalButton()}
+                            style={{ backgroundColor: " #cc66ff" }}
+                        >
+                            Final Data
+                        </Button>
+                    ) : (
+                        <Button
+                            color="danger"
+                            variant="solid"
+                            onClick={() => {
+                                setModalReEditIDRGOpen(true);
+                                return;
+                            }}
+                        >
+                            Edit Ulang iDRG
+                        </Button>
+                    )}
                 </Col>
             </Row>
             <Modal
@@ -299,6 +359,43 @@ function Index({ pasien, golbalSEP }) {
                         style={{ backgroundColor: " #cc66ff" }}
                     >
                         Ok, Final Data
+                    </Button>,
+                ]}
+            >
+                {golbalSEP ? (
+                    <div>
+                        <p>
+                            <strong>Nomor SEP:</strong> {golbalSEP}
+                        </p>
+                    </div>
+                ) : (
+                    <p>
+                        <strong>Belum ada data SEP</strong>
+                    </p>
+                )}
+            </Modal>
+            <Modal
+                open={modalReEditIDRGOpen}
+                title="Edit Ulang iDRG"
+                onCancel={() => setModalReEditIDRGOpen(false)}
+                footer={[
+                    <Button
+                        key="back"
+                        onClick={() => setModalReEditIDRGOpen(false)}
+                        loading={reeditLoading}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        loading={reeditLoading}
+                        color="danger"
+                        variant="solid"
+                        onClick={() => {
+                            handleEditUlangData();
+                            return;
+                        }}
+                    >
+                        Ok, Edit Ulang iDRG
                     </Button>,
                 ]}
             >

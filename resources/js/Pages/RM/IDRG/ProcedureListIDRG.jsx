@@ -15,7 +15,7 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, is_final }) {
+export default function Index({ pasien, isFinalIDRG }) {
     const columns = [
         {
             title: "Kode",
@@ -51,7 +51,7 @@ export default function Index({ pasien, is_final }) {
                 return (
                     <>
                         <a
-                            disabled={is_final}
+                            disabled={isFinalIDRG}
                             onClick={() => {
                                 setMultiplicityUpdate(record?.multiplicity);
                                 setIsModalSetMultiplicityOpen(true);
@@ -74,7 +74,7 @@ export default function Index({ pasien, is_final }) {
                 <>
                     <Button
                         disabled={
-                            record?.is_primary == "1" || loading || is_final
+                            record?.is_primary == "1" || loading || isFinalIDRG
                         }
                         size="small"
                         block
@@ -90,7 +90,7 @@ export default function Index({ pasien, is_final }) {
                     <Button
                         style={{ marginTop: 5 }}
                         disabled={
-                            is_final ||
+                            isFinalIDRG ||
                             (loadingDeleteProcedure &&
                                 record.id === deleteProcedureId)
                         }
@@ -349,7 +349,7 @@ export default function Index({ pasien, is_final }) {
                         placement="topLeft"
                     >
                         <AutoComplete
-                            disabled={is_final}
+                            disabled={isFinalIDRG}
                             ref={inputRefStatusProcedure}
                             allowClear
                             onChange={() => {
@@ -392,7 +392,7 @@ export default function Index({ pasien, is_final }) {
                 </Col>
                 <Col span={3}>
                     <InputNumber
-                        disabled={is_final}
+                        disabled={isFinalIDRG}
                         placeholder="Multiplicity"
                         value={multiplicityForm}
                         style={{ width: "100%" }}

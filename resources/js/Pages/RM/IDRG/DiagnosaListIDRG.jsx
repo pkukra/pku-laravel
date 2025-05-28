@@ -14,7 +14,7 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, setDiagnosaTab, is_final }) {
+export default function Index({ pasien, setDiagnosaTab, isFinalIDRG }) {
     const columns = [
         {
             title: "Kode",
@@ -51,7 +51,7 @@ export default function Index({ pasien, setDiagnosaTab, is_final }) {
                         disabled={
                             record?.is_primary == "1" ||
                             loadingPrimaryDiagnosa ||
-                            is_final
+                            isFinalIDRG
                         }
                         size="small"
                         block
@@ -66,10 +66,10 @@ export default function Index({ pasien, setDiagnosaTab, is_final }) {
                         // disabled={
                         //     (loadingDeleteDiagnosa &&
                         //         record.id == deleteDiagnosaId) ||
-                        //     record.is_final == "1"
+                        //     record.isFinalIDRG == "1"
                         // }
                         disabled={
-                            is_final ||
+                            isFinalIDRG ||
                             (loadingDeleteDiagnosa &&
                                 record.id == deleteDiagnosaId)
                         }
@@ -301,7 +301,7 @@ export default function Index({ pasien, setDiagnosaTab, is_final }) {
                         placement="topLeft"
                     >
                         <AutoComplete
-                            disabled={is_final}
+                            disabled={isFinalIDRG}
                             ref={inputRefStatusDdiagnosa}
                             loading={loading}
                             allowClear

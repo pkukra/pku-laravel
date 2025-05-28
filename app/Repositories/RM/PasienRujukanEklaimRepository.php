@@ -918,7 +918,7 @@ class PasienRujukanEklaimRepository
                         'updated_by' => $user->email,
                     ]);
 
-                if ($affected === 0) {
+                if ($affected == 0) {
                     return (object)[
                         "status" => "nok",
                         "error" => "data group idrg tidak ditemukan"
@@ -928,6 +928,85 @@ class PasienRujukanEklaimRepository
                 $this->auditTrail->insert([
                     "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
                     "action_id" => 19,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('bridgingFinalIDRG err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        return $response;
+    }
+    
+    
+    /**
+     * Process bridgingEditUlangIDRG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingEditUlangIDRG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "idrg_grouper_reedit"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                $affected = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_IDRG')
+                    ->where('no_transaksi', $transaksi_utama->FRPNOTRANSAKSIKJ)
+                    ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
+                    ->update([
+                        'is_final' => 0,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                if ($affected == 0) {
+                    return (object)[
+                        "status" => "nok",
+                        "error" => "data group idrg tidak ditemukan"
+                    ];
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                    "action_id" => 20,
                     "user_email" => $user->email,
                     "user_id" => $user->id,
                     "created_at" => $now,
