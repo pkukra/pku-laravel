@@ -454,7 +454,7 @@ class PasienRujukanEklaimRepository
                 ->leftJoin('POLIKLINIK AS poli', 'pr.FRPUNIT', '=', 'poli.FMPKLINIK_ID')
                 ->leftJoin('PASIEN AS p', 'pr.FRPPASIEN_ID', '=', 'p.KD_PASIEN')
                 // ->leftJoin('MR_KEMATIAN AS mati', 'sep.FMNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
-                
+
                 ->leftJoin('MR_KEMATIAN AS mati', function ($join) use ($no_sep) {
                     $join->on('pr.FRPNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
                         ->orOn('pr.FRPNOTRANSAKSIKJ', '=', 'mati.MRKNO_TRANSAKSI');
@@ -756,7 +756,7 @@ class PasienRujukanEklaimRepository
 
         // update/reedit claim
         $update_claim = $this->bridgingReEditClaim($no_sep);
-        if($update_claim->status != 'ok') {
+        if ($update_claim->status != 'ok') {
             return $update_claim;
         }
 
@@ -769,7 +769,7 @@ class PasienRujukanEklaimRepository
             $transaksi_utama->TGL_LAHIR,
             $transaksi_utama->JENIS_KELAMIN,
         );
-        if($new_claim->status != 'ok') {
+        if ($new_claim->status != 'ok') {
             return $new_claim;
         }
 
@@ -820,6 +820,50 @@ class PasienRujukanEklaimRepository
 
         $this->idrgDiagnosaSet($no_sep, $this->getAllDiagnosaIDRG($semua_transaksi));
         $this->idrgProcedureSet($no_sep, $this->getAllProcedureIDRG($semua_transaksi));
+
+        $requestData = json_encode((object)[
+            'metadata' => (object)[
+                'method' => 'grouper',
+                "stage" => "1",
+                "grouper" => "idrg"
+            ],
+            'data' => (object)[
+                'nomor_sep' => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $key = $user->eklaim_key;
+        $grouping_1_idrg =  sendRequest($key, $requestData);
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_IDRG')
+                ->updateOrInsert(
+                    [
+                        'no_transaksi' => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                        'pasien_id' => $transaksi_utama->FRPPASIEN_ID
+                    ],
+                    [
+                        "response_eklaim" => json_encode($grouping_1_idrg->response->response_idrg),
+                        'is_final' => 0,
+                        "updated_at" => $now,
+                        "updated_by" => $user->email,
+                    ]
+                );
+
+            $this->auditTrail->insert([
+                "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                "action_id" => 18,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('RMAuditTrail insert err: ' . $e->getMessage());
+            return false;
+        }
 
         return $response;
     }

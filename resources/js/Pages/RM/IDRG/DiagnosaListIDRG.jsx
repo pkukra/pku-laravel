@@ -14,7 +14,7 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, setDiagnosaTab }) {
     const columns = [
         {
             title: "Kode",
@@ -91,7 +91,7 @@ export default function Index({ pasien }) {
         useState(false);
     const [loadingDeleteDiagnosa, setLoadingDeleteDiagnosa] = useState(false); // State loading untuk penghapusan diagnosa
 
-    const [primaryDiagnosaId, setPrimaryDiagnosaId] = useState(null); // Track which diagnosa is being deleted
+    const [primaryDiagnosaId, setPrimaryDiagnosaId] = useState(null); // Track which diagnosa is being set as primary
     const [isModalSetPrimaryOpen, setIsModalSetPrimaryOpen] = useState(false);
     const [loadingPrimaryDiagnosa, setLoadingPrimaryDiagnosa] = useState(false);
 
@@ -113,6 +113,7 @@ export default function Index({ pasien }) {
                     response.data.data.map((item) => item.code)
                 );
                 setDiagnosa(response?.data?.data || []); // Simpan data yang diterima ke dalam state
+                setDiagnosaTab(response?.data?.data || []); // Simpan data yang diterima ke dalam state parent component
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
