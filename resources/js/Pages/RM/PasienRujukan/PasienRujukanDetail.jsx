@@ -11,7 +11,7 @@ import PasienRujukanDetailAssesmenIGD from "./PasienRujukanDetailAssesmenIGD";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 
-import IndexTabIDRG from "./IDRG/IndexTabIDRG";
+import IndexTabIDRG from "../IDRG/IndexTabIDRG";
 
 import { useState } from "react";
 import axios from "axios";
