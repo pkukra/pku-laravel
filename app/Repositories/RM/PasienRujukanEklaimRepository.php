@@ -124,7 +124,7 @@ class PasienRujukanEklaimRepository
         );
 
         $user = Auth::user();
-        $bloodPresure = $this->getBloodPressure($transaksi_utama->FRPNOTRANSAKSI);
+        $bloodPresure = $this->getBloodPressure($semua_transaksi);
         // defaultnya atas persetujuan dokter
         $discharge_status =  1;
         if ($transaksi_utama->DISCHARGE_SRARTUS) {
@@ -138,7 +138,7 @@ class PasienRujukanEklaimRepository
             'tgl_masuk' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => 3, // regular 3, eksklusif 1
+            'kelas_rawat' => 3, // regular 3, eksekutif 1. pilih 3 karena PKU belum ada kelas eksekutif BPJS
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
@@ -184,23 +184,25 @@ class PasienRujukanEklaimRepository
         }
 
         try {
-            DB::connection('sqlsrvsimrs')
-                ->table('TRANSAKSIPASIEN')
-                ->where('FTNO_TRANSAKSI', $transaksi_utama->FRPNOTRANSAKSIKJ)
-                ->update([
-                    'FTKODEINACBG' => $cbg_code,
-                    'FTTARIPINACBG' => (float) $tarif_inacbg,
-                    'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1')
-                ]);
+            foreach ($semua_transaksi as $transaksi) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('TRANSAKSIPASIEN')
+                    ->where('FTNO_TRANSAKSI', $transaksi->FRPNOTRANSAKSIKJ)
+                    ->update([
+                        'FTKODEINACBG' => $cbg_code,
+                        'FTTARIPINACBG' => (float) $tarif_inacbg,
+                        'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1')
+                    ]);
 
-            $this->auditTrail->insert([
-                "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
-                "action_id" => 6,
-                "user_email" => $user->email,
-                "user_id" => $user->id,
-                "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-                "data" => $data,
-            ]);
+                $this->auditTrail->insert([
+                    "object_id" => $transaksi->FRPNOTRANSAKSIKJ,
+                    "action_id" => 6,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                    "data" => $data,
+                ]);
+            }
         } catch (\Exception $e) {
             Log::error("PasienRujukanEklaimRepository bridgingDataProcess err: " . $e->getMessage());
         }
@@ -567,18 +569,33 @@ class PasienRujukanEklaimRepository
      */
     public function getAllDiagnosa($array_pasien_rujukan)
     {
+        $nonRaber = [];
+        $raber = [];
+
+        // Pisahkan berdasarkan nilai raber
+        foreach ($array_pasien_rujukan as $item) {
+            if ($item->RUBBER == 0) { // cari pasien non raber, yang dpjp utama adalah trx utama
+                $nonRaber[] = $item;
+            } else {
+                $raber[] = $item;
+            }
+        }
+
+        // Gabungkan kembali: non-raber dulu, baru raber
+        $ordered_pasien_rujukan = array_merge($nonRaber, $raber);
+
         $diagnoses_array = [];
-        foreach ($array_pasien_rujukan as $pasien_rujukan) {
+        foreach ($ordered_pasien_rujukan as $pasien_rujukan) {
             $diagnosa = DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
                 ->where('MRPNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
-                ->pluck('MRPKD_PENYAKIT') // Mengambil hanya kolom MRPKD_PENYAKIT sebagai array
-                ->toArray(); // Konversi ke array PHP
+                ->pluck('MRPKD_PENYAKIT')
+                ->toArray();
 
-            $diagnoses_array = array_merge($diagnoses_array, $diagnosa); // Gabungkan hasil query ke array utama
+            $diagnoses_array = array_merge($diagnoses_array, $diagnosa);
         }
 
-        return implode('#', array_unique($diagnoses_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
+        return implode('#', array_unique($diagnoses_array));
     }
 
     /**
@@ -608,18 +625,28 @@ class PasienRujukanEklaimRepository
      * @param string $kode_reg
      * @return object Sistole dan diastole dalam format (object)['sistole' => value, 'diastole' => value]
      */
-    public function getBloodPressure($kode_reg)
+    public function getBloodPressure($semua_transaksi)
     {
-        $vitalSign = DB::connection('sqlsrvsimrs')
-            ->table('PKU.dbo.TAC_RJ_VITAL_SIGN')
-            ->select('FS_TD as sistole', 'FS_TD2 as diastole')
-            ->where('FS_KD_REG', $kode_reg)
-            ->orderByDesc('FS_KD_REG') // TOP 1 digantikan dengan orderBy + first()
-            ->first();
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $vitalSign = DB::connection('sqlsrvsimrs')
+                    ->table('PKU.dbo.TAC_RJ_VITAL_SIGN')
+                    ->select('FS_TD as sistole', 'FS_TD2 as diastole')
+                    ->where('FS_KD_REG', $transaksi->FRPNOTRANSAKSI)
+                    ->orderByDesc('FS_KD_REG')
+                    ->first();
 
+                return (object)[
+                    'sistole' => $vitalSign->sistole ?? 0,
+                    'diastole' => $vitalSign->diastole ?? 0
+                ];
+            }
+        }
+
+        // Fallback jika tidak ada transaksi dengan RUBBER == 0
         return (object)[
-            'sistole' => $vitalSign->sistole ?? 0, // Default 0 jika tidak ada data
-            'diastole' => $vitalSign->diastole ?? 0 // Default 0 jika tidak ada data
+            'sistole' => 0,
+            'diastole' => 0
         ];
     }
 }
