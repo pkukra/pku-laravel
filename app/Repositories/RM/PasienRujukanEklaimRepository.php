@@ -138,7 +138,7 @@ class PasienRujukanEklaimRepository
             'tgl_masuk' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
+            'kelas_rawat' => 3, // regular 3, eksklusif 1
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
