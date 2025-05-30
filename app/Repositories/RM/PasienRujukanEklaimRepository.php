@@ -123,8 +123,6 @@ class PasienRujukanEklaimRepository
             $transaksi_utama->JENIS_KELAMIN,
         );
 
-        return $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs;
-
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($semua_transaksi);
         // defaultnya atas persetujuan dokter
