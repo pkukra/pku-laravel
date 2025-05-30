@@ -404,7 +404,7 @@ class PasienRujukanEklaimRepository
                 ->leftJoin('POLIKLINIK AS poli', 'pr.FRPUNIT', '=', 'poli.FMPKLINIK_ID')
                 ->leftJoin('PASIEN AS p', 'pr.FRPPASIEN_ID', '=', 'p.KD_PASIEN')
                 // ->leftJoin('MR_KEMATIAN AS mati', 'sep.FMNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
-                
+
                 ->leftJoin('MR_KEMATIAN AS mati', function ($join) use ($no_sep) {
                     $join->on('pr.FRPNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
                         ->orOn('pr.FRPNOTRANSAKSIKJ', '=', 'mati.MRKNO_TRANSAKSI');
@@ -487,55 +487,55 @@ class PasienRujukanEklaimRepository
                 $total = $transaksi->FDTQTY * $transaksi->FDTHARGA;
                 switch ($transaksi->FTUKD_EKLAIM) {
                     case '1':
-                        $tarif['prosedur_non_bedah'] = $total;
+                        $tarif['prosedur_non_bedah'] += $total;
                         break;
                     case '2':
-                        $tarif['prosedur_bedah'] = $total;
+                        $tarif['prosedur_bedah'] += $total;
                         break;
                     case '3':
-                        $tarif['konsultasi'] = $total;
+                        $tarif['konsultasi'] += $total;
                         break;
                     case '4':
-                        $tarif['tenaga_ahli'] = $total;
+                        $tarif['tenaga_ahli'] += $total;
                         break;
                     case '5':
-                        $tarif['keperawatan'] = $total;
+                        $tarif['keperawatan'] += $total;
                         break;
                     case '6':
-                        $tarif['penunjang'] = $total;
+                        $tarif['penunjang'] += $total;
                         break;
                     case '7':
-                        $tarif['radiologi'] = $total;
+                        $tarif['radiologi'] += $total;
                         break;
                     case '8':
-                        $tarif['laboratorium'] = $total;
+                        $tarif['laboratorium'] += $total;
                         break;
                     case '9':
-                        $tarif['pelayanan_darah'] = $total;
+                        $tarif['pelayanan_darah'] += $total;
                         break;
                     case '10':
-                        $tarif['rehabilitasi'] = $total;
+                        $tarif['rehabilitasi'] += $total;
                         break;
                     case '11':
-                        $tarif['kamar'] = $total;
+                        $tarif['kamar'] += $total;
                         break;
                     case '12':
-                        $tarif['rawat_intensif'] = $total;
+                        $tarif['rawat_intensif'] += $total;
                         break;
                     case '13':
-                        $tarif['obat'] = $total;
+                        $tarif['obat'] += $total;
                         break;
                     case '14':
-                        $tarif['alkes'] = $total;
+                        $tarif['alkes'] += $total;
                         break;
                     case '15':
-                        $tarif['bmhp'] = $total;
+                        $tarif['bmhp'] += $total;
                         break;
                     case '16':
-                        $tarif['sewa_alat'] = $total;
+                        $tarif['sewa_alat'] += $total;
                         break;
                     default:
-                        $tarif['bmhp'] = $total;
+                        $tarif['bmhp'] += $total;
                         break;
                 }
             }
