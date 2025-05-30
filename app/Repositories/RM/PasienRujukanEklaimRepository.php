@@ -123,6 +123,8 @@ class PasienRujukanEklaimRepository
             $transaksi_utama->JENIS_KELAMIN,
         );
 
+        return $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs;
+
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($semua_transaksi);
         // defaultnya atas persetujuan dokter
@@ -469,16 +471,22 @@ class PasienRujukanEklaimRepository
 
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
             // mencari list semua transaksi selain kredit
-            // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
+            // ditandai dengan TRANSAKSIPASIEND.FDTKD_PRODUK!=2
+
             $transaksiPasien = DB::connection('sqlsrvsimrs')
-                ->table('TRANSAKSIPASIEN AS a')
-                ->leftJoin('TRANSAKSIPASIEND AS b', 'a.FTNO_TRANSAKSI', '=', 'b.FDTNO_TRANSAKSI')
-                ->leftJoin('PRODUK AS p', 'p.FMPPRODUK_ID', '=', 'b.FDTKD_PRODUK')
-                ->leftJoin('PRODUK_UNIT AS pu', 'p.FMPUNITPRODUK', '=', 'pu.FTUKODE')
-                ->whereNull('b.FDTNO_FAKTUR')
-                ->where('b.FDTJENISTRANSAKSI', 'DB') // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
-                ->where('a.FTNO_TRANSAKSI', $pasien_rujukan->FRPNOTRANSAKSIKJ)
-                ->select('a.FTNO_TRANSAKSI', 'b.FDTQTY', 'b.FDTHARGA', 'b.FDTKD_PRODUK', 'pu.FTUKD_EKLAIM')
+                ->table('PKUKRASIMRS.dbo.TRANSAKSIPASIEND as A')
+                ->leftJoin('PKUKRASIMRS.dbo.PRODUK as P', 'P.FMPPRODUK_ID', '=', 'A.FDTKD_PRODUK')
+                ->leftJoin('PKUKRASIMRS.dbo.PRODUK_UNIT as PU', 'P.FMPUNITPRODUK', '=', 'PU.FTUKODE')
+                ->select([
+                    'A.FDTKDPRODUKN',
+                    'A.FDTKD_PRODUK',
+                    'A.FDTQTY',
+                    'A.FDTHARGA',
+                    'PU.FTUKD_EKLAIM'
+                ])
+                ->where('A.FDTNO_TRANSAKSI', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->where('A.FDTKD_PRODUK', '!=', 'ADL002') // selain obat, karena obat cari di FJINKOTA saja
+                ->where('A.FDTKD_PRODUK', '!=', '2') // selain kredit
                 ->get();
 
             $tarif_poli_eks = $transaksiPasien->reduce(function ($carry, $transaksi) {
