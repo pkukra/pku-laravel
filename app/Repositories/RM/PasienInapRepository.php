@@ -185,6 +185,8 @@ class PasienInapRepository
                 'SPESIALISASI.FMSPESIALISASIN',
                 'cm.KETERANGAN AS CARA_MASUK_BPJS',
                 'rk.MRKODERUJUKANN AS RS_RUJUKAN_KELUAR',
+                'PRI.PRWINO_TRANSAKSI AS FRPNOTRANSAKSIKJ',
+                'PRI.PRWIKD_PASIEN AS FRPPASIEN_ID',
             )
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
