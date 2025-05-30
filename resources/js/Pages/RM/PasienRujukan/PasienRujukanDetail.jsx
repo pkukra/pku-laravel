@@ -76,6 +76,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienRujukanDetailSEP
                                 pasien={pasien}
                                 user={auth.user}
+                                reFetchPasien={reFetchPasien}
                             />
                         </Col>
                     </Row>
