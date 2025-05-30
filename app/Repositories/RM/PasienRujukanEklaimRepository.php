@@ -132,6 +132,7 @@ class PasienRujukanEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
         }
 
+
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
@@ -548,17 +549,13 @@ class PasienRujukanEklaimRepository
                 }
             }
 
-            $fjinkotaData = DB::connection('sqlsrvsimrs')
+            $tarif['obat'] += (float) DB::connection('sqlsrvsimrs')
                 ->table('FJINKOTA')
                 ->where('FHFJNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
                 ->where('FHFJKRONIS', '=', 0)
-                ->select('FHFJBUKTI_ID', 'FHFJTOTAL')
-                ->get();
+                ->sum('FHFJTOTAL');
 
-            foreach ($fjinkotaData as $fjinkota) {
-                $tarif['obat'] = (float)$fjinkota->FHFJTOTAL;
-                $tarif_poli_eks += (float)$tarif['obat'];
-            }
+            $tarif_poli_eks += (float)$tarif['obat'];
         }
 
         return (object)[
