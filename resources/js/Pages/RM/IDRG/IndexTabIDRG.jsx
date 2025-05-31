@@ -5,7 +5,7 @@ import axios from "axios";
 import DiagnosaListIDRG from "./DiagnosaListIDRG";
 import ProcedureListIDRG from "./ProcedureListIDRG";
 
-function Index({ pasien, golbalSEP }) {
+function Index({ pasien, golbalSEP, setDisableINACBG }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [diagnosaTab, setDiagnosaTab] = useState([]);
@@ -182,6 +182,11 @@ function Index({ pasien, golbalSEP }) {
         fetchIDRGData();
     }, []);
 
+    useEffect(() => {
+        const isFinal = idrgGroupData?.is_final == "1";
+        setDisableINACBG(!isFinal); // kebalikan: jika final, maka disable = false
+    }, [idrgGroupData]);
+
     const eklaim_group_data = JSON.parse(
         idrgGroupData?.response_eklaim || "{}"
     );
@@ -209,7 +214,8 @@ function Index({ pasien, golbalSEP }) {
                 </Col>
             </Row>
             <Row gutter={[5, 5]}>
-                <Col span={12}></Col>
+                <Col span={12}>
+                </Col>
                 <Col span={12}>
                     <Divider> Hasil Grouping iDRG </Divider>
                     {loadingFetchGroupData ? (

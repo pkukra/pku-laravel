@@ -38,6 +38,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
     const [golbalSEP, setGolbalSEP] = useState(null);
     const [pasienLoading, setPasienLoading] = useState(false);
+    const [disableINACBG, setDisableINACBG] = useState(true);
 
     const reFetchPasien = () => {
         setPasienLoading(true);
@@ -54,19 +55,25 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         {
             label: "IDRG",
             key: "1",
-            children: <IndexTabIDRG pasien={pasien} golbalSEP={golbalSEP} />,
+            children: (
+                <IndexTabIDRG
+                    pasien={pasien}
+                    golbalSEP={golbalSEP}
+                    setDisableINACBG={setDisableINACBG}
+                />
+            ),
         },
         {
             label: "INACBG",
             key: "2",
             children: <INACBG pasien={pasien} />,
+            disabled: disableINACBG,
         },
     ];
 
     return (
         <>
             <Head title="Detail Kunjungan Pasien Rajal" />
-
             <div className="py-12">
                 {!pasien ? (
                     <Card>Pasien tidak ditemukan</Card>
@@ -90,6 +97,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={24}>
+                            {JSON.stringify(disableINACBG)}
                             <Card>
                                 <Tabs
                                     defaultActiveKey="1"
@@ -100,13 +108,6 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                                 />
                             </Card>
                         </Col>
-
-                        {/* <Col span={12}>
-                            <PasienRujukanDetailDiagnosaList pasien={pasien} />
-                        </Col>
-                        <Col span={12}>
-                            <PasienRujukanDetailProcedureList pasien={pasien} />
-                        </Col> */}
 
                         <Col span={12}>
                             <PasienRujukanDetailAmnanesaCatatan
