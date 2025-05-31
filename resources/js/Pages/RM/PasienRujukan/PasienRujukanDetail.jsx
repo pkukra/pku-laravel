@@ -2,8 +2,6 @@ import { Head } from "@inertiajs/react";
 import { Col, Row, Card, Tabs } from "antd";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
-import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
-import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCatatan";
 import PasienRujukanDetailSEP from "./PasienRujukanDetailSEP";
 import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
@@ -12,6 +10,7 @@ import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 
 import IndexTabIDRG from "../IDRG/IndexTabIDRG";
+import IndexTabINACBG from "../INACBG/IndexTabINACBG";
 
 import { useState } from "react";
 import axios from "axios";
@@ -66,7 +65,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         {
             label: "INACBG",
             key: "2",
-            children: <INACBG pasien={pasien} />,
+            children: <IndexTabINACBG pasien={pasien} />,
             disabled: disableINACBG,
         },
     ];
