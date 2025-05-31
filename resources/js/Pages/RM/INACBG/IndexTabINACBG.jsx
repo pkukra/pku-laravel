@@ -177,22 +177,19 @@ function Index({ pasien, golbalSEP }) {
                     </Button>,
                 ]}
             >
+                <br />
                 {golbalSEP ? (
                     <div>
-                        <h3>
-                            <strong>Nomor SEP:</strong> {golbalSEP}
-                        </h3>
+                        <strong>Nomor SEP:</strong> {golbalSEP}
                     </div>
                 ) : (
-                    <h3>
-                        <strong>Belum ada data SEP</strong>
-                    </h3>
+                    <strong>Belum ada data SEP</strong>
                 )}
 
-                <h3>
+                <p>
                     Proses ini mengakibatkan prosedure yang tersimpan di inaCBG
                     terganti dengan data idrg. apa setuju untuk melanjutkan?
-                </h3>
+                </p>
             </Modal>
         </>
     );
