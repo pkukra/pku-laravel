@@ -68,11 +68,6 @@ export default function Index({
                     <br />
                     <Button
                         style={{ marginTop: 5 }}
-                        // disabled={
-                        //     (loadingDeleteDiagnosa &&
-                        //         record.id == deleteDiagnosaId) ||
-                        //     record.isFinalIDRG == "1"
-                        // }
                         disabled={
                             isFinalIDRG ||
                             (loadingDeleteDiagnosa &&

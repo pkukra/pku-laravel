@@ -65,7 +65,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         {
             label: "INACBG",
             key: "2",
-            children: <IndexTabINACBG pasien={pasien} />,
+            children: <IndexTabINACBG golbalSEP={golbalSEP} pasien={pasien} />,
             disabled: disableINACBG,
         },
     ];
