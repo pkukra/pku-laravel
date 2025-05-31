@@ -578,4 +578,34 @@ class PasienInapController extends Controller
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'inline; filename="' . $no_sep . '.pdf"');
     }
+
+     /**
+     * bridging_data_idrg
+     * Process bridging data ke eklaim
+     */
+    public function bridging_data_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingDataIDRG($no_sep);
+        return response()->json($data);
+    }
+
+     /**
+     * bridging_final_idrg
+     * Process bridging final idrg ke eklaim
+     */
+    public function bridging_final_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingFinalIDRG($no_sep);
+        return response()->json($data);
+    }
+
+    /**
+     * edit_ulang_idrg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function edit_ulang_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingEditUlangIDRG($no_sep);
+        return response()->json($data);
+    }
 }

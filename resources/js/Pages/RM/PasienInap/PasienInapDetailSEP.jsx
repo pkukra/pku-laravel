@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Card, Button, Tooltip, notification, Input } from "antd";
 import axios from "axios";
 
-export default function Index({ pasien, user, reFetchPasien }) {
+export default function Index({ pasien, user, reFetchPasien,setGolbalSEP }) {
     const [loadingSep, setLoadingSep] = useState(false);
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
@@ -25,6 +25,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
             )
             .then((response) => {
                 setNoSep(response?.data?.data?.FMNOSEP);
+                setGolbalSEP(response?.data?.data?.FMNOSEP);
                 setHakKelas(response?.data?.data?.FMKODEKELAS);
             })
             .catch((error) => {

@@ -558,7 +558,7 @@ class PasienInapEklaimRepository
      * @param object $pasien_inap
      * @return object
      */
-    public function getTotalDetailTarifTransaksi($pasien_inap)
+    public function getTotalDetailTarifTransaksi($array_pasien_inap)
     {
         $tarif = [
             'prosedur_non_bedah' => 0,
@@ -581,6 +581,7 @@ class PasienInapEklaimRepository
 
         $tarif_poli_eks = 0;
 
+        foreach ($array_pasien_inap as $pasien_inap) {
         // mencari list semua transaksi selain kredit
         // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
         $transaksiPasien = DB::connection('sqlsrvsimrs')
@@ -588,7 +589,7 @@ class PasienInapEklaimRepository
             ->leftJoin('PRODUK AS p', 'p.FMPPRODUK_ID', '=', 'a.FDTKD_PRODUK')
             ->leftJoin('PRODUK_UNIT AS pu', 'p.FMPUNITPRODUK', '=', 'pu.FTUKODE')
             ->where('a.FDTJENISTRANSAKSI', 'DB') // ditandai dengan TRANSAKSIPASIEND.FDTJENISTRANSAKSI="DB"
-            ->where('a.FDTNO_TRANSAKSI', $pasien_inap->PRWINO_TRANSAKSI)
+            ->where('a.FDTNO_TRANSAKSI', $pasien_inap->FTNO_TRANSAKSI)
             ->select('a.FDTNO_TRANSAKSI', 'a.FDTKDPRODUKN', 'a.FDTQTY', 'a.FDTHARGA', 'a.FDTKD_PRODUK', 'pu.FTUKD_EKLAIM', 'pu.FTUNAMA')
             ->get();
 
@@ -681,7 +682,7 @@ class PasienInapEklaimRepository
             ->sum('FHRJTOTAL');
 
         $tarif['obat'] = $tarif['obat'] - $obatRetur;
-
+        }
         return (object)[
             "tarif_rs" => $tarif,
             "tarif_poli_eks" => $tarif_poli_eks,
@@ -763,5 +764,451 @@ class PasienInapEklaimRepository
             'sistole' => $sistole,
             'diastole' => $diastole
         ];
+    }
+
+    /**
+     * Process bridgingDataProcess by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingDataIDRG($no_sep)
+    {
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return false;
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            $transaksi_utama = $transaksi;
+            break;
+        }
+
+        // update/reedit claim
+        $update_claim = $this->bridgingReEditClaim($no_sep);
+        if ($update_claim->status != 'ok') {
+            return $update_claim;
+        }
+
+        // buat new claim dulu
+        $new_claim = $this->bridgingNewClaimProcess(
+            $transaksi_utama->FMNO_KARTU,
+            $transaksi_utama->FMNOSEP,
+            $transaksi_utama->FTKD_PASIEN,
+            $transaksi_utama->NAMAPASIEN,
+            $transaksi_utama->TGL_LAHIR,
+            $transaksi_utama->JENIS_KELAMIN,
+        );
+        if ($new_claim->status != 'ok') {
+            return $new_claim;
+        }
+
+        $user = Auth::user();
+        $bloodPresure = $this->getBloodPressure($transaksi_utama->FTNO_TRANSAKSI);
+        // defaultnya atas persetujuan dokter
+        $discharge_status =  1;
+        if ($transaksi_utama->DISCHARGE_SRARTUS) {
+            // jika berhasil di join dengan tabel mr_kematian untuk hasil yang lain
+            $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
+        }
+
+        // mapping data
+        $data = (object)[
+            'nomor_sep' => $no_sep,
+            'tgl_masuk' => Carbon::parse($transaksi_utama->PRWITGL_MASUK)->format('Y-m-d H:i:s'),
+            'tgl_pulang' => Carbon::parse($transaksi_utama->PRWITGL_KELUAR)->format('Y-m-d H:i:s'),
+            'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
+            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
+            'birth_weight' => 0,
+            'discharge_status' => $discharge_status,
+            'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
+            'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
+            'adl_sub_acute' => "",
+            'adl_chronic' => "",
+            'nama_dokter' => $transaksi_utama->FMDDOKTERN,
+            'icu_indikator' => "",
+            'icu_los' => "",
+            'ventilator_hour' => "",
+            'kode_tarif' => "CS",
+            'payor_id' => "3",
+            'payor_cd' => "JKN",
+            'coder_nik' => $user->nik,
+            'sistole' => $bloodPresure->sistole,
+            'diastole' => $bloodPresure->diastole,
+            'cara_masuk' => $transaksi_utama->CARA_MASUK,
+        ];
+
+        $requestData = json_encode((object)[
+            'metadata' => (object)[
+                'method' => 'set_claim_data',
+                'nomor_sep' => $no_sep,
+            ],
+            'data' => $data
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $key = $user->eklaim_key;
+        $response =  sendRequest($key, $requestData);
+
+        $this->idrgDiagnosaSet($no_sep, $this->getAllDiagnosaIDRG($semua_transaksi));
+        $this->idrgProcedureSet($no_sep, $this->getAllProcedureIDRG($semua_transaksi));
+
+        $requestData = json_encode((object)[
+            'metadata' => (object)[
+                'method' => 'grouper',
+                "stage" => "1",
+                "grouper" => "idrg"
+            ],
+            'data' => (object)[
+                'nomor_sep' => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $key = $user->eklaim_key;
+        $grouping_1_idrg =  sendRequest($key, $requestData);
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_IDRG')
+                ->updateOrInsert(
+                    [
+                        'no_transaksi' => $transaksi_utama->FTNO_TRANSAKSI,
+                        'pasien_id' => $transaksi_utama->FTKD_PASIEN
+                    ],
+                    [
+                        "response_eklaim" => json_encode($grouping_1_idrg->response->response_idrg),
+                        'is_final' => 0,
+                        "updated_at" => $now,
+                        "updated_by" => $user->email,
+                    ]
+                );
+
+            $this->auditTrail->insert([
+                "object_id" => $transaksi_utama->FTNO_TRANSAKSI,
+                "action_id" => 18,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('RMAuditTrail insert err: ' . $e->getMessage());
+            return false;
+        }
+
+        return $response;
+    }
+
+    /**
+     * menampilkan list transaksi berdasar nomer SEP
+     * termasuk jika SEP pasien dengan kunjungan raber
+     * 
+     * @param string $no_sep
+     * @return array
+     */
+    public function allTransactionsBySep($no_sep)
+    {
+        try {
+            $detailTransaksi = DB::connection('sqlsrvsimrs')
+                ->table('BPJS_SEP AS sep')
+                ->leftJoin('TRANSAKSIPASIENINAP AS tpi', 'tpi.FTNO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                ->leftJoin('PASIENRAWATINAP AS pr', function ($join) {
+                    $join->on('pr.PRWINO_TRANSAKSI', '=', 'tpi.FTNO_TRANSAKSI')
+                        ->whereColumn('pr.PRWINO_URUT', '=', 'tpi.FTNO_URUT');
+                })
+                ->leftJoin('DOKTER AS dr', 'pr.PRWIKD_DOKTER', '=', 'dr.FMDDOKTER_ID')
+                ->leftJoin('PASIEN AS p', 'tpi.FTKD_PASIEN', '=', 'p.KD_PASIEN')
+                ->leftJoin('MR_KEMATIAN AS mati', 'pr.PRWINO_TRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
+                ->leftJoin('MR_KEADAAN_KELUAR_RS', 'mati.MRKKEADAAN_KELUAR', '=', 'MR_KEADAAN_KELUAR_RS.FMKKRSKODE')
+                ->select(
+                    'sep.FMNOSEP',
+                    'sep.FMNO_KARTU',
+                    'sep.FMJENISRAWAT',
+                    'sep.FMKODEKELAS',
+                    'pr.PRWITGL_MASUK',
+		            'pr.PRWITGL_KELUAR',
+                    'pr.PRWINO_TRANSAKSI',
+                    'pr.PRWIKD_PASIEN',
+		            DB::raw("ISNULL(pr.CARA_MASUK, 'emd') AS CARA_MASUK"),
+                    'tpi.FTKD_PASIEN',
+		            'tpi.FTNO_TRANSAKSI',
+                    'dr.FMDDOKTERN',
+                    'p.NAMAPASIEN',
+                    'p.TGL_LAHIR',
+                    'p.JENIS_KELAMIN',
+                    'MR_KEADAAN_KELUAR_RS.FMKKRSKODE_BPJS AS DISCHARGE_SRARTUS',
+                    'mati.MRKKEADAAN_KELUAR'
+                )
+                ->where('sep.FMNOSEP', $no_sep)
+                ->distinct()
+                ->get();
+        } catch (\Exception $e) {
+            // Log the error if any exception occurs
+            Log::error('Error get data allTransactionsBySep: ' . $e->getMessage());
+            return false;
+        }
+        return $detailTransaksi;
+    }
+
+    /**
+     * Get all diagnosa idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
+     * 
+     * @param array $array_pasien_rujukan
+     * @return string Diagnosa dalam format "S71.0#A00.1"
+     */
+    public function getAllDiagnosaIDRG($array_pasien_inap)
+    {
+        $diagnoses_array = [];
+        foreach ($array_pasien_inap as $pasien_inap) {
+            $diagnosa = DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_DIAGNOSA_IM')
+                ->where('no_transaksi', '=', $pasien_inap->FTNO_TRANSAKSI)
+                ->pluck('code') // Ambil kolom code sebagai array
+                ->toArray();
+
+            // Bersihkan spasi tiap kode sebelum gabung
+            $diagnosa = array_map('trim', $diagnosa);
+
+            $diagnoses_array = array_merge($diagnoses_array, $diagnosa);
+        }
+
+        // Hilangkan duplikat dan gabungkan dengan '#'
+        return implode('#', array_unique($diagnoses_array));
+    }
+
+    /**
+     * Get all procedure idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
+     * 
+     * @param array $array_pasien_rujukan
+     * @return string Procedure dalam format "S71.0#A00.1"
+     */
+    public function getAllProcedureIDRG($array_pasien_inap)
+    {
+        $procedures_array = [];
+        foreach ($array_pasien_inap as $pasien_inap) {
+            $diagnosa = DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_TINDAKAN_IM')
+                ->where('no_transaksi', '=', $pasien_inap->FTNO_TRANSAKSI)
+                ->select('code', 'multiplicity')
+                ->get();
+
+            foreach ($diagnosa as $item) {
+                $code = trim($item->code);
+                $multiplicity = trim($item->multiplicity);
+
+                if ($multiplicity > 1) {
+                    $procedures_array[] = $code . '+' . $multiplicity;
+                } else {
+                    $procedures_array[] = $code;
+                }
+            }
+        }
+
+        return implode('#', $procedures_array);
+    }
+
+    /**
+     * Process idrgDiagnosaSet
+     * 
+     * @param string $nomor_sep, $diagnosa ("B45.1#G02.1")
+     */
+    public function idrgDiagnosaSet($nomor_sep, $diagnosa)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "idrg_diagnosa_set",
+                "nomor_sep" => $nomor_sep,
+            ],
+            "data" => [
+                "diagnosa" => $diagnosa
+
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        return sendRequest($key, $data);
+    }
+
+    /**
+     * Process idrgProcedureSet
+     * 
+     * @param string $nomor_sep, $procedure ("88.01#90.090+2#90.090")
+     */
+    public function idrgProcedureSet($nomor_sep, $procedure)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => [
+                "method" => "idrg_procedure_set",
+                "nomor_sep" => $nomor_sep,
+            ],
+            "data" => [
+                "procedure" => $procedure
+
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        return sendRequest($key, $data);
+    }
+
+    /**
+     * Process bridgingFinalIDRG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingFinalIDRG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            $transaksi_utama = $transaksi;
+            break;
+        }
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "idrg_grouper_final"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                $affected = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_IDRG')
+                    ->where('no_transaksi', $transaksi_utama->FTNO_TRANSAKSI)
+                    ->where('pasien_id', $transaksi_utama->FTKD_PASIEN)
+                    ->update([
+                        'is_final' => 1,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                if ($affected == 0) {
+                    return (object)[
+                        "status" => "nok",
+                        "error" => "data group idrg tidak ditemukan"
+                    ];
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $transaksi_utama->FTNO_TRANSAKSI,
+                    "action_id" => 19,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('bridgingFinalIDRG err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        return $response;
+    }
+
+    /**
+     * Process bridgingEditUlangIDRG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingEditUlangIDRG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            $transaksi_utama = $transaksi;
+            break;
+        }
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "idrg_grouper_reedit"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                $affected = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_IDRG')
+                    ->where('no_transaksi', $transaksi_utama->FTNO_TRANSAKSI)
+                    ->where('pasien_id', $transaksi_utama->FTKD_PASIEN)
+                    ->update([
+                        'is_final' => 0,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                if ($affected == 0) {
+                    return (object)[
+                        "status" => "nok",
+                        "error" => "data group idrg tidak ditemukan"
+                    ];
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $transaksi_utama->FTNO_TRANSAKSI,
+                    "action_id" => 20,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('bridgingFinalIDRG err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        return $response;
     }
 }

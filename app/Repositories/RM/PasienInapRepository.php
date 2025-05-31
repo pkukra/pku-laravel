@@ -46,6 +46,7 @@ class PasienInapRepository
                 'S.FMSPESIALISASIN',
                 'PRI.PRWIKD_DOKTER',
                 'PRI.PRWIKD_CUSTOMER',
+                'PRI.PRWIKD_CUSTOMER AS FRPCUSTOMER_ID',
                 'DR.FMDDOKTERN',
             )
             ->where('TPI.FTKD_PASIEN', $no_rm)

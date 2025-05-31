@@ -112,5 +112,12 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::get('/bridging_kirim_klaim/{no_sep}', [PasienInapController::class, 'bridging_kirim_klaim'])->name('rm.pasien-inap.bridging_kirim_klaim');
 
         Route::get('/get_list_cppt/{kode_reg}', [RanapMonitController::class, 'get_list_cppt'])->name('rm.pasien-inap.get_list_cppt');
+    
+        //idrg
+        Route::get('/list_diagnosa_idrg/{kode_reg}', [PasienInapController::class, 'list_diagnosa_idrg'])->name('rm.pasien-inap.list_diagnosa_idrg');
+        Route::post('/bridging_data_idrg/{no_sep}', [PasienInapController::class, 'bridging_data_idrg'])->name('rm.pasien-inap.bridging_data_idrg');
+        Route::post('/bridging_final_idrg/{no_sep}', [PasienInapController::class, 'bridging_final_idrg'])->name('rm.pasien-inap.bridging_final_idrg');
+        Route::post('/edit_ulang_idrg/{no_sep}', [PasienInapController::class, 'edit_ulang_idrg'])->name('rm.pasien-inap.edit_ulang_idrg');
+
     });
 });
