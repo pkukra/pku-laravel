@@ -97,7 +97,6 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={24}>
-                            {JSON.stringify(disableINACBG)}
                             <Card>
                                 <Tabs
                                     defaultActiveKey="1"
