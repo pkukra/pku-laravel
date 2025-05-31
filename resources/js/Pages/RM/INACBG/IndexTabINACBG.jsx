@@ -17,27 +17,27 @@ function Index({ pasien, golbalSEP }) {
         setImportAndBridgeLoading(true);
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_data_process", {
-                    no_sep: noSep,
+                route("rm.pasien-rujukan.bridging_import_idrg_to_inacbg", {
+                    no_sep: golbalSEP,
                 })
             );
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     description: response?.data?.error,
                 });
             }
 
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
 
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: response?.data?.response?.metadata?.message,
             });
