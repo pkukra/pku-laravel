@@ -113,7 +113,7 @@ export default function Index({
         axios
             .get(
                 route("rm.pasien-rujukan.list_diagnosa_idrg", {
-                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    kode_reg: pasien.FRPNOTRANSAKSIKJ || pasien.FTNO_TRANSAKSI,
                 })
             )
             .then((response) => {
@@ -180,8 +180,8 @@ export default function Index({
                 route("rm.pasien-rujukan.save_diagnosa_idrg"),
                 {
                     code: selectedDiagnosaForm,
-                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    pasien_id: pasien.FRPPASIEN_ID,
+                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ || pasien.FTNO_TRANSAKSI,
+                    pasien_id: pasien.FRPPASIEN_ID || pasien.FTKD_PASIEN,
                 }
             );
 

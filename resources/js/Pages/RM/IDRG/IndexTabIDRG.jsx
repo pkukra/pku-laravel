@@ -6,6 +6,7 @@ import DiagnosaListIDRG from "./DiagnosaListIDRG";
 import ProcedureListIDRG from "./ProcedureListIDRG";
 
 function Index({ pasien, golbalSEP, setDisableINACBG }) {
+
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [diagnosaTab, setDiagnosaTab] = useState([]);
@@ -21,11 +22,22 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
     const handleBridgingData = async () => {
         setBridgingLoading(true);
         try {
-            const response = await axios.post(
+            if(pasien.FRPNOTRANSAKSIKJ){
+                const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_data_idrg", {
                     no_sep: golbalSEP,
                 })
             );
+            }
+
+            if(pasien.FTNO_TRANSAKSI){
+                const response = await axios.post(
+                route("rm.pasien-inap.bridging_data_idrg", {
+                    no_sep: golbalSEP,
+                })
+            );
+            }
+            
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
@@ -58,11 +70,21 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
     const handleFinalData = async () => {
         setFinalLoading(true);
         try {
-            const response = await axios.post(
+            if(pasien.FRPNOTRANSAKSIKJ){
+                const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_final_idrg", {
                     no_sep: golbalSEP,
                 })
             );
+            }
+
+            if(pasien.FTNO_TRANSAKSI){
+                const response = await axios.post(
+                route("rm.pasien-inap.bridging_final_idrg", {
+                    no_sep: golbalSEP,
+                })
+            );
+            }
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
@@ -95,11 +117,22 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
     const handleEditUlangData = async () => {
         setReeditLoading(true);
         try {
-            const response = await axios.post(
+
+            if(pasien.FRPNOTRANSAKSIKJ){
+                const response = await axios.post(
                 route("rm.pasien-rujukan.edit_ulang_idrg", {
                     no_sep: golbalSEP,
                 })
             );
+            }
+
+            if(pasien.FTNO_TRANSAKSI){
+                const response = await axios.post(
+                route("rm.pasien-inap.edit_ulang_idrg", {
+                    no_sep: golbalSEP,
+                })
+            );
+            }
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
@@ -134,7 +167,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         axios
             .get(
                 route("rm.pasien-rujukan.get_idrg_group_data", {
-                    kode_reg_kj: pasien.FRPNOTRANSAKSIKJ,
+                    kode_reg_kj: pasien.FRPNOTRANSAKSIKJ || pasien.FTNO_TRANSAKSI,
                 })
             )
             .then((response) => {
@@ -159,9 +192,18 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         if (diagnosaTab.length === 0) {
             return true; // Disable if no diagnoses
         }
-        if (pasien.FRPCUSTOMER_ID !== "X002") {
-            return true; // Disable unless specific customer (BPJS Cust ONLY)
+        if(pasien.FRPCUSTOMER_ID){
+            if (pasien.FRPCUSTOMER_ID != "X002" ) {
+                return true; // Disable unless specific customer (BPJS Cust ONLY)
+            }
         }
+        if(pasien.PRWIKD_CUSTOMER){
+            if (pasien.PRWIKD_CUSTOMER != "X002" ) {
+                return true; // Disable unless specific customer (BPJS Cust ONLY)
+            }
+        }
+        
+
         return false; // Enable otherwise
     };
 

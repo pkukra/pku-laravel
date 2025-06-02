@@ -144,7 +144,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
         axios
             .get(
                 route("rm.pasien-rujukan.list_procedure_idrg", {
-                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    kode_reg: pasien.FRPNOTRANSAKSIKJ || pasien.FTNO_TRANSAKSI,
                 })
             )
             .then((response) => {
