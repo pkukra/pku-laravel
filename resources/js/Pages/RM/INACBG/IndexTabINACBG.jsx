@@ -17,27 +17,27 @@ function Index({ pasien, golbalSEP }) {
         setImportAndBridgeLoading(true);
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_data_process", {
-                    no_sep: noSep,
+                route("rm.pasien-rujukan.bridging_import_idrg_to_inacbg", {
+                    no_sep: golbalSEP,
                 })
             );
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     description: response?.data?.error,
                 });
             }
 
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
 
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: response?.data?.response?.metadata?.message,
             });
@@ -177,22 +177,19 @@ function Index({ pasien, golbalSEP }) {
                     </Button>,
                 ]}
             >
+                <br />
                 {golbalSEP ? (
                     <div>
-                        <h3>
-                            <strong>Nomor SEP:</strong> {golbalSEP}
-                        </h3>
+                        <strong>Nomor SEP:</strong> {golbalSEP}
                     </div>
                 ) : (
-                    <h3>
-                        <strong>Belum ada data SEP</strong>
-                    </h3>
+                    <strong>Belum ada data SEP</strong>
                 )}
 
-                <h3>
+                <p>
                     Proses ini mengakibatkan prosedure yang tersimpan di inaCBG
                     terganti dengan data idrg. apa setuju untuk melanjutkan?
-                </h3>
+                </p>
             </Modal>
         </>
     );

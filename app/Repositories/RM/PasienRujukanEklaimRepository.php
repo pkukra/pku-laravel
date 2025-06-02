@@ -78,6 +78,85 @@ class PasienRujukanEklaimRepository
 
 
     /**
+     * Process bridgingImportIdrgToIncbg by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingImportIdrgToIncbg($no_sep)
+    {
+        $user = Auth::user();
+
+        $requestData = json_encode((object)[
+            'metadata' => (object)[
+                'method' => 'idrg_to_inacbg_import',
+            ],
+            'data' => [
+                'nomor_sep' => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $key = $user->eklaim_key;
+        $response = sendRequest($key, $requestData);
+        if ($response->status != "ok" || $response->response->metadata->code != 200) {
+            return response()->json([
+                'status' => 'nok',
+                'message' => $response->response->metadata->message ?? 'Terjadi kesalahan pada server e-Klaim.',
+            ]);
+        }
+
+        // Inisialisasi array untuk error dan valid data
+        $diagnosaErrors = [];
+        $procedureErrors = [];
+        $diagnosaValid = [];
+        $procedureValid = [];
+
+        // Periksa diagnosa->expanded
+        if (!empty($response->response->data->diagnosa->expanded)) {
+            foreach ($response->response->data->diagnosa->expanded as $item) {
+                $data = [
+                    'code' => $item->code,
+                    'display' => $item->display,
+                ];
+
+                if (isset($item->metadata->error_no)) {
+                    $data['error_no'] = $item->metadata->error_no;
+                    $data['message'] = $item->metadata->message;
+                    $diagnosaErrors[] = $data;
+                } else {
+                    $diagnosaValid[] = $data;
+                }
+            }
+        }
+
+        // Periksa procedure->expanded
+        if (!empty($response->response->data->procedure->expanded)) {
+            foreach ($response->response->data->procedure->expanded as $item) {
+                $data = [
+                    'code' => $item->code,
+                    'display' => $item->display,
+                ];
+
+                if (isset($item->metadata->error_no)) {
+                    $data['error_no'] = $item->metadata->error_no;
+                    $data['message'] = $item->metadata->message;
+                    $procedureErrors[] = $data;
+                } else {
+                    $procedureValid[] = $data;
+                }
+            }
+        }
+
+        // Return semua data
+        return response()->json([
+            'status' => (empty($diagnosaErrors) && empty($procedureErrors)) ? 'ok' : 'error',
+            'diagnosa_error' => $diagnosaErrors,
+            'diagnosa_valid' => $diagnosaValid,
+            'procedure_error' => $procedureErrors,
+            'procedure_valid' => $procedureValid,
+        ]);
+    }
+
+    /**
      * Process bridgingDataProcess by no_sep
      * 
      * @param string $no_sep
@@ -945,8 +1024,8 @@ class PasienRujukanEklaimRepository
         }
         return $response;
     }
-    
-    
+
+
     /**
      * Process bridgingEditUlangIDRG by no_sep
      * 
