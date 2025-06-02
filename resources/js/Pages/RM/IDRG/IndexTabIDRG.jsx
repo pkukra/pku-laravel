@@ -156,11 +156,14 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         if (isFinalIDRG) {
             return true; // Disable if already finalized
         }
-        if (diagnosaTab.length === 0) {
+        if (diagnosaTab.length == 0) {
             return true; // Disable if no diagnoses
         }
-        if (pasien.FRPCUSTOMER_ID !== "X002") {
-            return true; // Disable unless specific customer (BPJS Cust ONLY)
+        if (
+            pasien.FRPCUSTOMER_ID != "X002" &&
+            pasien.FRPCUSTOMER_ID != "X003"
+        ) {
+            return true; // Disable jika bukan X002 atau X003
         }
         return false; // Enable otherwise
     };
@@ -214,8 +217,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                 </Col>
             </Row>
             <Row gutter={[5, 5]}>
-                <Col span={12}>
-                </Col>
+                <Col span={12}></Col>
                 <Col span={12}>
                     <Divider> Hasil Grouping iDRG </Divider>
                     {loadingFetchGroupData ? (
