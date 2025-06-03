@@ -232,7 +232,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                         >
                             <tbody>
                                 <tr>
-                                    <td style={{ width: "15%" }}>
+                                    <td style={{ width: "20%" }}>
                                         Status Grouping
                                     </td>
                                     <td>
@@ -244,7 +244,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style={{ width: "15%" }}>
+                                    <td>
                                         Status Final
                                     </td>
                                     <td>
@@ -256,7 +256,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style={{ width: "15%" }}>MDC Number</td>
+                                    <td>MDC Number</td>
                                     <td>{eklaim_group_data?.mdc_number}</td>
                                 </tr>
                                 <tr>
