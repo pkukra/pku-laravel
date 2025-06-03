@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/react";
-import { Col, Row, Card, Tabs } from "antd";
+import { Col, Row, Card, Tabs, Spin } from "antd";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
 import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCatatan";
@@ -12,30 +12,16 @@ import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPu
 import IndexTabIDRG from "../IDRG/IndexTabIDRG";
 import IndexTabINACBG from "../INACBG/IndexTabINACBG";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-
-function INACBG({ pasien }) {
-    return (
-        <>
-            <p>
-                <strong>INACBG</strong>
-            </p>
-            <Row gutter={[5, 5]}>
-                <Col span={12}>
-                    <PasienRujukanDetailDiagnosaList pasien={pasien} />
-                </Col>
-                <Col span={12}>
-                    <PasienRujukanDetailProcedureList pasien={pasien} />
-                </Col>
-            </Row>
-        </>
-    );
-}
 
 function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
     const [golbalSEP, setGolbalSEP] = useState(null);
+
+    const [loadingRaber, setLoadingRaber] = useState(true);
+    const [listRaber, setListRaber] = useState([]);
+
     const [pasienLoading, setPasienLoading] = useState(false);
     const [disableINACBG, setDisableINACBG] = useState(true);
 
@@ -49,6 +35,28 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
             )
             .finally(() => setPasienLoading(false));
     };
+
+    const fetchAllRelatedRaber = () => {
+        setLoadingRaber(true);
+        axios
+            .get(
+                route("rm.pasien-rujukan.list_all_raber", { no_sep: golbalSEP })
+            )
+            .then((response) => {
+                setListRaber(response?.data || []);
+                setLoadingRaber(false);
+            })
+            .catch((error) =>
+                console.error("Error fetchAllRelatedRaber:", error)
+            )
+            .finally(() => setLoadingRaber(false));
+    };
+
+    useEffect(() => {
+        if (golbalSEP) {
+            fetchAllRelatedRaber();
+        }
+    }, [golbalSEP]);
 
     const menu = [
         {
@@ -70,6 +78,27 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         },
     ];
 
+    const itemTabDokter = listRaber.map((item, index) => ({
+        label: item?.FMDDOKTERN,
+        key: String(index + 1), // gunakan key unik untuk setiap tab
+        children: (
+            <>
+                <Row gutter={[5, 5]}>
+                    <Col span={12}>
+                        {pasien?.FRPUNIT == "PK011" ? (
+                            <PasienRujukanDetailAssesmenIGD pasien={pasien} />
+                        ) : (
+                            <PasienRujukanDetailResume pasien={pasien} />
+                        )}
+                    </Col>
+                    <Col span={12}>
+                        <PasienRujukanDetailHasilLab pasien={pasien} />
+                    </Col>
+                </Row>
+            </>
+        ),
+    }));
+
     return (
         <>
             <Head title="Detail Kunjungan Pasien Rajal" />
@@ -82,19 +111,17 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienRujukanDetailProfile pasien={pasien} />
                         </Col>
 
-                        <Col span={12}>
-                            {pasien?.FRPUNIT == "PK011" ? (
-                                <PasienRujukanDetailAssesmenIGD
-                                    pasien={pasien}
+                        <Col span={24}>
+                            <Card loading={loadingRaber}>
+                                <Tabs
+                                    defaultActiveKey="1"
+                                    type="card"
+                                    size={"small"}
+                                    style={{ marginBottom: 32 }}
+                                    items={itemTabDokter}
                                 />
-                            ) : (
-                                <PasienRujukanDetailResume pasien={pasien} />
-                            )}
+                            </Card>
                         </Col>
-                        <Col span={12}>
-                            <PasienRujukanDetailHasilLab pasien={pasien} />
-                        </Col>
-
                         <Col span={24}>
                             <Card>
                                 <Tabs

@@ -811,4 +811,14 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingEditUlangIDRG($no_sep);
         return response()->json($data);
     }
+    
+    /**
+     * list_all_raber
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function list_all_raber($no_sep)
+    {
+        $data = $this->pasienRujukanRepo->listAllRaber($no_sep);
+        return response()->json($data);
+    }
 }
