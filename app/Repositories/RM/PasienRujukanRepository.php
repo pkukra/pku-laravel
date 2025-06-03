@@ -763,21 +763,25 @@ class PasienRujukanRepository
             }
 
             $noTransaksi = $targetDiagnosa->no_transaksi;
+            $no_sep = $targetDiagnosa->no_sep;
             $pasienId = $targetDiagnosa->pasien_id;
 
             // Set semua diagnosa lain ke is_primary = 0
-            $conn->table('PASIEN_DIAGNOSA_IM')
-                ->where('no_transaksi', $noTransaksi)
-                ->where('pasien_id', $pasienId)
-                ->update([
-                    'is_primary' => 0,
-                    'updated_by' => $user->email,
-                    'updated_at' => $now,
-                ]);
+            $query = $conn->table('PASIEN_DIAGNOSA_IM')->where('pasien_id', $pasienId);
+            if (!empty($no_sep)) {
+                $query->where('no_sep', $no_sep);
+            } else {
+                $query->where('no_transaksi', $noTransaksi);
+            }
+            $query->update([
+                'is_primary' => 0,
+                'updated_by' => $user->email,
+                'updated_at' => $now,
+            ]);
 
             // Set diagnosa yang dipilih ke is_primary = 1
             $conn->table('PASIEN_DIAGNOSA_IM')
-                ->where('ID', $id)
+                ->where('id', $id)
                 ->update([
                     'is_primary' => 1,
                     'updated_by' => $user->email,
@@ -787,12 +791,12 @@ class PasienRujukanRepository
             // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
             DB::connection('sqlsrvsimrs')
                 ->table('PASIEN_IDRG')
-                ->where('no_transaksi', $noTransaksi)
+                ->where('no_sep', $no_sep)
                 ->delete();
 
             // Audit trail
             $this->auditTrail->insert([
-                "object_id"  => $noTransaksi,
+                "object_id"  => ($no_sep) ? $no_sep : $noTransaksi,
                 "action_id"  => 13,
                 "user_email" => $user->email,
                 "user_id"    => $user->id,
