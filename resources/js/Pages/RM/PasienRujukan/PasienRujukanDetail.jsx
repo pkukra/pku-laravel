@@ -53,8 +53,12 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     };
 
     useEffect(() => {
-        if (golbalSEP) {
-            fetchAllRelatedRaber();
+        if (pasien?.FRPUNIT != "PK011") {
+            if (golbalSEP) {
+                fetchAllRelatedRaber();
+            }
+        }else{
+            setLoadingRaber(false);
         }
     }, [golbalSEP]);
 
@@ -85,14 +89,16 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
             <>
                 <Row gutter={[5, 5]}>
                     <Col span={12}>
-                        {pasien?.FRPUNIT == "PK011" ? (
-                            <PasienRujukanDetailAssesmenIGD pasien={pasien} />
-                        ) : (
-                            <PasienRujukanDetailResume pasien={pasien} dataTransaksi={item}/>
-                        )}
+                        <PasienRujukanDetailResume
+                            pasien={pasien}
+                            dataTransaksi={item}
+                        />
                     </Col>
                     <Col span={12}>
-                        <PasienRujukanDetailHasilLab pasien={pasien} dataTransaksi={item} />
+                        <PasienRujukanDetailHasilLab
+                            pasien={pasien}
+                            dataTransaksi={item}
+                        />
                     </Col>
                 </Row>
             </>
@@ -112,15 +118,31 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={24}>
-                            <Card loading={loadingRaber}>
-                                <Tabs
-                                    defaultActiveKey="1"
-                                    type="card"
-                                    size={"small"}
-                                    style={{ marginBottom: 32 }}
-                                    items={itemTabDokter}
-                                />
-                            </Card>
+                            {pasien?.FRPUNIT == "PK011" ? (
+                                <Row gutter={[5, 5]}>
+                                    <Col span={12}>
+                                        <PasienRujukanDetailAssesmenIGD
+                                            pasien={pasien}
+                                        />
+                                    </Col>
+                                    <Col span={12}>
+                                        <PasienRujukanDetailHasilLab
+                                            pasien={pasien}
+                                            dataTransaksi={pasien}
+                                        />
+                                    </Col>
+                                </Row>
+                            ) : (
+                                <Card loading={loadingRaber}>
+                                    <Tabs
+                                        defaultActiveKey="1"
+                                        type="card"
+                                        size={"small"}
+                                        style={{ marginBottom: 32 }}
+                                        items={itemTabDokter}
+                                    />
+                                </Card>
+                            )}
                         </Col>
                         <Col span={24}>
                             <Card>
