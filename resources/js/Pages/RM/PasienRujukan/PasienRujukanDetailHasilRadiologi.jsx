@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button } from "antd";
 
-export default function Index({ pasien }) {
+export default function Index({ dataTransaksi }) {
     const [hasilRadiologiData, setHasilRadiologiData] = useState([]);
     const [loadingHasilRadiologi, setLoadingHasilRadiologi] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -11,7 +11,7 @@ export default function Index({ pasien }) {
         try {
             const response = await axios.get(
                 route("rm.pasien-rujukan.get_hasil_radiologi", {
-                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    kode_reg: dataTransaksi.FRPNOTRANSAKSIKJ,
                 })
             );
             setHasilRadiologiData(response?.data?.data || []);

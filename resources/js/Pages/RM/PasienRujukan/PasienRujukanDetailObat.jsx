@@ -3,7 +3,7 @@ import { Modal, Button, Table } from "antd";
 import moment from "moment";
 moment.locale('id');
 
-export default function Index({ pasien }) {
+export default function Index({ dataTransaksi }) {
     const [hasilObatData, setHasilObatData] = useState([]);
     const [loadingHasilObat, setLoadingHasilObat] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -13,7 +13,7 @@ export default function Index({ pasien }) {
         try {
             const response = await axios.get(
                 route("rm.pasien-inap.get_all_obat", {
-                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    kode_reg: dataTransaksi.FRPNOTRANSAKSIKJ,
                 })
             );
             setHasilObatData(response?.data?.data || []);

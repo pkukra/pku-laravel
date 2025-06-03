@@ -6,7 +6,10 @@ export default function Index({ pasien }) {
     return (
         <>
             <Card title="Profil Pasien Rawat Jalan">
-                <table className="tw-table tw-table-xs" style={{ width: "100%" }}>
+                <table
+                    className="tw-table tw-table-xs"
+                    style={{ width: "100%" }}
+                >
                     <tbody>
                         <tr>
                             <td
@@ -76,14 +79,6 @@ export default function Index({ pasien }) {
                                                 hari)
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <th>Alamat</th>
-                                            <td
-                                                style={{ verticalAlign: "top" }}
-                                            >
-                                                {pasien.ALAMAT}
-                                            </td>
-                                        </tr>
                                     </tbody>
                                 </table>
                             </td>
@@ -100,37 +95,27 @@ export default function Index({ pasien }) {
                                 >
                                     <tbody>
                                         <tr>
-                                            <th style={{ width: "25%" }}>
-                                                Unit
-                                            </th>
-                                            <td
-                                                style={{ verticalAlign: "top" }}
+                                            <th
+                                                style={{
+                                                    width: "30%",
+                                                }}
                                             >
-                                                {pasien.FRPUNIT} -{" "}
-                                                {pasien.FMPKLINIKN}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>Golongan Darah</th>
+                                                Golongan Darah
+                                            </th>
                                             <td>{pasien.DARAH}</td>
                                         </tr>
 
-                                        <tr>
-                                            <th>Dokter</th>
-                                            <td
-                                                style={{ verticalAlign: "top" }}
-                                            >
-                                                {pasien.FRPDOKTER_ID} -{" "}
-                                                {pasien.FMDDOKTERN}
-                                            </td>
-                                        </tr>
                                         <tr>
                                             <th>Kelompok Pasien</th>
                                             <td>{pasien.FRPCUSTOMER_ID}</td>
                                         </tr>
                                         <tr>
-                                            <th>ID Transakasi</th>
-                                            <td>{pasien.FRPNOTRANSAKSIKJ}</td>
+                                            <th>Alamat</th>
+                                            <td
+                                                style={{ verticalAlign: "top" }}
+                                            >
+                                                {pasien.ALAMAT}
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>

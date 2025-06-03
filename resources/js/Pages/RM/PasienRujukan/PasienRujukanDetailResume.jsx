@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, Button, Modal } from "antd";
+import moment from "moment";
 
 const cleanText = (html) =>
     html
@@ -8,7 +9,7 @@ const cleanText = (html) =>
         .replace(/\s+/g, " ") // Hapus enter & spasi berlebih
         .trim(); // Hapus spasi di awal dan akhir
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, dataTransaksi }) {
     const [resumeData, setResumeData] = useState(null);
     const [loadingResume, setLoadingResume] = useState(false);
     const [sugestDariAi, setSugestDariAi] = useState([]);
@@ -21,7 +22,7 @@ export default function Index({ pasien }) {
         axios
             .get(
                 route("rm.pasien-rujukan.get_resume", {
-                    kode_reg: pasien.FRPNOTRANSAKSI,
+                    kode_reg: dataTransaksi.FRPNOTRANSAKSI,
                 })
             )
             .then((response) => {
@@ -64,6 +65,46 @@ export default function Index({ pasien }) {
 
     return (
         <>
+            <Card loading={loadingResume} style={{ marginBottom: "5px" }}>
+                <table
+                    className="tw-table-zebra tw-table-xs"
+                    style={{ width: "100%", textAlign: "left" }}
+                >
+                    <tbody>
+                        <tr>
+                            <th
+                                style={{
+                                    width: "25%",
+                                }}
+                            >
+                                Tanggal Periksa
+                            </th>
+                            <td>
+                                {moment(dataTransaksi.FRPTGL).format(
+                                    "DD/MM/YYYY"
+                                )}{" "}
+                                {moment(dataTransaksi.FRPJAM).format("HH:mm")}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Dokter</th>
+                            <td>{dataTransaksi.FMDDOKTERN}</td>
+                        </tr>
+                        <tr>
+                            <th>Poli</th>
+                            <td>{dataTransaksi.FMPKLINIKN}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Dokter</th>
+                            <td>{(dataTransaksi.RUBBER=="1")?"Rawat Bersama":"DPJP Utama"}</td>
+                        </tr>
+                        <tr>
+                            <th>ID Transaksi</th>
+                            <td>{dataTransaksi.FRPNOTRANSAKSI} / {dataTransaksi.FRPNOTRANSAKSIKJ}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Card>
             <Card title="Resume Pasien" loading={loadingResume}>
                 <table
                     className="tw-table tw-table-xs"

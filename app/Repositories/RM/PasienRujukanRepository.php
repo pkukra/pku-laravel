@@ -1529,4 +1529,45 @@ class PasienRujukanRepository
             ->where('A.no_transaksi', $kode_reg_kj)
             ->first();
     }
+
+    /**
+     *
+     * @param string $no_sep
+     * @return \Illuminate\Support\Collection
+     */
+    public function listAllRaber($no_sep)
+    {
+        try {
+            $detailTransaksi = DB::connection('sqlsrvsimrs')
+                ->table('BPJS_SEP AS sep')
+                ->leftJoin('PASIEN_RUJUKAN AS pr', function ($join) use ($no_sep) {
+                    $join->on('pr.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                        ->orOn('pr.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
+                })
+                ->leftJoin('DOKTER AS dr', 'pr.FRPDOKTER_ID', '=', 'dr.FMDDOKTER_ID')
+                ->leftJoin('POLIKLINIK AS poli', 'pr.FRPUNIT', '=', 'poli.FMPKLINIK_ID')
+                ->select(
+                    'sep.FMNOSEP',
+                    'sep.FMNO_KARTU',
+                    'sep.FMJENISRAWAT',
+                    'sep.FMKODEKELAS',
+                    'pr.FRPNOTRANSAKSI',
+                    'pr.FRPNOTRANSAKSIKJ',
+                    'dr.FMDDOKTERN',
+                    'poli.FMPKLINIKN',
+                    'pr.RUBBER',
+                    'pr.FRPTGL',
+                    'pr.FRPJAM',
+                    'pr.FRPPASIEN_ID',
+                )
+                ->where('sep.FMNOSEP', $no_sep)
+                ->distinct()
+                ->orderBy('pr.RUBBER', 'asc')
+                ->get();
+            return $detailTransaksi;
+        } catch (\Exception $e) {
+            Log::error('Error get data listAllRaber: ' . $e->getMessage());
+            return [];
+        }
+    }
 }
