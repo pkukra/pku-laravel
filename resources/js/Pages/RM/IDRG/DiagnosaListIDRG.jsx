@@ -19,6 +19,7 @@ export default function Index({
     setDiagnosaTab,
     isFinalIDRG,
     fetchIDRGData,
+    golbalSEP,
 }) {
     const columns = [
         {
@@ -114,6 +115,7 @@ export default function Index({
             .get(
                 route("rm.pasien-rujukan.list_diagnosa_idrg", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: golbalSEP,
                 })
             )
             .then((response) => {
@@ -180,7 +182,7 @@ export default function Index({
                 route("rm.pasien-rujukan.save_diagnosa_idrg"),
                 {
                     code: selectedDiagnosaForm,
-                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: golbalSEP,
                     pasien_id: pasien.FRPPASIEN_ID,
                 }
             );
@@ -278,8 +280,9 @@ export default function Index({
     const inputRefStatusDdiagnosa = useRef(null);
 
     useEffect(() => {
-        fetchDiagnosa();
-
+        if (golbalSEP) {
+            fetchDiagnosa();
+        }
         const handleKeyDown = (event) => {
             // Cek apakah Shift dan F1 ditekan bersamaan
             if (event.shiftKey && event.key === "F1") {
@@ -293,7 +296,7 @@ export default function Index({
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [golbalSEP]);
 
     return (
         <Card title={`Diagnosa`}>

@@ -134,7 +134,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         axios
             .get(
                 route("rm.pasien-rujukan.get_idrg_group_data", {
-                    kode_reg_kj: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: golbalSEP,
                 })
             )
             .then((response) => {
@@ -182,7 +182,9 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
     };
 
     useEffect(() => {
-        fetchIDRGData();
+        if (golbalSEP) {
+            fetchIDRGData();
+        }
     }, []);
 
     useEffect(() => {
@@ -206,6 +208,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                         pasien={pasien}
                         setDiagnosaTab={setDiagnosaTab}
                         fetchIDRGData={fetchIDRGData}
+                        golbalSEP={golbalSEP}
                     />
                 </Col>
                 <Col span={12}>
@@ -213,6 +216,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                         pasien={pasien}
                         isFinalIDRG={isFinalIDRG}
                         fetchIDRGData={fetchIDRGData}
+                        golbalSEP={golbalSEP}
                     />
                 </Col>
             </Row>
@@ -244,9 +248,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
-                                        Status Final
-                                    </td>
+                                    <td>Status Final</td>
                                     <td>
                                         {isFinalIDRG ? (
                                             <strong>Sudah Final</strong>

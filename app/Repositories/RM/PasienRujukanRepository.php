@@ -381,15 +381,21 @@ class PasienRujukanRepository
      * @param string $no_transaksi
      * @return \Illuminate\Support\Collection
      */
-    public function getDiagnosaIDRGByTransaksi($no_transaksi)
+    public function getDiagnosaIDRGByTransaksi($no_transaksi, $no_sep)
     {
-        return DB::connection('sqlsrvsimrs')
+        $query =  DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM')
             ->join('ICD', 'PASIEN_DIAGNOSA_IM.code', '=', 'ICD.code')
             ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.code', 'ICD.description')
-            ->orderBy('PASIEN_DIAGNOSA_IM.is_primary', 'DESC')
-            ->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi)
-            ->get();
+            ->orderBy('PASIEN_DIAGNOSA_IM.is_primary', 'DESC');
+
+        if (!$no_sep) {
+            $query->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi);
+        } else {
+            $query->where('PASIEN_DIAGNOSA_IM.no_sep', $no_sep);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -521,17 +527,18 @@ class PasienRujukanRepository
     public function saveDiagnosaIDRG($data)
     {
         $user = Auth::user();
-        $no_transaksikj = $data['no_transaksikj'];
+        $no_sep = $data['no_sep'];
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
 
         $counts = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM')
-            ->where('no_transaksi', $no_transaksikj)
+            ->where('no_sep', $no_sep)
             ->count();
 
         $data_to_save = [
             'code' => $data['code'],
-            'no_transaksi' => $data['no_transaksikj'],
+            'no_transaksi' => (isset($data['no_transaksikj'])) ?? null,
+            'no_sep' => $data['no_sep'],
             'pasien_id' => $data['pasien_id'],
             'created_by' => $user->email,
             'created_at' => $now,
@@ -545,7 +552,7 @@ class PasienRujukanRepository
                 ->insert($data_to_save);
 
             $isrecorded = $this->auditTrail->insert([
-                "object_id" => $no_transaksikj,
+                "object_id" => $no_sep,
                 "action_id" => 11,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
@@ -556,7 +563,7 @@ class PasienRujukanRepository
             // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
             DB::connection('sqlsrvsimrs')
                 ->table('PASIEN_IDRG')
-                ->where('no_transaksi', $no_transaksikj)
+                ->where('no_sep', $no_sep)
                 ->delete();
 
             if (!$isrecorded) {
@@ -1518,15 +1525,15 @@ class PasienRujukanRepository
     /**
      * Get response grouping idrg by kode reg kj
      *
-     * @param string $kode_reg_kj
+     * @param string $no_sep
      * @return \Illuminate\Support\Collection
      */
-    public function getIDRGGroupDataByTransaksi($kode_reg_kj)
+    public function getIDRGGroupDataByTransaksi($no_sep)
     {
         return DB::connection('sqlsrvsimrs')
             ->table('PASIEN_IDRG AS A')
             ->select('A.*')
-            ->where('A.no_transaksi', $kode_reg_kj)
+            ->where('A.no_sep', $no_sep)
             ->first();
     }
 

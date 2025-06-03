@@ -196,10 +196,10 @@ class PasienRujukanController extends Controller
      * list_diagnosa_idrg
      * Menampilkan diagnosa berdasarkan kode transaksi
      */
-    public function list_diagnosa_idrg($kode_reg)
+    public function list_diagnosa_idrg($kode_reg, $no_sep = "")
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
-        $diagnosa = $this->pasienRujukanRepo->getDiagnosaIDRGByTransaksi($kode_reg);
+        $diagnosa = $this->pasienRujukanRepo->getDiagnosaIDRGByTransaksi($kode_reg, $no_sep);
 
         return response()->json([
             'status' => "ok",
@@ -299,7 +299,7 @@ class PasienRujukanController extends Controller
         // Validasi input
         $validated = $request->validate([
             'code' => 'required|string|max:10',
-            'no_transaksikj' => 'required|string|max:20',
+            'no_sep' => 'required|string|max:20',
             'pasien_id' => 'required|string|max:20',
         ]);
 
@@ -746,7 +746,7 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingDataProcess($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_import_idrg_to_inacbg
      * Process bridging data ke eklaim
@@ -776,7 +776,7 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingDataIDRG($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_final_idrg
      * Process bridging final idrg ke eklaim
@@ -791,17 +791,17 @@ class PasienRujukanController extends Controller
      * get_idrg_group_data
      * Menampilkan procedure berdasarkan kode transaksi
      */
-    public function get_idrg_group_data($kode_reg)
+    public function get_idrg_group_data($no_sep)
     {
         // Mendapatkan procedure berdasarkan kode transaksi
-        $procedure = $this->pasienRujukanRepo->getIDRGGroupDataByTransaksi($kode_reg);
+        $procedure = $this->pasienRujukanRepo->getIDRGGroupDataByTransaksi($no_sep);
 
         return response()->json([
             'status' => "ok",
             'data' => $procedure,
         ]);
     }
-    
+
     /**
      * edit_ulang_idrg
      * Menampilkan procedure berdasarkan kode transaksi
@@ -811,7 +811,7 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingEditUlangIDRG($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * list_all_raber
      * Menampilkan procedure berdasarkan kode transaksi
