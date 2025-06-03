@@ -537,8 +537,8 @@ class PasienRujukanRepository
 
         $data_to_save = [
             'code' => $data['code'],
-            'no_transaksi' => (isset($data['no_transaksikj'])) ?? null,
-            'no_sep' => $data['no_sep'],
+            'no_transaksi' => (isset($data['no_transaksikj'])) ? $data['no_transaksikj'] : null,
+            'no_sep' => (isset($data['no_sep'])) ? $data['no_sep'] : null,
             'pasien_id' => $data['pasien_id'],
             'created_by' => $user->email,
             'created_at' => $now,

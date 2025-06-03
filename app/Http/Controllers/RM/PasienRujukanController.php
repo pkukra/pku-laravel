@@ -299,9 +299,17 @@ class PasienRujukanController extends Controller
         // Validasi input
         $validated = $request->validate([
             'code' => 'required|string|max:10',
-            'no_sep' => 'required|string|max:20',
+            'no_sep' => 'string|max:20',
+            'no_transaksikj' => 'string|max:20',
             'pasien_id' => 'required|string|max:20',
         ]);
+
+        if (isset($validated['no_sep']) && empty($validated['no_sep']) && empty($validated['no_transaksikj'])) {
+            return response()->json([
+                'status' => "nok",
+                'message' => 'salah satu harus diisi: no_sep atau no_transaksikj',
+            ],  422);
+        }
 
         // Menyimpan data diagnosa melalui repository
         $isSaved = $this->pasienRujukanRepo->saveDiagnosaIDRG($validated);
