@@ -5,7 +5,7 @@ import PasienRujukanDetailHasilRadiologi from "./PasienRujukanDetailHasilRadiolo
 import PasienRujukanDetailObat from "./PasienRujukanDetailObat";
 import PasienRujukanDetailIMR from "./PasienRujukanDetailIMR";
 
-export default function Index({ pasien }) {
+export default function Index({ dataTransaksi }) {
     const [hasilLabUrl, setHasilLabUrl] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [loadingPdf, setLoadingPdf] = useState(true); // Tambahkan state loading
@@ -13,7 +13,7 @@ export default function Index({ pasien }) {
     const generateLabUrl = async () => {
         try {
             const response = await axios.get(route("common.lab_url"));
-            setHasilLabUrl(response?.data?.data + pasien.FRPNOTRANSAKSI);
+            setHasilLabUrl(response?.data?.data + dataTransaksi.FRPNOTRANSAKSI);
         } catch (error) {
             console.error("Error fetching lab data:", error);
         }
@@ -36,11 +36,11 @@ export default function Index({ pasien }) {
                     Hasil Lab
                 </Button>
 
-                <PasienRujukanDetailObat pasien={pasien} />
-
-                <PasienRujukanDetailHasilRadiologi pasien={pasien} />
-
-                <PasienRujukanDetailIMR pasien={pasien} />
+                <PasienRujukanDetailObat dataTransaksi={dataTransaksi} />
+                <PasienRujukanDetailHasilRadiologi
+                    dataTransaksi={dataTransaksi}
+                />
+                <PasienRujukanDetailIMR dataTransaksi={dataTransaksi} />
 
                 {/* Modal Ant Design */}
                 <Modal

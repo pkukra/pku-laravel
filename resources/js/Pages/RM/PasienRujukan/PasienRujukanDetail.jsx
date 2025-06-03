@@ -88,11 +88,11 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         {pasien?.FRPUNIT == "PK011" ? (
                             <PasienRujukanDetailAssesmenIGD pasien={pasien} />
                         ) : (
-                            <PasienRujukanDetailResume pasien={pasien} />
+                            <PasienRujukanDetailResume pasien={pasien} dataTransaksi={item}/>
                         )}
                     </Col>
                     <Col span={12}>
-                        <PasienRujukanDetailHasilLab pasien={pasien} />
+                        <PasienRujukanDetailHasilLab pasien={pasien} dataTransaksi={item} />
                     </Col>
                 </Row>
             </>

@@ -1556,6 +1556,9 @@ class PasienRujukanRepository
                     'dr.FMDDOKTERN',
                     'poli.FMPKLINIKN',
                     'pr.RUBBER',
+                    'pr.FRPTGL',
+                    'pr.FRPJAM',
+                    'pr.FRPPASIEN_ID',
                 )
                 ->where('sep.FMNOSEP', $no_sep)
                 ->distinct()
