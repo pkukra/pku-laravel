@@ -127,7 +127,14 @@ class PasienRujukanRepository
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PASIEN_RUJUKAN.CARA_MASUK', '=', 'cm.KODE')
+
+            ->leftJoin('BPJS_SEP AS sep', function ($join) use ($kode_reg) {
+                $join->on('PASIEN_RUJUKAN.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                    ->orOn('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
+            })
+
             ->select(
+                'sep.FMNOSEP',
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',
                 'PASIEN.GOL_DARAH',

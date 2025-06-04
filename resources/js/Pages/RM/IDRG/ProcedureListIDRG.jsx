@@ -19,7 +19,6 @@ export default function Index({
     pasien,
     isFinalIDRG,
     fetchIDRGData,
-    golbalSEP,
 }) {
     const columns = [
         {
@@ -150,7 +149,7 @@ export default function Index({
             .get(
                 route("rm.pasien-rujukan.list_procedure_idrg", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
-                    no_sep: golbalSEP,
+                    no_sep: pasien?.FMNOSEP,
                 })
             )
             .then((response) => {
@@ -209,7 +208,7 @@ export default function Index({
 
     // Function to save procedure
     const saveProcedure = async () => {
-        if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !golbalSEP) {
+        if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !pasien?.FMNOSEP) {
             return notification.error({
                 placement: "top",
                 message: "Tidak dapat menyimpan diagnosa",
@@ -221,8 +220,8 @@ export default function Index({
             code: selectedProcedureForm,
             pasien_id: pasien.FRPPASIEN_ID,
             multiplicity: multiplicityForm,
-            ...(golbalSEP
-                ? { no_sep: golbalSEP }
+            ...(pasien?.FMNOSEP
+                ? { no_sep: pasien?.FMNOSEP }
                 : { no_transaksikj: pasien?.FRPNOTRANSAKSIKJ }),
         };
         try {
@@ -355,7 +354,7 @@ export default function Index({
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [golbalSEP]);
+    }, [pasien]);
 
     return (
         <Card title={`Procedure`}>
