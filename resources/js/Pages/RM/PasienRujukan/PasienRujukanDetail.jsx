@@ -134,20 +134,22 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                                 </Row>
                             ) : pasien?.FRPCUSTOMER_ID != "X002" &&
                               pasien?.FRPCUSTOMER_ID != "X003" ? (
-                                <Row gutter={[5, 5]}>
-                                    <Col span={12}>
-                                        <PasienRujukanDetailResume
-                                            pasien={pasien}
-                                            dataTransaksi={pasien}
-                                        />
-                                    </Col>
-                                    <Col span={12}>
-                                        <PasienRujukanDetailHasilLab
-                                            pasien={pasien}
-                                            dataTransaksi={pasien}
-                                        />
-                                    </Col>
-                                </Row>
+                                <Card>
+                                    <Row gutter={[5, 5]}>
+                                        <Col span={12}>
+                                            <PasienRujukanDetailResume
+                                                pasien={pasien}
+                                                dataTransaksi={pasien}
+                                            />
+                                        </Col>
+                                        <Col span={12}>
+                                            <PasienRujukanDetailHasilLab
+                                                pasien={pasien}
+                                                dataTransaksi={pasien}
+                                            />
+                                        </Col>
+                                    </Row>
+                                </Card>
                             ) : (
                                 // else default
                                 <Card loading={loadingRaber}>
