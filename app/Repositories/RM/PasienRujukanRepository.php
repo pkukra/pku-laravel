@@ -527,18 +527,22 @@ class PasienRujukanRepository
     public function saveDiagnosaIDRG($data)
     {
         $user = Auth::user();
-        $no_sep = $data['no_sep'];
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        $no_sep = $data['no_sep'] ?? null;
+        $no_transaksi = $data['no_transaksikj'] ?? null;
 
-        $counts = DB::connection('sqlsrvsimrs')
-            ->table('PASIEN_DIAGNOSA_IM')
-            ->where('no_sep', $no_sep)
-            ->count();
+        $countQuery = DB::connection('sqlsrvsimrs')->table('PASIEN_DIAGNOSA_IM');
+        if ($no_sep) {
+            $countQuery->where('no_sep', $no_sep);
+        } else {
+            $countQuery->where('no_transaksi', $no_transaksi);
+        }
+        $counts = $countQuery->count();
 
         $data_to_save = [
             'code' => $data['code'],
-            'no_transaksi' => (isset($data['no_transaksikj'])) ? $data['no_transaksikj'] : null,
-            'no_sep' => (isset($data['no_sep'])) ? $data['no_sep'] : null,
+            'no_transaksi' => $no_transaksi,
+            'no_sep' => $no_sep,
             'pasien_id' => $data['pasien_id'],
             'created_by' => $user->email,
             'created_at' => $now,
@@ -552,7 +556,7 @@ class PasienRujukanRepository
                 ->insert($data_to_save);
 
             $isrecorded = $this->auditTrail->insert([
-                "object_id" => $no_sep,
+                "object_id" => ($no_sep) ? $no_sep : $no_transaksi,
                 "action_id" => 11,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
@@ -560,11 +564,14 @@ class PasienRujukanRepository
                 "data" => $data_to_save,
             ]);
 
-            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
-            DB::connection('sqlsrvsimrs')
-                ->table('PASIEN_IDRG')
-                ->where('no_sep', $no_sep)
-                ->delete();
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang.
+            // jika tidak maka langsung difinal bis. akbibatnya error
+            if ($no_sep) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_IDRG')
+                    ->where('no_sep', $no_sep)
+                    ->delete();
+            }
 
             if (!$isrecorded) {
                 DB::connection('sqlsrvsimrs')->rollBack();
@@ -970,6 +977,7 @@ class PasienRujukanRepository
     {
         $user = Auth::user();
         $no_transaksikj = $data['no_transaksikj'];
+        $no_sep = $data['no_sep'];
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
 
         $counts = DB::connection('sqlsrvsimrs')
@@ -980,7 +988,8 @@ class PasienRujukanRepository
         $data_to_save = [
             'code' => $data['code'],
             'multiplicity' => $data['multiplicity'],
-            'no_transaksi' => $data['no_transaksikj'],
+            'no_transaksi' => (isset($data['no_transaksikj'])) ? $data['no_transaksikj'] : null,
+            'no_sep' => (isset($data['no_sep'])) ? $data['no_sep'] : null,
             'pasien_id' => $data['pasien_id'],
             'created_by' => $user->email,
             'created_at' => $now,
@@ -1001,6 +1010,7 @@ class PasienRujukanRepository
 
             $isrecorded = $this->auditTrail->insert([
                 "object_id" => $no_transaksikj,
+                "object_id" => $no_sep,
                 "action_id" => 14,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
