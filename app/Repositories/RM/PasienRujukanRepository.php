@@ -814,7 +814,7 @@ class PasienRujukanRepository
                 ->where('KPNO_TRANSAKSI', $data['no_transaksi_kj'])
                 ->update([
                     'KPRUJUKLUAR' => $kodeRsRujukKeluar,
-                    'KPPERAWATAN' => $data['keperawatan'],
+                    'KPPERAWATAN' => (isset($data['keperawatan']) ? $data['keperawatan'] : ""),
                 ]);
 
             // 3. Update atau insert MR_KEMATIAN
@@ -869,7 +869,7 @@ class PasienRujukanRepository
                     'KUNJUNGANPASIEN' => [
                         'KPNO_TRANSAKSI' => $data['no_transaksi_kj'],
                         'KPRUJUKLUAR' => $kodeRsRujukKeluar,
-                        'KPPERAWATAN' => $data['keperawatan'],
+                        'KPPERAWATAN' => (isset($data['keperawatan']) ? $data['keperawatan'] : ""),
                     ],
                     'MR_KEMATIAN' => $mrPayload,
                 ],
