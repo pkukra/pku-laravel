@@ -130,6 +130,9 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
     };
 
     const fetchIDRGData = async () => {
+        if (!golbalSEP) {
+            return;
+        }
         setLoadingFetchGroupData(true);
         axios
             .get(

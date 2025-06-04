@@ -175,15 +175,26 @@ export default function Index({
 
     // Function to save diagnosa
     const saveDiagnosa = async () => {
+        if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !golbalSEP) {
+            return notification.error({
+                placement: "topRight",
+                message: "Tidak dapat menyimpan diagnosa",
+                description: "Pasien BPJS tapi belum ada SEP.",
+            });
+        }
         setLoadingSaveDiag(true);
+        const payload = {
+            code: selectedDiagnosaForm,
+            pasien_id: pasien.FRPPASIEN_ID,
+            ...(golbalSEP
+                ? { no_sep: golbalSEP }
+                : { no_transaksikj: pasien?.FRPNOTRANSAKSIKJ }),
+        };
+
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_diagnosa_idrg"),
-                {
-                    code: selectedDiagnosaForm,
-                    no_sep: golbalSEP,
-                    pasien_id: pasien.FRPPASIEN_ID,
-                }
+                payload
             );
 
             if (response?.data?.status === "ok") {
