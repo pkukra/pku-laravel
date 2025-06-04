@@ -743,7 +743,7 @@ class PasienRujukanEklaimRepository
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
             $diagnosa = DB::connection('sqlsrvsimrs')
                 ->table('PASIEN_DIAGNOSA_IM')
-                ->where('no_transaksi', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->where('no_sep', '=', $pasien_rujukan->FMNOSEP)
                 ->pluck('code') // Ambil kolom code sebagai array
                 ->toArray();
 
@@ -769,7 +769,7 @@ class PasienRujukanEklaimRepository
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
             $diagnosa = DB::connection('sqlsrvsimrs')
                 ->table('PASIEN_TINDAKAN_IM')
-                ->where('no_transaksi', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
+                ->where('no_sep', '=', $pasien_rujukan->FMNOSEP)
                 ->select('code', 'multiplicity')
                 ->get();
 
@@ -861,6 +861,7 @@ class PasienRujukanEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
         }
 
+
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
@@ -920,7 +921,7 @@ class PasienRujukanEklaimRepository
                 ->table('PASIEN_IDRG')
                 ->updateOrInsert(
                     [
-                        'no_transaksi' => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                        'no_sep' => $no_sep,
                         'pasien_id' => $transaksi_utama->FRPPASIEN_ID
                     ],
                     [
@@ -932,7 +933,7 @@ class PasienRujukanEklaimRepository
                 );
 
             $this->auditTrail->insert([
-                "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                "object_id" => $no_sep,
                 "action_id" => 18,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
@@ -989,7 +990,7 @@ class PasienRujukanEklaimRepository
             try {
                 $affected = DB::connection('sqlsrvsimrs')
                     ->table('PASIEN_IDRG')
-                    ->where('no_transaksi', $transaksi_utama->FRPNOTRANSAKSIKJ)
+                    ->where('no_sep', $no_sep)
                     ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
                     ->update([
                         'is_final' => 1,
@@ -1005,7 +1006,7 @@ class PasienRujukanEklaimRepository
                 }
 
                 $this->auditTrail->insert([
-                    "object_id" => $transaksi_utama->FRPNOTRANSAKSIKJ,
+                    "object_id" => $no_sep,
                     "action_id" => 19,
                     "user_email" => $user->email,
                     "user_id" => $user->id,
@@ -1068,7 +1069,7 @@ class PasienRujukanEklaimRepository
             try {
                 $affected = DB::connection('sqlsrvsimrs')
                     ->table('PASIEN_IDRG')
-                    ->where('no_transaksi', $transaksi_utama->FRPNOTRANSAKSIKJ)
+                    ->where('no_sep', $no_sep)
                     ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
                     ->update([
                         'is_final' => 0,
