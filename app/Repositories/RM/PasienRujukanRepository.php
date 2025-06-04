@@ -1289,12 +1289,15 @@ class PasienRujukanRepository
 
             $targetProcedure = $conn
                 ->table('PASIEN_TINDAKAN_IM')
-                ->where('ID', $id)
+                ->where('id', $id)
                 ->first();
 
             if (!$targetProcedure) {
                 return false;
             }
+
+            $no_sep = $targetProcedure->no_sep ?? null;
+            $no_transaksi = $targetProcedure->no_transaksi ?? null;
 
             $updated = $conn->table('PASIEN_TINDAKAN_IM')
                 ->where('id', $id)
@@ -1305,13 +1308,16 @@ class PasienRujukanRepository
                 ]);
 
             if ($updated) {
-                // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
-                $conn->table('PASIEN_IDRG')
-                    ->where('no_transaksi', $targetProcedure->no_transaksi)
-                    ->delete();
+                // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang.
+                // jika tidak maka langsung difinal bis. akbibatnya error
+                if ($no_sep) {
+                    $conn->table('PASIEN_IDRG')
+                        ->where('no_sep', $no_sep)
+                        ->delete();
+                }
 
                 $this->auditTrail->insert([
-                    'object_id'  => $targetProcedure->no_transaksi,
+                    'object_id'  => ($no_sep) ? $no_sep : $no_transaksi,
                     'action_id'  => 17,
                     'user_email' => $user->email,
                     'user_id'    => $user->id,
