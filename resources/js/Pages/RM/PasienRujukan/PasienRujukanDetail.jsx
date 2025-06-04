@@ -57,7 +57,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
             if (golbalSEP) {
                 fetchAllRelatedRaber();
             }
-        }else{
+        } else {
             setLoadingRaber(false);
         }
     }, [golbalSEP]);
@@ -118,7 +118,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={24}>
-                            {pasien?.FRPUNIT == "PK011" ? (
+                            {pasien?.FRPUNIT === "PK011" ? (
                                 <Row gutter={[5, 5]}>
                                     <Col span={12}>
                                         <PasienRujukanDetailAssesmenIGD
@@ -132,7 +132,24 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                                         />
                                     </Col>
                                 </Row>
+                            ) : pasien?.FRPCUSTOMER_ID != "X002" &&
+                              pasien?.FRPCUSTOMER_ID != "X003" ? (
+                                <Row gutter={[5, 5]}>
+                                    <Col span={12}>
+                                        <PasienRujukanDetailResume
+                                            pasien={pasien}
+                                            dataTransaksi={pasien}
+                                        />
+                                    </Col>
+                                    <Col span={12}>
+                                        <PasienRujukanDetailHasilLab
+                                            pasien={pasien}
+                                            dataTransaksi={pasien}
+                                        />
+                                    </Col>
+                                </Row>
                             ) : (
+                                // else default
                                 <Card loading={loadingRaber}>
                                     <Tabs
                                         defaultActiveKey="1"
