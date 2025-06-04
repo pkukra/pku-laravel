@@ -1128,6 +1128,7 @@ class PasienRujukanRepository
             // Cek apakah tindakan yang akan dihapus adalah primary
             $isPrimary = $deletedProcedure->is_primary == 1;
             $noTransaksi = $deletedProcedure->no_transaksi;
+            $noSEP = $deletedProcedure->no_sep;
             $pasienId = $deletedProcedure->pasien_id;
 
             // Hapus tindakan
@@ -1143,12 +1144,17 @@ class PasienRujukanRepository
 
             // Jika yang dihapus adalah primary, cari tindakan lain untuk dijadikan primary
             if ($isPrimary) {
-                $newPrimary = $conn
+                $newPrimaryQ = $conn
                     ->table('PASIEN_TINDAKAN_IM')
-                    ->where('no_transaksi', $noTransaksi)
-                    ->where('pasien_id', $pasienId)
-                    ->orderBy('created_at', 'asc')
-                    ->first();
+                    ->where('pasien_id', $pasienId);
+
+                if ($noSEP) {
+                    $newPrimaryQ->where('no_sep', $noSEP);
+                } else {
+                    $newPrimaryQ->where('no_transaksi', $noTransaksi);
+                }
+
+                $newPrimary = $newPrimaryQ->orderBy('created_at', 'asc')->first();
 
                 if ($newPrimary) {
                     $conn
@@ -1162,14 +1168,18 @@ class PasienRujukanRepository
                 }
             }
 
-            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
-            $conn->table('PASIEN_IDRG')
-                ->where('no_transaksi', $noTransaksi)
-                ->delete();
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang.
+            // jika tidak maka langsung difinal bis. akbibatnya error
+            if ($noSEP) {
+                $conn->table('PASIEN_IDRG')
+                    ->where('no_sep', $noSEP)
+                    ->delete();
+            }
+
 
             // Audit trail
             $auditSuccess = $this->auditTrail->insert([
-                "object_id"  => $noTransaksi,
+                "object_id"  => ($noSEP) ? $noSEP : $noTransaksi,
                 "action_id"  => 15,
                 "user_email" => $user->email,
                 "user_id"    => $user->id,
