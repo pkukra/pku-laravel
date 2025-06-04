@@ -512,6 +512,7 @@ class PasienRujukanController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:10',
             'no_sep' => 'string|max:20',
+            'multiplicity' => 'required|integer|min:1',
             'no_transaksikj' => 'string|max:20',
             'pasien_id' => 'required|string|max:20',
         ]);

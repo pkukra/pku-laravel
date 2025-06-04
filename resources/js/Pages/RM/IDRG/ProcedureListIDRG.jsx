@@ -15,7 +15,12 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
+export default function Index({
+    pasien,
+    isFinalIDRG,
+    fetchIDRGData,
+    golbalSEP,
+}) {
     const columns = [
         {
             title: "Kode",
@@ -203,16 +208,26 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
 
     // Function to save procedure
     const saveProcedure = async () => {
+        if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !golbalSEP) {
+            return notification.error({
+                placement: "top",
+                message: "Tidak dapat menyimpan diagnosa",
+                description: "Pasien BPJS tapi belum ada SEP.",
+            });
+        }
         setLoadingSaveDiag(true);
+        const payload = {
+            code: selectedProcedureForm,
+            pasien_id: pasien.FRPPASIEN_ID,
+            multiplicity: multiplicityForm,
+            ...(golbalSEP
+                ? { no_sep: golbalSEP }
+                : { no_transaksikj: pasien?.FRPNOTRANSAKSIKJ }),
+        };
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_procedure_idrg"),
-                {
-                    code: selectedProcedureForm,
-                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    pasien_id: pasien.FRPPASIEN_ID,
-                    multiplicity: multiplicityForm,
-                }
+                payload
             );
 
             if (response?.data?.status == "ok") {

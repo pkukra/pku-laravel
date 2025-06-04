@@ -392,7 +392,7 @@ class PasienRujukanRepository
         if ($no_sep) {
             $query->where('PASIEN_DIAGNOSA_IM.no_sep', $no_sep);
         } else {
-            $query->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi);            
+            $query->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi);
         }
 
         return $query->get();
@@ -976,8 +976,8 @@ class PasienRujukanRepository
     public function saveProcedureIDRG($data)
     {
         $user = Auth::user();
-        $no_transaksikj = $data['no_transaksikj'];
-        $no_sep = $data['no_sep'];
+        $no_transaksikj = $data['no_transaksikj'] ?? null;
+        $no_sep = $data['no_sep'] ?? null;
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
 
         $counts = DB::connection('sqlsrvsimrs')
@@ -988,8 +988,8 @@ class PasienRujukanRepository
         $data_to_save = [
             'code' => $data['code'],
             'multiplicity' => $data['multiplicity'],
-            'no_transaksi' => (isset($data['no_transaksikj'])) ? $data['no_transaksikj'] : null,
-            'no_sep' => (isset($data['no_sep'])) ? $data['no_sep'] : null,
+            'no_transaksi' => $no_transaksikj,
+            'no_sep' => $no_sep,
             'pasien_id' => $data['pasien_id'],
             'created_by' => $user->email,
             'created_at' => $now,
@@ -1002,15 +1002,17 @@ class PasienRujukanRepository
                 ->table('PASIEN_TINDAKAN_IM')
                 ->insert($data_to_save);
 
-            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang. jika tidak maka langsung difinal bis. akbibatnya error
-            DB::connection('sqlsrvsimrs')
-                ->table('PASIEN_IDRG')
-                ->where('no_transaksi', $no_transaksikj)
-                ->delete();
+            // setiap edit maka hapus diagnosa di tabel PASIEN_IDRG, agar data grouping sebelumnya hilang.
+            // jika tidak maka langsung difinal bis. akbibatnya error
+            if ($no_sep) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_IDRG')
+                    ->where('no_sep', $no_sep)
+                    ->delete();
+            }
 
             $isrecorded = $this->auditTrail->insert([
-                "object_id" => $no_transaksikj,
-                "object_id" => $no_sep,
+                "object_id" => ($no_sep) ? $no_sep : $no_transaksikj,
                 "action_id" => 14,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
