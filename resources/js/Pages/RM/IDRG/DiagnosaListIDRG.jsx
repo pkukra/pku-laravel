@@ -177,7 +177,7 @@ export default function Index({
     const saveDiagnosa = async () => {
         if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !golbalSEP) {
             return notification.error({
-                placement: "topRight",
+                placement: "top",
                 message: "Tidak dapat menyimpan diagnosa",
                 description: "Pasien BPJS tapi belum ada SEP.",
             });
@@ -305,8 +305,6 @@ export default function Index({
             window.removeEventListener("keydown", handleKeyDown);
         };
     }, [golbalSEP]);
-
-    console.log(golbalSEP);
 
     return (
         <Card title={`Diagnosa`}>
