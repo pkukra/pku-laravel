@@ -59,7 +59,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/diagnosa_idrg_set_primary/{id}', [PasienRujukanController::class, 'diagnosa_idrg_set_primary'])->name('rm.pasien-rujukan.diagnosa_idrg_set_primary');
         
         //idrg procedure
-        Route::get('/list_procedure_idrg/{kode_reg}', [PasienRujukanController::class, 'list_procedure_idrg'])->name('rm.pasien-rujukan.list_procedure_idrg');
+        Route::get('/list_procedure_idrg/{kode_reg}/{no_sep?}', [PasienRujukanController::class, 'list_procedure_idrg'])->name('rm.pasien-rujukan.list_procedure_idrg');
         Route::post('/cari_procedure_im', [PasienRujukanController::class, 'cari_procedure_im'])->name('rm.pasien-rujukan.cari_procedure_im');
         Route::post('/save-procedure-idrg', [PasienRujukanController::class, 'save_procedure_idrg'])->name('rm.pasien-rujukan.save_procedure_idrg');
         Route::delete('/procedure_idrg/{id}', [PasienRujukanController::class, 'delete_procedure_idrg'])->name('rm.pasien-rujukan.delete_procedure_idrg');

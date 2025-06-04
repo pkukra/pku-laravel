@@ -841,18 +841,24 @@ class PasienRujukanRepository
     /**
      * Get procedure IDRG penyakit by transaksi (PASIEN_TINDAKAN_IM)
      *
-     * @param string $no_transaksi
+     * @param string $no_transaksi, $no_sep
      * @return \Illuminate\Support\Collection
      */
-    public function getProcedureIDRGByTransaksi($no_transaksi)
+    public function getProcedureIDRGByTransaksi($no_transaksi, $no_sep)
     {
-        return DB::connection('sqlsrvsimrs')
+        $query = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_TINDAKAN_IM')
             ->join('ICD', 'PASIEN_TINDAKAN_IM.code', '=', 'ICD.code')
             ->select('PASIEN_TINDAKAN_IM.*', 'ICD.code', 'ICD.description')
-            ->orderBy('PASIEN_TINDAKAN_IM.is_primary', 'DESC')
-            ->where('PASIEN_TINDAKAN_IM.no_transaksi', $no_transaksi)
-            ->get();
+            ->orderBy('PASIEN_TINDAKAN_IM.is_primary', 'DESC');
+
+        if ($no_sep) {
+            $query->where('PASIEN_TINDAKAN_IM.no_sep', $no_sep);
+        } else {
+            $query->where('PASIEN_TINDAKAN_IM.no_transaksi', $no_transaksi);
+        }
+
+        return $query->get();
     }
 
     /**

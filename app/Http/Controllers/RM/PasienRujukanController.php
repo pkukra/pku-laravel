@@ -412,10 +412,10 @@ class PasienRujukanController extends Controller
      * list_procedure_idrg
      * Menampilkan procedure berdasarkan kode transaksi
      */
-    public function list_procedure_idrg($kode_reg)
+    public function list_procedure_idrg($kode_reg, $no_sep = null)
     {
         // Mendapatkan procedure berdasarkan kode transaksi
-        $procedure = $this->pasienRujukanRepo->getProcedureIDRGByTransaksi($kode_reg);
+        $procedure = $this->pasienRujukanRepo->getProcedureIDRGByTransaksi($kode_reg, $no_sep);
 
         return response()->json([
             'status' => "ok",

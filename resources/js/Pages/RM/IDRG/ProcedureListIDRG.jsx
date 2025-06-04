@@ -150,6 +150,7 @@ export default function Index({
             .get(
                 route("rm.pasien-rujukan.list_procedure_idrg", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: golbalSEP,
                 })
             )
             .then((response) => {
@@ -341,7 +342,6 @@ export default function Index({
 
     useEffect(() => {
         fetchProcedure();
-
         const handleKeyDown = (event) => {
             // Jika Shift + F2 ditekan, fokus ke input Autocomplete Procedure
             if (event.shiftKey && event.key === "F2") {
@@ -355,7 +355,7 @@ export default function Index({
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [golbalSEP]);
 
     return (
         <Card title={`Procedure`}>
