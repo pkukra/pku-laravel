@@ -389,10 +389,10 @@ class PasienRujukanRepository
             ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.code', 'ICD.description')
             ->orderBy('PASIEN_DIAGNOSA_IM.is_primary', 'DESC');
 
-        if (!$no_sep) {
-            $query->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi);
-        } else {
+        if ($no_sep) {
             $query->where('PASIEN_DIAGNOSA_IM.no_sep', $no_sep);
+        } else {
+            $query->where('PASIEN_DIAGNOSA_IM.no_transaksi', $no_transaksi);            
         }
 
         return $query->get();

@@ -52,7 +52,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::get('/list_all_raber/{no_sep}', [PasienRujukanController::class, 'list_all_raber'])->name('rm.pasien-rujukan.list_all_raber');
 
         //idrg diagnosa
-        Route::get('/list_diagnosa_idrg/{kode_reg}/{no_sep}', [PasienRujukanController::class, 'list_diagnosa_idrg'])->name('rm.pasien-rujukan.list_diagnosa_idrg');
+        Route::get('/list_diagnosa_idrg/{kode_reg}/{no_sep?}', [PasienRujukanController::class, 'list_diagnosa_idrg'])->name('rm.pasien-rujukan.list_diagnosa_idrg');
         Route::post('/cari_penyakit_im', [PasienRujukanController::class, 'cari_penyakit_im'])->name('rm.pasien-rujukan.cari_penyakit_im');
         Route::post('/save-diagnosa-idrg', [PasienRujukanController::class, 'save_diagnosa_idrg'])->name('rm.pasien-rujukan.save_diagnosa_idrg');
         Route::delete('/diagnosa_idrg/{id}', [PasienRujukanController::class, 'delete_diagnosa_idrg'])->name('rm.pasien-rujukan.delete_diagnosa_idrg');

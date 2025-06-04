@@ -39,7 +39,6 @@ export default function Index({
                     </>
                 );
             },
-            width: 100,
         },
         {
             title: "Penyakit",
@@ -106,7 +105,7 @@ export default function Index({
 
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
-    const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
+    const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(false); // Loading state
 
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {
@@ -280,9 +279,7 @@ export default function Index({
     const inputRefStatusDdiagnosa = useRef(null);
 
     useEffect(() => {
-        if (golbalSEP) {
-            fetchDiagnosa();
-        }
+        fetchDiagnosa();
         const handleKeyDown = (event) => {
             // Cek apakah Shift dan F1 ditekan bersamaan
             if (event.shiftKey && event.key === "F1") {
@@ -297,6 +294,8 @@ export default function Index({
             window.removeEventListener("keydown", handleKeyDown);
         };
     }, [golbalSEP]);
+
+    console.log(golbalSEP);
 
     return (
         <Card title={`Diagnosa`}>

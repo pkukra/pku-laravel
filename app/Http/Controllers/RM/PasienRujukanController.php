@@ -196,7 +196,7 @@ class PasienRujukanController extends Controller
      * list_diagnosa_idrg
      * Menampilkan diagnosa berdasarkan kode transaksi
      */
-    public function list_diagnosa_idrg($kode_reg, $no_sep = "")
+    public function list_diagnosa_idrg($kode_reg, $no_sep = null)
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
         $diagnosa = $this->pasienRujukanRepo->getDiagnosaIDRGByTransaksi($kode_reg, $no_sep);
