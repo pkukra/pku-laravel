@@ -20,18 +20,29 @@ export default function Index({ pasien, trigerFetchProcedure }) {
             title: "Kode",
             dataIndex: "MRTKD_TINDAKAN",
             key: "MRTKD_TINDAKAN",
-            width: "10%",
+            width: 30,
         },
         {
             title: "Tindakan",
             dataIndex: "FMI9KETERANGAN",
             key: "FMI9KETERANGAN",
-            width: "70%",
+            render: (text, record) => (
+                <>
+                    {text}
+                    {record.IS_ERROR == 1 && (
+                        <strong style={{ color: "red" }}>
+                            {" "}
+                            ({record.ERROR_MESSAGE})
+                        </strong>
+                    )}
+                </>
+            ),
         },
         {
             title: "Action",
             key: "action",
             align: "center",
+            width: 30,
             render: (_, record) => (
                 <Button
                     disabled={
