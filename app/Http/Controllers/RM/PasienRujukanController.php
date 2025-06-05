@@ -396,10 +396,10 @@ class PasienRujukanController extends Controller
      * list_procedure
      * Menampilkan procedure berdasarkan kode transaksi
      */
-    public function list_procedure($kode_reg)
+    public function list_procedure($kode_reg, $no_sep = null)
     {
         // Mendapatkan procedure berdasarkan kode transaksi
-        $procedure = $this->pasienRujukanRepo->getProcedureByTransaksi($kode_reg);
+        $procedure = $this->pasienRujukanRepo->getProcedureByTransaksi($kode_reg, $no_sep);
 
         return response()->json([
             'status' => "ok",

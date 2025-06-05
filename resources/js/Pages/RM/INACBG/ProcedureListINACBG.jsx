@@ -72,6 +72,7 @@ export default function Index({ pasien }) {
             .get(
                 route("rm.pasien-rujukan.list_procedure", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                 })
             )
             .then((response) => {
@@ -228,7 +229,10 @@ export default function Index({ pasien }) {
         <Card title={`Procedure`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={20}>
-                    <Tooltip title={"Shift+F2 untuk shortcut"} placement="topLeft">
+                    <Tooltip
+                        title={"Shift+F2 untuk shortcut"}
+                        placement="topLeft"
+                    >
                         <AutoComplete
                             ref={inputRefStatusProcedure}
                             allowClear
