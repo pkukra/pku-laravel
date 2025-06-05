@@ -45,7 +45,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::get('/get_resume/{kode_reg}', [PasienRujukanController::class, 'get_resume'])->name('rm.pasien-rujukan.get_resume');
         Route::get('/get_hasil_radiologi/{kode_reg}', [PasienRujukanController::class, 'get_hasil_radiologi'])->name('rm.pasien-rujukan.get_hasil_radiologi');
 
-        Route::get('/bridging_import_idrg_to_inacbg/{no_sep}', [PasienRujukanController::class, 'bridging_import_idrg_to_inacbg'])->name('rm.pasien-rujukan.bridging_import_idrg_to_inacbg');
+        Route::post('/bridging_import_idrg_to_inacbg/{no_sep}', [PasienRujukanController::class, 'bridging_import_idrg_to_inacbg'])->name('rm.pasien-rujukan.bridging_import_idrg_to_inacbg');
         Route::post('/bridging_data_process/{no_sep}', [PasienRujukanController::class, 'bridging_data_process'])->name('rm.pasien-rujukan.bridging_data_process');
         Route::post('/bridging_final_process/{no_sep}', [PasienRujukanController::class, 'bridging_final_process'])->name('rm.pasien-rujukan.bridging_final_process');
 

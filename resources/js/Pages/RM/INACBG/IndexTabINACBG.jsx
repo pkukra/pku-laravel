@@ -39,7 +39,7 @@ function Index({ pasien, golbalSEP }) {
             return notification.success({
                 placement: "topRight",
                 message: "Sukses!",
-                description: response?.data?.response?.metadata?.message,
+                description: "sukses mengimport data dari idrg",
             });
         } catch (error) {
             console.error("Error fetching data:", error);
