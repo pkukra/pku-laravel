@@ -213,8 +213,8 @@ function Index({ pasien }) {
                 )}
 
                 <p>
-                    Proses ini mengakibatkan prosedure yang tersimpan di inaCBG
-                    terganti dengan data idrg. apa setuju untuk melanjutkan?
+                    Proses ini mengakibatkan diagnosa & prosedure yang tersimpan di inaCBG
+                    terganti dengan data import dari idrg. Apakah setuju untuk melanjutkan?
                 </p>
             </Modal>
         </>
