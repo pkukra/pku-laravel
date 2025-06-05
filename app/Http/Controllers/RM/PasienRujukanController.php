@@ -181,11 +181,10 @@ class PasienRujukanController extends Controller
      * list_diagnosa
      * Menampilkan diagnosa berdasarkan kode transaksi
      */
-    public function list_diagnosa($kode_reg)
+    public function list_diagnosa($kode_reg, $no_sep = null)
     {
         // Mendapatkan diagnosa berdasarkan kode transaksi
-        $diagnosa = $this->pasienRujukanRepo->getDiagnosaByTransaksi($kode_reg);
-
+        $diagnosa = $this->pasienRujukanRepo->getDiagnosaByTransaksi($kode_reg, $no_sep);
         return response()->json([
             'status' => "ok",
             'data' => $diagnosa,

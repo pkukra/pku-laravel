@@ -15,27 +15,35 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, trigerFetchDiagnosa }) {
     const columns = [
         {
             title: "Status",
             dataIndex: "MRPSTAT_DIAG",
             key: "ID",
-        },
-        {
-            title: "Lama/Baru",
-            dataIndex: "MRPKASUS",
-            key: "ID",
+            width: 30,
         },
         {
             title: "Kode",
             dataIndex: "MRPKD_PENYAKIT",
             key: "MRPKD_PENYAKIT",
+            width: 30,
         },
         {
             title: "Penyakit",
             dataIndex: "PENYAKIT",
             key: "PENYAKIT",
+            render: (text, record) => (
+                <>
+                    {text}
+                    {record.IS_ERROR == 1 && (
+                        <strong style={{ color: "red" }}>
+                            {" "}
+                            ({record.ERROR_MESSAGE})
+                        </strong>
+                    )}
+                </>
+            ),
         },
         {
             title: "Action",
@@ -80,7 +88,8 @@ export default function Index({ pasien }) {
         axios
             .get(
                 route("rm.pasien-rujukan.list_diagnosa", {
-                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    kode_reg: pasien?.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                 })
             )
             .then((response) => {
@@ -221,7 +230,6 @@ export default function Index({ pasien }) {
 
     useEffect(() => {
         fetchDiagnosa();
-
         const handleKeyDown = (event) => {
             // Cek apakah Shift dan F1 ditekan bersamaan
             if (event.shiftKey && event.key === "F1") {
@@ -235,7 +243,7 @@ export default function Index({ pasien }) {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [trigerFetchDiagnosa]);
 
     return (
         <Card title={`Diagnosa`}>

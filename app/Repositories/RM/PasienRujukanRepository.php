@@ -368,19 +368,29 @@ class PasienRujukanRepository
     /**
      * Get diagnosa penyakit by transaksi (MR_PENYAKIT)
      *
-     * @param string $no_transaksi
+     * @param string $no_transaksi, $no_sep
      * @return \Illuminate\Support\Collection
      */
-    public function getDiagnosaByTransaksi($no_transaksi)
+    public function getDiagnosaByTransaksi($no_transaksi, $no_sep)
     {
-        return DB::connection('sqlsrvsimrs')
+        $query = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
-            ->join('PENYAKIT', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'PENYAKIT.KD_PENYAKIT')
+            ->leftJoin('ICD', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'ICD.code')
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
-            ->select('MR_PENYAKIT.*', 'PENYAKIT.PENYAKIT')
-            ->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi)
-            ->get();
+            ->select(
+                'MR_PENYAKIT.*',
+                'ICD.description as PENYAKIT',
+            );
+
+        if ($no_sep) {
+            $query->where('MR_PENYAKIT.NOSEP', $no_sep);
+        } else {
+            $query->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi);
+        }
+
+        return $query->get();
     }
+
 
     /**
      * Get diagnosa IDRG penyakit by transaksi (MR_PENYAKIT)
