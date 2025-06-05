@@ -5,10 +5,13 @@ import axios from "axios";
 import DiagnosaListINACBG from "./DiagnosaListINACBG";
 import ProcedureListINACBG from "./ProcedureListINACBG";
 
-function Index({ pasien, golbalSEP }) {
+function Index({ pasien }) {
     const [shouldRefetchData, setShouldReFetch] = useState(false);
     const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
     const [inacbgGroupData, setInacbgGroupData] = useState(null);
+
+    const [isDiagnosaHasErr, setDiagnosaHasErr] = useState(true); // ambil diagnosa error dari child komponen DiagnosaListINACBG
+    const [isProcedureHasErr, setProcedureHasErr] = useState(true); // ambil diagnosa error dari child komponen ProcedureListINACBG
 
     const [modalImportAndBridgeOpen, setModalImportAndBridgeOpen] =
         useState(false);
@@ -19,7 +22,7 @@ function Index({ pasien, golbalSEP }) {
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_import_idrg_to_inacbg", {
-                    no_sep: golbalSEP,
+                    no_sep: pasien?.FMNOSEP,
                 })
             );
 
@@ -65,10 +68,15 @@ function Index({ pasien, golbalSEP }) {
                     <DiagnosaListINACBG
                         pasien={pasien}
                         trigerFetchDiagnosa={shouldRefetchData}
+                        setDiagnosaHasErr={setDiagnosaHasErr}
                     />
                 </Col>
                 <Col span={12}>
-                    <ProcedureListINACBG pasien={pasien} trigerFetchProcedure={shouldRefetchData} />
+                    <ProcedureListINACBG
+                        pasien={pasien}
+                        trigerFetchProcedure={shouldRefetchData}
+                        setProcedureHasErr={setProcedureHasErr}
+                    />
                 </Col>
             </Row>
             <Row gutter={[5, 5]}>
@@ -140,7 +148,7 @@ function Index({ pasien, golbalSEP }) {
 
                     <Divider />
                     <Button
-                        disabled={golbalSEP ? false : true}
+                        disabled={pasien?.FMNOSEP ? false : true}
                         type="primary"
                         onClick={() => {
                             setModalImportAndBridgeOpen(true);
@@ -152,6 +160,19 @@ function Index({ pasien, golbalSEP }) {
                         }}
                     >
                         Import inaCBG
+                    </Button>
+
+                    <Button
+                        disabled={isDiagnosaHasErr || isProcedureHasErr}
+                        type="primary"
+                        onClick={() => {
+                            return;
+                        }}
+                        style={{
+                            marginRight: 5,
+                        }}
+                    >
+                        Grouping
                     </Button>
                 </Col>
             </Row>
@@ -183,9 +204,9 @@ function Index({ pasien, golbalSEP }) {
                 ]}
             >
                 <br />
-                {golbalSEP ? (
+                {pasien?.FMNOSEP ? (
                     <div>
-                        <strong>Nomor SEP:</strong> {golbalSEP}
+                        <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
                     </div>
                 ) : (
                     <strong>Belum ada data SEP</strong>

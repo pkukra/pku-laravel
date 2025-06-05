@@ -15,7 +15,11 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, trigerFetchDiagnosa }) {
+export default function Index({
+    pasien,
+    trigerFetchDiagnosa,
+    setDiagnosaHasErr,
+}) {
     const columns = [
         {
             title: "Status",
@@ -92,14 +96,26 @@ export default function Index({ pasien, trigerFetchDiagnosa }) {
                     no_sep: pasien?.FMNOSEP,
                 })
             )
-            .then((response) => {
+            .then(({ data }) => {
+                const diagnosaData = data?.data || [];
+
                 setSelectedDiagnosa(
-                    response.data.data.map((item) => item.MRPKD_PENYAKIT)
+                    diagnosaData.map((item) => item.MRPKD_PENYAKIT)
                 );
-                setDiagnosa(response?.data?.data || []); // Simpan data yang diterima ke dalam state
+                setDiagnosa(diagnosaData);
+                // Cek apakah ada data error
+                const hasError = diagnosaData.some(
+                    (item) => item.IS_ERROR == "1"
+                );
+
+                setDiagnosaHasErr(hasError); // Set state ke true jika ada error
+                if (hasError) {
+                    console.warn("Ditemukan diagnosa dengan error.");
+                }
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
+                setDiagnosaHasErr(true); // Set error juga jika request gagal
             })
             .finally(() => {
                 setLoadingFetchDiagnosa(false);

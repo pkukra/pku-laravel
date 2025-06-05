@@ -14,7 +14,11 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, trigerFetchProcedure }) {
+export default function Index({
+    pasien,
+    trigerFetchProcedure,
+    setProcedureHasErr,
+}) {
     const columns = [
         {
             title: "Kode",
@@ -86,11 +90,18 @@ export default function Index({ pasien, trigerFetchProcedure }) {
                     no_sep: pasien?.FMNOSEP,
                 })
             )
-            .then((response) => {
+            .then(({ data }) => {
+                const procedureData = data?.data || [];
                 setSelectedProcedure(
-                    response.data.data.map((item) => item.MRTKD_TINDAKAN)
+                    procedureData.map((item) => item.MRTKD_TINDAKAN)
                 );
-                setProcedure(response?.data?.data || []); // Simpan data yang diterima ke dalam state
+                setProcedure(procedureData);
+
+                // Cek apakah ada data error
+                const hasError = procedureData.some(
+                    (item) => item.IS_ERROR == "1"
+                );
+                setProcedureHasErr(hasError);
             })
             .catch((error) => {
                 console.error("Error fetching procedure data:", error);
