@@ -14,7 +14,7 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien }) {
+export default function Index({ pasien, trigerFetchProcedure }) {
     const columns = [
         {
             title: "Kode",
@@ -223,7 +223,7 @@ export default function Index({ pasien }) {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [trigerFetchProcedure]);
 
     return (
         <Card title={`Procedure`}>
