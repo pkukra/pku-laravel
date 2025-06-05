@@ -14,24 +14,39 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien }) {
+export default function Index({
+    pasien,
+    trigerFetchProcedure,
+    setProcedureHasErr,
+}) {
     const columns = [
         {
             title: "Kode",
             dataIndex: "MRTKD_TINDAKAN",
             key: "MRTKD_TINDAKAN",
-            width: "10%",
+            width: 30,
         },
         {
             title: "Tindakan",
             dataIndex: "FMI9KETERANGAN",
             key: "FMI9KETERANGAN",
-            width: "70%",
+            render: (text, record) => (
+                <>
+                    {text}
+                    {record.IS_ERROR == 1 && (
+                        <strong style={{ color: "red" }}>
+                            {" "}
+                            ({record.ERROR_MESSAGE})
+                        </strong>
+                    )}
+                </>
+            ),
         },
         {
             title: "Action",
             key: "action",
             align: "center",
+            width: 30,
             render: (_, record) => (
                 <Button
                     disabled={
@@ -72,13 +87,21 @@ export default function Index({ pasien }) {
             .get(
                 route("rm.pasien-rujukan.list_procedure", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                 })
             )
-            .then((response) => {
+            .then(({ data }) => {
+                const procedureData = data?.data || [];
                 setSelectedProcedure(
-                    response.data.data.map((item) => item.MRTKD_TINDAKAN)
+                    procedureData.map((item) => item.MRTKD_TINDAKAN)
                 );
-                setProcedure(response?.data?.data || []); // Simpan data yang diterima ke dalam state
+                setProcedure(procedureData);
+
+                // Cek apakah ada data error
+                const hasError = procedureData.some(
+                    (item) => item.IS_ERROR == "1"
+                );
+                setProcedureHasErr(hasError);
             })
             .catch((error) => {
                 console.error("Error fetching procedure data:", error);
@@ -222,13 +245,16 @@ export default function Index({ pasien }) {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [trigerFetchProcedure]);
 
     return (
         <Card title={`Procedure`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
                 <Col span={20}>
-                    <Tooltip title={"Shift+F2 untuk shortcut"} placement="topLeft">
+                    <Tooltip
+                        title={"Shift+F2 untuk shortcut"}
+                        placement="topLeft"
+                    >
                         <AutoComplete
                             ref={inputRefStatusProcedure}
                             allowClear

@@ -641,7 +641,7 @@ class PasienRujukanRepository
 
             // Catat audit trail
             $auditSuccess = $this->auditTrail->insert([
-                "object_id"  => $deletedDiagnosa->MRPNO_TRANSAKSI,
+                "object_id"  => ($deletedDiagnosa->NOSEP) ? $deletedDiagnosa->NOSEP : $deletedDiagnosa->MRPNO_TRANSAKSI,
                 "action_id"  => 2,
                 "user_email" => $user->email,
                 "user_id"    => $user->id,
@@ -846,18 +846,24 @@ class PasienRujukanRepository
     /**
      * Get procedure penyakit by transaksi (MR_TINDAKAN)
      *
-     * @param string $no_transaksi
+     * @param string $no_transaksi, $no_sep
      * @return \Illuminate\Support\Collection
      */
-    public function getProcedureByTransaksi($no_transaksi)
+    public function getProcedureByTransaksi($no_transaksi, $no_sep)
     {
-        return DB::connection('sqlsrvsimrs')
+        $query = DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
-            ->select('MR_TINDAKAN.*', 'MR_ICD9.FMI9KETERANGAN')
-            ->join('MR_ICD9', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'MR_ICD9.FMI9KODE')
-            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC')
-            ->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi)
-            ->get();
+            ->select('MR_TINDAKAN.*', 'ICD.description as FMI9KETERANGAN', 'ICD.description')
+            ->leftJoin('ICD', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'ICD.code')
+            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC');
+
+        if ($no_sep) {
+            $query->where('MR_TINDAKAN.NOSEP', $no_sep);
+        } else {
+            $query->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -1099,7 +1105,7 @@ class PasienRujukanRepository
 
             // Catat audit trail
             $auditSuccess = $this->auditTrail->insert([
-                "object_id"  => $deletedProcedure->MRTNOTRANSAKSI,
+                "object_id"  => ($deletedProcedure->NOSEP) ? $deletedProcedure->NOSEP : $deletedProcedure->MRTNOTRANSAKSI,
                 "action_id"  => 4,
                 "user_email" => $user->email,
                 "user_id"    => $user->id,

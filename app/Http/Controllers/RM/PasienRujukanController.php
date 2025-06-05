@@ -396,10 +396,10 @@ class PasienRujukanController extends Controller
      * list_procedure
      * Menampilkan procedure berdasarkan kode transaksi
      */
-    public function list_procedure($kode_reg)
+    public function list_procedure($kode_reg, $no_sep = null)
     {
         // Mendapatkan procedure berdasarkan kode transaksi
-        $procedure = $this->pasienRujukanRepo->getProcedureByTransaksi($kode_reg);
+        $procedure = $this->pasienRujukanRepo->getProcedureByTransaksi($kode_reg, $no_sep);
 
         return response()->json([
             'status' => "ok",
@@ -834,6 +834,16 @@ class PasienRujukanController extends Controller
     public function list_all_raber($no_sep)
     {
         $data = $this->pasienRujukanRepo->listAllRaber($no_sep);
+        return response()->json($data);
+    }
+
+    /**
+     * grouping_inacbg_stage_satu
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function grouping_inacbg_stage_satu($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageSatu($no_sep);
         return response()->json($data);
     }
 }
