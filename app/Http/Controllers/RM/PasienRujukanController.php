@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use App\Repositories\RM\PasienRujukanRepository;
 use App\Repositories\RM\PasienRujukanEklaimRepository;
+use Illuminate\Support\Facades\Log;
 
 class PasienRujukanController extends Controller
 {
@@ -58,7 +59,8 @@ class PasienRujukanController extends Controller
             $per_page,
             $kode_poly,
             $kode_dokter,
-            $no_rm, $is_inacbg_final
+            $no_rm,
+            $is_inacbg_final
         );
 
         return response()->json([
@@ -515,5 +517,53 @@ class PasienRujukanController extends Controller
     {
         $data = $this->bridgingEKlaimRepo->bridgingFinalProcess($no_sep);
         return response()->json($data);
+    }
+
+
+    /**
+     * bridging_final_process
+     * Process bridging data ke eklaim
+     */
+    public function fix_data(Request $request)
+    {
+        return view('fix_data');
+        $data = $this->bridgingEKlaimRepo->bridgingDataProcess($no_sep);
+        $data = $this->bridgingEKlaimRepo->bridgingFinalProcess($no_sep);
+        return response()->json($data);
+    }
+
+    public function fix_data_process(Request $request)
+    {
+        set_time_limit(3000); // naikkan waktu eksekusi jadi 5 menit
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        $path = $request->file('csv_file')->getRealPath();
+        $file = fopen($path, 'r');
+
+        $line = fgetcsv($file);
+        fclose($file);
+
+        if (!$line) {
+            return redirect()->route('fix-data.form')->with('error', 'File CSV kosong atau format tidak sesuai.');
+        }
+
+        $allData = $line[0];
+
+        // Debug: cek string sebenarnya dengan pembatas
+
+        // Pecah berdasarkan semua jenis whitespace (spasi, tab, newline)
+        $items = preg_split('/\s+/', trim($allData));
+
+
+        // Proses tiap item
+        foreach ($items as $item) {
+            $this->bridgingEKlaimRepo->bridgingDataProcess($item);
+            $this->bridgingEKlaimRepo->bridgingFinalProcess($item);
+            echo "Proses untuk item: $item selesai.<br>";
+        }
+
+        // return redirect()->route('fix-data.form')->with('success', 'CSV uploaded and processed successfully.');
     }
 }

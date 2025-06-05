@@ -47,6 +47,9 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])-
 
         Route::post('/bridging_data_process/{no_sep}', [PasienRujukanController::class, 'bridging_data_process'])->name('rm.pasien-rujukan.bridging_data_process');
         Route::post('/bridging_final_process/{no_sep}', [PasienRujukanController::class, 'bridging_final_process'])->name('rm.pasien-rujukan.bridging_final_process');
+
+        Route::get('/fix-data', [PasienRujukanController::class, 'fix_data'])->name('fix-data.form');
+        Route::post('/fix-data', [PasienRujukanController::class, 'fix_data_process'])->name('fix-data.upload');
     });
 
     Route::prefix('pasien-inap')->group(function () {
