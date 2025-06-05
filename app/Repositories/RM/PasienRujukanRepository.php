@@ -641,7 +641,7 @@ class PasienRujukanRepository
 
             // Catat audit trail
             $auditSuccess = $this->auditTrail->insert([
-                "object_id"  => $deletedDiagnosa->MRPNO_TRANSAKSI,
+                "object_id"  => ($deletedDiagnosa->NOSEP) ? $deletedDiagnosa->NOSEP : $deletedDiagnosa->MRPNO_TRANSAKSI,
                 "action_id"  => 2,
                 "user_email" => $user->email,
                 "user_id"    => $user->id,
