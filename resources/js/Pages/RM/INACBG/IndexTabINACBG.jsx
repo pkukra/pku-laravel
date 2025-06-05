@@ -17,6 +17,8 @@ function Index({ pasien }) {
         useState(false);
     const [importAndBridgeLoading, setImportAndBridgeLoading] = useState(false);
 
+    const [modalGroupingSatuOpen, setModalGroupingSatuOpen] = useState(false);
+
     const handleImportAndBridgingData = async () => {
         setImportAndBridgeLoading(true);
         try {
@@ -51,6 +53,41 @@ function Index({ pasien }) {
             setShouldReFetch((prev) => !prev);
             setImportAndBridgeLoading(false);
             setModalImportAndBridgeOpen(false);
+        }
+    };
+    
+    const handleGroupingStageSatu = async () => {
+        setImportAndBridgeLoading(true);
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.grouping_inacbg_stage_satu", {
+                    no_sep: pasien?.FMNOSEP,
+                })
+            );
+
+            if (response?.data?.status === "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.error,
+                });
+            }
+
+            if (response?.data?.response?.metadata?.code != 200) {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.response?.metadata?.message,
+                });
+            }
+
+            return notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: "Sukses grouping stage satu inaCBG",
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setModalGroupingSatuOpen(false)
         }
     };
 
@@ -166,6 +203,7 @@ function Index({ pasien }) {
                         disabled={isDiagnosaHasErr || isProcedureHasErr}
                         type="primary"
                         onClick={() => {
+                            setModalGroupingSatuOpen(true);
                             return;
                         }}
                         style={{
@@ -213,9 +251,49 @@ function Index({ pasien }) {
                 )}
 
                 <p>
-                    Proses ini mengakibatkan diagnosa & prosedure yang tersimpan di inaCBG
-                    terganti dengan data import dari idrg. Apakah setuju untuk melanjutkan?
+                    Proses ini mengakibatkan diagnosa & prosedure yang tersimpan
+                    di inaCBG terganti dengan data import dari idrg. Apakah
+                    setuju untuk melanjutkan?
                 </p>
+            </Modal>
+
+            <Modal
+                closable={false}
+                open={modalGroupingSatuOpen}
+                title="Grouping InaCBG Stage Satu"
+                onCancel={() => setModalGroupingSatuOpen(false)}
+                footer={[
+                    <Button
+                        disabled={importAndBridgeLoading}
+                        loading={importAndBridgeLoading}
+                        key="back"
+                        onClick={() => setModalGroupingSatuOpen(false)}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        loading={false}
+                        disabled={false}
+                        key="submit"
+                        type="primary"
+                        onClick={() => {
+                            handleGroupingStageSatu();
+                            return;
+                        }}
+                        style={{ backgroundColor: " #33cc33" }}
+                    >
+                        Ok, Grouping InaCBG Stage Satu
+                    </Button>,
+                ]}
+            >
+                <br />
+                {pasien?.FMNOSEP ? (
+                    <div>
+                        <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                    </div>
+                ) : (
+                    <strong>Belum ada data SEP</strong>
+                )}
             </Modal>
         </>
     );

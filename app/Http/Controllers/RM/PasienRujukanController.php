@@ -836,4 +836,14 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->listAllRaber($no_sep);
         return response()->json($data);
     }
+
+    /**
+     * grouping_inacbg_stage_satu
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function grouping_inacbg_stage_satu($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageSatu($no_sep);
+        return response()->json($data);
+    }
 }

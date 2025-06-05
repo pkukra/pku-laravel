@@ -732,12 +732,14 @@ class PasienRujukanEklaimRepository
     {
         $diagnoses_array = [];
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $diagnosa = DB::connection('sqlsrvsimrs')
-                ->table('MR_PENYAKIT')
-                ->where('MRPNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
-                ->pluck('MRPKD_PENYAKIT') // Mengambil hanya kolom MRPKD_PENYAKIT sebagai array
-                ->toArray(); // Konversi ke array PHP
-
+            $diagnosaQ = DB::connection('sqlsrvsimrs')
+                ->table('MR_PENYAKIT');
+            if ($pasien_rujukan->FMNOSEP) {
+                $diagnosaQ->where('NOSEP', '=', $pasien_rujukan->FMNOSEP);
+            } else {
+                $diagnosaQ->where('MRPNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ);
+            }
+            $diagnosa = $diagnosaQ->pluck('MRPKD_PENYAKIT')->toArray();
             $diagnoses_array = array_merge($diagnoses_array, $diagnosa); // Gabungkan hasil query ke array utama
         }
 
@@ -754,12 +756,14 @@ class PasienRujukanEklaimRepository
     {
         $tindakan_array = [];
         foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $tindakan = DB::connection('sqlsrvsimrs')
-                ->table('MR_TINDAKAN')
-                ->where('MRTNOTRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ)
-                ->pluck('MRTKD_TINDAKAN') // Mengambil hanya kolom MRTKD_TINDAKAN sebagai array
-                ->toArray(); // Konversi ke array PHP
-
+            $tindakanQ = DB::connection('sqlsrvsimrs')
+                ->table('MR_TINDAKAN');
+            if ($pasien_rujukan->FMNOSEP) {
+                $tindakanQ = $tindakanQ->where('NOSEP', '=', $pasien_rujukan->FMNOSEP);
+            } else {
+                $tindakanQ = $tindakanQ->where('MRTNOTRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ);
+            }
+            $tindakan = $tindakanQ->pluck('MRTKD_TINDAKAN')->toArray(); // Konversi ke array PHP
             $tindakan_array = array_merge($tindakan_array, $tindakan); // Gabungkan hasil query ke array utama
         }
         return implode('#', array_unique($tindakan_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
@@ -1136,6 +1140,53 @@ class PasienRujukanEklaimRepository
                 ];
             }
         }
+        return $response;
+    }
+
+    /**
+     * Process bridgingEditUlangIDRG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingGroupingInaStageSatu($no_sep)
+    {
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return false;
+        }
+
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $data = json_encode([
+            "metadata" => [
+                "method" => "inacbg_diagnosa_set",
+                "nomor_sep" => $no_sep,
+            ],
+            "data" => ["diagnosa" => $this->getAllDiagnosa($semua_transaksi)]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        sendRequest($key, $data);
+
+        $data_proc = json_encode([
+            "metadata" => [
+                "method" => "inacbg_procedure_set",
+                "nomor_sep" => $no_sep,
+            ],
+            "data" => ["procedure" => $this->getAllProcedure($semua_transaksi)]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        sendRequest($key, $data_proc);
+
+        $data = json_encode([
+            "metadata" => [
+                "method" => "grouper",
+                "grouper" => "inacbg",
+                "stage" => 1,
+            ],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+
         return $response;
     }
 }
