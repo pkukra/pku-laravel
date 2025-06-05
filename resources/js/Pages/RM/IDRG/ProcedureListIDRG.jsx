@@ -15,7 +15,11 @@ import {
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
+export default function Index({
+    pasien,
+    isFinalIDRG,
+    fetchIDRGData,
+}) {
     const columns = [
         {
             title: "Kode",
@@ -145,6 +149,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
             .get(
                 route("rm.pasien-rujukan.list_procedure_idrg", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                 })
             )
             .then((response) => {
@@ -203,16 +208,26 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
 
     // Function to save procedure
     const saveProcedure = async () => {
+        if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !pasien?.FMNOSEP) {
+            return notification.error({
+                placement: "top",
+                message: "Tidak dapat menyimpan diagnosa",
+                description: "Pasien BPJS tapi belum ada SEP.",
+            });
+        }
         setLoadingSaveDiag(true);
+        const payload = {
+            code: selectedProcedureForm,
+            pasien_id: pasien.FRPPASIEN_ID,
+            multiplicity: multiplicityForm,
+            ...(pasien?.FMNOSEP
+                ? { no_sep: pasien?.FMNOSEP }
+                : { no_transaksikj: pasien?.FRPNOTRANSAKSIKJ }),
+        };
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_procedure_idrg"),
-                {
-                    code: selectedProcedureForm,
-                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    pasien_id: pasien.FRPPASIEN_ID,
-                    multiplicity: multiplicityForm,
-                }
+                payload
             );
 
             if (response?.data?.status == "ok") {
@@ -326,7 +341,6 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
 
     useEffect(() => {
         fetchProcedure();
-
         const handleKeyDown = (event) => {
             // Jika Shift + F2 ditekan, fokus ke input Autocomplete Procedure
             if (event.shiftKey && event.key === "F2") {
@@ -340,7 +354,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [pasien]);
 
     return (
         <Card title={`Procedure`}>

@@ -38,7 +38,6 @@ export default function Index({
                     </>
                 );
             },
-            width: 100,
         },
         {
             title: "Penyakit",
@@ -105,7 +104,7 @@ export default function Index({
 
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
-    const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
+    const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(false); // Loading state
 
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {
@@ -114,6 +113,7 @@ export default function Index({
             .get(
                 route("rm.pasien-rujukan.list_diagnosa_idrg", {
                     kode_reg: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                 })
             )
             .then((response) => {
@@ -174,15 +174,26 @@ export default function Index({
 
     // Function to save diagnosa
     const saveDiagnosa = async () => {
+        if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !pasien?.FMNOSEP) {
+            return notification.error({
+                placement: "top",
+                message: "Tidak dapat menyimpan diagnosa",
+                description: "Pasien BPJS tapi belum ada SEP.",
+            });
+        }
         setLoadingSaveDiag(true);
+        const payload = {
+            code: selectedDiagnosaForm,
+            pasien_id: pasien.FRPPASIEN_ID,
+            ...(pasien?.FMNOSEP
+                ? { no_sep: pasien?.FMNOSEP }
+                : { no_transaksikj: pasien?.FRPNOTRANSAKSIKJ }),
+        };
+
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_diagnosa_idrg"),
-                {
-                    code: selectedDiagnosaForm,
-                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    pasien_id: pasien.FRPPASIEN_ID,
-                }
+                payload
             );
 
             if (response?.data?.status === "ok") {
@@ -279,7 +290,6 @@ export default function Index({
 
     useEffect(() => {
         fetchDiagnosa();
-
         const handleKeyDown = (event) => {
             // Cek apakah Shift dan F1 ditekan bersamaan
             if (event.shiftKey && event.key === "F1") {
@@ -293,7 +303,7 @@ export default function Index({
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [pasien]);
 
     return (
         <Card title={`Diagnosa`}>

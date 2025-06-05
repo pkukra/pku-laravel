@@ -6,6 +6,7 @@ import DiagnosaListINACBG from "./DiagnosaListINACBG";
 import ProcedureListINACBG from "./ProcedureListINACBG";
 
 function Index({ pasien, golbalSEP }) {
+    const [shouldFetchDiagnosa, setShouldFetchDiagnosa] = useState(false);
     const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
     const [inacbgGroupData, setInacbgGroupData] = useState(null);
 
@@ -39,11 +40,12 @@ function Index({ pasien, golbalSEP }) {
             return notification.success({
                 placement: "topRight",
                 message: "Sukses!",
-                description: response?.data?.response?.metadata?.message,
+                description: "sukses mengimport data dari idrg",
             });
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
+            setShouldFetchDiagnosa((prev) => !prev);
             setImportAndBridgeLoading(false);
             setModalImportAndBridgeOpen(false);
         }
@@ -60,7 +62,10 @@ function Index({ pasien, golbalSEP }) {
             </p>
             <Row gutter={[5, 5]}>
                 <Col span={12}>
-                    <DiagnosaListINACBG pasien={pasien} />
+                    <DiagnosaListINACBG
+                        pasien={pasien}
+                        trigerFetchDiagnosa={shouldFetchDiagnosa}
+                    />
                 </Col>
                 <Col span={12}>
                     <ProcedureListINACBG pasien={pasien} />

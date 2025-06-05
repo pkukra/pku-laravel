@@ -5,7 +5,7 @@ import axios from "axios";
 import DiagnosaListIDRG from "./DiagnosaListIDRG";
 import ProcedureListIDRG from "./ProcedureListIDRG";
 
-function Index({ pasien, golbalSEP, setDisableINACBG }) {
+function Index({ pasien, setDisableINACBG }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [diagnosaTab, setDiagnosaTab] = useState([]);
@@ -23,7 +23,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_data_idrg", {
-                    no_sep: golbalSEP,
+                    no_sep: pasien?.FMNOSEP,
                 })
             );
 
@@ -60,7 +60,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_final_idrg", {
-                    no_sep: golbalSEP,
+                    no_sep: pasien?.FMNOSEP,
                 })
             );
 
@@ -97,7 +97,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.edit_ulang_idrg", {
-                    no_sep: golbalSEP,
+                    no_sep: pasien?.FMNOSEP,
                 })
             );
 
@@ -134,7 +134,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
         axios
             .get(
                 route("rm.pasien-rujukan.get_idrg_group_data", {
-                    kode_reg_kj: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                 })
             )
             .then((response) => {
@@ -182,8 +182,10 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
     };
 
     useEffect(() => {
-        fetchIDRGData();
-    }, []);
+        if (pasien?.FMNOSEP) {
+            fetchIDRGData();
+        }
+    }, [pasien?.FMNOSEP]);
 
     useEffect(() => {
         const isFinal = idrgGroupData?.is_final == "1";
@@ -232,7 +234,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                         >
                             <tbody>
                                 <tr>
-                                    <td style={{ width: "15%" }}>
+                                    <td style={{ width: "20%" }}>
                                         Status Grouping
                                     </td>
                                     <td>
@@ -244,9 +246,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style={{ width: "15%" }}>
-                                        Status Final
-                                    </td>
+                                    <td>Status Final</td>
                                     <td>
                                         {isFinalIDRG ? (
                                             <strong>Sudah Final</strong>
@@ -256,7 +256,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style={{ width: "15%" }}>MDC Number</td>
+                                    <td>MDC Number</td>
                                     <td>{eklaim_group_data?.mdc_number}</td>
                                 </tr>
                                 <tr>
@@ -340,7 +340,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                         Cancel
                     </Button>,
                     <Button
-                        disabled={golbalSEP !== null ? false : true}
+                        disabled={pasien?.FMNOSEP !== null ? false : true}
                         key="submit"
                         type="primary"
                         loading={bridgingLoading}
@@ -351,10 +351,10 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                     </Button>,
                 ]}
             >
-                {golbalSEP ? (
+                {pasien?.FMNOSEP ? (
                     <div>
                         <p>
-                            <strong>Nomor SEP:</strong> {golbalSEP}
+                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
                         </p>
                     </div>
                 ) : (
@@ -376,7 +376,7 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                         Cancel
                     </Button>,
                     <Button
-                        disabled={golbalSEP !== null ? false : true}
+                        disabled={pasien?.FMNOSEP !== null ? false : true}
                         key="submit"
                         type="primary"
                         loading={finalLoading}
@@ -387,10 +387,10 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                     </Button>,
                 ]}
             >
-                {golbalSEP ? (
+                {pasien?.FMNOSEP ? (
                     <div>
                         <p>
-                            <strong>Nomor SEP:</strong> {golbalSEP}
+                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
                         </p>
                     </div>
                 ) : (
@@ -424,10 +424,10 @@ function Index({ pasien, golbalSEP, setDisableINACBG }) {
                     </Button>,
                 ]}
             >
-                {golbalSEP ? (
+                {pasien?.FMNOSEP ? (
                     <div>
                         <p>
-                            <strong>Nomor SEP:</strong> {golbalSEP}
+                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
                         </p>
                     </div>
                 ) : (

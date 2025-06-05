@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button, Skeleton  } from "antd";
 
-export default function Index({ pasien }) {
+export default function Index({ dataTransaksi }) {
     const [modalIMROpen, setModalIMROpen] = useState(false);
     const [loadingPdf, setLoadingPdf] = useState(true); // Tambahkan state loading
 
@@ -36,7 +36,7 @@ export default function Index({ pasien }) {
 
                 {/* PDF Viewer */}
                 <iframe
-                    src={`http://10.10.10.10/emr/index.php/rm/rawat_jalan_no_auth/irm/${pasien?.FRPNOTRANSAKSI}/${pasien?.FRPPASIEN_ID}`}
+                    src={`http://10.10.10.10/emr/index.php/rm/rawat_jalan_no_auth/irm/${dataTransaksi?.FRPNOTRANSAKSI}/${dataTransaksi?.FRPPASIEN_ID}`}
                     width="100%"
                     height="600px"
                     style={{

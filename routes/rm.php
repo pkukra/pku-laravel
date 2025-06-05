@@ -25,7 +25,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::get('/get_kunjungan_pasien/{kode_reg}/', [PasienRujukanController::class, 'get_kunjungan_pasien'])->name('rm.pasien-rujukan.get_kunjungan_pasien');
         Route::put('/update_nomer_sep/{kode_reg}/{kode_reg_kj}', [PasienRujukanController::class, 'update_nomer_sep'])->name('rm.pasien-rujukan.update_nomer_sep');
 
-        Route::get('/list_diagnosa/{kode_reg}', [PasienRujukanController::class, 'list_diagnosa'])->name('rm.pasien-rujukan.list_diagnosa');
+        Route::get('/list_diagnosa/{kode_reg}/{no_sep?}', [PasienRujukanController::class, 'list_diagnosa'])->name('rm.pasien-rujukan.list_diagnosa');
         Route::post('/cari_penyakit', [PasienRujukanController::class, 'cari_penyakit'])->name('rm.pasien-rujukan.cari_penyakit');
         Route::post('/save-diagnosa', [PasienRujukanController::class, 'save_diagnosa'])->name('rm.pasien-rujukan.save_diagnosa');
         Route::delete('/diagnosa/{id}', [PasienRujukanController::class, 'delete_diagnosa'])->name('rm.pasien-rujukan.delete_diagnosa');
@@ -45,19 +45,21 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::get('/get_resume/{kode_reg}', [PasienRujukanController::class, 'get_resume'])->name('rm.pasien-rujukan.get_resume');
         Route::get('/get_hasil_radiologi/{kode_reg}', [PasienRujukanController::class, 'get_hasil_radiologi'])->name('rm.pasien-rujukan.get_hasil_radiologi');
 
-        Route::get('/bridging_import_idrg_to_inacbg/{no_sep}', [PasienRujukanController::class, 'bridging_import_idrg_to_inacbg'])->name('rm.pasien-rujukan.bridging_import_idrg_to_inacbg');
+        Route::post('/bridging_import_idrg_to_inacbg/{no_sep}', [PasienRujukanController::class, 'bridging_import_idrg_to_inacbg'])->name('rm.pasien-rujukan.bridging_import_idrg_to_inacbg');
         Route::post('/bridging_data_process/{no_sep}', [PasienRujukanController::class, 'bridging_data_process'])->name('rm.pasien-rujukan.bridging_data_process');
         Route::post('/bridging_final_process/{no_sep}', [PasienRujukanController::class, 'bridging_final_process'])->name('rm.pasien-rujukan.bridging_final_process');
 
+        Route::get('/list_all_raber/{no_sep}', [PasienRujukanController::class, 'list_all_raber'])->name('rm.pasien-rujukan.list_all_raber');
+
         //idrg diagnosa
-        Route::get('/list_diagnosa_idrg/{kode_reg}', [PasienRujukanController::class, 'list_diagnosa_idrg'])->name('rm.pasien-rujukan.list_diagnosa_idrg');
+        Route::get('/list_diagnosa_idrg/{kode_reg}/{no_sep?}', [PasienRujukanController::class, 'list_diagnosa_idrg'])->name('rm.pasien-rujukan.list_diagnosa_idrg');
         Route::post('/cari_penyakit_im', [PasienRujukanController::class, 'cari_penyakit_im'])->name('rm.pasien-rujukan.cari_penyakit_im');
         Route::post('/save-diagnosa-idrg', [PasienRujukanController::class, 'save_diagnosa_idrg'])->name('rm.pasien-rujukan.save_diagnosa_idrg');
         Route::delete('/diagnosa_idrg/{id}', [PasienRujukanController::class, 'delete_diagnosa_idrg'])->name('rm.pasien-rujukan.delete_diagnosa_idrg');
         Route::post('/diagnosa_idrg_set_primary/{id}', [PasienRujukanController::class, 'diagnosa_idrg_set_primary'])->name('rm.pasien-rujukan.diagnosa_idrg_set_primary');
         
         //idrg procedure
-        Route::get('/list_procedure_idrg/{kode_reg}', [PasienRujukanController::class, 'list_procedure_idrg'])->name('rm.pasien-rujukan.list_procedure_idrg');
+        Route::get('/list_procedure_idrg/{kode_reg}/{no_sep?}', [PasienRujukanController::class, 'list_procedure_idrg'])->name('rm.pasien-rujukan.list_procedure_idrg');
         Route::post('/cari_procedure_im', [PasienRujukanController::class, 'cari_procedure_im'])->name('rm.pasien-rujukan.cari_procedure_im');
         Route::post('/save-procedure-idrg', [PasienRujukanController::class, 'save_procedure_idrg'])->name('rm.pasien-rujukan.save_procedure_idrg');
         Route::delete('/procedure_idrg/{id}', [PasienRujukanController::class, 'delete_procedure_idrg'])->name('rm.pasien-rujukan.delete_procedure_idrg');
@@ -66,7 +68,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
 
 
         //per-finalan IDRG
-        Route::get('/get_idrg_group_data/{kode_reg_kj}', [PasienRujukanController::class, 'get_idrg_group_data'])->name('rm.pasien-rujukan.get_idrg_group_data');
+        Route::get('/get_idrg_group_data/{no_sep}', [PasienRujukanController::class, 'get_idrg_group_data'])->name('rm.pasien-rujukan.get_idrg_group_data');
         Route::post('/bridging_data_idrg/{no_sep}', [PasienRujukanController::class, 'bridging_data_idrg'])->name('rm.pasien-rujukan.bridging_data_idrg');
         Route::post('/bridging_final_idrg/{no_sep}', [PasienRujukanController::class, 'bridging_final_idrg'])->name('rm.pasien-rujukan.bridging_final_idrg');
         Route::post('/edit_ulang_idrg/{no_sep}', [PasienRujukanController::class, 'edit_ulang_idrg'])->name('rm.pasien-rujukan.edit_ulang_idrg');
