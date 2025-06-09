@@ -183,6 +183,35 @@ function Index({ pasien }) {
         return formatted;
     };
 
+    const disableGrupButton = () => {
+        if (isDiagnosaHasErr || isProcedureHasErr) {
+            return true; // Disable if there are errors in diagnosa or procedure
+        }
+        if (isFinalINACBG) {
+            return true; // Disable if already finalized
+        }
+        if (
+            pasien.FRPCUSTOMER_ID != "X002" &&
+            pasien.FRPCUSTOMER_ID != "X003"
+        ) {
+            return true; // Disable jika bukan X002 atau X003
+        }
+        return false; // Enable otherwise
+    };
+
+    const disableFinalButton = () => {
+        if (isFinalINACBG) {
+            return true; // Disable if already finalized
+        }
+        if (incabg_group_data?.cbg?.code?.charAt(0).toUpperCase() === "X") {
+            return true;
+        }
+        if (incabg_group_data === null) {
+            return true;
+        }
+        return false; // Enable otherwise
+    };
+
     return (
         <>
             <p>
@@ -280,7 +309,7 @@ function Index({ pasien }) {
                                     >
                                         {incabg_group_data?.special_cmg?.map(
                                             (item) => (
-                                                <p>
+                                                <p key={item?.code}>
                                                     {item?.code} | Rp.{" "}
                                                     {RupiahFormat(item?.tariff)}{" "}
                                                     | {item?.description}
@@ -371,7 +400,7 @@ function Index({ pasien }) {
                                         </th>
                                     </tr>
                                     {special_cmg_option.map((item) => (
-                                        <tr>
+                                        <tr key={item?.code}>
                                             <td
                                                 style={{
                                                     verticalAlign: "top",
@@ -436,7 +465,7 @@ function Index({ pasien }) {
                     </Button>
 
                     <Button
-                        disabled={isDiagnosaHasErr || isProcedureHasErr}
+                        disabled={disableGrupButton()}
                         type="primary"
                         onClick={() => {
                             setModalGroupingSatuOpen(true);
@@ -451,8 +480,8 @@ function Index({ pasien }) {
 
                     <Button
                         disabled={
-                            isDiagnosaHasErr ||
-                            isProcedureHasErr ||
+                            disableGrupButton() ||
+                            // tambhan karena stage 2 untuk top up, tentunya jika topup kosong maka disable
                             special_cmg_option.length == 0 ||
                             selectedCmgOption.length == 0
                         }
@@ -467,6 +496,29 @@ function Index({ pasien }) {
                     >
                         Grouping Stage-2
                     </Button>
+
+                    {!isFinalINACBG ? (
+                        <Button
+                            type="primary"
+                            onClick={() => {
+                                return;
+                            }}
+                            disabled={disableFinalButton()}
+                            style={{ backgroundColor: " #cc66ff" }}
+                        >
+                            Final Data
+                        </Button>
+                    ) : (
+                        <Button
+                            color="danger"
+                            variant="solid"
+                            onClick={() => {
+                                return;
+                            }}
+                        >
+                            Edit Ulang iDRG
+                        </Button>
+                    )}
                 </Col>
             </Row>
 
@@ -588,7 +640,6 @@ function Index({ pasien }) {
                 ) : (
                     <strong>Belum ada data SEP</strong>
                 )}
-
                 <br />
                 Selected Special CMG
                 <br />
