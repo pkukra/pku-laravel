@@ -478,6 +478,7 @@ class PasienRujukanRepository
     {
         $user = Auth::user();
         $no_transaksikj = $data['no_transaksikj'];
+        $no_sep = $data['no_sep'];
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
 
@@ -493,7 +494,8 @@ class PasienRujukanRepository
 
         $data_to_save = [
             'MRPKD_PENYAKIT' => $data['icd10_code'],
-            'MRPNO_TRANSAKSI' => $no_transaksikj,
+            'NOSEP' => ($no_sep) ? $no_sep : null,
+            'MRPNO_TRANSAKSI' => ($no_transaksikj) ? $no_transaksikj : null,
             'MRPKD_PASIEN' => $data['no_rm'],
             'MRPKD_UNIT' => $data['kd_unit'],
             'MRPTGL_MASUK' => $tgl_masuk,
@@ -512,13 +514,20 @@ class PasienRujukanRepository
                 ->insert($data_to_save);
 
             $isrecorded = $this->auditTrail->insert([
-                "object_id" => $no_transaksikj,
+                "object_id" => ($no_sep) ? $no_sep : $no_transaksikj,
                 "action_id" => 1,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
                 "created_at" => $now,
                 "data" => $data_to_save,
             ]);
+
+            if ($no_sep) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->delete();
+            }
 
             if (!$isrecorded) {
                 DB::connection('sqlsrvsimrs')->rollBack();
@@ -637,6 +646,13 @@ class PasienRujukanRepository
             if (!$deleted) {
                 $conn->rollBack();
                 return false;
+            }
+
+            if ($deletedDiagnosa->NOSEP) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $deletedDiagnosa->NOSEP)
+                    ->delete();
             }
 
             // Catat audit trail

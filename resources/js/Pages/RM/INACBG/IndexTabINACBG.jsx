@@ -92,6 +92,7 @@ function Index({ pasien }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
+            fetchINACBGData();
             setModalGroupingSatuOpen(false);
             setGrupingLoading(false);
         }
@@ -209,7 +210,7 @@ function Index({ pasien }) {
         if (incabg_group_data?.cbg?.code?.charAt(0).toUpperCase() === "X") {
             return true;
         }
-        if (incabg_group_data === null) {
+        if (!inacbgGroupData?.hasOwnProperty("id")) {
             return true;
         }
         return false; // Enable otherwise
@@ -226,6 +227,7 @@ function Index({ pasien }) {
                         pasien={pasien}
                         trigerFetchDiagnosa={shouldRefetchData}
                         setDiagnosaHasErr={setDiagnosaHasErr}
+                        fetchINACBGData={fetchINACBGData}
                     />
                 </Col>
                 <Col span={12}>
@@ -233,6 +235,7 @@ function Index({ pasien }) {
                         pasien={pasien}
                         trigerFetchProcedure={shouldRefetchData}
                         setProcedureHasErr={setProcedureHasErr}
+                        fetchINACBGData={fetchINACBGData}
                     />
                 </Col>
             </Row>
@@ -326,7 +329,7 @@ function Index({ pasien }) {
                                     <td>
                                         Rp{" "}
                                         {RupiahFormat(
-                                            incabg_group_data?.tariff
+                                            incabg_group_data?.tariff || 0
                                         )}
                                     </td>
                                 </tr>

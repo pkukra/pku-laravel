@@ -19,6 +19,7 @@ export default function Index({
     pasien,
     trigerFetchDiagnosa,
     setDiagnosaHasErr,
+    fetchINACBGData,
 }) {
     const columns = [
         {
@@ -171,6 +172,7 @@ export default function Index({
                 {
                     icd10_code: selectedDiagnosaForm,
                     no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                     no_rm: pasien.FRPPASIEN_ID,
                     kd_unit: pasien.FRPUNIT,
                     tgl_masuk: pasien.FRPTGL,
@@ -200,6 +202,7 @@ export default function Index({
             setSelectedStatusDiagForm(null);
             setSelectedKasusForm(null);
             setSelectedDiagnosaDisplay(null);
+            fetchINACBGData();
 
             inputRefStatusDdiagnosa.current?.focus();
         }
@@ -237,6 +240,7 @@ export default function Index({
                 console.error("Error fetching diagnosa data:", error);
             })
             .finally(() => {
+                fetchINACBGData();
                 setLoadingDeleteDiagnosa(false);
                 setIsModalHapusDiagnosaOpen(false);
             });
