@@ -18,6 +18,7 @@ export default function Index({
     pasien,
     trigerFetchProcedure,
     setProcedureHasErr,
+    fetchINACBGData,
 }) {
     const columns = [
         {
@@ -160,6 +161,7 @@ export default function Index({
                 {
                     icd9_code: selectedProcedureForm,
                     no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                     no_rm: pasien.FRPPASIEN_ID,
                     kd_unit: pasien.FRPUNIT,
                     tgl_masuk: pasien.FRPTGL,
@@ -182,6 +184,7 @@ export default function Index({
             console.error("Error saving procedure:", error);
         } finally {
             fetchProcedure();
+            fetchINACBGData();
             setLoadingSaveDiag(false);
             setSelectedProcedureForm(null);
             setSelectedProcedureDisplay(null);
@@ -217,6 +220,7 @@ export default function Index({
                     prevSelectedProcedure.filter((item) => item !== kode)
                 );
                 fetchProcedure(); // Memanggil ulang untuk mendapatkan data procedure terbaru
+                fetchINACBGData();
             })
             .catch((error) => {
                 console.error("Error fetching procedure data:", error);

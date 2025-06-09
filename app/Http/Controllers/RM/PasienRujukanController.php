@@ -478,15 +478,24 @@ class PasienRujukanController extends Controller
         // Validasi input
         $validated = $request->validate([
             'icd9_code' => 'required|string|max:10',
-            'no_transaksikj' => 'required|string|max:20',
+            'no_transaksikj' => 'string|max:20',
+            'no_sep' => 'string|max:20',
             'no_rm' => 'required|string|max:20',
             'kd_unit' => 'required|string|max:20',
             'tgl_masuk' => 'required|date',
         ]);
 
+        if (isset($validated['no_sep']) && empty($validated['no_sep']) && empty($validated['no_transaksikj'])) {
+            return response()->json([
+                'status' => "nok",
+                'message' => 'salah satu harus diisi: no_sep atau no_transaksikj',
+            ],  422);
+        }
+
         // Mengambil data yang diperlukan untuk penyimpanan
         $data = [
             'icd9_code' => $validated['icd9_code'],
+            'no_sep' => $validated['no_sep'],
             'no_transaksikj' => $validated['no_transaksikj'],
             'no_rm' => $validated['no_rm'],
             'kd_unit' => $validated['kd_unit'],
