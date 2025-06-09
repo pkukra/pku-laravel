@@ -183,7 +183,10 @@ function Index({ pasien }) {
         return formatted;
     };
 
-    const disableGrupButton = () => {
+    const disableGrupSatuButton = () => {
+        if (inacbgGroupData?.hasOwnProperty("id")) {
+            return true; // Disable if already grouped
+        }
         if (isDiagnosaHasErr || isProcedureHasErr) {
             return true; // Disable if there are errors in diagnosa or procedure
         }
@@ -465,7 +468,7 @@ function Index({ pasien }) {
                     </Button>
 
                     <Button
-                        disabled={disableGrupButton()}
+                        disabled={disableGrupSatuButton()}
                         type="primary"
                         onClick={() => {
                             setModalGroupingSatuOpen(true);
@@ -480,7 +483,6 @@ function Index({ pasien }) {
 
                     <Button
                         disabled={
-                            disableGrupButton() ||
                             // tambhan karena stage 2 untuk top up, tentunya jika topup kosong maka disable
                             special_cmg_option.length == 0 ||
                             selectedCmgOption.length == 0
