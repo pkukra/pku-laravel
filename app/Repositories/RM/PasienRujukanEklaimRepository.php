@@ -396,8 +396,9 @@ class PasienRujukanEklaimRepository
      */
     public function allTransactionsBySep($no_sep)
     {
+        $detailTransaksiFinalArray = [];
         try {
-            $detailTransaksi = DB::connection('sqlsrvsimrs')
+            $detailTransaksiArray = DB::connection('sqlsrvsimrs')
                 ->table('BPJS_SEP AS sep')
                 ->leftJoin('PASIEN_RUJUKAN AS pr', function ($join) use ($no_sep) {
                     $join->on('pr.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
@@ -429,14 +430,23 @@ class PasienRujukanEklaimRepository
                     'mati.MRKKEADAAN_KELUAR'
                 )
                 ->where('sep.FMNOSEP', $no_sep)
-                ->distinct()
                 ->get();
+
+            $existingKeys = [];
+            foreach ($detailTransaksiArray as $row) {
+                $key = $row->FRPNOTRANSAKSI;
+
+                if (!in_array($key, $existingKeys)) {
+                    $detailTransaksiFinalArray[] = $row;
+                    $existingKeys[] = $key;
+                }
+            }
         } catch (\Exception $e) {
             // Log the error if any exception occurs
             Log::error('Error get data allTransactionsBySep: ' . $e->getMessage());
             return false;
         }
-        return $detailTransaksi;
+        return $detailTransaksiFinalArray;
     }
 
     /**
