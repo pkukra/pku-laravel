@@ -556,8 +556,9 @@ class PasienRujukanEklaimRepository
      */
     public function allTransactionsBySep($no_sep)
     {
+        $detailTransaksiFinalArray = [];
         try {
-            $detailTransaksi = DB::connection('sqlsrvsimrs')
+            $detailTransaksiArray = DB::connection('sqlsrvsimrs')
                 ->table('BPJS_SEP AS sep')
                 ->leftJoin('PASIEN_RUJUKAN AS pr', function ($join) use ($no_sep) {
                     $join->on('pr.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
@@ -589,14 +590,23 @@ class PasienRujukanEklaimRepository
                     'mati.MRKKEADAAN_KELUAR'
                 )
                 ->where('sep.FMNOSEP', $no_sep)
-                ->distinct()
                 ->get();
+
+            $existingKeys = [];
+            foreach ($detailTransaksiArray as $row) {
+                $key = $row->FRPNOTRANSAKSI;
+
+                if (!in_array($key, $existingKeys)) {
+                    $detailTransaksiFinalArray[] = $row;
+                    $existingKeys[] = $key;
+                }
+            }
         } catch (\Exception $e) {
             // Log the error if any exception occurs
             Log::error('Error get data allTransactionsBySep: ' . $e->getMessage());
             return false;
         }
-        return $detailTransaksi;
+        return $detailTransaksiFinalArray;
     }
 
     /**
@@ -1155,8 +1165,18 @@ class PasienRujukanEklaimRepository
             return false;
         }
 
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+
         $user = Auth::user();
         $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        DB::connection('sqlsrvsimrs')->beginTransaction();
 
         $data = json_encode([
             "metadata" => [
@@ -1185,8 +1205,57 @@ class PasienRujukanEklaimRepository
             "data" => ["nomor_sep" => $no_sep]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-        $response = sendRequest($key, $data);
+        $grouping_1_inacbg = sendRequest($key, $data);
 
-        return $response;
+        $cbg_code = $grouping_1_inacbg->response->response_inacbg->cbg->code;
+        $tarif_inacbg = $grouping_1_inacbg->response->response_inacbg->tariff ?? 0;
+        $special_cmg_option = null;
+        if (isset($grouping_1_inacbg->response->special_cmg_option) && !empty($grouping_1_inacbg->response->special_cmg_option)) {
+            $special_cmg_option = json_encode($grouping_1_inacbg->response->special_cmg_option);
+        }
+
+        try {
+            foreach ($semua_transaksi as $transaksi) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('TRANSAKSIPASIEN')
+                    ->where('FTNO_TRANSAKSI', $transaksi->FRPNOTRANSAKSIKJ)
+                    ->update([
+                        'FTKODEINACBG' => $cbg_code,
+                        'FTTARIPINACBG' => (float) $tarif_inacbg,
+                        'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1')
+                    ]);
+            }
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->updateOrInsert(
+                    [
+                        'no_sep' => $no_sep,
+                        'pasien_id' => $transaksi_utama->FRPPASIEN_ID
+                    ],
+                    [
+                        "response_inacbg" => json_encode($grouping_1_inacbg->response->response_inacbg),
+                        "special_cmg_option" => $special_cmg_option,
+                        'is_final' => 0,
+                        "updated_at" => $now,
+                        "updated_by" => $user->email,
+                    ]
+                );
+
+            $this->auditTrail->insert([
+                "object_id" => $no_sep,
+                "action_id" => 21,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data,
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanEklaimRepository bridgingGroupingInaStageSatu err: " . $e->getMessage());
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return $grouping_1_inacbg;
     }
 }

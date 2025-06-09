@@ -150,8 +150,8 @@ function Index({ pasien }) {
                                     <td>Status Final</td>
                                 </tr>
                                 <tr>
-                                    <td style={{ width: "15%" }}>MDC Number</td>
-                                    <td>{eklaim_group_data?.mdc_number}</td>
+                                    <td style={{ width: "15%" }}>CBG Code</td>
+                                    <td>{eklaim_group_data?.cbg_code}</td>
                                 </tr>
                                 <tr>
                                     <td
@@ -159,24 +159,14 @@ function Index({ pasien }) {
                                             verticalAlign: "top",
                                         }}
                                     >
-                                        MDC Description
+                                        CBG Description
                                     </td>
                                     <td
                                         style={{
                                             verticalAlign: "top",
                                         }}
                                     >
-                                        {eklaim_group_data?.mdc_description}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>DRG Code</td>
-                                    <td>{eklaim_group_data?.drg_code}</td>
-                                </tr>
-                                <tr>
-                                    <td>DRG Description</td>
-                                    <td>
-                                        {eklaim_group_data?.drg_description}
+                                        {eklaim_group_data?.cbg_description}
                                     </td>
                                 </tr>
                             </tbody>
