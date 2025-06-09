@@ -58,6 +58,7 @@ function Index({ pasien }) {
             setShouldReFetch((prev) => !prev);
             setImportAndBridgeLoading(false);
             setModalImportAndBridgeOpen(false);
+            fetchINACBGData();
         }
     };
 

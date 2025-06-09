@@ -161,9 +161,8 @@ class PasienRujukanEklaimRepository
             }
         }
 
-        DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN')->insert($procedure);
-
         try {
+
             DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT')
                 ->where('NOSEP', $no_sep)
                 ->delete();
@@ -174,6 +173,11 @@ class PasienRujukanEklaimRepository
 
             DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT')->insert($diagnosa);
             DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN')->insert($procedure);
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->where('no_sep', $no_sep)
+                ->delete();
         } catch (\Exception $e) {
             DB::connection('sqlsrvsimrs')->rollBack();
             Log::error("bridgingImportIdrgToIncbg: " . $e->getMessage());
@@ -1257,7 +1261,7 @@ class PasienRujukanEklaimRepository
         DB::connection('sqlsrvsimrs')->commit();
         return $grouping_1_inacbg;
     }
-    
+
     /**
      * 
      * @param string $no_sep
