@@ -143,7 +143,7 @@ class PasienRujukanEklaimRepository
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
-            'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
+            // 'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
             'diagnosa' => $this->getAllDiagnosa($semua_transaksi),
             'diagnosa_inagrouper' => $this->getAllDiagnosa($semua_transaksi),
             'procedure' => $this->getAllProcedure($semua_transaksi),
