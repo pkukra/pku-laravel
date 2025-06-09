@@ -1154,7 +1154,6 @@ class PasienRujukanEklaimRepository
     }
 
     /**
-     * Process bridgingEditUlangIDRG by no_sep
      * 
      * @param string $no_sep
      */
@@ -1257,5 +1256,95 @@ class PasienRujukanEklaimRepository
 
         DB::connection('sqlsrvsimrs')->commit();
         return $grouping_1_inacbg;
+    }
+    
+    /**
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingGroupingInaStageDua($no_sep, $special_cmg)
+    {
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return false;
+        }
+
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        $data = json_encode([
+            "metadata" => [
+                "method" => "grouper",
+                "grouper" => "inacbg",
+                "stage" => 2,
+            ],
+            "data" => [
+                "nomor_sep" => $no_sep,
+                "special_cmg" => $special_cmg
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $grouping_2_inacbg = sendRequest($key, $data);
+
+        $cbg_code = $grouping_2_inacbg->response->response_inacbg->cbg->code;
+        $tarif_inacbg = $grouping_2_inacbg->response->response_inacbg->tariff ?? 0;
+        $special_cmg_option = null;
+        if (isset($grouping_2_inacbg->response->special_cmg_option) && !empty($grouping_2_inacbg->response->special_cmg_option)) {
+            $special_cmg_option = json_encode($grouping_2_inacbg->response->special_cmg_option);
+        }
+
+        try {
+            foreach ($semua_transaksi as $transaksi) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('TRANSAKSIPASIEN')
+                    ->where('FTNO_TRANSAKSI', $transaksi->FRPNOTRANSAKSIKJ)
+                    ->update([
+                        'FTKODEINACBG' => $cbg_code,
+                        'FTTARIPINACBG' => (float) $tarif_inacbg,
+                        'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1')
+                    ]);
+            }
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->updateOrInsert(
+                    [
+                        'no_sep' => $no_sep,
+                        'pasien_id' => $transaksi_utama->FRPPASIEN_ID
+                    ],
+                    [
+                        "response_inacbg" => json_encode($grouping_2_inacbg->response->response_inacbg),
+                        "special_cmg_option" => $special_cmg_option,
+                        'is_final' => 0,
+                        "updated_at" => $now,
+                        "updated_by" => $user->email,
+                    ]
+                );
+
+            $this->auditTrail->insert([
+                "object_id" => $no_sep,
+                "action_id" => 22,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data,
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanEklaimRepository bridgingGroupingInaStageDua err: " . $e->getMessage());
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return $grouping_2_inacbg;
     }
 }

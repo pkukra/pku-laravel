@@ -846,7 +846,22 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageSatu($no_sep);
         return response()->json($data);
     }
-    
+
+    /**
+     * grouping_inacbg_stage_satu
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function grouping_inacbg_stage_dua(Request $request, $no_sep)
+    {
+        $validated = $request->validate([
+            'special_cmg' => 'required|string',
+        ]);
+        $special_cmg = $validated['special_cmg'];
+
+        $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageDua($no_sep, $special_cmg);
+        return response()->json($data);
+    }
+
     /**
      * get_inacbg_group_data
      * Menampilkan procedure berdasarkan kode transaksi
@@ -854,7 +869,7 @@ class PasienRujukanController extends Controller
     public function get_inacbg_group_data($no_sep)
     {
         $data = $this->pasienRujukanRepo->getINACBGGroupDataByTransaksi($no_sep);
-        
+
         return response()->json($data);
     }
 }
