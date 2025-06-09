@@ -1615,6 +1615,21 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get response grouping inacbg  by kode reg kj
+     *
+     * @param string $no_sep
+     * @return \Illuminate\Support\Collection
+     */
+    public function getINACBGGroupDataByTransaksi($no_sep)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_INACBG AS A')
+            ->select('A.*')
+            ->where('A.no_sep', $no_sep)
+            ->first();
+    }
+
+    /**
      *
      * @param string $no_sep
      * @return \Illuminate\Support\Collection

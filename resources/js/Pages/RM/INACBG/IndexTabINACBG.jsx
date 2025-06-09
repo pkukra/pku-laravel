@@ -55,7 +55,7 @@ function Index({ pasien }) {
             setModalImportAndBridgeOpen(false);
         }
     };
-    
+
     const handleGroupingStageSatu = async () => {
         setImportAndBridgeLoading(true);
         try {
@@ -87,13 +87,50 @@ function Index({ pasien }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
-            setModalGroupingSatuOpen(false)
+            setModalGroupingSatuOpen(false);
         }
     };
 
-    const eklaim_group_data = JSON.parse(
-        inacbgGroupData?.response_eklaim || "{}"
+    const fetchINACBGData = async () => {
+        setLoadingFetchGroupData(true);
+        axios
+            .get(
+                route("rm.pasien-rujukan.get_inacbg_group_data", {
+                    no_sep: pasien?.FMNOSEP,
+                })
+            )
+            .then((response) => {
+                console.log(response);
+
+                setInacbgGroupData(response?.data || null);
+                setLoadingFetchGroupData(false);
+                fetchINACBGData();
+            })
+            .catch((error) => {
+                setLoadingFetchGroupData(false);
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setLoadingFetchGroupData(false);
+            });
+    };
+
+    useEffect(() => {
+        if (pasien?.FMNOSEP) {
+            fetchINACBGData();
+        }
+    }, [pasien?.FMNOSEP]);
+
+    const incabg_group_data = JSON.parse(
+        inacbgGroupData?.response_inacbg || "{}"
     );
+
+    const isFinalINACBG = incabg_group_data?.is_final == 1;
+    const RupiahFormat = (x) => {
+        const number = Number(x);
+        const formatted = new Intl.NumberFormat("id-ID").format(number);
+        return formatted;
+    };
 
     return (
         <>
@@ -136,7 +173,7 @@ function Index({ pasien }) {
                                         Status Grouping
                                     </td>
                                     <td>
-                                        {inacbgGroupData ? (
+                                        {inacbgGroupData?.hasOwnProperty("id") ? (
                                             <strong>Sudah Grouping</strong>
                                         ) : (
                                             <strong>Belum Grouping</strong>
@@ -147,11 +184,17 @@ function Index({ pasien }) {
                                     <td style={{ width: "15%" }}>
                                         Status Final
                                     </td>
-                                    <td>Status Final</td>
+                                    <td>
+                                        {isFinalINACBG ? (
+                                            <strong>Sudah Final</strong>
+                                        ) : (
+                                            <strong>Belum Final</strong>
+                                        )}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td style={{ width: "15%" }}>CBG Code</td>
-                                    <td>{eklaim_group_data?.cbg_code}</td>
+                                    <td>{incabg_group_data?.cbg?.code}</td>
                                 </tr>
                                 <tr>
                                     <td
@@ -166,7 +209,16 @@ function Index({ pasien }) {
                                             verticalAlign: "top",
                                         }}
                                     >
-                                        {eklaim_group_data?.cbg_description}
+                                        {incabg_group_data?.cbg?.description}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Tarif</td>
+                                    <td>
+                                        Rp{" "}
+                                        {RupiahFormat(
+                                            incabg_group_data?.tariff
+                                        )}
                                     </td>
                                 </tr>
                             </tbody>
