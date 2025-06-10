@@ -879,14 +879,24 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageDua($no_sep, $special_cmg);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_final_inacbg
      * Menampilkan procedure berdasarkan kode transaksi
      */
-    public function bridging_final_inacbg(Request $request, $no_sep)
+    public function bridging_final_inacbg($no_sep)
     {
         $data = $this->bridgingEKlaimRepo->bridgingFinalINACBG($no_sep);
+        return response()->json($data);
+    }
+
+    /**
+     * edit_ulang_inacbg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function edit_ulang_inacbg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingEditUlangINACBG($no_sep);
         return response()->json($data);
     }
 

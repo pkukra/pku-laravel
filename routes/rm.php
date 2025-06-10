@@ -78,6 +78,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/grouping_inacbg_stage_dua/{no_sep}', [PasienRujukanController::class, 'grouping_inacbg_stage_dua'])->name('rm.pasien-rujukan.grouping_inacbg_stage_dua');
         Route::get('/get_inacbg_group_data/{no_sep}', [PasienRujukanController::class, 'get_inacbg_group_data'])->name('rm.pasien-rujukan.get_inacbg_group_data');
         Route::post('/bridging_final_inacbg/{no_sep}', [PasienRujukanController::class, 'bridging_final_inacbg'])->name('rm.pasien-rujukan.bridging_final_inacbg');
+        Route::post('/edit_ulang_inacbg/{no_sep}', [PasienRujukanController::class, 'edit_ulang_inacbg'])->name('rm.pasien-rujukan.edit_ulang_inacbg');
 
     });
 

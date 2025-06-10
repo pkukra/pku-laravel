@@ -27,6 +27,9 @@ function Index({ pasien }) {
     const [finalLoading, setFinalLoading] = useState(false);
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
 
+    const [reeditLoading, setReeditLoading] = useState(false);
+    const [modalReEditINACBGOpen, setModalReEditINACBGOpen] = useState(false);
+
     const handleImportAndBridgingData = async () => {
         setImportAndBridgeLoading(true);
         try {
@@ -259,7 +262,42 @@ function Index({ pasien }) {
         }
     };
 
-    //
+    const handleEditUlangInacbg = async () => {
+        setReeditLoading(true);
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.edit_ulang_inacbg", {
+                    no_sep: pasien?.FMNOSEP,
+                })
+            );
+
+            if (response?.data?.status === "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.error,
+                });
+            }
+
+            if (response?.data?.response?.metadata?.code === 400) {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.response?.metadata?.message,
+                });
+            }
+
+            return notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: "sukses membuka kunci edit ulang data INACBG",
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setReeditLoading(false);
+            setModalReEditINACBGOpen(false);
+            fetchINACBGData();
+        }
+    };
 
     return (
         <>
@@ -564,6 +602,7 @@ function Index({ pasien }) {
                             color="danger"
                             variant="solid"
                             onClick={() => {
+                                setModalReEditINACBGOpen(true);
                                 return;
                             }}
                         >
@@ -737,6 +776,44 @@ function Index({ pasien }) {
                         style={{ backgroundColor: " #cc66ff" }}
                     >
                         Ok, Final Data
+                    </Button>,
+                ]}
+            >
+                {pasien?.FMNOSEP ? (
+                    <div>
+                        <p>
+                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                        </p>
+                    </div>
+                ) : (
+                    <p>
+                        <strong>Belum ada data SEP</strong>
+                    </p>
+                )}
+            </Modal>
+
+            <Modal
+                open={modalReEditINACBGOpen}
+                title="Edit Ulang iDRG"
+                onCancel={() => setModalReEditINACBGOpen(false)}
+                footer={[
+                    <Button
+                        key="back"
+                        onClick={() => setModalReEditINACBGOpen(false)}
+                        loading={reeditLoading}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        loading={reeditLoading}
+                        color="danger"
+                        variant="solid"
+                        onClick={() => {
+                            handleEditUlangInacbg();
+                            return;
+                        }}
+                    >
+                        Ok, Edit Ulang iDRG
                     </Button>,
                 ]}
             >
