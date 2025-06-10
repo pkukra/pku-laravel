@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
-import { Col, Row, Card, Tabs, Spin } from "antd";
+import { Col, Row, Card, Tabs, Divider, Button } from "antd";
 
 import IndexTabIDRG from "./IDRG/IndexTabIDRG";
 import IndexTabINACBG from "./INACBG/IndexTabINACBG";
@@ -8,6 +8,36 @@ import IndexTabINACBG from "./INACBG/IndexTabINACBG";
 import axios from "axios";
 
 function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
+    const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
+    const [inacbgGroupData, setInacbgGroupData] = useState(null);
+
+    const fetchINACBGData = async () => {
+        setLoadingFetchGroupData(true);
+        axios
+            .get(
+                route("rm.pasien-rujukan.get_inacbg_group_data", {
+                    no_sep: pasien?.FMNOSEP,
+                })
+            )
+            .then((response) => {
+                setInacbgGroupData(response?.data || null);
+                setLoadingFetchGroupData(false);
+            })
+            .catch((error) => {
+                setLoadingFetchGroupData(false);
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setLoadingFetchGroupData(false);
+            });
+    };
+
+    useEffect(() => {
+        if (pasien?.FMNOSEP) {
+            fetchINACBGData();
+        }
+    }, [pasien?.FMNOSEP]);
+
     const menu = [
         {
             label: "IDRG",
@@ -22,7 +52,14 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
         {
             label: "INACBG",
             key: "2",
-            children: <IndexTabINACBG pasien={pasien} />,
+            children: (
+                <IndexTabINACBG
+                    pasien={pasien}
+                    inacbgGroupData={inacbgGroupData}
+                    fetchINACBGData={fetchINACBGData}
+                    loadingFetchGroupData={loadingFetchGroupData}
+                />
+            ),
             disabled: disableINACBG,
         },
     ];
@@ -30,13 +67,36 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
     return (
         <>
             <Card>
-                <Tabs
-                    defaultActiveKey="1"
-                    type="card"
-                    size={"small"}
-                    style={{ marginBottom: 32 }}
-                    items={menu}
-                />
+                <Row gutter={[5, 5]}>
+                    <Col span={24}>
+                        <Tabs
+                            defaultActiveKey="1"
+                            type="card"
+                            size={"small"}
+                            style={{ marginBottom: 32 }}
+                            items={menu}
+                        />
+                    </Col>
+                </Row>
+                <Row gutter={[5, 5]}>
+                    <Col span={12}></Col>
+                    <Col span={12}>
+                        <Divider> Final Klaim </Divider>
+                        <Button
+                            disabled={inacbgGroupData?.is_final_claim == 1}
+                            danger
+                            type="primary"
+                            onClick={() => {
+                                return;
+                            }}
+                            style={{
+                                marginRight: 5,
+                            }}
+                        >
+                            Final Klaim
+                        </Button>
+                    </Col>
+                </Row>
             </Card>
         </>
     );

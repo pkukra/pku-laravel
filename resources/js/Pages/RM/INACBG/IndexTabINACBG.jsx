@@ -6,10 +6,13 @@ import { PlusOutlined } from "@ant-design/icons";
 import DiagnosaListINACBG from "./DiagnosaListINACBG";
 import ProcedureListINACBG from "./ProcedureListINACBG";
 
-function Index({ pasien }) {
+function Index({
+    pasien,
+    inacbgGroupData,
+    fetchINACBGData,
+    loadingFetchGroupData,
+}) {
     const [shouldRefetchData, setShouldReFetch] = useState(false);
-    const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
-    const [inacbgGroupData, setInacbgGroupData] = useState(null);
 
     const [selectedCmgOption, setSelectedCmgOption] = useState([]);
 
@@ -148,33 +151,6 @@ function Index({ pasien }) {
             setGrupingLoading(false);
         }
     };
-
-    const fetchINACBGData = async () => {
-        setLoadingFetchGroupData(true);
-        axios
-            .get(
-                route("rm.pasien-rujukan.get_inacbg_group_data", {
-                    no_sep: pasien?.FMNOSEP,
-                })
-            )
-            .then((response) => {
-                setInacbgGroupData(response?.data || null);
-                setLoadingFetchGroupData(false);
-            })
-            .catch((error) => {
-                setLoadingFetchGroupData(false);
-                console.error("Error fetching diagnosa data:", error);
-            })
-            .finally(() => {
-                setLoadingFetchGroupData(false);
-            });
-    };
-
-    useEffect(() => {
-        if (pasien?.FMNOSEP) {
-            fetchINACBGData();
-        }
-    }, [pasien?.FMNOSEP]);
 
     const incabg_group_data = JSON.parse(
         inacbgGroupData?.response_inacbg || "{}"
