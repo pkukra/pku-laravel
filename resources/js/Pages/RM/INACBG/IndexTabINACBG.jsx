@@ -167,8 +167,6 @@ function Index({
         return formatted;
     };
 
-    console.log(inacbgGroupData?.is_final);
-
     const disableGrupSatuButton = () => {
         if (inacbgGroupData?.hasOwnProperty("id")) {
             return true; // Disable if already grouped
@@ -331,7 +329,7 @@ function Index({
                                 </tr>
                                 <tr>
                                     <td style={{ width: "15%" }}>
-                                        Status Final
+                                        Status Final INACBG
                                     </td>
                                     <td>
                                         {isFinalINACBG ? (
@@ -738,7 +736,7 @@ function Index({
 
             <Modal
                 open={modalFinalOpen}
-                title="Final Data INACBG"
+                title="Final INACBG"
                 onCancel={() => setModalFinalOpen(false)}
                 footer={[
                     <Button
@@ -756,7 +754,7 @@ function Index({
                         onClick={() => handleFinalData()}
                         style={{ backgroundColor: " #cc66ff" }}
                     >
-                        Ok, Final Data
+                        Ok, Final INACBG
                     </Button>,
                 ]}
             >

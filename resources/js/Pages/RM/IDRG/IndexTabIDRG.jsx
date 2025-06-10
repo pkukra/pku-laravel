@@ -229,7 +229,7 @@ function Index({
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Status Final</td>
+                                    <td>Status Final IDRG</td>
                                     <td>
                                         {isFinalIDRG ? (
                                             <strong>Sudah Final</strong>
