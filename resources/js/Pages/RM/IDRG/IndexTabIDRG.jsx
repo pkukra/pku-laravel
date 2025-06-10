@@ -10,7 +10,7 @@ function Index({ pasien, setDisableINACBG }) {
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [diagnosaTab, setDiagnosaTab] = useState([]);
     const [idrgGroupData, setIdrgGroupData] = useState(null);
-    const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
+    const [loadingFetchIdrgData, setLoadingFetchIdrgData] = useState(false);
 
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
@@ -130,7 +130,7 @@ function Index({ pasien, setDisableINACBG }) {
     };
 
     const fetchIDRGData = async () => {
-        setLoadingFetchGroupData(true);
+        setLoadingFetchIdrgData(true);
         axios
             .get(
                 route("rm.pasien-rujukan.get_idrg_group_data", {
@@ -139,14 +139,14 @@ function Index({ pasien, setDisableINACBG }) {
             )
             .then((response) => {
                 setIdrgGroupData(response?.data?.data || null);
-                setLoadingFetchGroupData(false);
+                setLoadingFetchIdrgData(false);
             })
             .catch((error) => {
-                setLoadingFetchGroupData(false);
+                setLoadingFetchIdrgData(false);
                 console.error("Error fetching diagnosa data:", error);
             })
             .finally(() => {
-                setLoadingFetchGroupData(false);
+                setLoadingFetchIdrgData(false);
             });
     };
 
@@ -222,7 +222,7 @@ function Index({ pasien, setDisableINACBG }) {
                 <Col span={12}></Col>
                 <Col span={12}>
                     <Divider> Hasil Grouping iDRG </Divider>
-                    {loadingFetchGroupData ? (
+                    {loadingFetchIdrgData ? (
                         <p>Loading...</p>
                     ) : (
                         <table
