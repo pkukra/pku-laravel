@@ -909,6 +909,16 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingFinalKlaim($no_sep);
         return response()->json($data);
     }
+    
+    /**
+     * bridging_reedit_klaim
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function bridging_reedit_klaim($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingReeditKlaim($no_sep);
+        return response()->json($data);
+    }
 
     /**
      * get_inacbg_group_data

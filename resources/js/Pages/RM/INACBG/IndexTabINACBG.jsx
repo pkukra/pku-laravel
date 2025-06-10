@@ -11,6 +11,7 @@ function Index({
     inacbgGroupData,
     fetchINACBGData,
     loadingFetchInacbgData,
+    isKlaimFinal,
 }) {
     const [shouldRefetchData, setShouldReFetch] = useState(false);
 
@@ -577,6 +578,7 @@ function Index({
                         </Button>
                     ) : (
                         <Button
+                            disabled={isKlaimFinal}
                             type="primary"
                             style={{ backgroundColor: " #F3732F" }}
                             variant="solid"

@@ -80,6 +80,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/edit_ulang_inacbg/{no_sep}', [PasienRujukanController::class, 'edit_ulang_inacbg'])->name('rm.pasien-rujukan.edit_ulang_inacbg');
 
         Route::post('/bridging_final_klaim/{no_sep}', [PasienRujukanController::class, 'bridging_final_klaim'])->name('rm.pasien-rujukan.bridging_final_klaim');
+        Route::post('/bridging_reedit_klaim/{no_sep}', [PasienRujukanController::class, 'bridging_reedit_klaim'])->name('rm.pasien-rujukan.bridging_reedit_klaim');
     });
 
     Route::prefix('pasien-inap')->group(function () {

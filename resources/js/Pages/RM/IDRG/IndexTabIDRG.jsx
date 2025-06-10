@@ -11,6 +11,7 @@ function Index({
     fetchIDRGData,
     idrgGroupData,
     loadingFetchIdrgData,
+    isKlaimFinal,
 }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
@@ -298,6 +299,7 @@ function Index({
                         </Button>
                     ) : (
                         <Button
+                            disabled={isKlaimFinal}
                             type="primary"
                             style={{ backgroundColor: " #F3732F" }}
                             variant="solid"

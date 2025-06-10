@@ -1591,4 +1591,92 @@ class PasienRujukanEklaimRepository
         DB::connection('sqlsrvsimrs')->commit();
         return $responseFinal;
     }
+
+    public function bridgingReeditKlaim($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "reedit_claim"],
+            "data" => [
+                "nomor_sep" => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $responseFinal = sendRequest($key, $data);
+        if ($responseFinal->response->metadata->code == 200) {
+            try {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
+                    ->update([
+                        'is_final_claim' => null,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                foreach ($semua_transaksi as $transaksi) {
+                    DB::connection('sqlsrvsimrs')
+                        ->table('TRANSAKSIPASIEN')
+                        ->where('FTNO_TRANSAKSI', $transaksi->FRPNOTRANSAKSIKJ)
+                        ->update([
+                            'FKUNCI_VALIDASI' => 0,
+                        ]);
+
+                    DB::connection('sqlsrvsimrs')
+                        ->table('PASIEN_RUJUKAN')
+                        ->where('FRPNOTRANSAKSI', $transaksi->FRPNOTRANSAKSI)
+                        ->update([
+                            'IS_INACBG_FINAL' => 0,
+                        ]);
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $no_sep,
+                    "action_id" => 25,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                Log::error('bridgingReeditKlaim Reedit Kalim err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        DB::connection('sqlsrvsimrs')->commit();
+        return $responseFinal;
+    }
 }
