@@ -966,6 +966,7 @@ class PasienRujukanRepository
      */
     public function saveProcedureRajal($data)
     {
+        $no_sep = $data['no_sep'];
         $no_transaksikj = $data['no_transaksikj'];
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
@@ -983,7 +984,8 @@ class PasienRujukanRepository
 
         $data_to_save = [
             'MRTKD_TINDAKAN' => $data['icd9_code'],
-            'MRTNOTRANSAKSI' => $no_transaksikj,
+            'NOSEP' => ($no_sep) ? $no_sep : null,
+            'MRTNOTRANSAKSI' => ($no_transaksikj) ? $no_transaksikj : null,
             'MRTKD_PASIEN' => $data['no_rm'],
             'MRTKD_UNIT' => $data['kd_unit'],
             'MRTTGL_MASUK' => $tgl_masuk,
@@ -997,8 +999,15 @@ class PasienRujukanRepository
                 ->table('MR_TINDAKAN')
                 ->insert($data_to_save);
 
+            if ($no_sep) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->delete();
+            }
+
             $isrecorded = $this->auditTrail->insert([
-                "object_id" => $no_transaksikj,
+                "object_id" => ($no_sep) ? $no_sep : $no_transaksikj,
                 "action_id" => 3,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
@@ -1128,6 +1137,13 @@ class PasienRujukanRepository
                 "created_at" => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
                 "data"       => $deletedProcedure,
             ]);
+
+            if ($deletedProcedure->NOSEP) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $deletedProcedure->NOSEP)
+                    ->delete();
+            }
 
             if (!$auditSuccess) {
                 Log::error("PasienRujukanRepository deleteProcedureById error: gagal simpan audittrail");

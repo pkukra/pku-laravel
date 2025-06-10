@@ -478,15 +478,24 @@ class PasienRujukanController extends Controller
         // Validasi input
         $validated = $request->validate([
             'icd9_code' => 'required|string|max:10',
-            'no_transaksikj' => 'required|string|max:20',
+            'no_transaksikj' => 'string|max:20',
+            'no_sep' => 'string|max:20',
             'no_rm' => 'required|string|max:20',
             'kd_unit' => 'required|string|max:20',
             'tgl_masuk' => 'required|date',
         ]);
 
+        if (isset($validated['no_sep']) && empty($validated['no_sep']) && empty($validated['no_transaksikj'])) {
+            return response()->json([
+                'status' => "nok",
+                'message' => 'salah satu harus diisi: no_sep atau no_transaksikj',
+            ],  422);
+        }
+
         // Mengambil data yang diperlukan untuk penyimpanan
         $data = [
             'icd9_code' => $validated['icd9_code'],
+            'no_sep' => $validated['no_sep'],
             'no_transaksikj' => $validated['no_transaksikj'],
             'no_rm' => $validated['no_rm'],
             'kd_unit' => $validated['kd_unit'],
@@ -857,7 +866,7 @@ class PasienRujukanController extends Controller
     }
 
     /**
-     * grouping_inacbg_stage_satu
+     * grouping_inacbg_stage_dua
      * Menampilkan procedure berdasarkan kode transaksi
      */
     public function grouping_inacbg_stage_dua(Request $request, $no_sep)
@@ -868,6 +877,26 @@ class PasienRujukanController extends Controller
         $special_cmg = $validated['special_cmg'];
 
         $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageDua($no_sep, $special_cmg);
+        return response()->json($data);
+    }
+
+    /**
+     * bridging_final_inacbg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function bridging_final_inacbg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingFinalINACBG($no_sep);
+        return response()->json($data);
+    }
+
+    /**
+     * edit_ulang_inacbg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function edit_ulang_inacbg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingEditUlangINACBG($no_sep);
         return response()->json($data);
     }
 

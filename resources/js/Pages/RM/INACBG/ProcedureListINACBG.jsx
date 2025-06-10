@@ -18,6 +18,8 @@ export default function Index({
     pasien,
     trigerFetchProcedure,
     setProcedureHasErr,
+    fetchINACBGData,
+    isFinalINACBG,
 }) {
     const columns = [
         {
@@ -50,8 +52,9 @@ export default function Index({
             render: (_, record) => (
                 <Button
                     disabled={
-                        loadingDeleteProcedure &&
-                        record.ID === deleteProcedureId
+                        isFinalINACBG ||
+                        (loadingDeleteProcedure &&
+                        record.ID === deleteProcedureId)
                     }
                     size="small"
                     variant="outlined"
@@ -160,6 +163,7 @@ export default function Index({
                 {
                     icd9_code: selectedProcedureForm,
                     no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
+                    no_sep: pasien?.FMNOSEP,
                     no_rm: pasien.FRPPASIEN_ID,
                     kd_unit: pasien.FRPUNIT,
                     tgl_masuk: pasien.FRPTGL,
@@ -182,6 +186,7 @@ export default function Index({
             console.error("Error saving procedure:", error);
         } finally {
             fetchProcedure();
+            fetchINACBGData();
             setLoadingSaveDiag(false);
             setSelectedProcedureForm(null);
             setSelectedProcedureDisplay(null);
@@ -217,6 +222,7 @@ export default function Index({
                     prevSelectedProcedure.filter((item) => item !== kode)
                 );
                 fetchProcedure(); // Memanggil ulang untuk mendapatkan data procedure terbaru
+                fetchINACBGData();
             })
             .catch((error) => {
                 console.error("Error fetching procedure data:", error);
@@ -277,7 +283,7 @@ export default function Index({
                                         <span>{item.FMI9KETERANGAN}</span>
                                     </div>
                                 ),
-                                disabled: selectedProcedure.includes(
+                                disabled: isFinalINACBG || selectedProcedure.includes(
                                     item.FMI9KODE
                                 ), // Disable if already selected
                             }))}
@@ -305,7 +311,7 @@ export default function Index({
                         style={{ width: "100%" }}
                         onClick={saveProcedure}
                         disabled={
-                            loadingSaveDiag || selectedProcedureForm === null
+                            loadingSaveDiag || selectedProcedureForm === null || isFinalINACBG
                         }
                     >
                         {loadingSaveDiag ? (

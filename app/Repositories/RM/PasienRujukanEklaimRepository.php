@@ -161,9 +161,8 @@ class PasienRujukanEklaimRepository
             }
         }
 
-        DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN')->insert($procedure);
-
         try {
+
             DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT')
                 ->where('NOSEP', $no_sep)
                 ->delete();
@@ -174,6 +173,11 @@ class PasienRujukanEklaimRepository
 
             DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT')->insert($diagnosa);
             DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN')->insert($procedure);
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->where('no_sep', $no_sep)
+                ->delete();
         } catch (\Exception $e) {
             DB::connection('sqlsrvsimrs')->rollBack();
             Log::error("bridgingImportIdrgToIncbg: " . $e->getMessage());
@@ -1074,7 +1078,6 @@ class PasienRujukanEklaimRepository
         return $response;
     }
 
-
     /**
      * Process bridgingEditUlangIDRG by no_sep
      * 
@@ -1203,7 +1206,6 @@ class PasienRujukanEklaimRepository
             ],
             "data" => ["nomor_sep" => $no_sep]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-
         $grouping_1_inacbg = sendRequest($key, $data);
 
         $cbg_code = $grouping_1_inacbg->response->response_inacbg->cbg->code;
@@ -1257,7 +1259,7 @@ class PasienRujukanEklaimRepository
         DB::connection('sqlsrvsimrs')->commit();
         return $grouping_1_inacbg;
     }
-    
+
     /**
      * 
      * @param string $no_sep
@@ -1346,5 +1348,174 @@ class PasienRujukanEklaimRepository
 
         DB::connection('sqlsrvsimrs')->commit();
         return $grouping_2_inacbg;
+    }
+
+    /**
+     * Process bridgingFinalINACBG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingFinalINACBG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "inacbg_grouper_final"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $responseFinal = sendRequest($key, $data);
+        if ($responseFinal->response->metadata->code == 200) {
+            try {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
+                    ->update([
+                        'is_final' => 1,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                foreach ($semua_transaksi as $transaksi) {
+                    DB::connection('sqlsrvsimrs')
+                        ->table('TRANSAKSIPASIEN')
+                        ->where('FTNO_TRANSAKSI', $transaksi->FRPNOTRANSAKSIKJ)
+                        ->update([
+                            'FKUNCI_VALIDASI' => 1,
+                        ]);
+
+                    DB::connection('sqlsrvsimrs')
+                        ->table('PASIEN_RUJUKAN')
+                        ->where('FRPNOTRANSAKSI', $transaksi->FRPNOTRANSAKSI)
+                        ->update([
+                            'IS_INACBG_FINAL' => 1,
+                        ]);
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $transaksi_utama->FMNOSEP ?? $transaksi_utama->FRPNOTRANSAKSIKJ,
+                    "action_id" => 7,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                Log::error('Final process PASIEN_RUJUKAN IS_INACBG_FINAL err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        DB::connection('sqlsrvsimrs')->commit();
+        return $responseFinal;
+    }
+
+    /**
+     * Process bridgingEditUlangINACBG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingEditUlangINACBG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // menentukan dokter mana yang menjadi dpjp utama
+        // jika array hanya 1, maka otomatis index 0 menjadi dpjp uatama
+        // jika array lebih dari 1 maka dipilih yang RUBBER adalah false(0) yang menjadi dpjp utama
+        // berarti yang bukan dokter RaBer (Rawat Bersama)
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "inacbg_grouper_reedit"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                $affected = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
+                    ->update([
+                        'is_final' => 0,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                if ($affected == 0) {
+                    return (object)[
+                        "status" => "nok",
+                        "error" => "data group inacbg tidak ditemukan"
+                    ];
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $no_sep,
+                    "action_id" => 23,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('bridgingFinalIDRG err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        return $response;
     }
 }
