@@ -91,6 +91,17 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
         },
     ];
 
+    console.log("idrgGroupData is_final", );
+    console.log("inacbgGroupData is_final", inacbgGroupData?.is_final);
+    
+
+    const disableFinalButton = () => {
+        if(idrgGroupData?.is_final != 1 || inacbgGroupData?.is_final != 1) {
+            // jika salah satu idrg atau inacbg belum final maka tidak bisa di final klaim
+            return true;
+        }
+    }
+
     return (
         <>
             <Card>
@@ -110,7 +121,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                     <Col span={12}>
                         <Divider> Final Klaim </Divider>
                         <Button
-                            disabled={inacbgGroupData?.is_final_claim == 1}
+                            disabled={disableFinalButton()}
                             danger
                             type="primary"
                             onClick={() => {
