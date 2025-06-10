@@ -8,8 +8,32 @@ import IndexTabINACBG from "./INACBG/IndexTabINACBG";
 import axios from "axios";
 
 function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
+    const [loadingFetchIdrgData, setLoadingFetchIdrgData] = useState(false);
+    const [idrgGroupData, setIdrgGroupData] = useState(null);
+
     const [loadingFetchInacbgData, setLoadingFetchInacbgData] = useState(false);
     const [inacbgGroupData, setInacbgGroupData] = useState(null);
+
+    const fetchIDRGData = async () => {
+        setLoadingFetchIdrgData(true);
+        axios
+            .get(
+                route("rm.pasien-rujukan.get_idrg_group_data", {
+                    no_sep: pasien?.FMNOSEP,
+                })
+            )
+            .then((response) => {
+                setIdrgGroupData(response?.data?.data || null);
+                setLoadingFetchIdrgData(false);
+            })
+            .catch((error) => {
+                setLoadingFetchIdrgData(false);
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setLoadingFetchIdrgData(false);
+            });
+    };
 
     const fetchINACBGData = async () => {
         setLoadingFetchInacbgData(true);
@@ -44,6 +68,9 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
             key: "1",
             children: (
                 <IndexTabIDRG
+                    fetchIDRGData={fetchIDRGData}
+                    loadingFetchIdrgData={loadingFetchIdrgData}
+                    idrgGroupData={idrgGroupData}
                     pasien={pasien}
                     setDisableINACBG={setDisableINACBG}
                 />

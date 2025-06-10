@@ -5,12 +5,16 @@ import axios from "axios";
 import DiagnosaListIDRG from "./DiagnosaListIDRG";
 import ProcedureListIDRG from "./ProcedureListIDRG";
 
-function Index({ pasien, setDisableINACBG }) {
+function Index({
+    pasien,
+    setDisableINACBG,
+    fetchIDRGData,
+    idrgGroupData,
+    loadingFetchIdrgData,
+}) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
     const [diagnosaTab, setDiagnosaTab] = useState([]);
-    const [idrgGroupData, setIdrgGroupData] = useState(null);
-    const [loadingFetchIdrgData, setLoadingFetchIdrgData] = useState(false);
 
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
@@ -127,27 +131,6 @@ function Index({ pasien, setDisableINACBG }) {
             setModalReEditIDRGOpen(false);
             fetchIDRGData();
         }
-    };
-
-    const fetchIDRGData = async () => {
-        setLoadingFetchIdrgData(true);
-        axios
-            .get(
-                route("rm.pasien-rujukan.get_idrg_group_data", {
-                    no_sep: pasien?.FMNOSEP,
-                })
-            )
-            .then((response) => {
-                setIdrgGroupData(response?.data?.data || null);
-                setLoadingFetchIdrgData(false);
-            })
-            .catch((error) => {
-                setLoadingFetchIdrgData(false);
-                console.error("Error fetching diagnosa data:", error);
-            })
-            .finally(() => {
-                setLoadingFetchIdrgData(false);
-            });
     };
 
     const isFinalIDRG = idrgGroupData?.is_final == 1;
