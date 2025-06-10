@@ -541,7 +541,9 @@ function Index({ pasien }) {
                     )}
 
                     <Button
-                        disabled={(pasien?.FMNOSEP ? false : true) || isFinalINACBG}
+                        disabled={
+                            (pasien?.FMNOSEP ? false : true) || isFinalINACBG
+                        }
                         type="primary"
                         onClick={() => {
                             setModalImportAndBridgeOpen(true);
@@ -601,7 +603,8 @@ function Index({ pasien }) {
                         </Button>
                     ) : (
                         <Button
-                            color="danger"
+                            type="primary"
+                            style={{ backgroundColor: " #F3732F" }}
                             variant="solid"
                             onClick={() => {
                                 setModalReEditINACBGOpen(true);
@@ -796,7 +799,7 @@ function Index({ pasien }) {
 
             <Modal
                 open={modalReEditINACBGOpen}
-                title="Edit Ulang iDRG"
+                title="Edit Ulang INACBG"
                 onCancel={() => setModalReEditINACBGOpen(false)}
                 footer={[
                     <Button
@@ -807,15 +810,15 @@ function Index({ pasien }) {
                         Cancel
                     </Button>,
                     <Button
+                        style={{ backgroundColor: " #F3732F" }}
                         loading={reeditLoading}
-                        color="danger"
                         variant="solid"
                         onClick={() => {
                             handleEditUlangInacbg();
                             return;
                         }}
                     >
-                        Ok, Edit Ulang iDRG
+                        Ok, Edit Ulang INACBG
                     </Button>,
                 ]}
             >

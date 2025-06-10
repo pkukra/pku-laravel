@@ -315,7 +315,8 @@ function Index({ pasien, setDisableINACBG }) {
                         </Button>
                     ) : (
                         <Button
-                            color="danger"
+                            type="primary"
+                            style={{ backgroundColor: " #F3732F" }}
                             variant="solid"
                             onClick={() => {
                                 setModalReEditIDRGOpen(true);
@@ -412,8 +413,9 @@ function Index({ pasien, setDisableINACBG }) {
                         Cancel
                     </Button>,
                     <Button
+                        type="primary"
                         loading={reeditLoading}
-                        color="danger"
+                        style={{ backgroundColor: " #F3732F" }}
                         variant="solid"
                         onClick={() => {
                             handleEditUlangData();

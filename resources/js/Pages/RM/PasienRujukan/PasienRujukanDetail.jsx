@@ -14,6 +14,7 @@ import IndexTabINACBG from "../INACBG/IndexTabINACBG";
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import EKlaim from "../Eklaim";
 
 function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
@@ -40,7 +41,9 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         setLoadingRaber(true);
         axios
             .get(
-                route("rm.pasien-rujukan.list_all_raber", { no_sep: golbalSEP })
+                route("rm.pasien-rujukan.list_all_raber", {
+                    no_sep: pasien?.FMNOSEP,
+                })
             )
             .then((response) => {
                 setListRaber(response?.data || []);
@@ -54,13 +57,13 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
 
     useEffect(() => {
         if (pasien?.FRPUNIT != "PK011") {
-            if (golbalSEP) {
+            if (pasien?.FMNOSEP) {
                 fetchAllRelatedRaber();
             }
         } else {
             setLoadingRaber(false);
         }
-    }, [golbalSEP]);
+    }, [pasien]);
 
     const menu = [
         {
@@ -116,7 +119,6 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         <Col span={24}>
                             <PasienRujukanDetailProfile pasien={pasien} />
                         </Col>
-
                         <Col span={24}>
                             {pasien?.FRPUNIT === "PK011" ? (
                                 <Row gutter={[5, 5]}>
@@ -164,7 +166,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                             )}
                         </Col>
                         <Col span={24}>
-                            <Card>
+                            {/* <Card>
                                 <Tabs
                                     defaultActiveKey="1"
                                     type="card"
@@ -172,7 +174,12 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                                     style={{ marginBottom: 32 }}
                                     items={menu}
                                 />
-                            </Card>
+                            </Card> */}
+                            <EKlaim
+                                pasien={pasien}
+                                setDisableINACBG={setDisableINACBG}
+                                disableINACBG={disableINACBG}
+                            />
                         </Col>
 
                         <Col span={12}>
