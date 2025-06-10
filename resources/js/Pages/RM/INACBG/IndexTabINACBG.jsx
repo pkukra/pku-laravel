@@ -158,6 +158,8 @@ function Index({ pasien }) {
                 })
             )
             .then((response) => {
+                console.log(response?.data);
+                
                 setInacbgGroupData(response?.data || null);
                 setLoadingFetchGroupData(false);
             })

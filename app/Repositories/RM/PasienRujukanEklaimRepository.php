@@ -1206,7 +1206,6 @@ class PasienRujukanEklaimRepository
             ],
             "data" => ["nomor_sep" => $no_sep]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-
         $grouping_1_inacbg = sendRequest($key, $data);
 
         $cbg_code = $grouping_1_inacbg->response->response_inacbg->cbg->code;
@@ -1475,7 +1474,7 @@ class PasienRujukanEklaimRepository
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         // Data request
         $data = json_encode([
-            "metadata" => ["method" => "idrg_grouper_reedit"],
+            "metadata" => ["method" => "inacbg_grouper_reedit"],
             "data" => ["nomor_sep" => $no_sep]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
