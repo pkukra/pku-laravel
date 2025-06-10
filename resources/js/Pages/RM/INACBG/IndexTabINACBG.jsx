@@ -24,6 +24,9 @@ function Index({ pasien }) {
     const [modalGroupingDuaOpen, setModalGroupingDuaOpen] = useState(false);
     const [grupingLoading, setGrupingLoading] = useState(false);
 
+    const [finalLoading, setFinalLoading] = useState(false);
+    const [modalFinalOpen, setModalFinalOpen] = useState(false);
+
     const handleImportAndBridgingData = async () => {
         setImportAndBridgeLoading(true);
         try {
@@ -88,7 +91,7 @@ function Index({ pasien }) {
             return notification.success({
                 placement: "topRight",
                 message: "Sukses!",
-                description: "Sukses grouping stage satu inaCBG",
+                description: "Sukses grouping stage satu INACBG",
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -132,7 +135,7 @@ function Index({ pasien }) {
             return notification.success({
                 placement: "topRight",
                 message: "Sukses!",
-                description: "Sukses grouping stage dua inaCBG",
+                description: "Sukses grouping stage dua INACBG",
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -178,12 +181,14 @@ function Index({ pasien }) {
         inacbgGroupData?.special_cmg_option || "[]"
     );
 
-    const isFinalINACBG = incabg_group_data?.is_final == 1;
+    const isFinalINACBG = inacbgGroupData?.is_final == 1;
     const RupiahFormat = (x) => {
         const number = Number(x);
         const formatted = new Intl.NumberFormat("id-ID").format(number);
         return formatted;
     };
+
+    console.log(inacbgGroupData?.is_final);
 
     const disableGrupSatuButton = () => {
         if (inacbgGroupData?.hasOwnProperty("id")) {
@@ -217,10 +222,49 @@ function Index({ pasien }) {
         return false; // Enable otherwise
     };
 
+    const handleFinalData = async () => {
+        setFinalLoading(true);
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.bridging_final_inacbg", {
+                    no_sep: pasien?.FMNOSEP,
+                })
+            );
+
+            if (response?.data?.status === "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.error,
+                });
+            }
+
+            if (response?.data?.response?.metadata?.code === 400) {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.response?.metadata?.message,
+                });
+            }
+
+            return notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: "sukses final data INACBG",
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setFinalLoading(false);
+            setModalFinalOpen(false);
+            fetchINACBGData();
+        }
+    };
+
+    //
+
     return (
         <>
             <p>
-                <strong>inaCBG</strong>
+                <strong>INACBG</strong>
             </p>
             <Row gutter={[5, 5]}>
                 <Col span={12}>
@@ -243,7 +287,7 @@ function Index({ pasien }) {
             <Row gutter={[5, 5]}>
                 <Col span={12}></Col>
                 <Col span={12}>
-                    <Divider> Hasil Grouping inaCBG </Divider>
+                    <Divider> Hasil Grouping INACBG </Divider>
                     {loadingFetchGroupData ? (
                         <p>Loading...</p>
                     ) : (
@@ -468,7 +512,7 @@ function Index({ pasien }) {
                             backgroundColor: " #33cc33",
                         }}
                     >
-                        Import inaCBG
+                        Import INACBG
                     </Button>
 
                     <Button
@@ -507,6 +551,7 @@ function Index({ pasien }) {
                         <Button
                             type="primary"
                             onClick={() => {
+                                setModalFinalOpen(true);
                                 return;
                             }}
                             disabled={disableFinalButton()}
@@ -522,7 +567,7 @@ function Index({ pasien }) {
                                 return;
                             }}
                         >
-                            Edit Ulang iDRG
+                            Edit Ulang INACBG
                         </Button>
                     )}
                 </Col>
@@ -565,7 +610,7 @@ function Index({ pasien }) {
 
                 <p>
                     Proses ini mengakibatkan diagnosa & prosedure yang tersimpan
-                    di inaCBG terganti dengan data import dari idrg. Apakah
+                    di INACBG terganti dengan data import dari idrg. Apakah
                     setuju untuk melanjutkan?
                 </p>
             </Modal>
@@ -668,6 +713,43 @@ function Index({ pasien }) {
                             {cmg.code}
                         </Tag>
                     ))
+                )}
+            </Modal>
+
+            <Modal
+                open={modalFinalOpen}
+                title="Final Data INACBG"
+                onCancel={() => setModalFinalOpen(false)}
+                footer={[
+                    <Button
+                        key="back"
+                        onClick={() => setModalFinalOpen(false)}
+                        loading={finalLoading}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        disabled={pasien?.FMNOSEP !== null ? false : true}
+                        key="submit"
+                        type="primary"
+                        loading={finalLoading}
+                        onClick={() => handleFinalData()}
+                        style={{ backgroundColor: " #cc66ff" }}
+                    >
+                        Ok, Final Data
+                    </Button>,
+                ]}
+            >
+                {pasien?.FMNOSEP ? (
+                    <div>
+                        <p>
+                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                        </p>
+                    </div>
+                ) : (
+                    <p>
+                        <strong>Belum ada data SEP</strong>
+                    </p>
                 )}
             </Modal>
         </>
