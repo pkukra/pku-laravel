@@ -19,6 +19,7 @@ export default function Index({
     trigerFetchProcedure,
     setProcedureHasErr,
     fetchINACBGData,
+    isFinalINACBG,
 }) {
     const columns = [
         {
@@ -51,8 +52,9 @@ export default function Index({
             render: (_, record) => (
                 <Button
                     disabled={
-                        loadingDeleteProcedure &&
-                        record.ID === deleteProcedureId
+                        isFinalINACBG ||
+                        (loadingDeleteProcedure &&
+                        record.ID === deleteProcedureId)
                     }
                     size="small"
                     variant="outlined"
@@ -281,7 +283,7 @@ export default function Index({
                                         <span>{item.FMI9KETERANGAN}</span>
                                     </div>
                                 ),
-                                disabled: selectedProcedure.includes(
+                                disabled: isFinalINACBG || selectedProcedure.includes(
                                     item.FMI9KODE
                                 ), // Disable if already selected
                             }))}
@@ -309,7 +311,7 @@ export default function Index({
                         style={{ width: "100%" }}
                         onClick={saveProcedure}
                         disabled={
-                            loadingSaveDiag || selectedProcedureForm === null
+                            loadingSaveDiag || selectedProcedureForm === null || isFinalINACBG
                         }
                     >
                         {loadingSaveDiag ? (

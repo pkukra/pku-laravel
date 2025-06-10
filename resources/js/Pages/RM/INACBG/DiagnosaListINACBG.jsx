@@ -20,6 +20,7 @@ export default function Index({
     trigerFetchDiagnosa,
     setDiagnosaHasErr,
     fetchINACBGData,
+    isFinalINACBG,
 }) {
     const columns = [
         {
@@ -57,7 +58,8 @@ export default function Index({
             render: (_, record) => (
                 <Button
                     disabled={
-                        loadingDeleteDiagnosa && record.ID === deleteDiagnosaId
+                        isFinalINACBG ||
+                        (loadingDeleteDiagnosa && record.ID === deleteDiagnosaId)
                     }
                     size="small"
                     variant="outlined"
@@ -274,6 +276,7 @@ export default function Index({
                         placement="topLeft"
                     >
                         <Select
+                            disabled={isFinalINACBG}
                             autoFocus
                             ref={inputRefStatusDdiagnosa}
                             showSearch
@@ -301,6 +304,7 @@ export default function Index({
                 </Col>
                 <Col span={4}>
                     <Select
+                        disabled={isFinalINACBG}
                         showSearch
                         style={{ width: "100%" }}
                         placeholder="Lama Baru"
@@ -341,9 +345,9 @@ export default function Index({
                                     <span>{item.PENYAKIT}</span>
                                 </div>
                             ),
-                            disabled: selectedDiagnosa.includes(
-                                item.KD_PENYAKIT
-                            ), // Disable if already selected
+                            disabled:
+                                isFinalINACBG ||
+                                selectedDiagnosa.includes(item.KD_PENYAKIT), // Disable if already selected
                         }))}
                         style={{ width: "100%" }}
                         onSelect={(value) => {
@@ -374,7 +378,8 @@ export default function Index({
                             loadingSaveDiag ||
                             selectedKasusForm === null ||
                             selectedStatusDiagForm === null ||
-                            selectedDiagnosaForm === null
+                            selectedDiagnosaForm === null ||
+                            isFinalINACBG
                         }
                     >
                         {loadingSaveDiag ? (

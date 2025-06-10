@@ -309,6 +309,7 @@ function Index({ pasien }) {
             <Row gutter={[5, 5]}>
                 <Col span={12}>
                     <DiagnosaListINACBG
+                        isFinalINACBG={isFinalINACBG}
                         pasien={pasien}
                         trigerFetchDiagnosa={shouldRefetchData}
                         setDiagnosaHasErr={setDiagnosaHasErr}
@@ -317,6 +318,7 @@ function Index({ pasien }) {
                 </Col>
                 <Col span={12}>
                     <ProcedureListINACBG
+                        isFinalINACBG={isFinalINACBG}
                         pasien={pasien}
                         trigerFetchProcedure={shouldRefetchData}
                         setProcedureHasErr={setProcedureHasErr}
@@ -541,7 +543,7 @@ function Index({ pasien }) {
                     )}
 
                     <Button
-                        disabled={pasien?.FMNOSEP ? false : true}
+                        disabled={(pasien?.FMNOSEP ? false : true) || isFinalINACBG}
                         type="primary"
                         onClick={() => {
                             setModalImportAndBridgeOpen(true);
