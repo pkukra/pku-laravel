@@ -10,7 +10,7 @@ function Index({
     pasien,
     inacbgGroupData,
     fetchINACBGData,
-    loadingFetchGroupData,
+    loadingFetchInacbgData,
 }) {
     const [shouldRefetchData, setShouldReFetch] = useState(false);
 
@@ -304,7 +304,7 @@ function Index({
                 <Col span={12}></Col>
                 <Col span={12}>
                     <Divider> Hasil Grouping INACBG </Divider>
-                    {loadingFetchGroupData ? (
+                    {loadingFetchInacbgData ? (
                         <p>Loading...</p>
                     ) : (
                         <table

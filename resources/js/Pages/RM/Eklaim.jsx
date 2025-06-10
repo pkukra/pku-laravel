@@ -8,11 +8,11 @@ import IndexTabINACBG from "./INACBG/IndexTabINACBG";
 import axios from "axios";
 
 function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
-    const [loadingFetchGroupData, setLoadingFetchGroupData] = useState(false);
+    const [loadingFetchInacbgData, setLoadingFetchInacbgData] = useState(false);
     const [inacbgGroupData, setInacbgGroupData] = useState(null);
 
     const fetchINACBGData = async () => {
-        setLoadingFetchGroupData(true);
+        setLoadingFetchInacbgData(true);
         axios
             .get(
                 route("rm.pasien-rujukan.get_inacbg_group_data", {
@@ -21,14 +21,14 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
             )
             .then((response) => {
                 setInacbgGroupData(response?.data || null);
-                setLoadingFetchGroupData(false);
+                setLoadingFetchInacbgData(false);
             })
             .catch((error) => {
-                setLoadingFetchGroupData(false);
+                setLoadingFetchInacbgData(false);
                 console.error("Error fetching diagnosa data:", error);
             })
             .finally(() => {
-                setLoadingFetchGroupData(false);
+                setLoadingFetchInacbgData(false);
             });
     };
 
@@ -57,7 +57,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                     pasien={pasien}
                     inacbgGroupData={inacbgGroupData}
                     fetchINACBGData={fetchINACBGData}
-                    loadingFetchGroupData={loadingFetchGroupData}
+                    loadingFetchInacbgData={loadingFetchInacbgData}
                 />
             ),
             disabled: disableINACBG,
