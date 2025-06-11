@@ -1205,4 +1205,117 @@ class PasienInapEklaimRepository
         }
         return $response;
     }
+
+    /**
+     * Process bridgingImportIdrgToIncbg by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingImportIdrgToIncbg($no_sep)
+    {
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return;
+        }
+
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        $user = Auth::user();
+        $requestData = json_encode((object)[
+            'metadata' => (object)[
+                'method' => 'idrg_to_inacbg_import',
+            ],
+            'data' => [
+                'nomor_sep' => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $key = $user->eklaim_key;
+        $response = sendRequest($key, $requestData);
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        if ($response->status != "ok" || $response->response->metadata->code != 200) {
+            return [
+                'status' => 'nok',
+                'message' => $response->response->metadata->message ?? 'Terjadi kesalahan pada server e-Klaim.',
+            ];
+        }
+
+        $diagnosa = [];
+        $procedure = [];
+
+        if (!empty($response->response->data->diagnosa->expanded)) {
+            foreach ($response->response->data->diagnosa->expanded as $index => $item) {
+                $isError = isset($item->metadata->error_no);
+                $data_to_save = [
+                    'MRPKD_PENYAKIT' => $item->code,
+                    'MRPNO_TRANSAKSI' => null,
+                    'MRPKD_PASIEN' => $transaksi_utama->KD_PASIEN,
+                    'MRPKD_UNIT' => null,
+                    'MRPTGL_MASUK' => $transaksi_utama->TGL_MASUK,
+                    'MRPURUT_MASUK' => $index + 1,
+                    'MRPJENIS' => 'RI',
+                    'MRPSTAT_DIAG' => ($index == 0) ? 5 : 1,
+                    'MRPKASUS' => null,
+                    'USER_ID' => $user->id,
+                    'UPDATE_DT' => $now,
+                    'NOSEP' => $no_sep,
+                    'IS_ERROR' => $isError,
+                    'ERROR_MESSAGE' => $isError ? $item->metadata->message : null,
+                ];
+                $diagnosa[] = $data_to_save;
+            }
+        }
+
+        if (!empty($response->response->data->procedure->expanded)) {
+            foreach ($response->response->data->procedure->expanded as $index => $item) {
+                $isError = isset($item->metadata->error_no);
+                $data_to_save = [
+                    'MRTKD_TINDAKAN' => $item->code,
+                    'MRTNOTRANSAKSI' => null,
+                    'MRTKD_PASIEN' => $transaksi_utama->KD_PASIEN,
+                    'MRTKD_UNIT' => null,
+                    'MRTTGL_MASUK' => $now,
+                    'MRTURUT_MASUK' => $index + 1,
+                    'MRTTGL_TINDAKAN' => $transaksi_utama->TGL_MASUK,
+                    'NOSEP' => $no_sep,
+                    'IS_ERROR' => $isError,
+                    'ERROR_MESSAGE' => $isError ? $item->metadata->message : null,
+                ];
+
+                $procedure[] = $data_to_save;
+            }
+        }
+
+        try {
+
+            DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT')
+                ->where('NOSEP', $no_sep)
+                ->delete();
+
+            DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN')
+                ->where('NOSEP', $no_sep)
+                ->delete();
+
+            DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT')->insert($diagnosa);
+            DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN')->insert($procedure);
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->where('no_sep', $no_sep)
+                ->delete();
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("bridgingImportIdrgToIncbg: " . $e->getMessage());
+            return [
+                'status' => 'nok',
+                'message' => 'Gagal menyimpan data diagnosa: ' . $e->getMessage(),
+            ];
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return [
+            'status' => 'ok',
+            'message' => $response->response->metadata,
+        ];
+    }
 }
