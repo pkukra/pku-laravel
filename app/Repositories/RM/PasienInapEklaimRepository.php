@@ -1658,4 +1658,77 @@ class PasienInapEklaimRepository
         }
         return $response;
     }
+
+    /**
+     * Process bridgingFinalKlaim by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingFinalKlaim($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "claim_final"],
+            "data" => ["nomor_sep" => $no_sep, "coder_nik" => $user->nik]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code != 200) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->where('no_sep', $no_sep)
+                ->where('pasien_id', $transaksi_utama->KD_PASIEN)
+                ->update([
+                    'is_final_claim' => 1,
+                    'updated_at' => $now,
+                    'updated_by' => $user->email,
+                ]);
+
+            DB::connection('sqlsrvsimrs')
+                ->table('TRANSAKSIPASIENINAP')
+                ->where('FTNO_TRANSAKSI', $transaksi_utama->PRWINO_TRANSAKSI)
+                ->update([
+                    'FKUNCI_VALIDASI' => 1,
+                ]);
+
+            $this->auditTrail->insert([
+                "object_id" => $no_sep,
+                "action_id" => 7,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => [
+                    "nomor_sep" => $no_sep,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error('Final Klaim inap bridgingFinalKlaim: ' . $e->getMessage());
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return $response;
+    }
 }

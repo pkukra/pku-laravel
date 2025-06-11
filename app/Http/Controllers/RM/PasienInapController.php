@@ -661,4 +661,14 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingEditUlangINACBG($no_sep);
         return response()->json($data);
     }
+    
+    /**
+     * bridging_final_klaim
+     * Process bridging data ke eklaim
+     */
+    public function bridging_final_klaim($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingFinalKlaim($no_sep);
+        return response()->json($data);
+    }
 }

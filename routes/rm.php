@@ -135,5 +135,9 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/grouping_inacbg_stage_dua/{no_sep}', [PasienInapController::class, 'grouping_inacbg_stage_dua'])->name('rm.pasien-inap.grouping_inacbg_stage_dua');
         Route::post('/bridging_final_inacbg/{no_sep}', [PasienInapController::class, 'bridging_final_inacbg'])->name('rm.pasien-inap.bridging_final_inacbg');
         Route::post('/edit_ulang_inacbg/{no_sep}', [PasienInapController::class, 'edit_ulang_inacbg'])->name('rm.pasien-inap.edit_ulang_inacbg');
+
+        Route::post('/bridging_final_klaim/{no_sep}', [PasienInapController::class, 'bridging_final_klaim'])->name('rm.pasien-inap.bridging_final_klaim');
+
+        Route::post('/bridging_reedit_klaim/{no_sep}', [PasienInapController::class, 'bridging_reedit_klaim'])->name('rm.pasien-inap.bridging_reedit_klaim');
     });
 });

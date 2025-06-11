@@ -80,7 +80,6 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
             })
             .finally(() => {
                 setLoadingFetchInacbgData(false);
-                console.log("process finished");
             });
         return;
     };
@@ -108,9 +107,13 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
 
     const handleFinalData = async () => {
         setFinalLoading(true);
+        let routeName = "rm.pasien-rujukan.bridging_final_klaim";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.bridging_final_klaim";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_final_klaim", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
@@ -149,9 +152,13 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
 
     const handleReeditKlaim = async () => {
         setReeditLoading(true);
+        let routeName = "rm.pasien-rujukan.bridging_reedit_klaim";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.bridging_reedit_klaim";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_reedit_klaim", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
@@ -440,7 +447,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                 onCancel={() => setModalReeditOpen(false)}
                 footer={[
                     <Button
-                        key="back"
+                        key="Editback"
                         onClick={() => setModalReeditOpen(false)}
                         loading={reeditLoading}
                     >
@@ -450,7 +457,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                         dashed
                         danger
                         disabled={pasien?.FMNOSEP !== null ? false : true}
-                        key="submit"
+                        key="Editsubmit"
                         loading={reeditLoading}
                         onClick={() => handleReeditKlaim()}
                     >
