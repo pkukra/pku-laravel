@@ -107,9 +107,9 @@ export default function Index({
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(false); // Loading state
 
     const no_sep = pasien?.FMNOSEP || null;
-    const pasien_id = pasien?.FRPPASIEN_ID
-    const kode_reg = pasien?.FRPNOTRANSAKSIKJ
-    const customer_id = pasien?.FRPCUSTOMER_ID
+    const pasien_id = pasien?.FRPPASIEN_ID;
+    const kode_reg = pasien?.FRPNOTRANSAKSIKJ;
+    const customer_id = pasien?.FRPCUSTOMER_ID;
 
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {
@@ -190,9 +190,7 @@ export default function Index({
         const payload = {
             code: selectedDiagnosaForm,
             pasien_id: pasien_id,
-            ...(no_sep
-                ? { no_sep: no_sep }
-                : { no_transaksikj: kode_reg }),
+            ...(no_sep ? { no_sep: no_sep } : { no_transaksikj: kode_reg }),
         };
 
         try {

@@ -59,7 +59,8 @@ export default function Index({
                 <Button
                     disabled={
                         isFinalINACBG ||
-                        (loadingDeleteDiagnosa && record.ID === deleteDiagnosaId)
+                        (loadingDeleteDiagnosa &&
+                            record.ID === deleteDiagnosaId)
                     }
                     size="small"
                     variant="outlined"
@@ -89,14 +90,19 @@ export default function Index({
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
 
+    const no_sep = pasien?.FMNOSEP || null;
+    const pasien_id = pasien?.FRPPASIEN_ID;
+    const kode_reg = pasien?.FRPNOTRANSAKSIKJ;
+    const pasien_tgl_transaksi = pasien?.FRPTGL;
+
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {
         setLoadingFetchDiagnosa(true);
         axios
             .get(
                 route("rm.pasien-rujukan.list_diagnosa", {
-                    kode_reg: pasien?.FRPNOTRANSAKSIKJ,
-                    no_sep: pasien?.FMNOSEP,
+                    kode_reg: kode_reg,
+                    no_sep: no_sep,
                 })
             )
             .then(({ data }) => {
@@ -173,11 +179,11 @@ export default function Index({
                 route("rm.pasien-rujukan.save_diagnosa"),
                 {
                     icd10_code: selectedDiagnosaForm,
-                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    no_sep: pasien?.FMNOSEP,
-                    no_rm: pasien.FRPPASIEN_ID,
-                    kd_unit: pasien.FRPUNIT,
-                    tgl_masuk: pasien.FRPTGL,
+                    no_transaksikj: kode_reg,
+                    no_sep: no_sep,
+                    no_rm: pasien_id,
+                    kd_unit: "",
+                    tgl_masuk: pasien_tgl_transaksi,
                     status_diagnosa: selectedStatusDiagForm,
                     kasus: selectedKasusForm,
                 }

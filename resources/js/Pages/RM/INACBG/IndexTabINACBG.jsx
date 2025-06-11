@@ -34,12 +34,14 @@ function Index({
     const [reeditLoading, setReeditLoading] = useState(false);
     const [modalReEditINACBGOpen, setModalReEditINACBGOpen] = useState(false);
 
+    const no_sep = pasien?.FMNOSEP || null;
+
     const handleImportAndBridgingData = async () => {
         setImportAndBridgeLoading(true);
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_import_idrg_to_inacbg", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             );
 
@@ -77,7 +79,7 @@ function Index({
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.grouping_inacbg_stage_satu", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             );
 
@@ -118,7 +120,7 @@ function Index({
 
             const response = await axios.post(
                 route("rm.pasien-rujukan.grouping_inacbg_stage_dua", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 }),
                 {
                     special_cmg: selectedCmgOptionFormatted,
@@ -205,7 +207,7 @@ function Index({
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_final_inacbg", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             );
 
@@ -242,7 +244,7 @@ function Index({
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.edit_ulang_inacbg", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             );
 
@@ -517,7 +519,7 @@ function Index({
 
                     <Button
                         disabled={
-                            (pasien?.FMNOSEP ? false : true) || isFinalINACBG
+                            (no_sep ? false : true) || isFinalINACBG
                         }
                         type="primary"
                         onClick={() => {
@@ -620,9 +622,9 @@ function Index({
                 ]}
             >
                 <br />
-                {pasien?.FMNOSEP ? (
+                {no_sep ? (
                     <div>
-                        <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                        <strong>Nomor SEP:</strong> {no_sep}
                     </div>
                 ) : (
                     <strong>Belum ada data SEP</strong>
@@ -665,9 +667,9 @@ function Index({
                 ]}
             >
                 <br />
-                {pasien?.FMNOSEP ? (
+                {no_sep ? (
                     <div>
-                        <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                        <strong>Nomor SEP:</strong> {no_sep}
                     </div>
                 ) : (
                     <strong>Belum ada data SEP</strong>
@@ -704,9 +706,9 @@ function Index({
                 ]}
             >
                 <br />
-                {pasien?.FMNOSEP ? (
+                {no_sep ? (
                     <div>
-                        <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                        <strong>Nomor SEP:</strong> {no_sep}
                     </div>
                 ) : (
                     <strong>Belum ada data SEP</strong>
@@ -749,7 +751,7 @@ function Index({
                         Cancel
                     </Button>,
                     <Button
-                        disabled={pasien?.FMNOSEP !== null ? false : true}
+                        disabled={no_sep !== null ? false : true}
                         key="submit"
                         type="primary"
                         loading={finalLoading}
@@ -760,10 +762,10 @@ function Index({
                     </Button>,
                 ]}
             >
-                {pasien?.FMNOSEP ? (
+                {no_sep ? (
                     <div>
                         <p>
-                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                            <strong>Nomor SEP:</strong> {no_sep}
                         </p>
                     </div>
                 ) : (
@@ -798,10 +800,10 @@ function Index({
                     </Button>,
                 ]}
             >
-                {pasien?.FMNOSEP ? (
+                {no_sep ? (
                     <div>
                         <p>
-                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                            <strong>Nomor SEP:</strong> {no_sep}
                         </p>
                     </div>
                 ) : (

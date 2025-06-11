@@ -256,7 +256,7 @@ class PasienRujukanController extends Controller
             'no_sep' => 'string|max:20',
             'icd10_code' => 'required|string|max:10',
             'no_rm' => 'required|string|max:20',
-            'kd_unit' => 'required|string|max:20',
+            'kd_unit' => 'max:20',
             'tgl_masuk' => 'required|date',
             'status_diagnosa' => 'required|string',
             'kasus' => 'required|string',
