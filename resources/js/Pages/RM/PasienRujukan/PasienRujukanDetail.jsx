@@ -8,13 +8,10 @@ import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailAssesmenIGD from "./PasienRujukanDetailAssesmenIGD";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
-
-import IndexTabIDRG from "../IDRG/IndexTabIDRG";
-import IndexTabINACBG from "../INACBG/IndexTabINACBG";
+import EKlaim from "../Eklaim";
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import EKlaim from "../Eklaim";
 
 function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
@@ -64,26 +61,6 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
             setLoadingRaber(false);
         }
     }, [pasien]);
-
-    const menu = [
-        {
-            label: "IDRG",
-            key: "1",
-            children: (
-                <IndexTabIDRG
-                    pasien={pasien}
-                    golbalSEP={golbalSEP}
-                    setDisableINACBG={setDisableINACBG}
-                />
-            ),
-        },
-        {
-            label: "INACBG",
-            key: "2",
-            children: <IndexTabINACBG golbalSEP={golbalSEP} pasien={pasien} />,
-            disabled: disableINACBG,
-        },
-    ];
 
     const itemTabDokter = listRaber.map((item, index) => ({
         label: item?.FMDDOKTERN,
