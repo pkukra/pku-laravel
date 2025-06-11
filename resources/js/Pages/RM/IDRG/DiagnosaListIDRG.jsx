@@ -107,9 +107,14 @@ export default function Index({
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(false); // Loading state
 
     const no_sep = pasien?.FMNOSEP || null;
-    const pasien_id = pasien?.FRPPASIEN_ID;
-    const kode_reg = pasien?.FRPNOTRANSAKSIKJ;
-    const customer_id = pasien?.FRPCUSTOMER_ID;
+    let pasien_id = pasien?.FRPPASIEN_ID;
+    let kode_reg = pasien?.FRPNOTRANSAKSIKJ;
+    let customer_id = pasien?.FRPCUSTOMER_ID;
+    if (pasien?.JENIS_RAWAT == "ranap") {
+        customer_id = pasien?.PRWIKD_CUSTOMER;
+        kode_reg = pasien?.FTNO_TRANSAKSI;
+        pasien_id = pasien?.FTKD_PASIEN;
+    }
 
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {

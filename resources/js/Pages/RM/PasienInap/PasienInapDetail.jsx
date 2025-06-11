@@ -11,10 +11,12 @@ import PasienInapDetailSEP from "./PasienInapDetailSEP";
 import PasienInapDetailAssesmenAwal from "./PasienInapDetailAssesmenAwal";
 import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
+import EKlaim from "../Eklaim";
 
 function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
     const [pasien, setPasien] = useState(initialPasien);
     const [pasienLoading, setPasienLoading] = useState(false);
+    const [disableINACBG, setDisableINACBG] = useState(true);
 
     const reFetchPasien = () => {
         setPasienLoading(true);
@@ -45,6 +47,14 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
                         <Col span={12}>
                             <PasienInapDetailBerkasPenunjang pasien={pasien} />
+                        </Col>
+
+                        <Col span={24}>
+                            <EKlaim
+                                pasien={pasien}
+                                setDisableINACBG={setDisableINACBG}
+                                disableINACBG={disableINACBG}
+                            />
                         </Col>
 
                         <Col span={12}>

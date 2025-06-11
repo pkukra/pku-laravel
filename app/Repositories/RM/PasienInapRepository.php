@@ -173,7 +173,9 @@ class PasienInapRepository
             ->leftJoin('SPESIALISASI', 'PRI.PRWIKD_SPECIAL', '=', 'SPESIALISASI.FMSPESIALISASI_ID')
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PRI.CARA_MASUK', '=', 'cm.KODE')
             ->leftJoin('MR_RUJUKAN_KELUAR AS rk', 'PRI.PRWIRUJUKLUAR', '=', 'rk.MRKODERUJUKAN')
+            ->leftJoin('BPJS_SEP AS sep', 'PRI.PRWINO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
             ->select(
+                'sep.FMNOSEP',
                 'TPI.*',
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',

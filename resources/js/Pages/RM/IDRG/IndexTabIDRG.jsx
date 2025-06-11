@@ -25,7 +25,10 @@ function Index({
     const [reeditLoading, setReeditLoading] = useState(false);
 
     const no_sep = pasien?.FMNOSEP || null;
-    const customer_id = pasien?.FRPCUSTOMER_ID;
+    let customer_id = pasien?.FRPCUSTOMER_ID;
+    if (pasien?.JENIS_RAWAT == "ranap") {
+        customer_id = pasien?.PRWIKD_CUSTOMER;
+    }
 
     const handleBridgingData = async () => {
         setBridgingLoading(true);

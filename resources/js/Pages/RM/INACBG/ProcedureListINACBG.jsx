@@ -84,9 +84,16 @@ export default function Index({
     const [loadingFetchProcedure, setLoadingFetchProcedure] = useState(true); // Loading state
 
     const no_sep = pasien?.FMNOSEP || null;
-    const pasien_id = pasien?.FRPPASIEN_ID;
-    const kode_reg = pasien?.FRPNOTRANSAKSIKJ;
-    const pasien_tgl_transaksi = pasien?.FRPTGL;
+    let pasien_id = pasien?.FRPPASIEN_ID;
+    let kode_reg = pasien?.FRPNOTRANSAKSIKJ;
+    let customer_id = pasien?.FRPCUSTOMER_ID;
+    let pasien_tgl_transaksi = pasien?.FRPTGL;
+    if (pasien?.JENIS_RAWAT == "ranap") {
+        customer_id = pasien?.PRWIKD_CUSTOMER;
+        kode_reg = pasien?.FTNO_TRANSAKSI;
+        pasien_id = pasien?.FTKD_PASIEN;
+        pasien_tgl_transaksi = pasien?.FTTGL_TRANSAKSI;
+    }
 
     // Fungsi untuk mengambil data procedure
     const fetchProcedure = () => {
