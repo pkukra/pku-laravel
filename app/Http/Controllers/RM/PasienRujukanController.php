@@ -921,6 +921,26 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * bridging_send_invidual_klaim
+     * Process bridging data ke eklaim
+     */
+    public function bridging_send_invidual_klaim($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingKirimKlaimIndividualProcess($no_sep);
+        return response()->json($data);
+    }
+    
+    /**
+     * bridging_get_claim_data
+     * Process bridging data ke eklaim
+     */
+    public function bridging_get_claim_data($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingGetClaimData($no_sep);
+        return response()->json($data);
+    }
+
+    /**
      * get_inacbg_group_data
      * Menampilkan procedure berdasarkan kode transaksi
      */

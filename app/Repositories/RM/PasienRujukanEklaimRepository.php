@@ -1679,4 +1679,44 @@ class PasienRujukanEklaimRepository
         DB::connection('sqlsrvsimrs')->commit();
         return $responseFinal;
     }
+
+    /**
+     * Process bridgingKirimKlaimIndividualProcess by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingKirimKlaimIndividualProcess($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "send_claim_individual"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
+    
+    /**
+     * Process bridgingGetClaimData by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingGetClaimData($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "get_claim_data"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
 }

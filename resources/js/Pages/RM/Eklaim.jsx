@@ -28,12 +28,19 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
     const [loadingFetchInacbgData, setLoadingFetchInacbgData] = useState(false);
     const [inacbgGroupData, setInacbgGroupData] = useState(null);
 
+    const [modalKirimOnlineOpen, setModalKirimOnlineOpen] = useState(false);
+    const [kirimOnlineLoading, setKirimOnlineLoading] = useState(false);
+
+    const [EkliamData, SetEklaimData] = useState(null);
+
+    const no_sep = pasien?.FMNOSEP;
+
     const fetchIDRGData = async () => {
         setLoadingFetchIdrgData(true);
         axios
             .get(
                 route("rm.pasien-rujukan.get_idrg_group_data", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             )
             .then((response) => {
@@ -49,12 +56,38 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
             });
     };
 
+    const fetchEKLAIMata = async () => {
+        setLoadingFetchInacbgData(true);
+        axios
+            .get(
+                route("rm.bridging_get_claim_data", {
+                    no_sep: no_sep,
+                })
+            )
+            .then((response) => {
+                if (response?.data?.response?.metadata?.code != 200) {
+                    SetEklaimData(null);
+                    return;
+                }
+                SetEklaimData(response?.data?.response?.response);
+                return;
+            })
+            .catch((error) => {
+                console.error("Error fetching diagnosa data:", error);
+            })
+            .finally(() => {
+                setLoadingFetchInacbgData(false);
+                console.log("process finished");
+            });
+        return;
+    };
+
     const fetchINACBGData = async () => {
         setLoadingFetchInacbgData(true);
         axios
             .get(
                 route("rm.pasien-rujukan.get_inacbg_group_data", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             )
             .then((response) => {
@@ -75,7 +108,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_final_klaim", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             );
 
@@ -106,6 +139,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
             setFinalLoading(false);
             setModalFinalOpen(false);
             fetchINACBGData();
+            fetchEKLAIMata();
         }
         return;
     };
@@ -115,7 +149,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.bridging_reedit_klaim", {
-                    no_sep: pasien?.FMNOSEP,
+                    no_sep: no_sep,
                 })
             );
 
@@ -145,15 +179,65 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
             setReeditLoading(false);
             setModalReeditOpen(false);
             fetchINACBGData();
+            fetchEKLAIMata();
         }
         return;
     };
 
-    useEffect(() => {
-        if (pasien?.FMNOSEP) {
+    const handleKirimKlaimIndividual = async () => {
+        setKirimOnlineLoading(true);
+        try {
+            const response = await axios.post(
+                route("rm.pasien-rujukan.bridging_send_invidual_klaim", {
+                    no_sep: no_sep,
+                })
+            );
+
+            if (response?.data?.status == "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.error,
+                });
+            }
+
+            if (response?.data?.response?.metadata?.code != 200) {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.response?.metadata?.message,
+                });
+            }
+
+            notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: "Sukses Edit Ulang Klaim",
+            });
+            return;
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setModalKirimOnlineOpen(false);
+            setKirimOnlineLoading(false);
             fetchINACBGData();
+            fetchEKLAIMata();
         }
-    }, [pasien?.FMNOSEP]);
+        return;
+    };
+
+    const hadleCetakKlaim = () => {
+        const url = route("rm.bridging_cetak_klaim", {
+            no_sep: no_sep,
+        });
+
+        window.open(url, "_blank");
+    };
+
+    useEffect(() => {
+        if (no_sep) {
+            fetchINACBGData();
+            fetchEKLAIMata();
+        }
+    }, [pasien]);
 
     const menu = [
         {
@@ -214,16 +298,32 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                         {loadingFetchInacbgData ? (
                             <p>Loading data...</p>
                         ) : (
-                            <p>
-                                Status Final EKLAIM :{" "}
-                                {inacbgGroupData?.is_final_claim ? (
-                                    <strong>Sudah Final</strong>
-                                ) : (
-                                    <strong>Belum Final</strong>
-                                )}
-                            </p>
+                            <>
+                                <p>
+                                    Status Final EKLAIM :{" "}
+                                    {inacbgGroupData?.is_final_claim == 1 ? (
+                                        <strong>Sudah Final</strong>
+                                    ) : (
+                                        <strong>Belum Final</strong>
+                                    )}
+                                </p>
+                                <p>
+                                    Status Terkirim Ke DC Kemenkes :{" "}
+                                    <strong>
+                                        {
+                                            EkliamData?.data
+                                                ?.kemenkes_dc_status_cd
+                                        }
+                                    </strong>
+                                </p>
+                                <p>
+                                    Status Terkirim Ke DC BPJS :{" "}
+                                    <strong>
+                                        {EkliamData?.data?.bpjs_dc_status_cd}
+                                    </strong>
+                                </p>
+                            </>
                         )}
-
                         {inacbgGroupData?.is_final_claim != 1 ? (
                             <Button
                                 disabled={disableFinalButton() || finalLoading}
@@ -241,7 +341,6 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                             </Button>
                         ) : (
                             <Button
-                                dashed
                                 danger
                                 disabled={disableFinalButton() || reeditLoading}
                                 onClick={() => {
@@ -255,13 +354,41 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                                 Edit Ulang Klaim
                             </Button>
                         )}
+
+                        <Button
+                            disabled={
+                                inacbgGroupData?.is_final_claim != 1 ||
+                                kirimOnlineLoading
+                            }
+                            loading={kirimOnlineLoading}
+                            danger
+                            type="primary"
+                            onClick={() => {
+                                setModalKirimOnlineOpen(true);
+                                return;
+                            }}
+                            style={{
+                                marginRight: 5,
+                            }}
+                        >
+                            Kirim Klaim Online
+                        </Button>
+                        <Button
+                            disabled={inacbgGroupData?.is_final_claim != 1}
+                            onClick={hadleCetakKlaim}
+                            style={{
+                                marginRight: 5,
+                            }}
+                        >
+                            Cetak Klaim
+                        </Button>
                     </Col>
                 </Row>
             </Card>
 
             <Modal
                 open={modalFinalOpen}
-                title="Final Klaim"
+                title="Final Klaim...?"
                 onCancel={() => setModalFinalOpen(false)}
                 footer={[
                     <Button
@@ -298,7 +425,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
 
             <Modal
                 open={modalReeditOpen}
-                title="Edit Ulang Klaim"
+                title="Edit Ulang Klaim...?"
                 onCancel={() => setModalReeditOpen(false)}
                 footer={[
                     <Button
@@ -317,6 +444,46 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                         onClick={() => handleReeditKlaim()}
                     >
                         Ok, Edit Ulang Klaim
+                    </Button>,
+                ]}
+            >
+                {pasien?.FMNOSEP ? (
+                    <div>
+                        <p>
+                            <strong>Nomor SEP:</strong> {pasien?.FMNOSEP}
+                        </p>
+                    </div>
+                ) : (
+                    <p>
+                        <strong>Belum ada data SEP</strong>
+                    </p>
+                )}
+            </Modal>
+
+            <Modal
+                open={modalKirimOnlineOpen}
+                title="Kirim klaim ke data center Kemenkes...?"
+                onCancel={() => setModalKirimOnlineOpen(false)}
+                footer={[
+                    <Button
+                        key="back"
+                        onClick={() => setModalKirimOnlineOpen(false)}
+                        loading={kirimOnlineLoading}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        dashed
+                        danger
+                        disabled={pasien?.FMNOSEP !== null ? false : true}
+                        key="submit"
+                        loading={kirimOnlineLoading}
+                        onClick={() => {
+                            handleKirimKlaimIndividual();
+                            return;
+                        }}
+                    >
+                        Ok, Kirim Klaim
                     </Button>,
                 ]}
             >
