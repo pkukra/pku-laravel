@@ -9,6 +9,7 @@ function Index({
     pasien,
     setDisableINACBG,
     fetchIDRGData,
+    fetchINACBGData,
     idrgGroupData,
     loadingFetchIdrgData,
     isKlaimFinal,
@@ -24,7 +25,7 @@ function Index({
     const [reeditLoading, setReeditLoading] = useState(false);
 
     const no_sep = pasien?.FMNOSEP || null;
-    const customer_id = pasien?.FRPCUSTOMER_ID
+    const customer_id = pasien?.FRPCUSTOMER_ID;
 
     const handleBridgingData = async () => {
         setBridgingLoading(true);
@@ -134,6 +135,7 @@ function Index({
             setReeditLoading(false);
             setModalReEditIDRGOpen(false);
             fetchIDRGData();
+            fetchINACBGData();
         }
     };
 

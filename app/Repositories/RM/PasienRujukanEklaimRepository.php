@@ -1128,6 +1128,16 @@ class PasienRujukanEklaimRepository
                         'updated_by' => $user->email,
                     ]);
 
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
+                    ->update([
+                        'is_final' => 0,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
                 if ($affected == 0) {
                     return (object)[
                         "status" => "nok",
@@ -1699,7 +1709,7 @@ class PasienRujukanEklaimRepository
         $response = sendRequest($key, $data);
         return $response;
     }
-    
+
     /**
      * Process bridgingGetClaimData by no_sep
      * 

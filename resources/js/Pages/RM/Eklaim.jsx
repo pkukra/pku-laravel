@@ -246,6 +246,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
             children: (
                 <IndexTabIDRG
                     fetchIDRGData={fetchIDRGData}
+                    fetchINACBGData={fetchINACBGData}
                     loadingFetchIdrgData={loadingFetchIdrgData}
                     idrgGroupData={idrgGroupData}
                     pasien={pasien}
@@ -283,6 +284,13 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
                 <Row gutter={[5, 5]}>
                     <Col span={24}>
                         <Tabs
+                            onChange={(key) => {
+                                if (key == 1) {
+                                    fetchIDRGData();
+                                } else {
+                                    fetchINACBGData();
+                                }
+                            }}
                             defaultActiveKey="1"
                             type="card"
                             size={"small"}
