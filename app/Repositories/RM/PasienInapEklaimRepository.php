@@ -1430,4 +1430,71 @@ class PasienInapEklaimRepository
         DB::connection('sqlsrvsimrs')->commit();
         return $grouping_1_inacbg;
     }
+
+    /**
+     * Process bridgingFinalProcess by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingFinalInacbg($no_sep)
+    {
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "inacbg_grouper_final"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code != 200) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => $response->response->metadata->message,
+            ];
+        }
+
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->where('no_sep', $no_sep)
+                ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
+                ->update([
+                    'is_final' => 1,
+                    'updated_at' => $now,
+                    'updated_by' => $user->email,
+                ]);
+
+            $this->auditTrail->insert([
+                "object_id" => $no_sep,
+                "action_id" => 7,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => [
+                    "nomor_sep" => $no_sep,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PasienInapEklaimRepository bridgingFinalInacbg: ' . $e->getMessage());
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Lihat Log",
+            ];
+        }
+
+        return $response;
+    }
 }
