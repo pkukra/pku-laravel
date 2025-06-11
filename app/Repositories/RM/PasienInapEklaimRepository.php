@@ -1029,7 +1029,7 @@ class PasienInapEklaimRepository
         // Hilangkan duplikat dan gabungkan dengan '#'
         return implode('#', array_unique($diagnosa));
     }
-    
+
     /**
      * Get all diagnosa idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
      * 
@@ -1049,5 +1049,160 @@ class PasienInapEklaimRepository
 
         // Hilangkan duplikat dan gabungkan dengan '#'
         return implode('#', array_unique($diagnosa));
+    }
+
+    /**
+     * Process bridgingFinalIDRG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingFinalIDRG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => "Nomer SEP belum tersimpan, simpan sep terlebih dahulu."
+            ];
+        }
+
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        try {
+            $affected = DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_IDRG')
+                ->where('no_sep', $no_sep)
+                ->where('pasien_id', $transaksi_utama->KD_PASIEN)
+                ->update([
+                    'is_final' => 1,
+                    'updated_at' => $now,
+                    'updated_by' => $user->email,
+                ]);
+
+            if ($affected == 0) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return (object)[
+                    "status" => "nok",
+                    "error" => "data group idrg tidak ditemukan"
+                ];
+            }
+
+            $this->auditTrail->insert([
+                "object_id" => $no_sep,
+                "action_id" => 19,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => [
+                    "nomor_sep" => $no_sep,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error('bridgingFinalIDRG err: ' . $e->getMessage());
+            return (object)[
+                "status" => "nok",
+                "error" => "Lihat Log"
+            ];
+        }
+
+        $data = json_encode([
+            "metadata" => ["method" => "idrg_grouper_final"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+
+        $isSuccess = $response->response->metadata->code == 200;
+
+        if (!$isSuccess) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            return (object)[
+                "status" => "nok",
+                "error" => $response->response->metadata->message ?? "Gagal dari endpoint"
+            ];
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return $response;
+    }
+
+    /**
+     * Process bridgingEditUlangIDRG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingEditUlangIDRG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => "Nomer SEP belum tersimpan, simpan sep terlebih dahulu."
+            ];
+        }
+
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        $data = json_encode([
+            "metadata" => ["method" => "idrg_grouper_reedit"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                $affected = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_IDRG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->KD_PASIEN)
+                    ->update([
+                        'is_final' => 0,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->KD_PASIEN)
+                    ->update([
+                        'is_final' => 0,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                if ($affected == 0) {
+                    return (object)[
+                        "status" => "nok",
+                        "error" => "data group idrg tidak ditemukan"
+                    ];
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $no_sep,
+                    "action_id" => 20,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('bridgingFinalIDRG err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        return $response;
     }
 }

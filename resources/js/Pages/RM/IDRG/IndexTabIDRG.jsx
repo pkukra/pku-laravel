@@ -73,9 +73,14 @@ function Index({
 
     const handleFinalData = async () => {
         setFinalLoading(true);
+
+        let routeName = "rm.pasien-rujukan.bridging_final_idrg";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.bridging_final_idrg";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_final_idrg", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
@@ -110,9 +115,13 @@ function Index({
 
     const handleEditUlangData = async () => {
         setReeditLoading(true);
+        let routeName = "rm.pasien-rujukan.edit_ulang_idrg";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.edit_ulang_idrg";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.edit_ulang_idrg", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );

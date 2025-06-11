@@ -586,4 +586,24 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingDataIdrgProcess($no_sep);
         return response()->json($data);
     }
+
+    /**
+     * bridging_final_idrg
+     * Process bridging data ke eklaim
+     */
+    public function bridging_final_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingFinalIDRG($no_sep);
+        return response()->json($data);
+    }
+
+    /**
+     * edit_ulang_idrg
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function edit_ulang_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingEditUlangIDRG($no_sep);
+        return response()->json($data);
+    }
 }
