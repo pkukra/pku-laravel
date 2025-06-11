@@ -69,7 +69,7 @@ class PasienInapController extends Controller
         $kode_dokter = $request->get('kode_dokter');
         $no_rm = $request->get('no_rm');
         $kode_bangsal = $request->input('kode_bangsal');
-        $is_inacbg_final = $request->get('is_inacbg_final'); 
+        $is_inacbg_final = $request->get('is_inacbg_final');
 
         $result = $this->pasienInapRepo->getAllPasienInaps(
             $tanggal_masuk,
@@ -79,7 +79,7 @@ class PasienInapController extends Controller
             $no_rm,
             $tanggal_keluar,
             $kode_bangsal,
-            $is_inacbg_final 
+            $is_inacbg_final
         );
 
         return response()->json([
@@ -575,5 +575,15 @@ class PasienInapController extends Controller
         return response($pdfContent)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'inline; filename="' . $no_sep . '.pdf"');
+    }
+
+    /**
+     * bridging_data_idrg
+     * Process bridging data ke eklaim
+     */
+    public function bridging_data_idrg($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingDataIdrgProcess($no_sep);
+        return response()->json($data);
     }
 }

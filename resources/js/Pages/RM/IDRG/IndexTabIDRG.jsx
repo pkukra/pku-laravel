@@ -32,9 +32,13 @@ function Index({
 
     const handleBridgingData = async () => {
         setBridgingLoading(true);
+        let routeName = "rm.pasien-rujukan.bridging_data_idrg";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.bridging_data_idrg";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_data_idrg", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
