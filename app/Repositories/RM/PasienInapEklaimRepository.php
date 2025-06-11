@@ -1731,4 +1731,71 @@ class PasienInapEklaimRepository
         DB::connection('sqlsrvsimrs')->commit();
         return $response;
     }
+
+    public function bridgingReeditKlaim($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "reedit_claim"],
+            "data" => [
+                "nomor_sep" => $no_sep,
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $responseFinal = sendRequest($key, $data);
+        if ($responseFinal->response->metadata->code == 200) {
+            try {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->KD_PASIEN)
+                    ->update([
+                        'is_final_claim' => null,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                DB::connection('sqlsrvsimrs')
+                    ->table('TRANSAKSIPASIENINAP')
+                    ->where('FTNO_TRANSAKSI', $transaksi_utama->PRWINO_TRANSAKSI)
+                    ->update([
+                        'FKUNCI_VALIDASI' => 0,
+                    ]);
+
+                $this->auditTrail->insert([
+                    "object_id" => $no_sep,
+                    "action_id" => 25,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                Log::error('Inap bridgingReeditKlaim Reedit Kalim err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
+        DB::connection('sqlsrvsimrs')->commit();
+        return $responseFinal;
+    }
 }
