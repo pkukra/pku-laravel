@@ -1469,7 +1469,7 @@ class PasienInapEklaimRepository
             DB::connection('sqlsrvsimrs')
                 ->table('PASIEN_INACBG')
                 ->where('no_sep', $no_sep)
-                ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
+                ->where('pasien_id', $transaksi_utama->KD_PASIEN)
                 ->update([
                     'is_final' => 1,
                     'updated_at' => $now,
@@ -1495,6 +1495,72 @@ class PasienInapEklaimRepository
             ];
         }
 
+        return $response;
+    }
+
+    /**
+     * Process bridgingEditUlangINACBG by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingEditUlangINACBG($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => null,
+                "response" => "Data tidak ditemukan di database",
+            ];
+        }
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "inacbg_grouper_reedit"],
+            "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        if ($response->response->metadata->code == 200) {
+            try {
+                $affected = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $no_sep)
+                    ->where('pasien_id', $transaksi_utama->KD_PASIEN)
+                    ->update([
+                        'is_final' => 0,
+                        'updated_at' => $now,
+                        'updated_by' => $user->email,
+                    ]);
+
+                if ($affected == 0) {
+                    return (object)[
+                        "status" => "nok",
+                        "error" => "data group inacbg tidak ditemukan"
+                    ];
+                }
+
+                $this->auditTrail->insert([
+                    "object_id" => $no_sep,
+                    "action_id" => 23,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => $now,
+                    "data" => [
+                        "nomor_sep" => $no_sep,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('PasienInapEklaimRepository bridgingEditUlangINACBG err: ' . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Lihat Log"
+                ];
+            }
+        }
         return $response;
     }
 }

@@ -217,12 +217,18 @@ function Index({
 
     const handleFinalData = async () => {
         setFinalLoading(true);
+        let routeName = "rm.pasien-rujukan.bridging_final_inacbg";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.bridging_final_inacbg";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_final_inacbg", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
+
+            alert(JSON.stringify(response))
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
@@ -254,9 +260,13 @@ function Index({
 
     const handleEditUlangInacbg = async () => {
         setReeditLoading(true);
+        let routeName = "rm.pasien-rujukan.edit_ulang_inacbg";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.edit_ulang_inacbg";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.edit_ulang_inacbg", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
