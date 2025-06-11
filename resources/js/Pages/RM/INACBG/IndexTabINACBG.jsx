@@ -35,12 +35,22 @@ function Index({
     const [modalReEditINACBGOpen, setModalReEditINACBGOpen] = useState(false);
 
     const no_sep = pasien?.FMNOSEP || null;
+    let customer_id = pasien?.FRPCUSTOMER_ID;
+    if (pasien?.JENIS_RAWAT == "ranap") {
+        customer_id = pasien?.PRWIKD_CUSTOMER;
+    }
 
     const handleImportAndBridgingData = async () => {
         setImportAndBridgeLoading(true);
+
+        let routeName = "rm.pasien-rujukan.bridging_import_idrg_to_inacbg";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.bridging_import_idrg_to_inacbg";
+        }
+
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.bridging_import_idrg_to_inacbg", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
@@ -76,9 +86,13 @@ function Index({
 
     const handleGroupingStageSatu = async () => {
         setGrupingLoading(true);
+        let routeName = "rm.pasien-rujukan.grouping_inacbg_stage_satu";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.grouping_inacbg_stage_satu";
+        }
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.grouping_inacbg_stage_satu", {
+                route(routeName, {
                     no_sep: no_sep,
                 })
             );
@@ -89,6 +103,8 @@ function Index({
                     description: response?.data?.error,
                 });
             }
+
+            alert(JSON.stringify(response?.data));
 
             if (response?.data?.response?.metadata?.code != 200) {
                 return notification.warning({
@@ -180,10 +196,7 @@ function Index({
         if (isFinalINACBG) {
             return true; // Disable if already finalized
         }
-        if (
-            pasien.FRPCUSTOMER_ID != "X002" &&
-            pasien.FRPCUSTOMER_ID != "X003"
-        ) {
+        if (!["X002", "X003"].includes(customer_id)) {
             return true; // Disable jika bukan X002 atau X003
         }
         return false; // Enable otherwise
@@ -518,9 +531,7 @@ function Index({
                     )}
 
                     <Button
-                        disabled={
-                            (no_sep ? false : true) || isFinalINACBG
-                        }
+                        disabled={(no_sep ? false : true) || isFinalINACBG}
                         type="primary"
                         onClick={() => {
                             setModalImportAndBridgeOpen(true);

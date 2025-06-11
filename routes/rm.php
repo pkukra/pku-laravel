@@ -130,6 +130,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/bridging_final_idrg/{no_sep}', [PasienInapController::class, 'bridging_final_idrg'])->name('rm.pasien-inap.bridging_final_idrg');
         Route::post('/edit_ulang_idrg/{no_sep}', [PasienInapController::class, 'edit_ulang_idrg'])->name('rm.pasien-inap.edit_ulang_idrg');
 
-        Route::post('/bridging_import_idrg_to_inacbg/{no_sep}', [PasienInapController::class, 'bridging_import_idrg_to_inacbg'])->name('rm.pasien-rujukan.bridging_import_idrg_to_inacbg');
+        Route::post('/bridging_import_idrg_to_inacbg/{no_sep}', [PasienInapController::class, 'bridging_import_idrg_to_inacbg'])->name('rm.pasien-inap.bridging_import_idrg_to_inacbg');
+        Route::post('/grouping_inacbg_stage_satu/{no_sep}', [PasienInapController::class, 'grouping_inacbg_stage_satu'])->name('rm.pasien-inap.grouping_inacbg_stage_satu');
     });
 });
