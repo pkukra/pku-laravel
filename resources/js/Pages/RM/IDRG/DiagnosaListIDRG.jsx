@@ -106,14 +106,19 @@ export default function Index({
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(false); // Loading state
 
+    const no_sep = pasien?.FMNOSEP || null;
+    const pasien_id = pasien?.FRPPASIEN_ID
+    const kode_reg = pasien?.FRPNOTRANSAKSIKJ
+    const customer_id = pasien?.FRPCUSTOMER_ID
+
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {
         setLoadingFetchDiagnosa(true);
         axios
             .get(
                 route("rm.pasien-rujukan.list_diagnosa_idrg", {
-                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
-                    no_sep: pasien?.FMNOSEP,
+                    kode_reg: kode_reg,
+                    no_sep: no_sep,
                 })
             )
             .then((response) => {
@@ -174,7 +179,7 @@ export default function Index({
 
     // Function to save diagnosa
     const saveDiagnosa = async () => {
-        if (["X002", "X003"].includes(pasien?.FRPCUSTOMER_ID) && !pasien?.FMNOSEP) {
+        if (["X002", "X003"].includes(customer_id) && !no_sep) {
             return notification.error({
                 placement: "top",
                 message: "Tidak dapat menyimpan diagnosa",
@@ -184,10 +189,10 @@ export default function Index({
         setLoadingSaveDiag(true);
         const payload = {
             code: selectedDiagnosaForm,
-            pasien_id: pasien.FRPPASIEN_ID,
-            ...(pasien?.FMNOSEP
-                ? { no_sep: pasien?.FMNOSEP }
-                : { no_transaksikj: pasien?.FRPNOTRANSAKSIKJ }),
+            pasien_id: pasien_id,
+            ...(no_sep
+                ? { no_sep: no_sep }
+                : { no_transaksikj: kode_reg }),
         };
 
         try {

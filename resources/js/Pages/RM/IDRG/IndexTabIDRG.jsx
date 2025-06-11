@@ -24,6 +24,7 @@ function Index({
     const [reeditLoading, setReeditLoading] = useState(false);
 
     const no_sep = pasien?.FMNOSEP || null;
+    const customer_id = pasien?.FRPCUSTOMER_ID
 
     const handleBridgingData = async () => {
         setBridgingLoading(true);
@@ -51,7 +52,7 @@ function Index({
             return notification.success({
                 placement: "topRight",
                 message: "Sukses!",
-                description: response?.data?.response?.metadata?.message,
+                description: "Sukses bridging and grouping IDRG",
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -88,7 +89,7 @@ function Index({
             return notification.success({
                 placement: "topRight",
                 message: "Sukses!",
-                description: response?.data?.response?.metadata?.message,
+                description: "Sukses final IDRG",
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -125,7 +126,7 @@ function Index({
             return notification.success({
                 placement: "topRight",
                 message: "Sukses!",
-                description: response?.data?.response?.metadata?.message,
+                description: "Sukses Edit Ulang IDRG",
             });
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -145,10 +146,7 @@ function Index({
         if (diagnosaTab.length == 0) {
             return true; // Disable if no diagnoses
         }
-        if (
-            pasien.FRPCUSTOMER_ID != "X002" &&
-            pasien.FRPCUSTOMER_ID != "X003"
-        ) {
+        if (!["X002", "X003"].includes(customer_id)) {
             return true; // Disable jika bukan X002 atau X003
         }
         return false; // Enable otherwise
