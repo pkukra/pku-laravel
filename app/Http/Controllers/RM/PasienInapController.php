@@ -36,8 +36,6 @@ class PasienInapController extends Controller
     {
         // Mendapatkan data pasien inap menggunakan repository
         $pasien_inaps = $this->pasienInapRepo->getPasienInaps($no_rm);
-        // $count = $this->pasienInapRepo->countPasienInap();
-
         return response()->json([
             'status' => "ok",
             'pasien_inaps' => $pasien_inaps,

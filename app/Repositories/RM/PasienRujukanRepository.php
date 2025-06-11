@@ -145,7 +145,8 @@ class PasienRujukanRepository
                 'POLIKLINIK.FMPKLINIKN',
                 'cm.KETERANGAN AS CARA_MASUK_BPJS',
                 'TRANSAKSIPASIEN.FTTARIPINACBG',
-                'TRANSAKSIPASIEN.FTKODEINACBG'
+                'TRANSAKSIPASIEN.FTKODEINACBG',
+                DB::raw("'rajal' as JENIS_RAWAT")
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
             ->first();  // Menggunakan `first` karena hanya mengambil satu data

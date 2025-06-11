@@ -185,6 +185,7 @@ class PasienInapRepository
                 'SPESIALISASI.FMSPESIALISASIN',
                 'cm.KETERANGAN AS CARA_MASUK_BPJS',
                 'rk.MRKODERUJUKANN AS RS_RUJUKAN_KELUAR',
+                DB::raw("'ranap' as JENIS_RAWAT")
             )
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
