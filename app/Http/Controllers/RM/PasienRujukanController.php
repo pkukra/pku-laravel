@@ -481,7 +481,7 @@ class PasienRujukanController extends Controller
             'no_transaksikj' => 'string|max:20',
             'no_sep' => 'string|max:20',
             'no_rm' => 'required|string|max:20',
-            'kd_unit' => 'required|string|max:20',
+            'kd_unit' => 'max:20',
             'tgl_masuk' => 'required|date',
         ]);
 

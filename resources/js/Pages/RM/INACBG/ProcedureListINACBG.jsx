@@ -54,7 +54,7 @@ export default function Index({
                     disabled={
                         isFinalINACBG ||
                         (loadingDeleteProcedure &&
-                        record.ID === deleteProcedureId)
+                            record.ID === deleteProcedureId)
                     }
                     size="small"
                     variant="outlined"
@@ -83,14 +83,19 @@ export default function Index({
     const [procedure, setProcedure] = useState([]); // State untuk menyimpan data procedure
     const [loadingFetchProcedure, setLoadingFetchProcedure] = useState(true); // Loading state
 
+    const no_sep = pasien?.FMNOSEP || null;
+    const pasien_id = pasien?.FRPPASIEN_ID;
+    const kode_reg = pasien?.FRPNOTRANSAKSIKJ;
+    const pasien_tgl_transaksi = pasien?.FRPTGL;
+
     // Fungsi untuk mengambil data procedure
     const fetchProcedure = () => {
         setLoadingFetchProcedure(true);
         axios
             .get(
                 route("rm.pasien-rujukan.list_procedure", {
-                    kode_reg: pasien.FRPNOTRANSAKSIKJ,
-                    no_sep: pasien?.FMNOSEP,
+                    kode_reg: kode_reg,
+                    no_sep: no_sep,
                 })
             )
             .then(({ data }) => {
@@ -162,11 +167,11 @@ export default function Index({
                 route("rm.pasien-rujukan.save_procedure"),
                 {
                     icd9_code: selectedProcedureForm,
-                    no_transaksikj: pasien.FRPNOTRANSAKSIKJ,
-                    no_sep: pasien?.FMNOSEP,
-                    no_rm: pasien.FRPPASIEN_ID,
-                    kd_unit: pasien.FRPUNIT,
-                    tgl_masuk: pasien.FRPTGL,
+                    no_transaksikj: kode_reg,
+                    no_sep: no_sep,
+                    no_rm: pasien_id,
+                    kd_unit: "",
+                    tgl_masuk: pasien_tgl_transaksi,
                 }
             );
 
@@ -283,9 +288,9 @@ export default function Index({
                                         <span>{item.FMI9KETERANGAN}</span>
                                     </div>
                                 ),
-                                disabled: isFinalINACBG || selectedProcedure.includes(
-                                    item.FMI9KODE
-                                ), // Disable if already selected
+                                disabled:
+                                    isFinalINACBG ||
+                                    selectedProcedure.includes(item.FMI9KODE), // Disable if already selected
                             }))}
                             style={{ width: "100%" }}
                             onSelect={(value) => {
@@ -311,7 +316,9 @@ export default function Index({
                         style={{ width: "100%" }}
                         onClick={saveProcedure}
                         disabled={
-                            loadingSaveDiag || selectedProcedureForm === null || isFinalINACBG
+                            loadingSaveDiag ||
+                            selectedProcedureForm === null ||
+                            isFinalINACBG
                         }
                     >
                         {loadingSaveDiag ? (
