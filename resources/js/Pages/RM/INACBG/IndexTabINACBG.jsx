@@ -104,8 +104,6 @@ function Index({
                 });
             }
 
-            alert(JSON.stringify(response?.data));
-
             if (response?.data?.response?.metadata?.code != 200) {
                 return notification.warning({
                     placement: "topRight",
@@ -129,19 +127,25 @@ function Index({
 
     const handleGroupingStageDua = async () => {
         setGrupingLoading(true);
+        let routeName = "rm.pasien-rujukan.grouping_inacbg_stage_dua";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.grouping_inacbg_stage_dua";
+        }
         try {
             const selectedCmgOptionFormatted = selectedCmgOption
                 .map((item) => item.code)
                 .join("#");
 
             const response = await axios.post(
-                route("rm.pasien-rujukan.grouping_inacbg_stage_dua", {
+                route(routeName, {
                     no_sep: no_sep,
                 }),
                 {
                     special_cmg: selectedCmgOptionFormatted,
                 }
             );
+
+            alert(JSON.stringify(response?.data))
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
@@ -227,8 +231,6 @@ function Index({
                     no_sep: no_sep,
                 })
             );
-
-            alert(JSON.stringify(response))
 
             if (response?.data?.status === "nok") {
                 return notification.warning({

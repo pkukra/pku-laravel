@@ -699,16 +699,22 @@ class PasienInapEklaimRepository
     public function getAllDiagnosa($pasien_inap)
     {
         $diagnoses_array = [];
-        $diagnosa = DB::connection('sqlsrvsimrs')
-            ->table('MR_PENYAKIT')
-            ->where('MRPNO_TRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI)
-            ->pluck('MRPKD_PENYAKIT') // Mengambil hanya kolom MRPKD_PENYAKIT sebagai array
-            ->toArray(); // Konversi ke array PHP
+        $query = DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT');
 
-        $diagnoses_array = array_merge($diagnoses_array, $diagnosa); // Gabungkan hasil query ke array utama
+        if ($pasien_inap->FMNOSEP) {
+            $query->where('NOSEP', '=', $pasien_inap->FMNOSEP);
+        } else {
+            $query->where('MRPNO_TRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI);
+        }
 
-        return implode('#', array_unique($diagnoses_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
+        // Langsung ambil hasil pluck ke array
+        $diagnosa = $query->pluck('MRPKD_PENYAKIT')->toArray();
+
+        $diagnoses_array = array_merge($diagnoses_array, $diagnosa);
+
+        return implode('#', array_unique($diagnoses_array));
     }
+
 
     /**
      * Get all tindakan/procedures from all pasien_inap based on array of pasien rujukan->kode_reg (by no SEP)
@@ -719,15 +725,23 @@ class PasienInapEklaimRepository
     public function getAllProcedure($pasien_inap)
     {
         $tindakan_array = [];
-        $tindakan = DB::connection('sqlsrvsimrs')
-            ->table('MR_TINDAKAN')
-            ->where('MRTNOTRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI)
-            ->pluck('MRTKD_TINDAKAN') // Mengambil hanya kolom MRTKD_TINDAKAN sebagai array
-            ->toArray(); // Konversi ke array PHP
+        $query = DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN');
 
-        $tindakan_array = array_merge($tindakan_array, $tindakan); // Gabungkan hasil query ke array utama
-        return implode('#', array_unique($tindakan_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
+        if ($pasien_inap->FMNOSEP) {
+            $query->where('NOSEP', '=', $pasien_inap->FMNOSEP);
+        } else {
+            $query->where('MRTNOTRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI);
+        }
+
+        // Panggil pluck() lalu langsung toArray()
+        $tindakan = $query->pluck('MRTKD_TINDAKAN')->toArray();
+
+        $tindakan_array = array_merge($tindakan_array, $tindakan);
+
+        return implode('#', array_unique($tindakan_array));
     }
+
+
 
     /**
      * Get sistole and diastole based on kode_reg
@@ -1429,6 +1443,87 @@ class PasienInapEklaimRepository
 
         DB::connection('sqlsrvsimrs')->commit();
         return $grouping_1_inacbg;
+    }
+
+    /**
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingGroupingInaStageDua($no_sep, $special_cmg)
+    {
+        $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
+        if (!$transaksi_utama) {
+            return false;
+        }
+
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        $data = json_encode([
+            "metadata" => [
+                "method" => "grouper",
+                "grouper" => "inacbg",
+                "stage" => 2,
+            ],
+            "data" => [
+                "nomor_sep" => $no_sep,
+                "special_cmg" => $special_cmg
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $grouping_2_inacbg = sendRequest($key, $data);
+
+        $cbg_code = $grouping_2_inacbg->response->response_inacbg->cbg->code;
+        $tarif_inacbg = $grouping_2_inacbg->response->response_inacbg->tariff ?? 0;
+        $special_cmg_option = null;
+        if (isset($grouping_2_inacbg->response->special_cmg_option) && !empty($grouping_2_inacbg->response->special_cmg_option)) {
+            $special_cmg_option = json_encode($grouping_2_inacbg->response->special_cmg_option);
+        }
+
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('TRANSAKSIPASIENINAP')
+                ->where('FTNO_TRANSAKSI', $transaksi_utama->PRWINO_TRANSAKSI)
+                ->update([
+                    'FTKODEINACBG' => $cbg_code,
+                    'FTTARIPINACBG' => $tarif_inacbg,
+                    'FKUNCI_VALIDASI2' => DB::raw('FKUNCI_VALIDASI2 + 1') // Incremen FKUNCI_VALIDASI2
+                ]);
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_INACBG')
+                ->updateOrInsert(
+                    [
+                        'no_sep' => $no_sep,
+                        'pasien_id' => $transaksi_utama->KD_PASIEN
+                    ],
+                    [
+                        "response_inacbg" => json_encode($grouping_2_inacbg->response->response_inacbg),
+                        "special_cmg" => json_encode($grouping_2_inacbg->response),
+                        "special_cmg_option" => $special_cmg_option,
+                        'is_final' => 0,
+                        "updated_at" => $now,
+                        "updated_by" => $user->email,
+                    ]
+                );
+
+            $this->auditTrail->insert([
+                "object_id" => $no_sep,
+                "action_id" => 22,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => $data,
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienInapEklaimRepository bridgingGroupingInaStageDua err: " . $e->getMessage());
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return $grouping_2_inacbg;
     }
 
     /**

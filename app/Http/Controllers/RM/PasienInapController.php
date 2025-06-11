@@ -616,7 +616,7 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingImportIdrgToIncbg($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * grouping_inacbg_stage_satu
      * Process bridging data ke eklaim
@@ -626,7 +626,22 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageSatu($no_sep);
         return response()->json($data);
     }
-    
+
+    /**
+     * grouping_inacbg_stage_dua
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function grouping_inacbg_stage_dua(Request $request, $no_sep)
+    {
+        $validated = $request->validate([
+            'special_cmg' => 'required|string',
+        ]);
+        $special_cmg = $validated['special_cmg'];
+
+        $data = $this->bridgingEKlaimRepo->bridgingGroupingInaStageDua($no_sep, $special_cmg);
+        return response()->json($data);
+    }
+
     /**
      * bridging_final_inacbg
      * Process bridging data ke eklaim
@@ -636,7 +651,7 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingFinalInacbg($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * edit_ulang_inacbg
      * Process bridging data ke eklaim
