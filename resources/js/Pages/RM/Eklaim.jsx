@@ -33,7 +33,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
 
     const [EkliamData, SetEklaimData] = useState(null);
 
-    const no_sep = pasien?.FMNOSEP;
+    const no_sep = pasien?.FMNOSEP || null;
 
     const fetchIDRGData = async () => {
         setLoadingFetchIdrgData(true);
