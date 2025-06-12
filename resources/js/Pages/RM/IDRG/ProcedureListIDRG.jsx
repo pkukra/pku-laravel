@@ -34,7 +34,6 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                     </>
                 );
             },
-            width: 100,
         },
         {
             title: "Penyakit",
