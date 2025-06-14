@@ -74,7 +74,8 @@ if (! function_exists('sendRequest')) {
     {
         $encryptedData = mc_encrypt($data, $key); // enkripsi data sebelum dikirim
 
-        $url = env("EKLAIM_WS_URL");
+        $url = config('external_url.eklaim');
+
         $client = new Client();
 
         try {
