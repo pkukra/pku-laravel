@@ -286,10 +286,10 @@ export default function Index({ auth, bangsal }) {
                                 </>
                             ),
                         },
-                        {
-                            title: "Kelompok",
-                            dataIndex: "PRWIKD_CUSTOMER",
-                        },
+                        // {
+                        //     title: "Kelompok",
+                        //     dataIndex: "PRWIKD_CUSTOMER",
+                        // },
                         {
                             title: "Kelompok",
                             dataIndex: "PRWIKD_CUSTOMER",

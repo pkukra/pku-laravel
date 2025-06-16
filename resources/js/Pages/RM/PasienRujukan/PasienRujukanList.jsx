@@ -50,6 +50,8 @@ export default function Index({ auth }) {
     const [kodeDokter, setKodeDokter] = useState(initialKodeDokter);
     const [noRM, setNoRM] = useState(initialNoRM);
 
+    const [customerData, setCustomerData] = useState([]);
+
     const columnsRujukan = [
         {
             title: "Tgl Jam Periksa",
@@ -92,10 +94,30 @@ export default function Index({ auth }) {
             dataIndex: "FMDDOKTERN",
             key: "FMDDOKTERN",
         },
+        // {
+        //     title: "Kelompok",
+        //     dataIndex: "FRPCUSTOMER_ID",
+        //     key: "FRPCUSTOMER_ID",
+        // },
         {
             title: "Kelompok",
             dataIndex: "FRPCUSTOMER_ID",
-            key: "FRPCUSTOMER_ID",
+            render: (value) => {
+                const cust = customerData?.find((c) => c?.CUSID === value);
+                const name = cust ? cust?.NAME : value;
+                const isBPJS = value === "X002" || value === "X003";
+                const displayName = isBPJS ? `BPJS ${name}` : name;
+
+                return (
+                    <span
+                        style={{
+                            color: isBPJS ? "green" : "inherit",
+                        }}
+                    >
+                        {displayName}
+                    </span>
+                );
+            },
         },
         {
             title: "Final INACBG",
@@ -150,6 +172,7 @@ export default function Index({ auth }) {
             console.error("Error fetching data: ", error);
         } finally {
             setLoading(false);
+            fetchCustomers();
         }
     };
 
@@ -173,6 +196,16 @@ export default function Index({ auth }) {
         setPage(newPage);
         setPerPage(newPerPage);
         fetchDataPasienRujukan(newPage, newPerPage);
+    };
+
+    const fetchCustomers = async () => {
+        try {
+            const response = await axios.get(route("rm.get_cusromers"));
+            setCustomerData(response?.data || []);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        } finally {
+        }
     };
 
     useEffect(() => {
