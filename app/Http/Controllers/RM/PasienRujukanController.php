@@ -43,6 +43,17 @@ class PasienRujukanController extends Controller
         return Inertia::render('RM/PasienRujukan/PasienRujukanList');
     }
 
+    /**
+     * get_cusromers
+     * Menampilkan daftar pasien rujukan dalam format JSON
+     */
+    public function get_cusromers()
+    {
+        // Mendapatkan detail pasien rujukan berdasarkan kode_reg
+        $data = $this->pasienRujukanRepo->getCustomers();
+        return response()->json($data);
+    }
+
     public function list_rujukan_data(Request $request)
     {
         $date = $request->get('date');

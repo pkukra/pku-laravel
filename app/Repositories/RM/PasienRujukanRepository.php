@@ -20,6 +20,22 @@ class PasienRujukanRepository
     }
 
     /**
+     * getCustomers
+     * 
+     * @param string $no_rm
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCustomers()
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('CUSTOMER')
+            ->select(
+                'CUSID','NAME'
+            )
+            ->get();
+    }
+
+    /**
      * Get the list of pasien rujukan based on no_rm
      * 
      * @param string $no_rm

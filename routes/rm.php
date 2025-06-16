@@ -10,10 +10,11 @@ Route::prefix('rm')->middleware(['auth'])->group(function () {
     Route::get('/pasien-inap/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
 });
 
-Route::prefix('rm')->middleware(['auth', CheckRole::class.':superadmin,koder'])->group(function () {
+Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
-    Route::prefix('pasien-rujukan')->group(function () {
+    Route::get('/get_cusromers', [PasienRujukanController::class, 'get_cusromers'])->name('rm.get_cusromers');
 
+    Route::prefix('pasien-rujukan')->group(function () {
         Route::get('/list_rujukan', [PasienRujukanController::class, 'list_rujukan'])->name('rm.pasien-rujukan.list_rujukan');
         Route::get('/list_rujukan_data', [PasienRujukanController::class, 'list_rujukan_data'])->name('rm.pasien-rujukan.list_rujukan_data');
 

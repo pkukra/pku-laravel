@@ -40,6 +40,8 @@ export default function Index({ auth, bangsal }) {
     const [kodeBangsal, setKodeBangsal] = useState(initialKodeBangsal);
     const [isInacbgFinal, setIsInacbgFinal] = useState(initialIsInacbgFinal);
 
+    const [customerData, setCustomerData] = useState([]);
+
     const buildQueryParams = (params) => {
         const query = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {
@@ -79,7 +81,18 @@ export default function Index({ auth, bangsal }) {
         } catch (error) {
             console.error("Error fetching data: ", error);
         } finally {
+            fetchCustomers();
             setLoading(false);
+        }
+    };
+
+    const fetchCustomers = async () => {
+        try {
+            const response = await axios.get(route("rm.get_cusromers"));
+            setCustomerData(response?.data || []);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        } finally {
         }
     };
 
@@ -276,6 +289,31 @@ export default function Index({ auth, bangsal }) {
                         {
                             title: "Kelompok",
                             dataIndex: "PRWIKD_CUSTOMER",
+                        },
+                        {
+                            title: "Kelompok",
+                            dataIndex: "PRWIKD_CUSTOMER",
+                            render: (value) => {
+                                const cust = customerData?.find(
+                                    (c) => c?.CUSID === value
+                                );
+                                const name = cust ? cust?.NAME : value;
+                                const isBPJS =
+                                    value === "X002" || value === "X003";
+                                const displayName = isBPJS
+                                    ? `BPJS ${name}`
+                                    : name;
+
+                                return (
+                                    <span
+                                        style={{
+                                            color: isBPJS ? "green" : "inherit",
+                                        }}
+                                    >
+                                        {displayName}
+                                    </span>
+                                );
+                            },
                         },
                         {
                             title: "Final INACBG",
