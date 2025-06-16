@@ -144,6 +144,9 @@ class PasienRujukanRepository
             ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+
+            ->leftJoin('CUSTOMER', 'PASIEN_RUJUKAN.FRPCUSTOMER_ID', '=', 'CUSTOMER.CUSID')
+            
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PASIEN_RUJUKAN.CARA_MASUK', '=', 'cm.KODE')
             ->select(
                 'PASIEN.NAMAPASIEN',
@@ -152,6 +155,7 @@ class PasienRujukanRepository
                 'PASIEN.JENIS_KELAMIN',
                 'PASIEN.ALAMAT',
                 'PASIEN_RUJUKAN.*',
+                'CUSTOMER.NAME AS CUSTOMER_NAME',
                 'DOKTER.FMDDOKTERN',
                 'POLIKLINIK.FMPKLINIKN',
                 'cm.KETERANGAN AS CARA_MASUK_BPJS',

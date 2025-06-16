@@ -171,6 +171,9 @@ class PasienInapRepository
             ->leftJoin('PASIEN', 'PRI.PRWIKD_PASIEN', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PRI.PRWIKD_DOKTER', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('SPESIALISASI', 'PRI.PRWIKD_SPECIAL', '=', 'SPESIALISASI.FMSPESIALISASI_ID')
+
+            ->leftJoin('CUSTOMER', 'PRI.PRWIKD_CUSTOMER', '=', 'CUSTOMER.CUSID')
+            
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PRI.CARA_MASUK', '=', 'cm.KODE')
             ->leftJoin('MR_RUJUKAN_KELUAR AS rk', 'PRI.PRWIRUJUKLUAR', '=', 'rk.MRKODERUJUKAN')
             ->select(
@@ -181,6 +184,7 @@ class PasienInapRepository
                 'PASIEN.JENIS_KELAMIN',
                 'PASIEN.ALAMAT',
                 'PRI.*',
+                'CUSTOMER.NAME AS CUSTOMER_NAME',
                 'DOKTER.FMDDOKTERN',
                 'SPESIALISASI.FMSPESIALISASIN',
                 'cm.KETERANGAN AS CARA_MASUK_BPJS',
