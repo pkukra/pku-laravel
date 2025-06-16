@@ -898,7 +898,7 @@ class PasienRujukanRepository
             ->join('ICD', 'PASIEN_TINDAKAN_IM.code', '=', 'ICD.code')
             ->select('PASIEN_TINDAKAN_IM.*', 'ICD.code', 'ICD.description')
             ->orderBy('PASIEN_TINDAKAN_IM.is_primary', 'DESC')
-            ->orderBy('PASIEN_DIAGNOSA_IM.created_at', 'ASC');
+            ->orderBy('PASIEN_TINDAKAN_IM.created_at', 'ASC');
 
         if ($no_sep) {
             $query->where('PASIEN_TINDAKAN_IM.no_sep', $no_sep);
