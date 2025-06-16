@@ -377,6 +377,7 @@ class PasienRujukanRepository
         $query = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->leftJoin('ICD', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'ICD.code')
+            ->orderBy('MR_PENYAKIT.MRPSTAT_DIAG', 'DESC')
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
             ->select(
                 'MR_PENYAKIT.*',

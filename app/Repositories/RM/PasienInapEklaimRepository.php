@@ -706,7 +706,8 @@ class PasienInapEklaimRepository
         } else {
             $query->where('MRPNO_TRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI);
         }
-
+        $query->orderBy('MRPSTAT_DIAG', 'DESC');
+        $query->orderBy('MRPURUT_MASUK', 'ASC');
         // Langsung ambil hasil pluck ke array
         $diagnosa = $query->pluck('MRPKD_PENYAKIT')->toArray();
 

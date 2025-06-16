@@ -753,6 +753,7 @@ class PasienRujukanEklaimRepository
             } else {
                 $diagnosaQ->where('MRPNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ);
             }
+            $diagnosaQ->orderBy('MRPSTAT_DIAG', 'DESC');
             $diagnosa = $diagnosaQ->pluck('MRPKD_PENYAKIT')->toArray();
             $diagnoses_array = array_merge($diagnoses_array, $diagnosa); // Gabungkan hasil query ke array utama
         }
