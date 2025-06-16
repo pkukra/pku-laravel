@@ -56,19 +56,45 @@ export default function Index({
             key: "action",
             align: "center",
             render: (_, record) => (
-                <Button
-                    disabled={
-                        isFinalINACBG ||
-                        (loadingDeleteDiagnosa &&
-                            record.ID === deleteDiagnosaId)
-                    }
-                    size="small"
-                    variant="outlined"
-                    color="danger"
-                    onClick={() => showDeleteConfirm(record)}
-                >
-                    hapus
-                </Button>
+                <>
+                    <Button
+                        disabled={
+                            isFinalINACBG ||
+                            (loadingDeleteDiagnosa &&
+                                record.ID === deleteDiagnosaId)
+                        }
+                        size="small"
+                        block
+                        variant="outlined"
+                        onClick={() => {
+                            setDataDiagnosaToEdit(record);
+                            setEditStatusDiagForm(record.MRPSTAT_DIAG);
+                            setEditKasusForm(record.MRPKD_KASUS);
+                            setEditDiagnosaForm(record.MRPKD_PENYAKIT);
+                            setEditDiagnosaDisplay(
+                                `${record.MRPKD_PENYAKIT} - ${record.PENYAKIT}`
+                            );
+                        }}
+                    >
+                        Edit
+                    </Button>{" "}
+                    <br />
+                    <Button
+                        style={{ marginTop: 5 }}
+                        disabled={
+                            isFinalINACBG ||
+                            (loadingDeleteDiagnosa &&
+                                record.ID === deleteDiagnosaId)
+                        }
+                        block
+                        size="small"
+                        variant="outlined"
+                        color="danger"
+                        onClick={() => showDeleteConfirm(record)}
+                    >
+                        Hapus
+                    </Button>
+                </>
             ),
         },
     ];
@@ -89,6 +115,13 @@ export default function Index({
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
+
+    //edit diagnosa
+    const [dataDiagnosaToEdit, setDataDiagnosaToEdit] = useState(null);
+    const [editStatusDiagForm, setEditStatusDiagForm] = useState(null);
+    const [editKasusForm, setEditKasusForm] = useState(null);
+    const [editDiagnosaForm, setEditDiagnosaForm] = useState(null);
+    const [editDiagnosaDisplay, setEditDiagnosaDisplay] = useState("");
 
     const no_sep = pasien?.FMNOSEP || null;
     let pasien_id = pasien?.FRPPASIEN_ID;
@@ -261,6 +294,47 @@ export default function Index({
             });
     };
 
+    const saveEditedDiagnosa = async () => {
+        if (!dataDiagnosaToEdit) return;
+
+        try {
+            const response = await axios.put(
+                route("rm.pasien-rujukan.update_diagnosa", {
+                    id: dataDiagnosaToEdit.ID,
+                }),
+                {
+                    icd10_code: editDiagnosaForm,
+                    status_diagnosa: editStatusDiagForm,
+                    kasus: editKasusForm,
+                }
+            );
+
+            if (response?.data?.status === "ok") {
+                notification.success({
+                    placement: "bottomRight",
+                    message: "Berhasil",
+                    description: "Diagnosa berhasil diupdate",
+                });
+            } else {
+                notification.error({
+                    placement: "bottomRight",
+                    message: "Gagal",
+                    description: "Diagnosa gagal diupdate",
+                });
+            }
+
+            setDataDiagnosaToEdit(null);
+            fetchDiagnosa();
+            fetchINACBGData();
+        } catch (error) {
+            console.error("Error updating diagnosa:", error);
+            notification.error({
+                message: "Error",
+                description: "Terjadi kesalahan saat update diagnosa.",
+            });
+        }
+    };
+
     const inputRefStatusDdiagnosa = useRef(null);
 
     useEffect(() => {
@@ -430,6 +504,86 @@ export default function Index({
                 okButtonProps={{ danger: true }}
             >
                 <p>Apakah anda yakin ingin menghapus diagnosa ini?</p>
+            </Modal>
+
+            {/* Modal for Edit Diagnosa*/}
+            <Modal
+                width={1000}
+                title="Edit Diagnosa"
+                open={!!dataDiagnosaToEdit}
+                onOk={saveEditedDiagnosa}
+                onCancel={() => setDataDiagnosaToEdit(null)}
+                okText="Simpan"
+                cancelText="Batal"
+            >
+                <Row gutter={16}>
+                    <Col span={5}>
+                        <Select
+                            style={{ width: "100%" }}
+                            placeholder="STATUS DIAGNOSA"
+                            value={editStatusDiagForm}
+                            onChange={setEditStatusDiagForm}
+                            options={[
+                                { value: "5", label: "5-Diagnosa Akhir" },
+                                { value: "1", label: "1-Diagnosa Lain" },
+                                { value: "2", label: "2-Komplikasi" },
+                                { value: "0", label: "0-Diagnosa Awal" },
+                                { value: "3", label: "3-Penyebab Luar" },
+                                { value: "4", label: "4-Penyebab Kematian" },
+                            ]}
+                        />
+                    </Col>
+                    <Col span={4}>
+                        <Select
+                            style={{ width: "100%" }}
+                            placeholder="Lama Baru"
+                            value={editKasusForm}
+                            onChange={setEditKasusForm}
+                            options={[
+                                { value: "0", label: "0 Baru" },
+                                { value: "1", label: "1 Lama" },
+                            ]}
+                        />
+                    </Col>
+                    <Col span={15}>
+                        <AutoComplete
+                            allowClear
+                            style={{ width: "100%" }}
+                            options={anotherOptions.map((item) => ({
+                                value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`,
+                                label: (
+                                    <div>
+                                        <strong>{item.KD_PENYAKIT}</strong> -{" "}
+                                        {item.PENYAKIT}
+                                    </div>
+                                ),
+                                disabled:
+                                    isFinalINACBG ||
+                                    (selectedDiagnosa.includes(
+                                        item.KD_PENYAKIT
+                                    ) &&
+                                        item.KD_PENYAKIT !==
+                                            dataDiagnosaToEdit?.MRPKD_PENYAKIT),
+                            }))}
+                            value={editDiagnosaDisplay}
+                            onChange={(text) => {
+                                setEditDiagnosaForm(null);
+                                setEditDiagnosaDisplay(text);
+                            }}
+                            onSearch={(text) => fetchSugetDiagnosa(text, 1)}
+                            onSelect={(value) => {
+                                const code = value.split(" - ")[0];
+                                setEditDiagnosaForm(code);
+                                setEditDiagnosaDisplay(value);
+                            }}
+                            placeholder="Cari Diagnosa"
+                        />
+                    </Col>
+                </Row>
+
+                <p>
+                    {JSON.stringify(dataDiagnosaToEdit)}
+                </p>
             </Modal>
         </Card>
     );
