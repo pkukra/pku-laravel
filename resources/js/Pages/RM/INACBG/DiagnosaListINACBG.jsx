@@ -547,7 +547,6 @@ export default function Index({
                     </Col>
                     <Col span={15}>
                         <AutoComplete
-                            allowClear
                             style={{ width: "100%" }}
                             options={anotherOptions.map((item) => ({
                                 value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`,
@@ -559,11 +558,7 @@ export default function Index({
                                 ),
                                 disabled:
                                     isFinalINACBG ||
-                                    (selectedDiagnosa.includes(
-                                        item.KD_PENYAKIT
-                                    ) &&
-                                        item.KD_PENYAKIT !==
-                                            dataDiagnosaToEdit?.MRPKD_PENYAKIT),
+                                    selectedDiagnosa.includes(item.KD_PENYAKIT), // Disable if already selected
                             }))}
                             value={editDiagnosaDisplay}
                             onChange={(text) => {
@@ -580,10 +575,8 @@ export default function Index({
                         />
                     </Col>
                 </Row>
-
-                <p>
-                    {JSON.stringify(dataDiagnosaToEdit)}
-                </p>
+                <br />
+                <p>{JSON.stringify(dataDiagnosaToEdit)}</p>
             </Modal>
         </Card>
     );
