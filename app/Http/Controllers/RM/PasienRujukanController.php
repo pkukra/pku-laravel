@@ -25,6 +25,17 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * get_cusromers
+     * Menampilkan daftar pasien rujukan dalam format JSON
+     */
+    public function get_cusromers()
+    {
+        // Mendapatkan detail pasien rujukan berdasarkan kode_reg
+        $data = $this->pasienRujukanRepo->getCustomers();
+        return response()->json($data);
+    }
+
+    /**
      * index
      * Load halaman utama daftar pasien rujukan
      */

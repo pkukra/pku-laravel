@@ -12,6 +12,9 @@ Route::prefix('rm')->middleware(['auth'])->group(function () {
 
 Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
+
+    Route::get('/get_cusromers', [PasienRujukanController::class, 'get_cusromers'])->name('rm.get_cusromers');
+
     Route::prefix('pasien-rujukan')->group(function () {
 
         Route::get('/list_rujukan', [PasienRujukanController::class, 'list_rujukan'])->name('rm.pasien-rujukan.list_rujukan');
