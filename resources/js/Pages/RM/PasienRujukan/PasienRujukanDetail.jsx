@@ -1,5 +1,7 @@
 import { Head } from "@inertiajs/react";
-import { Col, Row, Card, Tabs, Spin } from "antd";
+import { Col, Row, Card, Tabs } from "antd";
+
+import config from "../../../config";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienRujukanDetailProfile from "./PasienRujukanDetailProfile";
 import PasienRujukanDetailAmnanesaCatatan from "./PasienRujukanDetailAmnanesaCatatan";
@@ -8,6 +10,8 @@ import PasienRujukanDetailResume from "./PasienRujukanDetailResume";
 import PasienRujukanDetailAssesmenIGD from "./PasienRujukanDetailAssesmenIGD";
 import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
+import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
+import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
 import EKlaim from "../Eklaim";
 
 import { useState, useEffect } from "react";
@@ -142,22 +146,28 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                                 </Card>
                             )}
                         </Col>
-                        <Col span={24}>
-                            {/* <Card>
-                                <Tabs
-                                    defaultActiveKey="1"
-                                    type="card"
-                                    size={"small"}
-                                    style={{ marginBottom: 32 }}
-                                    items={menu}
+                        {config.is_idrg ? (
+                            <Col span={24}>
+                                <EKlaim
+                                    pasien={pasien}
+                                    setDisableINACBG={setDisableINACBG}
+                                    disableINACBG={disableINACBG}
                                 />
-                            </Card> */}
-                            <EKlaim
-                                pasien={pasien}
-                                setDisableINACBG={setDisableINACBG}
-                                disableINACBG={disableINACBG}
-                            />
-                        </Col>
+                            </Col>
+                        ) : (
+                            <>
+                                <Col span={12}>
+                                    <PasienRujukanDetailDiagnosaList
+                                        pasien={pasien}
+                                    />
+                                </Col>
+                                <Col span={12}>
+                                    <PasienRujukanDetailProcedureList
+                                        pasien={pasien}
+                                    />
+                                </Col>
+                            </>
+                        )}
 
                         <Col span={12}>
                             <PasienRujukanDetailAmnanesaCatatan
