@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Card, Button, Tooltip, notification, Input } from "antd";
 import axios from "axios";
 
-export default function Index({ pasien, user, setGolbalSEP }) {
+export default function Index({ pasien, user, reFetchPasien }) {
     const [loadingSep, setLoadingSep] = useState(false);
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
@@ -24,7 +24,6 @@ export default function Index({ pasien, user, setGolbalSEP }) {
             )
             .then((response) => {
                 setNoSep(response?.data?.data?.FMNOSEP);
-                setGolbalSEP(response?.data?.data?.FMNOSEP);
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
@@ -43,9 +42,11 @@ export default function Index({ pasien, user, setGolbalSEP }) {
                 })
             );
 
+            console.log(response?.data);
+
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     // message: "Peringatan!",
                     description: response?.data?.error,
                 });
@@ -53,14 +54,15 @@ export default function Index({ pasien, user, setGolbalSEP }) {
 
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     // message: "Peringatan!",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
 
+            reFetchPasien();
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: response?.data?.response?.metadata?.message,
             });
@@ -83,21 +85,21 @@ export default function Index({ pasien, user, setGolbalSEP }) {
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     description: response?.data?.error,
                 });
             }
 
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     // message: "Peringatan!",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
 
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: response?.data?.response?.metadata?.message,
             });
@@ -129,14 +131,14 @@ export default function Index({ pasien, user, setGolbalSEP }) {
             );
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     description: response?.data?.message,
                 });
             }
 
             fetchNoSep();
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: "Update Nomer SEP Berhasil",
             });

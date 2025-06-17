@@ -46,7 +46,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     // message: "Peringatan!",
                     description: response?.data?.error,
                 });
@@ -54,14 +54,14 @@ export default function Index({ pasien, user, reFetchPasien }) {
 
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     // message: "Peringatan!",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
 
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: response?.data?.response?.metadata?.message,
             });
@@ -86,7 +86,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
 
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     // message: "Peringatan!",
                     description: response?.data?.error,
                 });
@@ -94,14 +94,14 @@ export default function Index({ pasien, user, reFetchPasien }) {
 
             if (response?.data?.response?.metadata?.code === 400) {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     // message: "Peringatan!",
                     description: response?.data?.response?.metadata?.message,
                 });
             }
 
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: response?.data?.response?.metadata?.message,
             });
@@ -140,14 +140,14 @@ export default function Index({ pasien, user, reFetchPasien }) {
             );
             if (response?.data?.status === "nok") {
                 return notification.warning({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     description: response?.data?.message,
                 });
             }
 
             fetchNoSep();
             return notification.success({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Sukses!",
                 description: "Update Nomer SEP Berhasil",
             });
