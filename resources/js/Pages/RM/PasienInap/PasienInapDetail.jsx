@@ -3,6 +3,8 @@ import { Col, Row, Card } from "antd";
 import { useState } from "react";
 import axios from "axios";
 
+import config from "../../../config";
+
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import PasienInapDetailProfile from "./PasienInapDetailProfile";
 import PasienInapDetailDiagnosaList from "./PasienInapDetailDiagnosaList";
@@ -49,20 +51,28 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienInapDetailBerkasPenunjang pasien={pasien} />
                         </Col>
 
-                        <Col span={24}>
-                            <EKlaim
-                                pasien={pasien}
-                                setDisableINACBG={setDisableINACBG}
-                                disableINACBG={disableINACBG}
-                            />
-                        </Col>
-
-                        <Col span={12}>
-                            <PasienInapDetailDiagnosaList pasien={pasien} />
-                        </Col>
-                        <Col span={12}>
-                            <PasienInapDetailProcedureList pasien={pasien} />
-                        </Col>
+                        {config.is_idrg ? (
+                            <Col span={24}>
+                                <EKlaim
+                                    pasien={pasien}
+                                    setDisableINACBG={setDisableINACBG}
+                                    disableINACBG={disableINACBG}
+                                />
+                            </Col>
+                        ) : (
+                            <>
+                                <Col span={12}>
+                                    <PasienInapDetailDiagnosaList
+                                        pasien={pasien}
+                                    />
+                                </Col>
+                                <Col span={12}>
+                                    <PasienInapDetailProcedureList
+                                        pasien={pasien}
+                                    />
+                                </Col>
+                            </>
+                        )}
 
                         <Col span={12}>
                             <PasienInapDetailPerawatan
