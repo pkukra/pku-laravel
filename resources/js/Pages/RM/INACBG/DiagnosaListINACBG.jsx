@@ -55,6 +55,7 @@ export default function Index({
             title: "Action",
             key: "action",
             align: "center",
+            width:80,
             render: (_, record) => (
                 <>
                     <Button
@@ -505,8 +506,8 @@ export default function Index({
                 title="Edit Diagnosa"
                 open={!!dataDiagnosaToEdit}
                 onOk={() => {
-                    alert(editDiagnosaForm);
-                    alert(editStatusDiagForm);
+                    saveEditedDiagnosa()
+                    return
                 }}
                 onCancel={() => setDataDiagnosaToEdit(null)}
                 okText="Simpan"

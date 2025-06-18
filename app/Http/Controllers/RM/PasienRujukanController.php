@@ -339,6 +339,37 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
         ], 500);
     }
+    
+    /**
+     * update_diagnosa
+     * Update data diagnosa
+     */
+    public function update_diagnosa(Request $request, $id)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'icd10_code' => 'required|string|max:10',
+            'status_diagnosa' => 'required|string',
+        ]);
+
+        $code = $validated['icd10_code'];
+        $status_diagnosa = $validated['status_diagnosa'];
+
+        // Menyimpan data diagnosa melalui repository
+        $isSaved = $this->pasienRujukanRepo->updateDiagnosa($id, $code, $status_diagnosa);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil diupdate',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat update diagnosa',
+        ], 500);
+    }
 
     /**
      * save_diagnosa_idrg
