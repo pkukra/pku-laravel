@@ -36,6 +36,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     };
 
     const [beratLahir, setBeratLahir] = useState(null);
+    const [sitb, setSitb] = useState(null);
 
     async function fetchActualKeadaanKelauarRS() {
         try {
@@ -130,6 +131,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     keadaan_keluar: selectedKeadaanKeluar,
                     sebab_kematian: selectedSebabKematian,
                     berat_lahir: beratLahir,
+                    sitb: sitb,
                 }
             )
             .then((response) => {
@@ -158,11 +160,13 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 reFetchPasien();
                 fetchActualKeadaanKelauarRS();
                 setBeratLahir(pasien?.BBL);
+                setSitb(pasien?.SITB);
             });
     };
 
     useEffect(() => {
         setBeratLahir(pasien?.BBL);
+        setSitb(pasien?.SITB);
         setSelectedRSRujukanKeluar(pasien?.PRWIRUJUKLUAR);
         fetchSugestRSRujukan();
         fetchActualKeadaanKelauarRS();
@@ -184,7 +188,11 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                         </tr>
 
                         <tr>
-                            <td style={{ width: "25%" }}>Cara Masuk</td>
+                            <td>SITB</td>
+                            <td>: {pasien?.SITB}</td>
+                        </tr>
+                        <tr>
+                            <td>Cara Masuk</td>
                             <td>
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
                             </td>
@@ -258,6 +266,15 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     value={beratLahir}
                     onChange={setBeratLahir}
                     min={0}
+                    style={{ width: "100%" }}
+                />{" "}
+                <br />
+                <label>No SITB:</label>
+                <Input
+                    value={sitb}
+                    onChange={(e)=>{
+                        setSitb(e.target.value);
+                    }}
                     style={{ width: "100%" }}
                 />{" "}
                 <br />

@@ -177,6 +177,7 @@ class PasienInapRepository
             ->leftJoin('BPJS_SEP AS sep', 'PRI.PRWINO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
             ->select(
                 'PASIEN.BERAT_LAHIR AS BBL',
+                'PASIEN.SITB',
                 'sep.FMNOSEP',
                 'TPI.*',
                 'PASIEN.NAMAPASIEN',
@@ -897,6 +898,7 @@ class PasienInapRepository
                 ->where('KD_PASIEN', $data['kode_pasien'])
                 ->update([
                     'BERAT_LAHIR' => $data['berat_lahir'],
+                    'SITB' => $data['sitb'],
                 ]);
         } catch (\Exception $e) {
             DB::connection('sqlsrvsimrs')->rollBack();

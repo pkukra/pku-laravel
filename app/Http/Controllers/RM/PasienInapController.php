@@ -459,6 +459,7 @@ class PasienInapController extends Controller
             'keperawatan' => 'nullable',
             'kode_rs_rujuk_keluar' => 'nullable',
             'berat_lahir' => 'nullable',
+            'sitb' => 'nullable',
         ]);
 
         // Tambahkan no_transaksi ke dalam array data
