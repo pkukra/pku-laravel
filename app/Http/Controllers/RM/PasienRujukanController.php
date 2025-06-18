@@ -25,13 +25,27 @@ class PasienRujukanController extends Controller
     }
 
     /**
-     * get_cusromers
+     * search_diagnosis
      * Menampilkan daftar pasien rujukan dalam format JSON
      */
     public function get_cusromers()
     {
         // Mendapatkan detail pasien rujukan berdasarkan kode_reg
         $data = $this->pasienRujukanRepo->getCustomers();
+        return response()->json($data);
+    }
+
+    /**
+     * search_diagnosis
+     */
+    public function search_diagnosis(Request $request)
+    {
+        $validated = $request->validate([
+            'keyword' => 'nullable|string',
+        ]);
+
+        $keyword = $validated['keyword'];
+        $data = $this->bridgingEKlaimRepo->searchDiagnosis($keyword);
         return response()->json($data);
     }
 
@@ -276,7 +290,7 @@ class PasienRujukanController extends Controller
         $no_sep = $validated['no_sep'] ?? null;
         $no_transaksikj = $validated['no_transaksikj'] ?? null;
 
-        if ($no_sep = null && $no_transaksikj = null) {
+        if ($no_sep == null && $no_transaksikj == null) {
             return response()->json([
                 'status' => "nok",
                 'message' => 'salah satu harus diisi: no_sep atau no_transaksikj',
@@ -502,7 +516,7 @@ class PasienRujukanController extends Controller
         $no_sep = $validated['no_sep'] ?? null;
         $no_transaksikj = $validated['no_transaksikj'] ?? null;
 
-        if ($no_sep = null && $no_transaksikj = null) {
+        if ($no_sep == null && $no_transaksikj == null) {
             return response()->json([
                 'status' => "nok",
                 'message' => 'salah satu harus diisi: no_sep atau no_transaksikj',

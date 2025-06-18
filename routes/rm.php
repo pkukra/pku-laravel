@@ -14,6 +14,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
 
     Route::get('/get_cusromers', [PasienRujukanController::class, 'get_cusromers'])->name('rm.get_cusromers');
+    Route::post('/search_diagnosis_cbg', [PasienRujukanController::class, 'search_diagnosis_cbg'])->name('rm.search_diagnosis_cbg');
 
     Route::prefix('pasien-rujukan')->group(function () {
 

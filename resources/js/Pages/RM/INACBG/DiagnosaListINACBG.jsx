@@ -171,28 +171,17 @@ export default function Index({
             });
     };
 
-    // Fetch diagnosa with lazy loading support
     const fetchSugetDiagnosa = async (query = "a", pageNumber) => {
         setLoading(true);
         try {
-            const response = await axios.post(
-                route("rm.pasien-rujukan.cari_penyakit"),
-                {
-                    query,
-                    page: pageNumber,
-                }
-            );
-            // If no results, mark hasMore as false
-            if (response.data.data.length === 0) {
-                setHasMore(false);
-            }
-            // If it's the first page, reset the results, otherwise append new results
-            if (pageNumber === 1) {
-                setAnotherOptions(response.data.data);
-            } else {
-                setAnotherOptions((prev) => [...prev, ...response.data.data]);
-            }
-            setPage(pageNumber); // Update the current page
+            const response = await axios.post(route("rm.search_diagnosis_cbg"), {
+                keyword: query,
+            });
+
+            const data = response?.data?.response?.response?.data;
+            const results = Array.isArray(data) ? data : [];
+
+            setAnotherOptions(results);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -215,29 +204,33 @@ export default function Index({
     const saveDiagnosa = async () => {
         setLoadingSaveDiag(true);
         try {
+            const payload = {
+                icd10_code: selectedDiagnosaForm,
+                no_transaksikj: kode_reg,
+                no_sep: no_sep,
+                no_rm: pasien_id,
+                kd_unit: "",
+                tgl_masuk: pasien_tgl_transaksi,
+                status_diagnosa: selectedStatusDiagForm,
+                kasus: selectedKasusForm,
+            };
+
+            console.log(payload);
+
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_diagnosa"),
-                {
-                    icd10_code: selectedDiagnosaForm,
-                    no_transaksikj: kode_reg,
-                    no_sep: no_sep,
-                    no_rm: pasien_id,
-                    kd_unit: "",
-                    tgl_masuk: pasien_tgl_transaksi,
-                    status_diagnosa: selectedStatusDiagForm,
-                    kasus: selectedKasusForm,
-                }
+                payload
             );
 
             if (response?.data?.status === "ok") {
                 return notification.success({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     message: "Sukses!",
                     description: "Diagnosa berhasil ditambahkan.",
                 });
             }
             return notification.error({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Terjadi Kesalahan!",
                 description: "Diagnosa gagal ditambahkan.",
             });
@@ -311,13 +304,13 @@ export default function Index({
 
             if (response?.data?.status === "ok") {
                 notification.success({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     message: "Berhasil",
                     description: "Diagnosa berhasil diupdate",
                 });
             } else {
                 notification.error({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     message: "Gagal",
                     description: "Diagnosa gagal diupdate",
                 });
@@ -414,45 +407,45 @@ export default function Index({
                     <AutoComplete
                         allowClear
                         onChange={() => {
-                            setSelectedDiagnosaForm(null); // Clear the stored code
-                            setSelectedDiagnosaDisplay(""); // Clear the display value
+                            setSelectedDiagnosaForm(null);
+                            setSelectedDiagnosaDisplay("");
                         }}
-                        options={anotherOptions.map((item) => ({
-                            value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`, // Display both code and name
+                        options={anotherOptions?.map(([label, code]) => ({
+                            value: `${code} - ${label}`, // Display value
                             label: (
                                 <div
                                     style={{
-                                        wordBreak: "break-word", // Ensure text wraps
-                                        whiteSpace: "normal", // Allow wrapping long words
-                                        overflowWrap: "break-word", // Break long words if necessary
-                                        display: "block", // Ensure block level behavior for wrapping
+                                        wordBreak: "break-word",
+                                        whiteSpace: "normal",
+                                        overflowWrap: "break-word",
+                                        display: "block",
                                     }}
                                 >
-                                    <strong>{item.KD_PENYAKIT}</strong> -{" "}
-                                    <span>{item.PENYAKIT}</span>
+                                    <strong>{code}</strong> -{" "}
+                                    <span>{label}</span>
                                 </div>
                             ),
                             disabled:
                                 isFinalINACBG ||
-                                selectedDiagnosa.includes(item.KD_PENYAKIT), // Disable if already selected
+                                selectedDiagnosa.includes(code),
                         }))}
                         style={{ width: "100%" }}
                         onSelect={(value) => {
-                            const kdPenyakit = value.split(" - ")[0]; // Extract KD_PENYAKIT
-                            const displayValue = value; // Full display value with name and code
-                            setSelectedDiagnosaForm(kdPenyakit); // Store only the code
-                            setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
+                            const kdPenyakit = value.split(" - ")[0];
+                            const displayValue = value;
+                            setSelectedDiagnosaForm(kdPenyakit);
+                            setSelectedDiagnosaDisplay(displayValue);
                         }}
                         onSearch={(text) => {
-                            setSelectedDiagnosaDisplay(text); // Update the display value during search
-                            fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
+                            setSelectedDiagnosaDisplay(text);
+                            fetchSugetDiagnosa(text, 1);
                         }}
-                        onClick={(text) => {
-                            fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
+                        onClick={() => {
+                            fetchSugetDiagnosa("a", 1);
                         }}
                         placeholder="Cari Diagnosa/Penyakit"
-                        onScroll={onScroll} // Attach scroll event for lazy loading
-                        value={selectedDiagnosaDisplay} // Show both code and name in the input
+                        onScroll={onScroll}
+                        value={selectedDiagnosaDisplay}
                     />
                 </Col>
                 <Col span={4}>
@@ -546,9 +539,9 @@ export default function Index({
                         />
                     </Col>
                     <Col span={15}>
-                        <AutoComplete
+                        {/* <AutoComplete
                             style={{ width: "100%" }}
-                            options={anotherOptions.map((item) => ({
+                            options={anotherOptions?.map((item) => ({
                                 value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`,
                                 label: (
                                     <div>
@@ -572,7 +565,7 @@ export default function Index({
                                 setEditDiagnosaDisplay(value);
                             }}
                             placeholder="Cari Diagnosa"
-                        />
+                        /> */}
                     </Col>
                 </Row>
                 <br />
