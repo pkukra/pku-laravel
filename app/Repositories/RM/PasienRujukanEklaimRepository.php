@@ -249,6 +249,18 @@ class PasienRujukanEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
         }
 
+        $is_pasien_tb = false;
+        $diagnosa = $this->getAllDiagnosa($semua_transaksi, true);
+        $procedure = $this->getAllProcedure($semua_transaksi, true);
+
+        $diagnosaArray = explode("#", $diagnosa);
+        foreach ($diagnosaArray as $d) {
+            if (preg_match('/^A1[5-9]/', $d)) {
+                $is_pasien_tb = true;
+                break;
+            }
+        }
+
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
@@ -256,15 +268,15 @@ class PasienRujukanEklaimRepository
             'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
             'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
-            'birth_weight' => 0,
+            'birth_weight' => ($transaksi_utama->BERAT_LAHIR) ? $transaksi_utama->BERAT_LAHIR : "",
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
             'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
 
-            'diagnosa' => $this->getAllDiagnosa($semua_transaksi, true),
-            'diagnosa_inagrouper' => $this->getAllDiagnosa($semua_transaksi, true),
-            'procedure' => $this->getAllProcedure($semua_transaksi, true),
-            'procedure_inagrouper' => $this->getAllProcedure($semua_transaksi, true),
+            'diagnosa' => $diagnosa,
+            'diagnosa_inagrouper' => $diagnosa,
+            'procedure' => $procedure,
+            'procedure_inagrouper' => $procedure,
 
             'adl_sub_acute' => "",
             'adl_chronic' => "",
@@ -290,6 +302,21 @@ class PasienRujukanEklaimRepository
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
+
+        if ($is_pasien_tb && $transaksi_utama->SITB) {
+            $requestData = json_encode((object)[
+                'metadata' => (object)[
+                    'method' => 'sitb_validate',
+                ],
+                'data' => (object)[
+                    'nomor_sep' => $no_sep,
+                    'nomor_register_sitb' => $transaksi_utama->SITB,
+                ]
+            ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+            $key = $user->eklaim_key;
+            sendRequest($key, $requestData);
+        }
 
         $grouper = $this->bridgingGroupStage1Process($no_sep);
         $cbg_code = $grouper->response->response->cbg->code ?? null;
@@ -591,6 +618,8 @@ class PasienRujukanEklaimRepository
                     'poli.FMPKLINIKN',
                     'p.NAMAPASIEN',
                     'p.TGL_LAHIR',
+                    'p.SITB',
+                    'p.BERAT_LAHIR',
                     'p.JENIS_KELAMIN',
                     'MR_KEADAAN_KELUAR_RS.FMKKRSKODE_BPJS AS DISCHARGE_SRARTUS',
                     'mati.MRKKEADAAN_KELUAR'
@@ -931,14 +960,26 @@ class PasienRujukanEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
         }
 
+        $is_pasien_tb = false;
+        $diagnosa = $this->getAllDiagnosaIDRG($semua_transaksi);
+        $procedure = $this->getAllProcedureIDRG($semua_transaksi);
+
+        $diagnosaArray = explode("#", $diagnosa);
+        foreach ($diagnosaArray as $d) {
+            if (preg_match('/^A1[5-9]/', $d)) {
+                $is_pasien_tb = true;
+                break;
+            }
+        }
+
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
             'tgl_masuk' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
-            'birth_weight' => 0,
+            'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
+            'birth_weight' => ($transaksi_utama->BERAT_LAHIR) ? $transaksi_utama->BERAT_LAHIR : "",
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
             'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
@@ -967,8 +1008,23 @@ class PasienRujukanEklaimRepository
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
 
-        $this->idrgDiagnosaSet($no_sep, $this->getAllDiagnosaIDRG($semua_transaksi));
-        $this->idrgProcedureSet($no_sep, $this->getAllProcedureIDRG($semua_transaksi));
+        $this->idrgDiagnosaSet($no_sep, $diagnosa);
+        $this->idrgProcedureSet($no_sep, $procedure);
+
+        if ($is_pasien_tb && $transaksi_utama->SITB) {
+            $requestData = json_encode((object)[
+                'metadata' => (object)[
+                    'method' => 'sitb_validate',
+                ],
+                'data' => (object)[
+                    'nomor_sep' => $no_sep,
+                    'nomor_register_sitb' => $transaksi_utama->SITB,
+                ]
+            ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+            $key = $user->eklaim_key;
+            sendRequest($key, $requestData);
+        }
 
         $requestData = json_encode((object)[
             'metadata' => (object)[
@@ -1766,7 +1822,7 @@ class PasienRujukanEklaimRepository
         $response = sendRequest($key, $data);
         return $response;
     }
-    
+
     /**
      * Process searchProcedure by keyword
      * 
