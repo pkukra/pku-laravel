@@ -157,6 +157,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 setModalOpen(false);
                 reFetchPasien();
                 fetchActualKeadaanKelauarRS();
+                setBeratLahir(pasien?.BBL);
             });
     };
 
