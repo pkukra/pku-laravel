@@ -798,6 +798,13 @@ class PasienInapEklaimRepository
             ];
         }
 
+        if (!$transaksi_utama) {
+            return (object)[
+                "status" => "nok",
+                "error" => "Transaction not found"
+            ];
+        }
+
         $bridging = new BridgeVclaim();
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         try {
@@ -822,13 +829,6 @@ class PasienInapEklaimRepository
             return (object)[
                 "status" => "nok",
                 "error" => "VCLAIM: SEP milik " . $vclaim_detail->response->peserta->nama
-            ];
-        }
-
-        if (!$transaksi_utama) {
-            return (object)[
-                "status" => "nok",
-                "error" => "Transaction not found"
             ];
         }
 
