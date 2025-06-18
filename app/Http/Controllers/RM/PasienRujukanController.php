@@ -25,7 +25,7 @@ class PasienRujukanController extends Controller
     }
 
     /**
-     * search_diagnosis
+     * get_cusromers
      * Menampilkan daftar pasien rujukan dalam format JSON
      */
     public function get_cusromers()
@@ -36,9 +36,9 @@ class PasienRujukanController extends Controller
     }
 
     /**
-     * search_diagnosis
+     * search_diagnosis_cbg langsung dari eklaim
      */
-    public function search_diagnosis(Request $request)
+    public function search_diagnosis_cbg(Request $request)
     {
         $validated = $request->validate([
             'keyword' => 'nullable|string',
@@ -46,6 +46,20 @@ class PasienRujukanController extends Controller
 
         $keyword = $validated['keyword'];
         $data = $this->bridgingEKlaimRepo->searchDiagnosis($keyword);
+        return response()->json($data);
+    }
+
+    /**
+     * search_procedure_cbg langsung dari eklaim
+     */
+    public function search_procedure_cbg(Request $request)
+    {
+        $validated = $request->validate([
+            'keyword' => 'nullable|string',
+        ]);
+
+        $keyword = $validated['keyword'];
+        $data = $this->bridgingEKlaimRepo->searchProcedure($keyword);
         return response()->json($data);
     }
 

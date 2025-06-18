@@ -69,7 +69,6 @@ export default function Index({
                         onClick={() => {
                             setDataDiagnosaToEdit(record);
                             setEditStatusDiagForm(record.MRPSTAT_DIAG);
-                            setEditKasusForm(record.MRPKD_KASUS);
                             setEditDiagnosaForm(record.MRPKD_PENYAKIT);
                             setEditDiagnosaDisplay(
                                 `${record.MRPKD_PENYAKIT} - ${record.PENYAKIT}`
@@ -119,7 +118,6 @@ export default function Index({
     //edit diagnosa
     const [dataDiagnosaToEdit, setDataDiagnosaToEdit] = useState(null);
     const [editStatusDiagForm, setEditStatusDiagForm] = useState(null);
-    const [editKasusForm, setEditKasusForm] = useState(null);
     const [editDiagnosaForm, setEditDiagnosaForm] = useState(null);
     const [editDiagnosaDisplay, setEditDiagnosaDisplay] = useState("");
 
@@ -174,9 +172,12 @@ export default function Index({
     const fetchSugetDiagnosa = async (query = "a", pageNumber) => {
         setLoading(true);
         try {
-            const response = await axios.post(route("rm.search_diagnosis_cbg"), {
-                keyword: query,
-            });
+            const response = await axios.post(
+                route("rm.search_diagnosis_cbg"),
+                {
+                    keyword: query,
+                }
+            );
 
             const data = response?.data?.response?.response?.data;
             const results = Array.isArray(data) ? data : [];
@@ -298,11 +299,10 @@ export default function Index({
                 {
                     icd10_code: editDiagnosaForm,
                     status_diagnosa: editStatusDiagForm,
-                    kasus: editKasusForm,
                 }
             );
 
-            if (response?.data?.status === "ok") {
+            if (response?.data?.status == "ok") {
                 notification.success({
                     placement: "topRight",
                     message: "Berhasil",
@@ -350,7 +350,7 @@ export default function Index({
     return (
         <Card title={`Diagnosa`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
-                <Col span={5}>
+                <Col span={6}>
                     <Tooltip
                         title="Shift+F1 untuk shortcut"
                         placement="topLeft"
@@ -382,7 +382,7 @@ export default function Index({
                         />
                     </Tooltip>
                 </Col>
-                <Col span={4}>
+                {/* <Col span={4}>
                     <Select
                         disabled={isFinalINACBG}
                         showSearch
@@ -402,8 +402,8 @@ export default function Index({
                         }}
                         value={selectedKasusForm}
                     />
-                </Col>
-                <Col span={11}>
+                </Col> */}
+                <Col span={14}>
                     <AutoComplete
                         allowClear
                         onChange={() => {
@@ -504,7 +504,10 @@ export default function Index({
                 width={1000}
                 title="Edit Diagnosa"
                 open={!!dataDiagnosaToEdit}
-                onOk={saveEditedDiagnosa}
+                onOk={() => {
+                    alert(editDiagnosaForm);
+                    alert(editStatusDiagForm);
+                }}
                 onCancel={() => setDataDiagnosaToEdit(null)}
                 okText="Simpan"
                 cancelText="Batal"
@@ -526,7 +529,7 @@ export default function Index({
                             ]}
                         />
                     </Col>
-                    <Col span={4}>
+                    {/* <Col span={4}>
                         <Select
                             style={{ width: "100%" }}
                             placeholder="Lama Baru"
@@ -537,39 +540,51 @@ export default function Index({
                                 { value: "1", label: "1 Lama" },
                             ]}
                         />
-                    </Col>
-                    <Col span={15}>
-                        {/* <AutoComplete
-                            style={{ width: "100%" }}
-                            options={anotherOptions?.map((item) => ({
-                                value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`,
+                    </Col> */}
+                    <Col span={19}>
+                        <AutoComplete
+                            allowClear
+                            value={editDiagnosaDisplay}
+                            onChange={(value) => {
+                                setEditDiagnosaDisplay(value);
+                                setEditDiagnosaForm(null);
+                            }}
+                            options={anotherOptions?.map(([label, code]) => ({
+                                value: `${code} - ${label}`,
                                 label: (
-                                    <div>
-                                        <strong>{item.KD_PENYAKIT}</strong> -{" "}
-                                        {item.PENYAKIT}
+                                    <div
+                                        style={{
+                                            wordBreak: "break-word",
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                            display: "block",
+                                        }}
+                                    >
+                                        <strong>{code}</strong> -{" "}
+                                        <span>{label}</span>
                                     </div>
                                 ),
                                 disabled:
                                     isFinalINACBG ||
-                                    selectedDiagnosa.includes(item.KD_PENYAKIT), // Disable if already selected
+                                    selectedDiagnosa.includes(code),
                             }))}
-                            value={editDiagnosaDisplay}
-                            onChange={(text) => {
-                                setEditDiagnosaForm(null);
-                                setEditDiagnosaDisplay(text);
-                            }}
-                            onSearch={(text) => fetchSugetDiagnosa(text, 1)}
+                            style={{ width: "100%" }}
                             onSelect={(value) => {
-                                const code = value.split(" - ")[0];
-                                setEditDiagnosaForm(code);
+                                const kdPenyakit = value.split(" - ")[0];
+                                setEditDiagnosaForm(kdPenyakit);
                                 setEditDiagnosaDisplay(value);
                             }}
-                            placeholder="Cari Diagnosa"
-                        /> */}
+                            onSearch={(text) => {
+                                setEditDiagnosaDisplay(text);
+                                fetchSugetDiagnosa(text, 1);
+                            }}
+                            onClick={() => {
+                                fetchSugetDiagnosa("a", 1);
+                            }}
+                            placeholder="Cari Diagnosa/Penyakit"
+                        />
                     </Col>
                 </Row>
-                <br />
-                <p>{JSON.stringify(dataDiagnosaToEdit)}</p>
             </Modal>
         </Card>
     );

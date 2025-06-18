@@ -1767,4 +1767,24 @@ class PasienRujukanEklaimRepository
         $response = sendRequest($key, $data);
         return $response;
     }
+    
+    /**
+     * Process searchProcedure by keyword
+     * 
+     * @param string $keyword
+     */
+    public function searchProcedure($keyword)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "search_procedures"],
+            "data" => ["keyword" => $keyword]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
 }
