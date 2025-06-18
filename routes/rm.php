@@ -12,6 +12,11 @@ Route::prefix('rm')->middleware(['auth'])->group(function () {
 
 Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
+
+    Route::get('/get_cusromers', [PasienRujukanController::class, 'get_cusromers'])->name('rm.get_cusromers');
+    Route::post('/search_diagnosis_cbg', [PasienRujukanController::class, 'search_diagnosis_cbg'])->name('rm.search_diagnosis_cbg');
+    Route::post('/search_procedure_cbg', [PasienRujukanController::class, 'search_procedure_cbg'])->name('rm.search_procedure_cbg');
+
     Route::prefix('pasien-rujukan')->group(function () {
 
         Route::get('/list_rujukan', [PasienRujukanController::class, 'list_rujukan'])->name('rm.pasien-rujukan.list_rujukan');
@@ -29,6 +34,8 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/cari_penyakit', [PasienRujukanController::class, 'cari_penyakit'])->name('rm.pasien-rujukan.cari_penyakit');
         Route::post('/save-diagnosa', [PasienRujukanController::class, 'save_diagnosa'])->name('rm.pasien-rujukan.save_diagnosa');
         Route::delete('/diagnosa/{id}', [PasienRujukanController::class, 'delete_diagnosa'])->name('rm.pasien-rujukan.delete_diagnosa');
+
+        Route::put('/update_diagnosa/{id}', [PasienRujukanController::class, 'update_diagnosa'])->name('rm.pasien-rujukan.update_diagnosa');
 
         Route::get('/list_procedure/{kode_reg}/{no_sep?}', [PasienRujukanController::class, 'list_procedure'])->name('rm.pasien-rujukan.list_procedure');
         Route::post('/cari_procedure', [PasienRujukanController::class, 'cari_procedure'])->name('rm.pasien-rujukan.cari_procedure');

@@ -107,7 +107,19 @@ export default function Index({ pasien }) {
 
                                         <tr>
                                             <th>Kelompok Pasien</th>
-                                            <td>{pasien.FRPCUSTOMER_ID}</td>
+                                            <td>
+                                                {(() => {
+                                                    const isBPJS =
+                                                        pasien?.FRPCUSTOMER_ID ===
+                                                            "X002" ||
+                                                        pasien?.FRPCUSTOMER_ID ===
+                                                            "X003";
+                                                    const displayName = isBPJS
+                                                        ? `BPJS ${pasien?.CUSTOMER_NAME}`
+                                                        : pasien?.CUSTOMER_NAME;
+                                                    return `${pasien?.FRPCUSTOMER_ID} - ${displayName}`;
+                                                })()}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th>Alamat</th>

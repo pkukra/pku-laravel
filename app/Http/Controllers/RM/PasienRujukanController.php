@@ -25,6 +25,45 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * get_cusromers
+     * Menampilkan daftar pasien rujukan dalam format JSON
+     */
+    public function get_cusromers()
+    {
+        // Mendapatkan detail pasien rujukan berdasarkan kode_reg
+        $data = $this->pasienRujukanRepo->getCustomers();
+        return response()->json($data);
+    }
+
+    /**
+     * search_diagnosis_cbg langsung dari eklaim
+     */
+    public function search_diagnosis_cbg(Request $request)
+    {
+        $validated = $request->validate([
+            'keyword' => 'nullable|string',
+        ]);
+
+        $keyword = $validated['keyword'];
+        $data = $this->bridgingEKlaimRepo->searchDiagnosis($keyword);
+        return response()->json($data);
+    }
+
+    /**
+     * search_procedure_cbg langsung dari eklaim
+     */
+    public function search_procedure_cbg(Request $request)
+    {
+        $validated = $request->validate([
+            'keyword' => 'nullable|string',
+        ]);
+
+        $keyword = $validated['keyword'];
+        $data = $this->bridgingEKlaimRepo->searchProcedure($keyword);
+        return response()->json($data);
+    }
+
+    /**
      * index
      * Load halaman utama daftar pasien rujukan
      */
@@ -262,7 +301,10 @@ class PasienRujukanController extends Controller
             'kasus' => 'required|string',
         ]);
 
-        if (isset($validated['no_sep']) && empty($validated['no_sep']) && empty($validated['no_transaksikj'])) {
+        $no_sep = $validated['no_sep'] ?? null;
+        $no_transaksikj = $validated['no_transaksikj'] ?? null;
+
+        if ($no_sep == null && $no_transaksikj == null) {
             return response()->json([
                 'status' => "nok",
                 'message' => 'salah satu harus diisi: no_sep atau no_transaksikj',
@@ -272,8 +314,8 @@ class PasienRujukanController extends Controller
         // Mengambil data yang diperlukan untuk penyimpanan
         $data = [
             'icd10_code' => $validated['icd10_code'],
-            'no_transaksikj' => $validated['no_transaksikj'],
-            'no_sep' => $validated['no_sep'],
+            'no_transaksikj' => $no_transaksikj,
+            'no_sep' => $no_sep,
             'no_rm' => $validated['no_rm'],
             'kd_unit' => $validated['kd_unit'],
             'status_diagnosa' => $validated['status_diagnosa'],
@@ -295,6 +337,37 @@ class PasienRujukanController extends Controller
         return response()->json([
             'status' => "nok",
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
+        ], 500);
+    }
+    
+    /**
+     * update_diagnosa
+     * Update data diagnosa
+     */
+    public function update_diagnosa(Request $request, $id)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'icd10_code' => 'required|string|max:10',
+            'status_diagnosa' => 'required|string',
+        ]);
+
+        $code = $validated['icd10_code'];
+        $status_diagnosa = $validated['status_diagnosa'];
+
+        // Menyimpan data diagnosa melalui repository
+        $isSaved = $this->pasienRujukanRepo->updateDiagnosa($id, $code, $status_diagnosa);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Diagnosa berhasil diupdate',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat update diagnosa',
         ], 500);
     }
 
@@ -485,7 +558,10 @@ class PasienRujukanController extends Controller
             'tgl_masuk' => 'required|date',
         ]);
 
-        if (isset($validated['no_sep']) && empty($validated['no_sep']) && empty($validated['no_transaksikj'])) {
+        $no_sep = $validated['no_sep'] ?? null;
+        $no_transaksikj = $validated['no_transaksikj'] ?? null;
+
+        if ($no_sep == null && $no_transaksikj == null) {
             return response()->json([
                 'status' => "nok",
                 'message' => 'salah satu harus diisi: no_sep atau no_transaksikj',
@@ -495,8 +571,8 @@ class PasienRujukanController extends Controller
         // Mengambil data yang diperlukan untuk penyimpanan
         $data = [
             'icd9_code' => $validated['icd9_code'],
-            'no_sep' => $validated['no_sep'],
-            'no_transaksikj' => $validated['no_transaksikj'],
+            'no_sep' => $no_sep,
+            'no_transaksikj' => $no_transaksikj,
             'no_rm' => $validated['no_rm'],
             'kd_unit' => $validated['kd_unit'],
             'tgl_masuk' => Carbon::parse($validated['tgl_masuk']),
@@ -899,7 +975,7 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingEditUlangINACBG($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_final_klaim
      * Menampilkan procedure berdasarkan kode transaksi
@@ -909,7 +985,7 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingFinalKlaim($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_reedit_klaim
      * Menampilkan procedure berdasarkan kode transaksi
@@ -929,7 +1005,7 @@ class PasienRujukanController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingKirimKlaimIndividualProcess($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_get_claim_data
      * Process bridging data ke eklaim

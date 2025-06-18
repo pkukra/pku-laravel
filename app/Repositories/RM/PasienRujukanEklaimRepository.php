@@ -255,15 +255,17 @@ class PasienRujukanEklaimRepository
             'tgl_masuk' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => $transaksi_utama->FMKODEKELAS, // kelas rawat BPJS 1,2,3
+            'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
             'birth_weight' => 0,
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
             'tarif_poli_eks' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_poli_eks,
-            'diagnosa' => $this->getAllDiagnosa($semua_transaksi),
-            'diagnosa_inagrouper' => $this->getAllDiagnosa($semua_transaksi),
-            'procedure' => $this->getAllProcedure($semua_transaksi),
-            'procedure_inagrouper' => $this->getAllProcedure($semua_transaksi),
+
+            'diagnosa' => $this->getAllDiagnosa($semua_transaksi, true),
+            'diagnosa_inagrouper' => $this->getAllDiagnosa($semua_transaksi, true),
+            'procedure' => $this->getAllProcedure($semua_transaksi, true),
+            'procedure_inagrouper' => $this->getAllProcedure($semua_transaksi, true),
+
             'adl_sub_acute' => "",
             'adl_chronic' => "",
             'nama_dokter' => $transaksi_utama->FMDDOKTERN,
@@ -740,49 +742,64 @@ class PasienRujukanEklaimRepository
      * Get all diagnosa from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
      * 
      * @param array $array_pasien_rujukan
+     * @param boolean $sistemLama
      * @return string Diagnosa dalam format "S71.0#A00.1"
      */
-    public function getAllDiagnosa($array_pasien_rujukan)
+    public function getAllDiagnosa($pasienRujukanList, $sistemLama = false)
     {
-        $diagnoses_array = [];
-        foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $diagnosaQ = DB::connection('sqlsrvsimrs')
-                ->table('MR_PENYAKIT');
-            if ($pasien_rujukan->FMNOSEP) {
-                $diagnosaQ->where('NOSEP', '=', $pasien_rujukan->FMNOSEP);
+        $allDiagnosa = [];
+
+        foreach ($pasienRujukanList as $pasien) {
+            $query = DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT');
+
+            // Tentukan kondisi WHERE berdasarkan sistem lama atau tidak
+            if ($sistemLama || empty($pasien->FMNOSEP)) {
+                $query->where('MRPNO_TRANSAKSI', $pasien->FRPNOTRANSAKSIKJ);
             } else {
-                $diagnosaQ->where('MRPNO_TRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ);
+                $query->where('NOSEP', $pasien->FMNOSEP);
             }
-            $diagnosaQ->orderBy('MRPSTAT_DIAG', 'DESC');
-            $diagnosa = $diagnosaQ->pluck('MRPKD_PENYAKIT')->toArray();
-            $diagnoses_array = array_merge($diagnoses_array, $diagnosa); // Gabungkan hasil query ke array utama
+
+            // Ambil data diagnosa, urutkan berdasarkan status
+            $diagnosa = $query->orderBy('MRPSTAT_DIAG', 'DESC')
+                ->pluck('MRPKD_PENYAKIT')
+                ->toArray();
+
+            $allDiagnosa = array_merge($allDiagnosa, $diagnosa);
         }
 
-        return implode('#', array_unique($diagnoses_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
+        // Hilangkan duplikat dan gabungkan dengan tanda #
+        return implode('#', array_unique($allDiagnosa));
     }
 
     /**
      * Get all tindakan/procedures from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
      * 
-     * @param array $array_pasien_rujukan
+     * @param array $array_pasien_rujukan, boolean $sistemLama
      * @return string Prosedur dalam format "00123#00456"
      */
-    public function getAllProcedure($array_pasien_rujukan)
+    public function getAllProcedure($pasienRujukanList, $sistemLama = false)
     {
-        $tindakan_array = [];
-        foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $tindakanQ = DB::connection('sqlsrvsimrs')
-                ->table('MR_TINDAKAN');
-            if ($pasien_rujukan->FMNOSEP) {
-                $tindakanQ = $tindakanQ->where('NOSEP', '=', $pasien_rujukan->FMNOSEP);
+        $allTindakan = [];
+
+        foreach ($pasienRujukanList as $pasien) {
+            $query = DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN');
+
+            // Tentukan kondisi WHERE berdasarkan sistem lama atau tidak
+            if ($sistemLama || empty($pasien->FMNOSEP)) {
+                $query->where('MRTNOTRANSAKSI', $pasien->FRPNOTRANSAKSIKJ);
             } else {
-                $tindakanQ = $tindakanQ->where('MRTNOTRANSAKSI', '=', $pasien_rujukan->FRPNOTRANSAKSIKJ);
+                $query->where('NOSEP', $pasien->FMNOSEP);
             }
-            $tindakan = $tindakanQ->pluck('MRTKD_TINDAKAN')->toArray(); // Konversi ke array PHP
-            $tindakan_array = array_merge($tindakan_array, $tindakan); // Gabungkan hasil query ke array utama
+
+            // Ambil kode tindakan
+            $tindakan = $query->pluck('MRTKD_TINDAKAN')->toArray();
+            $allTindakan = array_merge($allTindakan, $tindakan);
         }
-        return implode('#', array_unique($tindakan_array)); // Gabungkan dengan pemisah "#" dan hilangkan duplikat
+
+        // Hilangkan duplikat dan gabungkan dengan tanda #
+        return implode('#', array_unique($allTindakan));
     }
+
 
     /**
      * Get all diagnosa idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
@@ -1725,6 +1742,46 @@ class PasienRujukanEklaimRepository
         $data = json_encode([
             "metadata" => ["method" => "get_claim_data"],
             "data" => ["nomor_sep" => $no_sep]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
+
+    /**
+     * Process searchDiagnosis by keyword
+     * 
+     * @param string $keyword
+     */
+    public function searchDiagnosis($keyword)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "search_diagnosis"],
+            "data" => ["keyword" => $keyword]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
+    
+    /**
+     * Process searchProcedure by keyword
+     * 
+     * @param string $keyword
+     */
+    public function searchProcedure($keyword)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        // Data request
+        $data = json_encode([
+            "metadata" => ["method" => "search_procedures"],
+            "data" => ["keyword" => $keyword]
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
         $response = sendRequest($key, $data);

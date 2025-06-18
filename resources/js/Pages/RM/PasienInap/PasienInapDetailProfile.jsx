@@ -32,9 +32,9 @@ export default function Index({ pasien }) {
                                                 Tanggal Periksa
                                             </th>
                                             <td>
-                                                {moment(pasien.PRWITGL_MASUK).format(
-                                                    "DD/MM/YYYY"
-                                                )}
+                                                {moment(
+                                                    pasien.PRWITGL_MASUK
+                                                ).format("DD/MM/YYYY")}
                                             </td>
                                         </tr>
                                         <tr>
@@ -125,7 +125,19 @@ export default function Index({ pasien }) {
                                         </tr>
                                         <tr>
                                             <th>Kelompok Pasien</th>
-                                            <td>{pasien.PRWIKD_CUSTOMER}</td>
+                                            <td>
+                                                {(() => {
+                                                    const isBPJS =
+                                                        pasien?.PRWIKD_CUSTOMER ===
+                                                            "X002" ||
+                                                        pasien?.PRWIKD_CUSTOMER ===
+                                                            "X003";
+                                                    const displayName = isBPJS
+                                                        ? `BPJS ${pasien?.CUSTOMER_NAME}`
+                                                        : pasien?.CUSTOMER_NAME;
+                                                    return `${pasien?.PRWIKD_CUSTOMER} - ${displayName}`;
+                                                })()}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th>ID Transakasi</th>

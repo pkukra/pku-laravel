@@ -20,6 +20,23 @@ class PasienRujukanRepository
     }
 
     /**
+     * getCustomers
+     * 
+     * @param string $no_rm
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCustomers()
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('CUSTOMER')
+            ->select(
+                'CUSID',
+                'NAME'
+            )
+            ->get();
+    }
+
+    /**
      * Get the list of pasien rujukan based on no_rm
      * 
      * @param string $no_rm
@@ -126,13 +143,12 @@ class PasienRujukanRepository
             ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
+            ->leftJoin('CUSTOMER', 'PASIEN_RUJUKAN.FRPCUSTOMER_ID', '=', 'CUSTOMER.CUSID')
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PASIEN_RUJUKAN.CARA_MASUK', '=', 'cm.KODE')
-
             ->leftJoin('BPJS_SEP AS sep', function ($join) use ($kode_reg) {
                 $join->on('PASIEN_RUJUKAN.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
                     ->orOn('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
             })
-
             ->select(
                 'sep.FMNOSEP',
                 'PASIEN.NAMAPASIEN',
@@ -141,6 +157,7 @@ class PasienRujukanRepository
                 'PASIEN.JENIS_KELAMIN',
                 'PASIEN.ALAMAT',
                 'PASIEN_RUJUKAN.*',
+                'CUSTOMER.NAME AS CUSTOMER_NAME',
                 'DOKTER.FMDDOKTERN',
                 'POLIKLINIK.FMPKLINIKN',
                 'cm.KETERANGAN AS CARA_MASUK_BPJS',
@@ -546,6 +563,74 @@ class PasienRujukanRepository
         return true;
     }
 
+    /**
+     * Update diagnosa for pasien rujukan
+     * 
+     * @param int  $id
+     * @param string  $icd10_code
+     * @param string  $status_diagnosa
+     * @return boolean
+     */
+    public function updateDiagnosa($id, $icd10_code, $status_diagnosa)
+    {
+        $user = Auth::user();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+        try {
+            $updatedDiagnosa = DB::connection('sqlsrvsimrs')
+                ->table('MR_PENYAKIT')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$updatedDiagnosa) {
+                return false;
+            }
+
+            $updated = DB::connection('sqlsrvsimrs')
+                ->table('MR_PENYAKIT')
+                ->where('id', $id)
+                ->update([
+                    'MRPKD_PENYAKIT' => $icd10_code,
+                    'MRPSTAT_DIAG' => $status_diagnosa,
+                    'IS_ERROR' => null,
+                    'ERROR_MESSAGE' => null,
+                    'UPDATE_DT' => $now,
+                    'USER_ID' => $user->id,
+                ]);
+
+            if ($updated == 0) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
+
+            if ($updatedDiagnosa->NOSEP) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $updatedDiagnosa->NOSEP)
+                    ->delete();
+            }
+
+            $this->auditTrail->insert([
+                "object_id"  => ($updatedDiagnosa->NOSEP) ? $updatedDiagnosa->NOSEP : $updatedDiagnosa->MRPNO_TRANSAKSI,
+                'action_id' => 26, // Update
+                'user_email' => $user->email,
+                'user_id' => $user->id,
+                'created_at' => $now,
+                'data' => [
+                    'MRPKD_PENYAKIT' => $icd10_code,
+                    'MRPSTAT_DIAG' => $status_diagnosa,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanRepository updateDiagnosa error: " . $e->getMessage());
+            return false;
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return true;
+    }
 
     /**
      * Save diagnosa for pasien rujukan

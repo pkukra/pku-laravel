@@ -55,20 +55,46 @@ export default function Index({
             title: "Action",
             key: "action",
             align: "center",
+            width:80,
             render: (_, record) => (
-                <Button
-                    disabled={
-                        isFinalINACBG ||
-                        (loadingDeleteDiagnosa &&
-                            record.ID === deleteDiagnosaId)
-                    }
-                    size="small"
-                    variant="outlined"
-                    color="danger"
-                    onClick={() => showDeleteConfirm(record)}
-                >
-                    hapus
-                </Button>
+                <>
+                    <Button
+                        disabled={
+                            isFinalINACBG ||
+                            (loadingDeleteDiagnosa &&
+                                record.ID === deleteDiagnosaId)
+                        }
+                        size="small"
+                        block
+                        variant="outlined"
+                        onClick={() => {
+                            setDataDiagnosaToEdit(record);
+                            setEditStatusDiagForm(record.MRPSTAT_DIAG);
+                            setEditDiagnosaForm(record.MRPKD_PENYAKIT);
+                            setEditDiagnosaDisplay(
+                                `${record.MRPKD_PENYAKIT} - ${record.PENYAKIT}`
+                            );
+                        }}
+                    >
+                        Edit
+                    </Button>{" "}
+                    <br />
+                    <Button
+                        style={{ marginTop: 5 }}
+                        disabled={
+                            isFinalINACBG ||
+                            (loadingDeleteDiagnosa &&
+                                record.ID === deleteDiagnosaId)
+                        }
+                        block
+                        size="small"
+                        variant="outlined"
+                        color="danger"
+                        onClick={() => showDeleteConfirm(record)}
+                    >
+                        Hapus
+                    </Button>
+                </>
             ),
         },
     ];
@@ -89,6 +115,12 @@ export default function Index({
     const [selectedDiagnosa, setSelectedDiagnosa] = useState([]); // untuk disable diagnosa terpiluh, agar saat menampilkan list diagnosa tidak terpilih 2 kali
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(true); // Loading state
+
+    //edit diagnosa
+    const [dataDiagnosaToEdit, setDataDiagnosaToEdit] = useState(null);
+    const [editStatusDiagForm, setEditStatusDiagForm] = useState(null);
+    const [editDiagnosaForm, setEditDiagnosaForm] = useState(null);
+    const [editDiagnosaDisplay, setEditDiagnosaDisplay] = useState("");
 
     const no_sep = pasien?.FMNOSEP || null;
     let pasien_id = pasien?.FRPPASIEN_ID;
@@ -138,28 +170,20 @@ export default function Index({
             });
     };
 
-    // Fetch diagnosa with lazy loading support
     const fetchSugetDiagnosa = async (query = "a", pageNumber) => {
         setLoading(true);
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.cari_penyakit"),
+                route("rm.search_diagnosis_cbg"),
                 {
-                    query,
-                    page: pageNumber,
+                    keyword: query,
                 }
             );
-            // If no results, mark hasMore as false
-            if (response.data.data.length === 0) {
-                setHasMore(false);
-            }
-            // If it's the first page, reset the results, otherwise append new results
-            if (pageNumber === 1) {
-                setAnotherOptions(response.data.data);
-            } else {
-                setAnotherOptions((prev) => [...prev, ...response.data.data]);
-            }
-            setPage(pageNumber); // Update the current page
+
+            const data = response?.data?.response?.response?.data;
+            const results = Array.isArray(data) ? data : [];
+
+            setAnotherOptions(results);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -182,29 +206,33 @@ export default function Index({
     const saveDiagnosa = async () => {
         setLoadingSaveDiag(true);
         try {
+            const payload = {
+                icd10_code: selectedDiagnosaForm,
+                no_transaksikj: kode_reg,
+                no_sep: no_sep,
+                no_rm: pasien_id,
+                kd_unit: "",
+                tgl_masuk: pasien_tgl_transaksi,
+                status_diagnosa: selectedStatusDiagForm,
+                kasus: selectedKasusForm,
+            };
+
+            console.log(payload);
+
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_diagnosa"),
-                {
-                    icd10_code: selectedDiagnosaForm,
-                    no_transaksikj: kode_reg,
-                    no_sep: no_sep,
-                    no_rm: pasien_id,
-                    kd_unit: "",
-                    tgl_masuk: pasien_tgl_transaksi,
-                    status_diagnosa: selectedStatusDiagForm,
-                    kasus: selectedKasusForm,
-                }
+                payload
             );
 
             if (response?.data?.status === "ok") {
                 return notification.success({
-                    placement: "bottomRight",
+                    placement: "topRight",
                     message: "Sukses!",
                     description: "Diagnosa berhasil ditambahkan.",
                 });
             }
             return notification.error({
-                placement: "bottomRight",
+                placement: "topRight",
                 message: "Terjadi Kesalahan!",
                 description: "Diagnosa gagal ditambahkan.",
             });
@@ -261,6 +289,46 @@ export default function Index({
             });
     };
 
+    const saveEditedDiagnosa = async () => {
+        if (!dataDiagnosaToEdit) return;
+
+        try {
+            const response = await axios.put(
+                route("rm.pasien-rujukan.update_diagnosa", {
+                    id: dataDiagnosaToEdit.ID,
+                }),
+                {
+                    icd10_code: editDiagnosaForm,
+                    status_diagnosa: editStatusDiagForm,
+                }
+            );
+
+            if (response?.data?.status == "ok") {
+                notification.success({
+                    placement: "topRight",
+                    message: "Berhasil",
+                    description: "Diagnosa berhasil diupdate",
+                });
+            } else {
+                notification.error({
+                    placement: "topRight",
+                    message: "Gagal",
+                    description: "Diagnosa gagal diupdate",
+                });
+            }
+
+            setDataDiagnosaToEdit(null);
+            fetchDiagnosa();
+            fetchINACBGData();
+        } catch (error) {
+            console.error("Error updating diagnosa:", error);
+            notification.error({
+                message: "Error",
+                description: "Terjadi kesalahan saat update diagnosa.",
+            });
+        }
+    };
+
     const inputRefStatusDdiagnosa = useRef(null);
 
     useEffect(() => {
@@ -283,7 +351,7 @@ export default function Index({
     return (
         <Card title={`Diagnosa`}>
             <Row gutter={16} style={{ marginBottom: 10 }}>
-                <Col span={5}>
+                <Col span={6}>
                     <Tooltip
                         title="Shift+F1 untuk shortcut"
                         placement="topLeft"
@@ -315,7 +383,7 @@ export default function Index({
                         />
                     </Tooltip>
                 </Col>
-                <Col span={4}>
+                {/* <Col span={4}>
                     <Select
                         disabled={isFinalINACBG}
                         showSearch
@@ -335,50 +403,50 @@ export default function Index({
                         }}
                         value={selectedKasusForm}
                     />
-                </Col>
-                <Col span={11}>
+                </Col> */}
+                <Col span={14}>
                     <AutoComplete
                         allowClear
                         onChange={() => {
-                            setSelectedDiagnosaForm(null); // Clear the stored code
-                            setSelectedDiagnosaDisplay(""); // Clear the display value
+                            setSelectedDiagnosaForm(null);
+                            setSelectedDiagnosaDisplay("");
                         }}
-                        options={anotherOptions.map((item) => ({
-                            value: `${item.KD_PENYAKIT} - ${item.PENYAKIT}`, // Display both code and name
+                        options={anotherOptions?.map(([label, code]) => ({
+                            value: `${code} - ${label}`, // Display value
                             label: (
                                 <div
                                     style={{
-                                        wordBreak: "break-word", // Ensure text wraps
-                                        whiteSpace: "normal", // Allow wrapping long words
-                                        overflowWrap: "break-word", // Break long words if necessary
-                                        display: "block", // Ensure block level behavior for wrapping
+                                        wordBreak: "break-word",
+                                        whiteSpace: "normal",
+                                        overflowWrap: "break-word",
+                                        display: "block",
                                     }}
                                 >
-                                    <strong>{item.KD_PENYAKIT}</strong> -{" "}
-                                    <span>{item.PENYAKIT}</span>
+                                    <strong>{code}</strong> -{" "}
+                                    <span>{label}</span>
                                 </div>
                             ),
                             disabled:
                                 isFinalINACBG ||
-                                selectedDiagnosa.includes(item.KD_PENYAKIT), // Disable if already selected
+                                selectedDiagnosa.includes(code),
                         }))}
                         style={{ width: "100%" }}
                         onSelect={(value) => {
-                            const kdPenyakit = value.split(" - ")[0]; // Extract KD_PENYAKIT
-                            const displayValue = value; // Full display value with name and code
-                            setSelectedDiagnosaForm(kdPenyakit); // Store only the code
-                            setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
+                            const kdPenyakit = value.split(" - ")[0];
+                            const displayValue = value;
+                            setSelectedDiagnosaForm(kdPenyakit);
+                            setSelectedDiagnosaDisplay(displayValue);
                         }}
                         onSearch={(text) => {
-                            setSelectedDiagnosaDisplay(text); // Update the display value during search
-                            fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
+                            setSelectedDiagnosaDisplay(text);
+                            fetchSugetDiagnosa(text, 1);
                         }}
-                        onClick={(text) => {
-                            fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
+                        onClick={() => {
+                            fetchSugetDiagnosa("a", 1);
                         }}
                         placeholder="Cari Diagnosa/Penyakit"
-                        onScroll={onScroll} // Attach scroll event for lazy loading
-                        value={selectedDiagnosaDisplay} // Show both code and name in the input
+                        onScroll={onScroll}
+                        value={selectedDiagnosaDisplay}
                     />
                 </Col>
                 <Col span={4}>
@@ -430,6 +498,94 @@ export default function Index({
                 okButtonProps={{ danger: true }}
             >
                 <p>Apakah anda yakin ingin menghapus diagnosa ini?</p>
+            </Modal>
+
+            {/* Modal for Edit Diagnosa*/}
+            <Modal
+                width={1000}
+                title="Edit Diagnosa"
+                open={!!dataDiagnosaToEdit}
+                onOk={() => {
+                    saveEditedDiagnosa()
+                    return
+                }}
+                onCancel={() => setDataDiagnosaToEdit(null)}
+                okText="Simpan"
+                cancelText="Batal"
+            >
+                <Row gutter={16}>
+                    <Col span={5}>
+                        <Select
+                            style={{ width: "100%" }}
+                            placeholder="STATUS DIAGNOSA"
+                            value={editStatusDiagForm}
+                            onChange={setEditStatusDiagForm}
+                            options={[
+                                { value: "5", label: "5-Diagnosa Akhir" },
+                                { value: "1", label: "1-Diagnosa Lain" },
+                                { value: "2", label: "2-Komplikasi" },
+                                { value: "0", label: "0-Diagnosa Awal" },
+                                { value: "3", label: "3-Penyebab Luar" },
+                                { value: "4", label: "4-Penyebab Kematian" },
+                            ]}
+                        />
+                    </Col>
+                    {/* <Col span={4}>
+                        <Select
+                            style={{ width: "100%" }}
+                            placeholder="Lama Baru"
+                            value={editKasusForm}
+                            onChange={setEditKasusForm}
+                            options={[
+                                { value: "0", label: "0 Baru" },
+                                { value: "1", label: "1 Lama" },
+                            ]}
+                        />
+                    </Col> */}
+                    <Col span={19}>
+                        <AutoComplete
+                            allowClear
+                            value={editDiagnosaDisplay}
+                            onChange={(value) => {
+                                setEditDiagnosaDisplay(value);
+                                setEditDiagnosaForm(null);
+                            }}
+                            options={anotherOptions?.map(([label, code]) => ({
+                                value: `${code} - ${label}`,
+                                label: (
+                                    <div
+                                        style={{
+                                            wordBreak: "break-word",
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                            display: "block",
+                                        }}
+                                    >
+                                        <strong>{code}</strong> -{" "}
+                                        <span>{label}</span>
+                                    </div>
+                                ),
+                                disabled:
+                                    isFinalINACBG ||
+                                    selectedDiagnosa.includes(code),
+                            }))}
+                            style={{ width: "100%" }}
+                            onSelect={(value) => {
+                                const kdPenyakit = value.split(" - ")[0];
+                                setEditDiagnosaForm(kdPenyakit);
+                                setEditDiagnosaDisplay(value);
+                            }}
+                            onSearch={(text) => {
+                                setEditDiagnosaDisplay(text);
+                                fetchSugetDiagnosa(text, 1);
+                            }}
+                            onClick={() => {
+                                fetchSugetDiagnosa("a", 1);
+                            }}
+                            placeholder="Cari Diagnosa/Penyakit"
+                        />
+                    </Col>
+                </Row>
             </Modal>
         </Card>
     );

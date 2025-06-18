@@ -194,10 +194,10 @@ class PasienInapEklaimRepository
             'discharge_status' => $discharge_status,
             'tarif_rs' => $ploting_tarif->tarif_rs,
             'tarif_poli_eks' => $ploting_tarif->tarif_poli_eks,
-            'diagnosa' => $this->getAllDiagnosa($transaksi_utama),
-            'diagnosa_inagrouper' => $this->getAllDiagnosa($transaksi_utama),
-            'procedure' => $this->getAllProcedure($transaksi_utama),
-            'procedure_inagrouper' => $this->getAllProcedure($transaksi_utama),
+            'diagnosa' => $this->getAllDiagnosa($transaksi_utama, true),
+            'diagnosa_inagrouper' => $this->getAllDiagnosa($transaksi_utama, true),
+            'procedure' => $this->getAllProcedure($transaksi_utama, true),
+            'procedure_inagrouper' => $this->getAllProcedure($transaksi_utama, true),
             'adl_sub_acute' => "",
             'adl_chronic' => "",
             'nama_dokter' => $transaksi_utama->FMDDOKTERN,
@@ -694,17 +694,19 @@ class PasienInapEklaimRepository
      * Get all diagnosa from all pasien_inap based on array of pasien rujukan->kode_reg (by no SEP)
      * 
      * @param object $pasien_inap
+     * @param boolean $sistemLama
      * @return string Diagnosa dalam format "S71.0#A00.1"
      */
-    public function getAllDiagnosa($pasien_inap)
+    public function getAllDiagnosa($pasien_inap, $sistemLama = false)
     {
         $diagnoses_array = [];
         $query = DB::connection('sqlsrvsimrs')->table('MR_PENYAKIT');
 
-        if ($pasien_inap->FMNOSEP) {
-            $query->where('NOSEP', '=', $pasien_inap->FMNOSEP);
-        } else {
+        // Tentukan kondisi WHERE berdasarkan sistem lama atau tidak
+        if ($sistemLama || !$pasien_inap->FMNOSEP) {
             $query->where('MRPNO_TRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI);
+        } else {
+            $query->where('NOSEP', '=', $pasien_inap->FMNOSEP);
         }
         $query->orderBy('MRPSTAT_DIAG', 'DESC');
         $query->orderBy('MRPURUT_MASUK', 'ASC');
@@ -721,17 +723,18 @@ class PasienInapEklaimRepository
      * Get all tindakan/procedures from all pasien_inap based on array of pasien rujukan->kode_reg (by no SEP)
      * 
      * @param object $pasien_inap
+     * @param boolean $sistemLama
      * @return string Prosedur dalam format "00123#00456"
      */
-    public function getAllProcedure($pasien_inap)
+    public function getAllProcedure($pasien_inap, $sistemLama = false)
     {
         $tindakan_array = [];
         $query = DB::connection('sqlsrvsimrs')->table('MR_TINDAKAN');
 
-        if ($pasien_inap->FMNOSEP) {
-            $query->where('NOSEP', '=', $pasien_inap->FMNOSEP);
-        } else {
+        if ($sistemLama || !$pasien_inap->FMNOSEP) {
             $query->where('MRTNOTRANSAKSI', '=', $pasien_inap->PRWINO_TRANSAKSI);
+        } else {
+            $query->where('NOSEP', '=', $pasien_inap->FMNOSEP);
         }
 
         // Panggil pluck() lalu langsung toArray()
