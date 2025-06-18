@@ -370,6 +370,35 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat update diagnosa',
         ], 500);
     }
+    
+    /**
+     * update_procedure
+     * Update data procedure
+     */
+    public function update_procedure(Request $request, $id)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'icd9_code' => 'required|string|max:10',
+        ]);
+
+        $code = $validated['icd9_code'];
+
+        // Menyimpan data procedure melalui repository
+        $isSaved = $this->pasienRujukanRepo->updateProcedure($id, $code);
+
+        if ($isSaved) {
+            return response()->json([
+                'status' => "ok",
+                'message' => 'Procedure berhasil diupdate',
+            ]);
+        }
+
+        return response()->json([
+            'status' => "nok",
+            'message' => 'Terjadi kesalahan saat update procedure',
+        ], 500);
+    }
 
     /**
      * save_diagnosa_idrg

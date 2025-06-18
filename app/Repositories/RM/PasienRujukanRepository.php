@@ -589,7 +589,7 @@ class PasienRujukanRepository
 
             $updated = DB::connection('sqlsrvsimrs')
                 ->table('MR_PENYAKIT')
-                ->where('id', $id)
+                ->where('ID', $id)
                 ->update([
                     'MRPKD_PENYAKIT' => $icd10_code,
                     'MRPSTAT_DIAG' => $status_diagnosa,
@@ -625,6 +625,72 @@ class PasienRujukanRepository
         } catch (\Exception $e) {
             DB::connection('sqlsrvsimrs')->rollBack();
             Log::error("PasienRujukanRepository updateDiagnosa error: " . $e->getMessage());
+            return false;
+        }
+
+        DB::connection('sqlsrvsimrs')->commit();
+        return true;
+    }
+
+    /**
+     * Update procedure for pasien rujukan
+     * 
+     * @param int  $id
+     * @param string  $icd10_code
+     * @return boolean
+     */
+    public function updateProcedure($id, $icd10_code)
+    {
+        $user = Auth::user();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+        try {
+            $updatedProcedure = DB::connection('sqlsrvsimrs')
+                ->table('MR_TINDAKAN')
+                ->where('ID', $id)
+                ->first();
+
+            if (!$updatedProcedure) {
+                return false;
+            }
+
+            $updated = DB::connection('sqlsrvsimrs')
+                ->table('MR_TINDAKAN')
+                ->where('ID', $id)
+                ->update([
+                    'MRTKD_TINDAKAN' => $icd10_code,
+                    'IS_ERROR' => null,
+                    'ERROR_MESSAGE' => null,
+                    'UPDATE_DT' => $now,
+                    'USER_ID' => $user->id,
+                ]);
+
+            if ($updated == 0) {
+                DB::connection('sqlsrvsimrs')->rollBack();
+                return false;
+            }
+
+            if ($updatedProcedure->NOSEP) {
+                DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_INACBG')
+                    ->where('no_sep', $updatedProcedure->NOSEP)
+                    ->delete();
+            }
+
+            $this->auditTrail->insert([
+                "object_id"  => ($updatedProcedure->NOSEP) ? $updatedProcedure->NOSEP : $updatedProcedure->MRPNO_TRANSAKSI,
+                'action_id' => 27, // Update
+                'user_email' => $user->email,
+                'user_id' => $user->id,
+                'created_at' => $now,
+                'data' => [
+                    'MRPKD_PENYAKIT' => $icd10_code,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanRepository updateProcedure error: " . $e->getMessage());
             return false;
         }
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-    Modal,
     Spin,
     Card,
     AutoComplete,
@@ -10,6 +9,7 @@ import {
     Table,
     Button,
     Tooltip,
+    Modal,
 } from "antd";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -50,19 +50,41 @@ export default function Index({
             align: "center",
             width: 30,
             render: (_, record) => (
-                <Button
-                    disabled={
-                        isFinalINACBG ||
-                        (loadingDeleteProcedure &&
-                            record.ID === deleteProcedureId)
-                    }
-                    size="small"
-                    variant="outlined"
-                    color="danger"
-                    onClick={() => showDeleteConfirm(record)}
-                >
-                    hapus
-                </Button>
+                <>
+                    <Button
+                        block
+                        disabled={
+                            isFinalINACBG ||
+                            (loadingDeleteProcedure &&
+                                record.ID == deleteProcedureId)
+                        }
+                        size="small"
+                        style={{ marginBottom: 4 }}
+                        onClick={() => {
+                            setProcedureToEdit(record);
+                            setEditProcedureForm(record.MRTKD_TINDAKAN);
+                            setEditProcedureDisplay(
+                                `${record.MRTKD_TINDAKAN} - ${record.FMI9KETERANGAN}`
+                            );
+                        }}
+                    >
+                        Edit
+                    </Button>
+                    <br />
+                    <Button
+                        block
+                        disabled={
+                            isFinalINACBG ||
+                            (loadingDeleteProcedure &&
+                                record.ID == deleteProcedureId)
+                        }
+                        size="small"
+                        danger
+                        onClick={() => showDeleteConfirm(record)}
+                    >
+                        Hapus
+                    </Button>
+                </>
             ),
         },
     ];
@@ -82,6 +104,10 @@ export default function Index({
     const [selectedProcedure, setSelectedProcedure] = useState([]); // untuk disable procedure terpiluh, agar saat menampilkan list procedure tidak terpilih 2 kali
     const [procedure, setProcedure] = useState([]); // State untuk menyimpan data procedure
     const [loadingFetchProcedure, setLoadingFetchProcedure] = useState(true); // Loading state
+
+    const [procedureToEdit, setProcedureToEdit] = useState(null);
+    const [editProcedureForm, setEditProcedureForm] = useState(null);
+    const [editProcedureDisplay, setEditProcedureDisplay] = useState("");
 
     const no_sep = pasien?.FMNOSEP || null;
     let pasien_id = pasien?.FRPPASIEN_ID;
@@ -237,6 +263,46 @@ export default function Index({
             });
     };
 
+    const handleUpdateProcedure = async () => {
+        if (!procedureToEdit || !editProcedureForm) return;
+
+        try {
+            const res = await axios.put(
+                route("rm.pasien-rujukan.update_procedure", {
+                    id: procedureToEdit.ID,
+                }),
+                {
+                    icd9_code: editProcedureForm,
+                }
+            );
+
+            if (res?.data?.status === "ok") {
+                notification.success({
+                    placement: "topRight",
+                    message: "Berhasil",
+                    description: "Procedure berhasil diupdate",
+                });
+                fetchProcedure();
+                fetchINACBGData();
+                setProcedureToEdit(null);
+                setEditProcedureForm(null);
+                setEditProcedureDisplay("");
+            } else {
+                notification.error({
+                    placement: "topRight",
+                    message: "Gagal",
+                    description: "Procedure gagal diupdate",
+                });
+            }
+        } catch (error) {
+            console.error("Error updating procedure:", error);
+            notification.error({
+                message: "Error",
+                description: "Terjadi kesalahan saat update procedure.",
+            });
+        }
+    };
+
     const inputRefStatusProcedure = useRef(null);
 
     useEffect(() => {
@@ -362,6 +428,63 @@ export default function Index({
                 okButtonProps={{ danger: true }}
             >
                 <p>Apakah anda yakin ingin menghapus procedure ini?</p>
+            </Modal>
+
+            <Modal
+                title="Edit Procedure"
+                width={800}
+                open={!!procedureToEdit}
+                onCancel={() => {
+                    setProcedureToEdit(null);
+                    setEditProcedureForm(null);
+                    setEditProcedureDisplay("");
+                }}
+                footer={[
+                    <Button
+                        key="cancel"
+                        onClick={() => setProcedureToEdit(null)}
+                    >
+                        Batal
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type="primary"
+                        disabled={!editProcedureForm}
+                        onClick={handleUpdateProcedure}
+                    >
+                        Simpan
+                    </Button>,
+                ]}
+            >
+                <AutoComplete
+                    allowClear
+                    style={{ width: "100%" }}
+                    value={editProcedureDisplay}
+                    onChange={(value) => {
+                        setEditProcedureDisplay(value);
+                        setEditProcedureForm(null);
+                    }}
+                    onSelect={(value) => {
+                        const code = value.split(" - ")[0];
+                        setEditProcedureForm(code);
+                        setEditProcedureDisplay(value);
+                    }}
+                    onSearch={(text) => {
+                        setEditProcedureDisplay(text);
+                        fetchSugetProcedure(text, 1);
+                    }}
+                    options={anotherOptions.map(([label, code]) => ({
+                        value: `${code} - ${label}`,
+                        label: (
+                            <div>
+                                <strong>{code}</strong> - <span>{label}</span>
+                            </div>
+                        ),
+                        disabled:
+                            isFinalINACBG || selectedProcedure.includes(code),
+                    }))}
+                    placeholder="Cari procedure/tindakan"
+                />
             </Modal>
         </Card>
     );

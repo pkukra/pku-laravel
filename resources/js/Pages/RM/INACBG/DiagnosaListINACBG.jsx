@@ -55,7 +55,7 @@ export default function Index({
             title: "Action",
             key: "action",
             align: "center",
-            width:80,
+            width: 80,
             render: (_, record) => (
                 <>
                     <Button
@@ -505,13 +505,22 @@ export default function Index({
                 width={1000}
                 title="Edit Diagnosa"
                 open={!!dataDiagnosaToEdit}
-                onOk={() => {
-                    saveEditedDiagnosa()
-                    return
-                }}
-                onCancel={() => setDataDiagnosaToEdit(null)}
-                okText="Simpan"
-                cancelText="Batal"
+                footer={[
+                    <Button
+                        key="cancel"
+                        onClick={() => setDataDiagnosaToEdit(null)}
+                    >
+                        Batal
+                    </Button>,
+                    <Button
+                        key="submit"
+                        type="primary"
+                        disabled={!editDiagnosaForm || !editStatusDiagForm}
+                        onClick={() => saveEditedDiagnosa()}
+                    >
+                        Simpan
+                    </Button>,
+                ]}
             >
                 <Row gutter={16}>
                     <Col span={5}>
@@ -530,18 +539,6 @@ export default function Index({
                             ]}
                         />
                     </Col>
-                    {/* <Col span={4}>
-                        <Select
-                            style={{ width: "100%" }}
-                            placeholder="Lama Baru"
-                            value={editKasusForm}
-                            onChange={setEditKasusForm}
-                            options={[
-                                { value: "0", label: "0 Baru" },
-                                { value: "1", label: "1 Lama" },
-                            ]}
-                        />
-                    </Col> */}
                     <Col span={19}>
                         <AutoComplete
                             allowClear
