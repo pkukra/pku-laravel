@@ -145,8 +145,6 @@ function Index({
                 }
             );
 
-            alert(JSON.stringify(response?.data))
-
             if (response?.data?.status === "nok") {
                 return notification.warning({
                     placement: "topRight",
