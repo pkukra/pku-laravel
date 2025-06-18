@@ -960,7 +960,7 @@ class PasienInapEklaimRepository
         $this->idrgDiagnosaSet($no_sep, $diagnosa);
         $this->idrgProcedureSet($no_sep, $procedure);
 
-        if ($is_pasien_tb) {
+        if ($is_pasien_tb && $transaksi_utama->SITB) {
             $requestData = json_encode((object)[
                 'metadata' => (object)[
                     'method' => 'sitb_validate',
