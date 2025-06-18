@@ -837,8 +837,9 @@ class PasienInapRepository
             ->get();
     }
 
-    public function updateCaraMasukPulangsByTransaksi(array $data)
+    public function updateKeperawatan(array $data)
     {
+        DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
             // Jika keadaan_keluar selain 1, KPRUJUKLUAR harus kosong
             $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : null;
@@ -889,11 +890,20 @@ class PasienInapRepository
                     ->table('MR_KEMATIAN')
                     ->insert($arrInsert);
             }
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN')
+                ->where('KD_PASIEN', $data['kode_pasien'])
+                ->update([
+                    'BERAT_LAHIR' => $data['berat_lahir'],
+                ]);
         } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
             Log::error('Error update/insert Cara masuk: ' . $e->getMessage());
             return false;
         }
 
+        DB::connection('sqlsrvsimrs')->commit();
         return true;
     }
 

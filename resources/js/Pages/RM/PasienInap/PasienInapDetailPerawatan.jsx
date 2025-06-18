@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Select, Card, Button, notification, Input } from "antd";
+import {
+    Modal,
+    Select,
+    Card,
+    Button,
+    notification,
+    Input,
+    InputNumber,
+} from "antd";
 const { TextArea } = Input;
-
-const perawatanOptions = [
-    { value: 0, label: "Dirawat" },
-    { value: 1, label: "Dirujuk" },
-    { value: 2, label: "Pulang" },
-    { value: 3, label: "Meninggal" },
-];
 
 export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [loadingSave, setLoadingSave] = useState(false);
@@ -33,6 +34,8 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
         setModalOpen(true);
     };
+
+    const [beratLahir, setBeratLahir] = useState(null);
 
     async function fetchActualKeadaanKelauarRS() {
         try {
@@ -111,7 +114,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         setLoadingSave(true);
         axios
             .post(
-                route("rm.pasien-inap.update_cara_masuk_pulang", {
+                route("rm.pasien-inap.update_keperawatan", {
                     kode_reg: pasien.PRWINO_TRANSAKSI,
                 }),
                 {
@@ -126,6 +129,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
 
                     keadaan_keluar: selectedKeadaanKeluar,
                     sebab_kematian: selectedSebabKematian,
+                    berat_lahir: beratLahir,
                 }
             )
             .then((response) => {
@@ -173,6 +177,11 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 <table style={{ width: "100%" }}>
                     <tbody>
                         <tr>
+                            <td style={{ width: "25%" }}>Berat Lahir</td>
+                            <td>: {beratLahir}</td>
+                        </tr>
+
+                        <tr>
                             <td style={{ width: "25%" }}>Cara Masuk</td>
                             <td>
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
@@ -219,7 +228,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
             <Modal
                 closable={false}
                 destroyOnClose
-                title="Ubah Cara Masuk dan Pulang"
+                title="Data Perawatan"
                 open={modalOpen}
                 onCancel={() => setModalOpen(false)}
                 footer={[
@@ -242,6 +251,14 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     </Button>,
                 ]}
             >
+                <label>Berat Lahir (gram):</label> <br />
+                <InputNumber
+                    value={beratLahir}
+                    onChange={setBeratLahir}
+                    min={0}
+                    style={{ width: "100%" }}
+                />{" "}
+                <br />
                 <label>Cara Masuk:</label>
                 <Select
                     value={selectedCaraMasuk}
@@ -249,7 +266,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     onChange={setSelectedCaraMasuk}
                     options={caraMasukOptions}
                 />
-
                 <label>Keadaan Keluar RS: </label>
                 <Select
                     value={selectedKeadaanKeluar}
@@ -276,7 +292,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                         />
                     </>
                 )}
-
                 {selectedKeadaanKeluar == 7 && (
                     <>
                         <label>RS Tujuan: </label>
