@@ -931,7 +931,6 @@ class PasienRujukanEklaimRepository
             $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
         }
 
-
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
