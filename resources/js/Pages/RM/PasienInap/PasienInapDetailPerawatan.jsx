@@ -178,7 +178,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     <tbody>
                         <tr>
                             <td style={{ width: "25%" }}>Berat Lahir</td>
-                            <td>: {beratLahir}</td>
+                            <td>: {pasien?.BERAT_LAHIR}</td>
                         </tr>
 
                         <tr>
