@@ -811,6 +811,20 @@ class PasienInapEklaimRepository
             ];
         }
 
+        if (!$vclaim_detail->response) {
+            return (object)[
+                "status" => "nok",
+                "error" => "VCLAIM: SEP tidak ditemukan."
+            ];
+        }
+
+        if ($vclaim_detail->response->peserta->noMr != $transaksi_utama->KD_PASIEN) {
+            return (object)[
+                "status" => "nok",
+                "error" => "VCLAIM: SEP milik " . $vclaim_detail->response->peserta->nama
+            ];
+        }
+
         if (!$transaksi_utama) {
             return (object)[
                 "status" => "nok",
