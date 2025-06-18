@@ -1205,11 +1205,7 @@ class PasienRujukanEklaimRepository
                     ->table('PASIEN_INACBG')
                     ->where('no_sep', $no_sep)
                     ->where('pasien_id', $transaksi_utama->FRPPASIEN_ID)
-                    ->update([
-                        'is_final' => 0,
-                        'updated_at' => $now,
-                        'updated_by' => $user->email,
-                    ]);
+                    ->delete();
 
                 if ($affected == 0) {
                     return (object)[
