@@ -924,7 +924,7 @@ class PasienInapEklaimRepository
             "upgrade_class_ind" => ($vclaim_detail->response->klsRawat->klsRawatNaik) ? 1 : 0,
             "upgrade_class_class" => $naik_kelas,
             "upgrade_class_los" => ($ploting_tarif->icu_los) ? $los - $ploting_tarif->icu_los : $los, // jika icu_los ada isinya, maka los minus icu_los
-            'birth_weight' => $transaksi_utama->BERAT_LAHIR,
+            'birth_weight' => ($transaksi_utama->BERAT_LAHIR) ? $transaksi_utama->BERAT_LAHIR : "",
             'discharge_status' => $discharge_status,
             'tarif_rs' => $ploting_tarif->tarif_rs,
             'tarif_poli_eks' => $ploting_tarif->tarif_poli_eks,
