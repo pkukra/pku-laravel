@@ -131,23 +131,15 @@ export default function Index({
         setLoading(true);
         try {
             const response = await axios.post(
-                route("rm.pasien-rujukan.cari_procedure"),
+                route("rm.search_procedure_cbg"),
                 {
-                    query,
-                    page: pageNumber,
+                    keyword: query,
                 }
             );
-            // If no results, mark hasMore as false
-            if (response.data.data.length === 0) {
-                setHasMore(false);
-            }
-            // If it's the first page, reset the results, otherwise append new results
-            if (pageNumber === 1) {
-                setAnotherOptions(response.data.data);
-            } else {
-                setAnotherOptions((prev) => [...prev, ...response.data.data]);
-            }
-            setPage(pageNumber); // Update the current page
+            const data = response?.data?.response?.response?.data;
+            const results = Array.isArray(data) ? data : [];
+            setAnotherOptions(results);
+            console.log(results);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -280,39 +272,42 @@ export default function Index({
                                 setSelectedProcedureForm(null); // Clear the stored code
                                 setSelectedProcedureDisplay(""); // Clear the display value
                             }}
-                            options={anotherOptions.map((item) => ({
-                                value: `${item.FMI9KODE} - ${item.FMI9KETERANGAN}`, // Display both code and name
-                                label: (
-                                    <div
-                                        style={{
-                                            wordBreak: "break-word", // Ensure text wraps
-                                            whiteSpace: "normal", // Allow wrapping long words
-                                            overflowWrap: "break-word", // Break long words if necessary
-                                            display: "block", // Ensure block level behavior for wrapping
-                                        }}
-                                    >
-                                        <strong>{item.FMI9KODE}</strong> -{" "}
-                                        <span>{item.FMI9KETERANGAN}</span>
-                                    </div>
-                                ),
-                                disabled:
-                                    isFinalINACBG ||
-                                    selectedProcedure.includes(item.FMI9KODE), // Disable if already selected
-                            }))}
+                            options={anotherOptions.map((item) => {
+                                const [description, code] = item;
+                                return {
+                                    value: `${code} - ${description}`, // Display both code and description
+                                    label: (
+                                        <div
+                                            style={{
+                                                wordBreak: "break-word",
+                                                whiteSpace: "normal",
+                                                overflowWrap: "break-word",
+                                                display: "block",
+                                            }}
+                                        >
+                                            <strong>{code}</strong> -{" "}
+                                            <span>{description}</span>
+                                        </div>
+                                    ),
+                                    disabled:
+                                        isFinalINACBG ||
+                                        selectedProcedure.includes(code),
+                                };
+                            })}
                             style={{ width: "100%" }}
                             onSelect={(value) => {
-                                const kdPenyakit = value.split(" - ")[0]; // Extract FMI9KODE
+                                const kdPenyakit = value.split(" - ")[0]; // Extract code
                                 const displayValue = value; // Full display value with name and code
                                 setSelectedProcedureForm(kdPenyakit); // Store only the code
                                 setSelectedProcedureDisplay(displayValue); // Display both the code and name
                             }}
                             onSearch={(text) => {
-                                setSelectedProcedureDisplay(text); // Update the display value during search
-                                fetchSugetProcedure(text, 1); // Trigger the fetch for suggestions
+                                setSelectedProcedureDisplay(text);
+                                fetchSugetProcedure(text, 1);
                             }}
                             placeholder="Cari procedure/tindakan"
-                            onScroll={onScroll} // Attach scroll event for lazy loading
-                            value={selectedProcedureDisplay} // Show both code and name in the input
+                            onScroll={onScroll}
+                            value={selectedProcedureDisplay}
                         />
                     </Tooltip>
                 </Col>
