@@ -512,6 +512,7 @@ class PasienInapEklaimRepository
                     'sep.FMJENISRAWAT',
                     'sep.FMKODEKELAS',
                     'p.BERAT_LAHIR',
+                    'p.SITB',
                     'p.NAMAPASIEN',
                     'p.KD_PASIEN',
                     'p.TGL_LAHIR',
@@ -892,6 +893,18 @@ class PasienInapEklaimRepository
             }
         }
 
+        $is_pasien_tb = false;
+        $diagnosa = $this->getAllDiagnosaIDRG($transaksi_utama);
+        $procedure = $this->getAllProcedureIDRG($transaksi_utama);
+
+        $diagnosaArray = explode("#", $diagnosa);
+        foreach ($diagnosaArray as $d) {
+            if (preg_match('/^A1[5-9]/', $d)) {
+                $is_pasien_tb = true;
+                break;
+            }
+        }
+
         // perhitungan tanggal dan los
         $tgl_masuk = Carbon::parse($transaksi_utama->TGL_MASUK);
         $tgl_pulang = $transaksi_utama->PRWITGL_KELUAR
@@ -944,9 +957,25 @@ class PasienInapEklaimRepository
             return $response;
         }
 
-        $this->idrgDiagnosaSet($no_sep, $this->getAllDiagnosaIDRG($transaksi_utama));
-        $this->idrgProcedureSet($no_sep, $this->getAllProcedureIDRG($transaksi_utama));
+        $this->idrgDiagnosaSet($no_sep, $diagnosa);
+        $this->idrgProcedureSet($no_sep, $procedure);
 
+        if ($is_pasien_tb) {
+            $requestData = json_encode((object)[
+                'metadata' => (object)[
+                    'method' => 'sitb_validate',
+                ],
+                'data' => (object)[
+                    'nomor_sep' => $no_sep,
+                    'nomor_register_sitb' => $transaksi_utama->SITB,
+                ]
+            ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+            $key = $user->eklaim_key;
+            sendRequest($key, $requestData);
+        }
+
+        // grouping satge 1
         $requestData = json_encode((object)[
             'metadata' => (object)[
                 'method' => 'grouper',
