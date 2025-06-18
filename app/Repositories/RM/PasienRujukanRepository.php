@@ -156,6 +156,8 @@ class PasienRujukanRepository
                 'PASIEN.GOL_DARAH',
                 'PASIEN.JENIS_KELAMIN',
                 'PASIEN.ALAMAT',
+                'PASIEN.SITB',
+                'PASIEN.BERAT_LAHIR AS BBL',
                 'PASIEN_RUJUKAN.*',
                 'CUSTOMER.NAME AS CUSTOMER_NAME',
                 'DOKTER.FMDDOKTERN',
@@ -1657,7 +1659,7 @@ class PasienRujukanRepository
             ->get();
     }
 
-    public function updateCaraMasukPulangsByTransaksi(array $data)
+    public function updateKeperawatan(array $data)
     {
         $user = Auth::user();
         $conn = DB::connection('sqlsrvsimrs');
@@ -1714,6 +1716,13 @@ class PasienRujukanRepository
 
                 $mrPayload = $arrInsert;
             }
+
+            $conn->table('PASIEN')
+                ->where('KD_PASIEN', $data['kode_pasien'])
+                ->update([
+                    'BERAT_LAHIR' => $data['berat_lahir'],
+                    'SITB' => $data['sitb'],
+                ]);
 
             // 4. Audit Trail
             $this->auditTrail->insert([

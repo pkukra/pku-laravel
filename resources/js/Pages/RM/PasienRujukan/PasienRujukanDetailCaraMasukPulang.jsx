@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Select, Card, Button, notification, Input } from "antd";
+import { Modal, Select, Card, Button, notification, Input, InputNumber  } from "antd";
 const { TextArea } = Input;
 
 const perawatanOptions = [
@@ -29,6 +29,8 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     const [selectedKeperawatan, setSelectedKeperawatan] = useState(null);
     const [selectedRSRujukanKeluar, setSelectedRSRujukanKeluar] =
         useState(null);
+    const [beratLahir, setBeratLahir] = useState(null);
+    const [sitb, setSitb] = useState(null);
 
     const handleOpenModal = () => {
         setSelectedCaraMasuk(pasien?.CARA_MASUK || "");
@@ -133,7 +135,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
         setLoadingSave(true);
         axios
             .post(
-                route("rm.pasien-rujukan.update_cara_masuk_pulang", {
+                route("rm.pasien-rujukan.update_keperawatan", {
                     kode_reg_kj: pasien.FRPNOTRANSAKSIKJ,
                 }),
                 {
@@ -148,6 +150,9 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
 
                     keadaan_keluar: selectedKeadaanKeluar,
                     sebab_kematian: selectedSebabKematian,
+
+                    berat_lahir: beratLahir,
+                    sitb: sitb,
                 }
             )
             .then((response) => {
@@ -171,6 +176,8 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 });
             })
             .finally(() => {
+                setBeratLahir(pasien?.BBL);
+                setSitb(pasien?.SITB);
                 setLoadingSave(false);
                 setModalOpen(false);
                 reFetchPasien();
@@ -180,12 +187,14 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     };
 
     useEffect(() => {
+        setBeratLahir(pasien?.BBL);
+        setSitb(pasien?.SITB);
         fetchSugestRSRujukan();
         fetchActualKunjunganPasien();
         fetchActualKeadaanKelauarRS();
         fetchSugestCaraMasuk();
         fetchSugestKeadaanKelauarRS();
-    }, []);
+    }, [pasien]);
 
     // Fungsi untuk mendapatkan label berdasarkan value
     const statusPerawatan = (kode) => {
@@ -211,7 +220,17 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 <table style={{ width: "100%" }}>
                     <tbody>
                         <tr>
-                            <td style={{ width: "25%" }}>Cara Masuk</td>
+                            <td style={{ width: "25%" }}>Berat Lahir (gram)</td>
+                            <td>: {pasien?.BBL}</td>
+                        </tr>
+
+                        <tr>
+                            <td>SITB</td>
+                            <td>: {pasien?.SITB}</td>
+                        </tr>
+
+                        <tr>
+                            <td>Cara Masuk</td>
                             <td>
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
                             </td>
@@ -229,7 +248,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                                 )}
                             </td>
                         </tr> */}
-                        
+
                         <tr>
                             <td>Keadaan Keluar RS</td>
                             <td>: {keadaanKeluar?.FMKKRSKETERANGAN}</td>
@@ -295,6 +314,23 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     </Button>,
                 ]}
             >
+                <label>Berat Lahir (gram):</label> <br />
+                <InputNumber
+                    value={beratLahir}
+                    onChange={setBeratLahir}
+                    min={0}
+                    style={{ width: "100%" }}
+                />{" "}
+                <br />
+                <label>No SITB:</label>
+                <Input
+                    value={sitb}
+                    onChange={(e) => {
+                        setSitb(e.target.value);
+                    }}
+                    style={{ width: "100%" }}
+                />{" "}
+                <br />
                 <label>Cara Masuk:</label>
                 <Select
                     value={selectedCaraMasuk}
@@ -302,7 +338,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     onChange={setSelectedCaraMasuk}
                     options={caraMasukOptions}
                 />
-
                 {/* <label>Perawatan:</label>
                 <Select
                     value={parseInt(selectedKeperawatan)}
@@ -312,7 +347,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     }
                     options={perawatanOptions}
                 />*/}
-
                 <label>Keadaan Keluar RS: </label>
                 <Select
                     value={selectedKeadaanKeluar}
@@ -339,7 +373,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                         />
                     </>
                 )}
-
                 {selectedKeadaanKeluar == 7 && (
                     <>
                         <label>RS Tujuan: </label>

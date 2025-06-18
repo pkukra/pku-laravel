@@ -339,7 +339,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat menyimpan diagnosa',
         ], 500);
     }
-    
+
     /**
      * update_diagnosa
      * Update data diagnosa
@@ -370,7 +370,7 @@ class PasienRujukanController extends Controller
             'message' => 'Terjadi kesalahan saat update diagnosa',
         ], 500);
     }
-    
+
     /**
      * update_procedure
      * Update data procedure
@@ -818,7 +818,7 @@ class PasienRujukanController extends Controller
         ]);
     }
 
-    public function update_cara_masuk_pulang(Request $request, $no_transaksi_kj)
+    public function update_keperawatan(Request $request, $no_transaksi_kj)
     {
         // Validate the input
         $validated = $request->validate([
@@ -832,6 +832,9 @@ class PasienRujukanController extends Controller
 
             'keperawatan' => 'required',
             'kode_rs_rujuk_keluar' => 'nullable',
+
+            'berat_lahir' => 'nullable',
+            'sitb' => 'nullable',
         ]);
 
         // Tambahkan no_transaksi_kj ke dalam array data
@@ -840,7 +843,7 @@ class PasienRujukanController extends Controller
         $validated['email'] = Auth::user()->email;
         $validated['now'] = now();
 
-        $isUpdated = $this->pasienRujukanRepo->updateCaraMasukPulangsByTransaksi($validated);
+        $isUpdated = $this->pasienRujukanRepo->updateKeperawatan($validated);
 
         if ($isUpdated) {
             return response()->json([
