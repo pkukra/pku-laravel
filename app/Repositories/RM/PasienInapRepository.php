@@ -176,7 +176,7 @@ class PasienInapRepository
             ->leftJoin('MR_RUJUKAN_KELUAR AS rk', 'PRI.PRWIRUJUKLUAR', '=', 'rk.MRKODERUJUKAN')
             ->leftJoin('BPJS_SEP AS sep', 'PRI.PRWINO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
             ->select(
-                'PASIEN.BERAT_LAHIR',
+                'PASIEN.BERAT_LAHIR AS BBL',
                 'sep.FMNOSEP',
                 'TPI.*',
                 'PASIEN.NAMAPASIEN',

@@ -161,12 +161,13 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     };
 
     useEffect(() => {
+        setBeratLahir(pasien?.BBL);
         setSelectedRSRujukanKeluar(pasien?.PRWIRUJUKLUAR);
         fetchSugestRSRujukan();
         fetchActualKeadaanKelauarRS();
         fetchSugestCaraMasuk();
         fetchSugestKeadaanKelauarRS();
-    }, []);
+    }, [pasien]);
 
     return (
         <>
@@ -177,8 +178,8 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 <table style={{ width: "100%" }}>
                     <tbody>
                         <tr>
-                            <td style={{ width: "25%" }}>Berat Lahir</td>
-                            <td>: {pasien?.BERAT_LAHIR}</td>
+                            <td style={{ width: "25%" }}>Berat Lahir (gram)</td>
+                            <td>: {pasien?.BBL}</td>
                         </tr>
 
                         <tr>
