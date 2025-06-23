@@ -390,7 +390,10 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                                                     : "inherit", // Tambahkan warna merah jika invalid
                                         }}
                                     >
-                                        <strong>{item.code}</strong> -{" "}
+                                        <strong>
+                                            {item.code}{" "}
+                                            {item.asterisk == 1 && <>* </>}
+                                        </strong>{" "}
                                         {item.validcode != 1 && (
                                             <span>(Invalid) </span>
                                         )}
