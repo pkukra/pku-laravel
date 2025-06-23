@@ -60,7 +60,17 @@ export default function Index({
                         size="small"
                         block
                         variant="outlined"
-                        onClick={() => showSetPrimaryConfirm(record)}
+                        onClick={() => {
+                            if (record.accpdx == "N") {
+                                return notification.error({
+                                    placement: "top",
+                                    description:
+                                        "Diagnosa ini tidak bisa dijadikan primary",
+                                });
+                            }
+                            showSetPrimaryConfirm(record);
+                            return;
+                        }}
                     >
                         Set Primary
                     </Button>{" "}
@@ -92,6 +102,11 @@ export default function Index({
     const [selectedDiagnosaForm, setSelectedDiagnosaForm] = useState(null);
     const [loadingSaveDiag, setLoadingSaveDiag] = useState(false); // Loading state for each diagnosa
     const [selectedDiagnosaDisplay, setSelectedDiagnosaDisplay] = useState(""); // Stores the full value for display
+
+    const [
+        selectedDiagnosaAcceptedPrimaryForm,
+        setSelectedDiagnosaAcceptedPrimaryForm,
+    ] = useState(null);
 
     const [deleteDiagnosaId, setDeleteDiagnosaId] = useState(null); // Track which diagnosa is being deleted
     const [isModalHapusDiagnosaOpen, setIsModalHapusDiagnosaOpen] =
@@ -184,6 +199,16 @@ export default function Index({
 
     // Function to save diagnosa
     const saveDiagnosa = async () => {
+        if (
+            diagnosa?.length < 1 &&
+            selectedDiagnosaAcceptedPrimaryForm == "N"
+        ) {
+            return notification.error({
+                placement: "top",
+                description: "Diagnosa ini tidak bisa dijadikan primary",
+            });
+        }
+
         if (["X002", "X003"].includes(customer_id) && !no_sep) {
             return notification.error({
                 placement: "top",
@@ -331,7 +356,7 @@ export default function Index({
                                 setSelectedDiagnosaDisplay(""); // Clear the display value
                             }}
                             options={anotherOptions.map((item) => ({
-                                value: `${item.code} - ${item.description}`,
+                                value: `${item.code} - ${item.description} - ${item.accpdx}`,
                                 label: (
                                     <div
                                         style={{
@@ -347,9 +372,7 @@ export default function Index({
                                     >
                                         <strong>
                                             {item.code}{" "}
-                                            {item.asterisk == 1 && (
-                                                <>* </>
-                                            )}
+                                            {item.asterisk == 1 && <>* </>}
                                         </strong>{" "}
                                         -{" "}
                                         {item.validcode != 1 && (
@@ -365,9 +388,11 @@ export default function Index({
                             style={{ width: "100%" }}
                             onSelect={(value) => {
                                 const kdPenyakit = value.split(" - ")[0]; // Extract code
+                                const accpdx = value.split(" - ")[2]; // Extract code
                                 const displayValue = value; // Full display value with name and code
                                 setSelectedDiagnosaForm(kdPenyakit); // Store only the code
                                 setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
+                                setSelectedDiagnosaAcceptedPrimaryForm(accpdx);
                             }}
                             onSearch={(text) => {
                                 setSelectedDiagnosaDisplay(text); // Update the display value during search
