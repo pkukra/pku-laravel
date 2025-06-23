@@ -331,14 +331,18 @@ export default function Index({
                                 setSelectedDiagnosaDisplay(""); // Clear the display value
                             }}
                             options={anotherOptions.map((item) => ({
-                                value: `${item.code} - ${item.description}`, // Display both code and name
+                                value: `${item.code} - ${item.description}`,
                                 label: (
                                     <div
                                         style={{
-                                            wordBreak: "break-word", // Ensure text wraps
-                                            whiteSpace: "normal", // Allow wrapping long words
-                                            overflowWrap: "break-word", // Break long words if necessary
-                                            display: "block", // Ensure block level behavior for wrapping
+                                            wordBreak: "break-word",
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                            display: "block",
+                                            color:
+                                                item.validcode != 1
+                                                    ? "red"
+                                                    : "inherit", // Warna merah jika invalid
                                         }}
                                     >
                                         <strong>{item.code}</strong> -{" "}
@@ -349,8 +353,8 @@ export default function Index({
                                     </div>
                                 ),
                                 disabled:
-                                    selectedDiagnosa.includes(item.code) || // Disable if already selected
-                                    item.validcode != 1, // and if invalid code
+                                    selectedDiagnosa.includes(item.code) ||
+                                    item.validcode != 1,
                             }))}
                             style={{ width: "100%" }}
                             onSelect={(value) => {

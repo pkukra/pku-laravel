@@ -380,10 +380,14 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                                 label: (
                                     <div
                                         style={{
-                                            wordBreak: "break-word", // Ensure text wraps
-                                            whiteSpace: "normal", // Allow wrapping long words
-                                            overflowWrap: "break-word", // Break long words if necessary
-                                            display: "block", // Ensure block level behavior for wrapping
+                                            wordBreak: "break-word",
+                                            whiteSpace: "normal",
+                                            overflowWrap: "break-word",
+                                            display: "block",
+                                            color:
+                                                item.validcode != 1
+                                                    ? "red"
+                                                    : "inherit", // Tambahkan warna merah jika invalid
                                         }}
                                     >
                                         <strong>{item.code}</strong> -{" "}
@@ -394,8 +398,8 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                                     </div>
                                 ),
                                 disabled:
-                                    selectedProcedure.includes(item.code) || // Disable if already selected
-                                    item.validcode != 1, // and if invalid code
+                                    selectedProcedure.includes(item.code) ||
+                                    item.validcode != 1, // Disable jika sudah dipilih atau invalid
                             }))}
                             style={{ width: "100%" }}
                             onSelect={(value) => {
