@@ -1008,6 +1008,8 @@ class PasienRujukanEklaimRepository
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
 
+
+
         $this->idrgDiagnosaSet($no_sep, $diagnosa);
         $this->idrgProcedureSet($no_sep, $procedure);
 
@@ -1040,6 +1042,14 @@ class PasienRujukanEklaimRepository
         $key = $user->eklaim_key;
         $grouping_1_idrg =  sendRequest($key, $requestData);
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        $code_grouping_1_idrg = $grouping_1_idrg->response->metadata->code ?? null;
+        if($code_grouping_1_idrg != 200){
+            return $grouping_1_idrg;
+        }
+
+        Log::info('grouping_1_idrg Rujukan ');
+        Log::info(json_encode($grouping_1_idrg));
 
         try {
             DB::connection('sqlsrvsimrs')

@@ -398,7 +398,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                                     </div>
                                 ),
                                 disabled:
-                                    selectedProcedure.includes(item.code) ||
+                                    // selectedProcedure.includes(item.code) ||
                                     item.validcode != 1, // Disable jika sudah dipilih atau invalid
                             }))}
                             style={{ width: "100%" }}

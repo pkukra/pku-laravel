@@ -990,6 +990,14 @@ class PasienInapEklaimRepository
         $key = $user->eklaim_key;
         $grouping_1_idrg =  sendRequest($key, $requestData);
 
+        $code_grouping_1_idrg = $grouping_1_idrg->response->metadata->code ?? null;
+        if ($code_grouping_1_idrg != 200) {
+            return $grouping_1_idrg;
+        }
+
+        Log::info('grouping_1_idrg Inap ');
+        Log::info(json_encode($grouping_1_idrg));
+
         try {
             DB::connection('sqlsrvsimrs')
                 ->table('PASIEN_IDRG')

@@ -353,7 +353,7 @@ export default function Index({
                                     </div>
                                 ),
                                 disabled:
-                                    selectedDiagnosa.includes(item.code) ||
+                                    // selectedDiagnosa.includes(item.code) ||
                                     item.validcode != 1,
                             }))}
                             style={{ width: "100%" }}
