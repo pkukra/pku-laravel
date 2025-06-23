@@ -118,7 +118,9 @@ export default function Index({ auth }) {
             dataIndex: "IS_INACBG_FINAL",
             key: "IS_INACBG_FINAL",
             align: "center",
-            render: (_, record) => <>{record?.IS_INACBG_FINAL ? "✅" : "❌"}</>,
+            render: (_, record) => (
+                <>{record?.IS_INACBG_FINAL == 1 ? "✅" : "❌"}</>
+            ),
         },
         {
             title: "Action",

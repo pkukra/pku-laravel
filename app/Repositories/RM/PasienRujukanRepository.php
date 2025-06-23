@@ -93,7 +93,7 @@ class PasienRujukanRepository
                 if ($is_inacbg_final == "final") {
                     return $query->where('PASIEN_RUJUKAN.IS_INACBG_FINAL', 1);
                 }
-                return $query->where('PASIEN_RUJUKAN.IS_INACBG_FINAL', null);
+                return $query->whereNot('PASIEN_RUJUKAN.IS_INACBG_FINAL', 1);
             });
 
         $total = (clone $baseQuery)->count();
