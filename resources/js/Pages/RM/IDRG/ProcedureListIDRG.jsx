@@ -387,10 +387,15 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                                         }}
                                     >
                                         <strong>{item.code}</strong> -{" "}
+                                        {item.validcode != 1 && (
+                                            <span>(Invalid) </span>
+                                        )}
                                         <span>{item.description}</span>
                                     </div>
                                 ),
-                                disabled: selectedProcedure.includes(item.code), // Disable if already selected
+                                disabled:
+                                    selectedProcedure.includes(item.code) || // Disable if already selected
+                                    item.validcode != 1, // and if invalid code
                             }))}
                             style={{ width: "100%" }}
                             onSelect={(value) => {
