@@ -421,7 +421,7 @@ function Index({
                             </tbody>
                         </table>
                     )}
-                    {special_cmg_option.length == 0 ? (
+                    {special_cmg_option.length == 0 || isFinalINACBG ? (
                         <></>
                     ) : (
                         <>
@@ -573,7 +573,8 @@ function Index({
                         disabled={
                             // tambhan karena stage 2 untuk top up, tentunya jika topup kosong maka disable
                             special_cmg_option.length == 0 ||
-                            selectedCmgOption.length == 0
+                            selectedCmgOption.length == 0 ||
+                            isFinalINACBG
                         }
                         type="primary"
                         onClick={() => {
