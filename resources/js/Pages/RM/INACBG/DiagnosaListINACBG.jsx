@@ -217,8 +217,6 @@ export default function Index({
                 kasus: selectedKasusForm,
             };
 
-            console.log(payload);
-
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_diagnosa"),
                 payload
@@ -457,7 +455,7 @@ export default function Index({
                         onClick={saveDiagnosa}
                         disabled={
                             loadingSaveDiag ||
-                            selectedKasusForm === null ||
+                            // selectedKasusForm === null ||
                             selectedStatusDiagForm === null ||
                             selectedDiagnosaForm === null ||
                             isFinalINACBG

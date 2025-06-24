@@ -505,13 +505,18 @@ class PasienRujukanRepository
         $tgl_masuk = $data['tgl_masuk']; // Already parsed to a Carbon instance
 
         // Get the latest MRPURUT_MASUK value to generate next
-        $lastUrutMasuk = DB::connection('sqlsrvsimrs')
+        $lastUrutMasukQry = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
-            ->where('MRPNO_TRANSAKSI', $no_transaksikj)
-            ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'desc')
+            ->when($no_sep, function ($query) use ($no_sep) {
+                return $query->where('NOSEP', $no_sep);
+            }, function ($query) use ($no_transaksikj) {
+                return $query->where('MRPNO_TRANSAKSI', $no_transaksikj);
+            });
+
+        $lastUrutMasuk = $lastUrutMasukQry
+            ->orderBy('MRPURUT_MASUK', 'desc')
             ->limit(1)
             ->value('MRPURUT_MASUK');
-
         $no_urut_masuk = $lastUrutMasuk ? $lastUrutMasuk + 1 : 1;
 
         $data_to_save = [

@@ -298,7 +298,7 @@ class PasienRujukanController extends Controller
             'kd_unit' => 'max:20',
             'tgl_masuk' => 'required|date',
             'status_diagnosa' => 'required|string',
-            'kasus' => 'required|string',
+            'kasus' => 'nullable|string',
         ]);
 
         $no_sep = $validated['no_sep'] ?? null;
