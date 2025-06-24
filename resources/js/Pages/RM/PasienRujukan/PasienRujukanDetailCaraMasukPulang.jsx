@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Select, Card, Button, notification, Input, InputNumber  } from "antd";
+import {
+    Modal,
+    Select,
+    Card,
+    Button,
+    notification,
+    Input,
+    InputNumber,
+} from "antd";
 const { TextArea } = Input;
 
 const perawatanOptions = [
@@ -277,6 +285,11 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             <td></td>
                             <td>
                                 <Button
+                                    disabled={
+                                        pasien?.IS_INACBG_FINAL == 1
+                                            ? true
+                                            : false
+                                    }
                                     type="primary"
                                     onClick={handleOpenModal}
                                 >

@@ -81,6 +81,8 @@ export default function Index({ pasien }) {
             });
     };
 
+    console.log("pasien IS_INACBG_FINAL==>", pasien?.IS_INACBG_FINAL);
+
     return (
         <>
             <Card
@@ -99,6 +101,7 @@ export default function Index({ pasien }) {
                     {dataMrDiagnosa?.MRCATATANKHUSUS} {"   "}
                 </p>
                 <Button
+                    disabled={pasien?.IS_INACBG_FINAL == 1 ? true : false}
                     type="primary"
                     icon={<EditOutlined />}
                     size="small"

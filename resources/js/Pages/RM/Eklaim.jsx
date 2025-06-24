@@ -15,7 +15,7 @@ import IndexTabINACBG from "./INACBG/IndexTabINACBG";
 
 import axios from "axios";
 
-function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
+function EKlaim({ pasien, setDisableINACBG, disableINACBG, reFetchPasien }) {
     const [loadingFetchIdrgData, setLoadingFetchIdrgData] = useState(false);
     const [idrgGroupData, setIdrgGroupData] = useState(null);
 
@@ -142,6 +142,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
+            reFetchPasien()
             setFinalLoading(false);
             setModalFinalOpen(false);
             fetchINACBGData();
@@ -186,6 +187,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
+            reFetchPasien()
             setReeditLoading(false);
             setModalReeditOpen(false);
             fetchINACBGData();
