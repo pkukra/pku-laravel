@@ -301,7 +301,7 @@ function Index({
                         }}
                         style={{ marginRight: 5, backgroundColor: " #33cc33" }}
                     >
-                        Bridge iDRG
+                        Bridge & Grouping iDRG
                     </Button>
                     {!isFinalIDRG ? (
                         <Button
@@ -351,7 +351,7 @@ function Index({
                         onClick={() => handleBridgingData()}
                         style={{ backgroundColor: " #33cc33" }}
                     >
-                        Ok, Bridging Data
+                        Ok, Bridge & Grouping Data
                     </Button>,
                 ]}
             >
