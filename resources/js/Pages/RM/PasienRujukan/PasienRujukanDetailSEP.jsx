@@ -191,7 +191,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
                 </p></>
                 )}
 
-                <Tooltip
+                {/* <Tooltip
                     title={
                         disabled
                             ? "User belum setup Eklaim Key"
@@ -224,7 +224,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
                     >
                         {!noSep ? "Belum ada SEP" : "Final Data"}
                     </Button>
-                </Tooltip>
+                </Tooltip> */}
             </Card>
 
             <Modal

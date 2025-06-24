@@ -190,7 +190,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
             <Card title={"INACBG/BPJS/SEP"} loading={loadingSep}>
                 <p>{ketSep}</p>
                 <p>{ketKelas}</p>
-                <p>
+                {/* <p>
                     KODE INAGROUPER: <strong>{pasien?.FTKODEINACBG}</strong>
                 </p>
                 <p>
@@ -204,9 +204,9 @@ export default function Index({ pasien, user, reFetchPasien }) {
                 <p>
                     Tarif INACBG Kelas 1: &nbsp;&nbsp;{" "}
                     <strong>Rp {RupiahFormat(pasien?.FTTARIPINACBG1)}</strong>
-                </p>
+                </p> */}
 
-                <Tooltip
+                {/* <Tooltip
                     title={
                         disabled
                             ? "User belum setup Eklaim Key"
@@ -214,13 +214,13 @@ export default function Index({ pasien, user, reFetchPasien }) {
                     }
                     placement="topLeft"
                 >
-                    {/* <Button
+                    <Button
                         type="primary"
                         onClick={() => setModalUpdateNoSEPOpen(true)}
                         style={{ marginRight: 5 }}
                     >
                         Ubah SEP
-                    </Button> */}
+                    </Button>
 
                     <Button
                         type="primary"
@@ -239,7 +239,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
                     >
                         {!noSep ? "Belum ada SEP" : "Final Data"}
                     </Button>
-                    
+
                     <Button
                         type="primary"
                         onClick={() => setModalKirimOpen(true)}
@@ -253,11 +253,14 @@ export default function Index({ pasien, user, reFetchPasien }) {
                         type="primary"
                         onClick={() => hadleCetakKlaim()}
                         disabled={disabled || !noSep}
-                        style={{ margin: 2, backgroundColor: "rgb(0, 170, 255)" }}
+                        style={{
+                            margin: 2,
+                            backgroundColor: "rgb(0, 170, 255)",
+                        }}
                     >
                         {!noSep ? "Belum ada SEP" : "Cetak Klaim"}
                     </Button>
-                </Tooltip>
+                </Tooltip> */}
             </Card>
 
             <Modal
@@ -311,7 +314,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
             >
                 {noSep}
             </Modal>
-            
+
             <Modal
                 closable={false}
                 open={modalKirimOpen}
