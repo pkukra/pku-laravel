@@ -1097,7 +1097,7 @@ class PasienInapEklaimRepository
         $diagnosa = array_map('trim', $diagnosa);
 
         // Hilangkan duplikat dan gabungkan dengan '#'
-        return implode('#', array_unique($diagnosa));
+        return implode('#', ($diagnosa));
     }
 
     /**
@@ -1108,17 +1108,17 @@ class PasienInapEklaimRepository
      */
     public function getAllProcedureIDRG($transaksi_utama)
     {
-        $diagnosa = DB::connection('sqlsrvsimrs')
+        $procedures = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_TINDAKAN_IM')
             ->where('no_sep', '=', $transaksi_utama->FMNOSEP)
             ->pluck('code') // Ambil kolom code sebagai array
             ->toArray();
 
         // Bersihkan spasi tiap kode sebelum gabung
-        $diagnosa = array_map('trim', $diagnosa);
+        $procedures = array_map('trim', $procedures);
 
         // Hilangkan duplikat dan gabungkan dengan '#'
-        return implode('#', array_unique($diagnosa));
+        return implode('#', ($procedures));
     }
 
     /**
