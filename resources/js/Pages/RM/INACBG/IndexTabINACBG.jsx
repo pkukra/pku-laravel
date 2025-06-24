@@ -654,7 +654,7 @@ function Index({
 
                 <p>
                     Proses ini mengakibatkan diagnosa & prosedure yang tersimpan
-                    di INACBG terganti dengan data import dari idrg. Apakah
+                    di INACBG terganti dengan data import dari IDRG. Apakah
                     setuju untuk melanjutkan?
                 </p>
             </Modal>
