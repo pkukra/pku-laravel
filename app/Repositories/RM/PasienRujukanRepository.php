@@ -1137,8 +1137,12 @@ class PasienRujukanRepository
         // Get the latest MRTURUT_MASUK value to generate next
         $lastUrutMasuk = DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
-            ->where('MRTNOTRANSAKSI', $no_transaksikj)
-            ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'desc')
+            ->when($no_sep, function ($query) use ($no_sep) {
+                return $query->where('NOSEP', $no_sep);
+            }, function ($query) use ($no_transaksikj) {
+                return $query->where('MRTNOTRANSAKSI', $no_transaksikj);
+            })
+            ->orderBy('MRTURUT_MASUK', 'desc')
             ->limit(1)
             ->value('MRTURUT_MASUK');
 
