@@ -425,20 +425,34 @@ function Index({
                         <></>
                     ) : (
                         <>
-                            <Divider> Special CMG </Divider>
-                            <table>
+                            <Divider> Pilihan Special CMG </Divider>
+                            <table
+                                style={{
+                                    borderCollapse: "collapse",
+                                    width: "100%",
+                                    marginBottom: "10px",
+                                }}
+                            >
                                 <tbody>
                                     <tr style={{ marginBottom: 10 }}>
-                                        <th style={{ textAlign: "left" }}>
+                                        <th
+                                            style={{
+                                                textAlign: "left",
+                                                border: "1px solid #ccc",
+                                                padding: 8,
+                                            }}
+                                        >
                                             Selected Special CMG
                                         </th>
                                         <th
                                             style={{
                                                 textAlign: "left",
+                                                border: "1px solid #ccc",
+                                                padding: 8,
                                                 height: 30,
                                             }}
                                         >
-                                            {selectedCmgOption.length == 0 ? (
+                                            {selectedCmgOption.length === 0 ? (
                                                 <span>
                                                     Tidak ada CMG dipilih
                                                 </span>
@@ -463,29 +477,45 @@ function Index({
                                                             marginBottom: 5,
                                                         }}
                                                     >
-                                                        {cmg.code}
+                                                        {cmg.code} -{" "}
+                                                        {cmg.description} <br />
+                                                        {cmg.description}
                                                     </Tag>
                                                 ))
                                             )}
                                         </th>
-                                        <th></th>
+                                        <th
+                                            style={{ border: "1px solid #ccc" }}
+                                        ></th>
                                     </tr>
                                     <tr>
                                         <th
-                                            width={"35%"}
-                                            style={{ textAlign: "left" }}
+                                            width={"15%"}
+                                            style={{
+                                                textAlign: "left",
+                                                border: "1px solid #ccc",
+                                                padding: 8,
+                                            }}
                                         >
                                             Code
                                         </th>
                                         <th
                                             width={"40%"}
-                                            style={{ textAlign: "left" }}
+                                            style={{
+                                                textAlign: "left",
+                                                border: "1px solid #ccc",
+                                                padding: 8,
+                                            }}
                                         >
-                                            Description
+                                            Description / Type
                                         </th>
                                         <th
                                             width={"10%"}
-                                            style={{ textAlign: "center" }}
+                                            style={{
+                                                textAlign: "center",
+                                                border: "1px solid #ccc",
+                                                padding: 8,
+                                            }}
                                         >
                                             Action
                                         </th>
@@ -495,6 +525,8 @@ function Index({
                                             <td
                                                 style={{
                                                     verticalAlign: "top",
+                                                    border: "1px solid #ccc",
+                                                    padding: 8,
                                                 }}
                                             >
                                                 {item?.code}
@@ -502,14 +534,19 @@ function Index({
                                             <td
                                                 style={{
                                                     verticalAlign: "top",
+                                                    border: "1px solid #ccc",
+                                                    padding: 8,
                                                 }}
                                             >
                                                 {item?.description} <br />
+                                                <small>{item?.type}</small>
                                             </td>
                                             <td
                                                 style={{
                                                     verticalAlign: "top",
                                                     textAlign: "center",
+                                                    border: "1px solid #ccc",
+                                                    padding: 8,
                                                 }}
                                             >
                                                 <a
@@ -520,12 +557,30 @@ function Index({
                                                                     selected.code ===
                                                                     item.code
                                                             );
-                                                        if (!exists) {
+                                                        const sameType =
+                                                            selectedCmgOption.find(
+                                                                (selected) =>
+                                                                    selected.type ===
+                                                                    item.type
+                                                            );
+
+                                                        if (
+                                                            !exists &&
+                                                            !sameType
+                                                        ) {
                                                             setSelectedCmgOption(
                                                                 (prev) => [
                                                                     ...prev,
                                                                     item,
                                                                 ]
+                                                            );
+                                                        } else if (sameType) {
+                                                            return notification.warning(
+                                                                {
+                                                                    placement:
+                                                                        "top",
+                                                                    description: `CMG dengan tipe "${item.type}" sudah dipilih`,
+                                                                }
                                                             );
                                                         }
                                                     }}
@@ -754,7 +809,8 @@ function Index({
                             }
                             style={{ marginBottom: 5 }}
                         >
-                            {cmg.code}
+                            {cmg.code} <br />
+                            {cmg.description}
                         </Tag>
                     ))
                 )}
