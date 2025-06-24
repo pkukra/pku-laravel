@@ -57,6 +57,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                                     pasien={pasien}
                                     setDisableINACBG={setDisableINACBG}
                                     disableINACBG={disableINACBG}
+                                    reFetchPasien={reFetchPasien}
                                 />
                             </Col>
                         ) : (

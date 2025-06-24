@@ -142,11 +142,11 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG, reFetchPasien }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
-            reFetchPasien()
             setFinalLoading(false);
             setModalFinalOpen(false);
             fetchINACBGData();
             fetchEKLAIMata();
+            reFetchPasien();
         }
         return;
     };
@@ -187,11 +187,11 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG, reFetchPasien }) {
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
-            reFetchPasien()
             setReeditLoading(false);
             setModalReeditOpen(false);
             fetchINACBGData();
             fetchEKLAIMata();
+            reFetchPasien();
         }
         return;
     };

@@ -224,6 +224,11 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             <td></td>
                             <td>
                                 <Button
+                                    disabled={
+                                        pasien?.FKUNCI_VALIDASI == 1
+                                            ? true
+                                            : false
+                                    }
                                     type="primary"
                                     onClick={handleOpenModal}
                                 >
@@ -272,7 +277,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                 <label>No SITB:</label>
                 <Input
                     value={sitb}
-                    onChange={(e)=>{
+                    onChange={(e) => {
                         setSitb(e.target.value);
                     }}
                     style={{ width: "100%" }}
