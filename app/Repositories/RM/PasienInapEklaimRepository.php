@@ -744,6 +744,11 @@ class PasienInapEklaimRepository
 
         $tindakan_array = array_merge($tindakan_array, $tindakan);
 
+        // Cek jika kosong, return '#'
+        if (empty($tindakan_array)) {
+            return '#';
+        }
+
         return implode('#', array_unique($tindakan_array));
     }
 
