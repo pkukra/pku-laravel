@@ -96,68 +96,151 @@ export default function Index({ pasien, dataTransaksi }) {
                         </tr>
                         <tr>
                             <th>Status Dokter</th>
-                            <td>{(dataTransaksi.RUBBER=="1")?"Rawat Bersama":"DPJP Utama"}</td>
+                            <td>
+                                {dataTransaksi.RUBBER == "1"
+                                    ? "Rawat Bersama"
+                                    : "DPJP Utama"}
+                            </td>
                         </tr>
                         <tr>
                             <th>ID Transaksi</th>
-                            <td>{dataTransaksi.FRPNOTRANSAKSI} / {dataTransaksi.FRPNOTRANSAKSIKJ}</td>
+                            <td>
+                                {dataTransaksi.FRPNOTRANSAKSI} /{" "}
+                                {dataTransaksi.FRPNOTRANSAKSIKJ}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </Card>
             <Card title="Resume Pasien" loading={loadingResume}>
                 <table
-                    className="tw-table tw-table-xs"
-                    style={{ width: "100%" }}
+                    style={{
+                        width: "100%",
+                        border: "1px solid #ccc",
+                        borderCollapse: "collapse",
+                    }}
                 >
                     <tbody align="left">
                         <tr>
-                            <th style={{ width: "25%", verticalAlign: "top" }}>
+                            <th
+                                style={{
+                                    width: "25%",
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                            >
                                 Anamnesa (S)
                             </th>
                             <td
-                                style={{ verticalAlign: "top" }}
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
                                 dangerouslySetInnerHTML={{
                                     __html: resumeData?.FS_ANAMNESA,
                                 }}
                             ></td>
                         </tr>
                         <tr>
-                            <th style={{ verticalAlign: "top" }}>
+                            <th
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                            >
                                 Pemeriksaan Fisik (O)
                             </th>
                             <td
-                                style={{ verticalAlign: "top" }}
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
                                 dangerouslySetInnerHTML={{
                                     __html: resumeData?.FS_CATATAN_FISIK,
                                 }}
                             ></td>
                         </tr>
                         <tr>
-                            <th style={{ verticalAlign: "top" }}>
+                            <th
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                            >
                                 Diagnosa (A)
                             </th>
                             <td
-                                style={{ verticalAlign: "top" }}
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
                                 dangerouslySetInnerHTML={{
                                     __html: resumeData?.FS_DIAGNOSA,
                                 }}
                             ></td>
                         </tr>
                         <tr>
-                            <th style={{ verticalAlign: "top" }}>
+                            <th
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                            >
                                 Tindakan/Planning (P)
                             </th>
                             <td
-                                style={{ verticalAlign: "top" }}
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
                                 dangerouslySetInnerHTML={{
                                     __html: resumeData?.FS_TINDAKAN,
                                 }}
                             ></td>
                         </tr>
                         <tr>
-                            <th style={{ verticalAlign: "top" }}></th>
-                            <td>
+                            <th
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                            >
+                                Planning / Evaluasi
+                            </th>
+                            <td
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                                dangerouslySetInnerHTML={{
+                                    __html: resumeData?.FS_PLANNING,
+                                }}
+                            ></td>
+                        </tr>
+                        <tr>
+                            <th
+                                style={{
+                                    verticalAlign: "top",
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                            ></th>
+                            <td
+                                style={{
+                                    border: "1px solid #ccc",
+                                    padding: "8px",
+                                }}
+                            >
                                 <Button
                                     color="purple"
                                     variant="solid"
