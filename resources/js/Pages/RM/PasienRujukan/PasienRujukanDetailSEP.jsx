@@ -176,19 +176,20 @@ export default function Index({ pasien, user, reFetchPasien }) {
                 <p>{ketSep} </p>
 
                 {ketSep == "Bukan Pasien BPJS" ? (
-                    <>
-                    </>
+                    <></>
                 ) : (
-                    <><p>
-                    KODE INAGROUPER:{" "}
-                    <strong>{pasien?.FTKODEINACBG}</strong>
-                </p>
-                <p>
-                    Tarif INACBG: &nbsp;&nbsp;{" "}
-                    <strong>
-                        Rp {RupiahFormat(pasien?.FTTARIPINACBG)}
-                    </strong>
-                </p></>
+                    <>
+                        <p>
+                            KODE INAGROUPER:{" "}
+                            <strong>{pasien?.FTKODEINACBG}</strong>
+                        </p>
+                        <p>
+                            Tarif INACBG: &nbsp;&nbsp;{" "}
+                            <strong>
+                                Rp {RupiahFormat(pasien?.FTTARIPINACBG)}
+                            </strong>
+                        </p>
+                    </>
                 )}
 
                 <Tooltip
@@ -210,10 +211,13 @@ export default function Index({ pasien, user, reFetchPasien }) {
                     <Button
                         type="primary"
                         onClick={() => setModalBridgeOpen(true)}
-                        disabled={disabled || !noSep}
+                        disabled={disabled || !noSep || !pasien?.SUDAH_DIKREDIT}
                         style={{ marginRight: 5, backgroundColor: " #33cc33" }}
                     >
                         {!noSep ? "Belum ada SEP" : "Bridge Data"}
+                        {!pasien?.SUDAH_DIKREDIT && (
+                            <small>(belum dikredit)</small>
+                        )} 
                     </Button>
 
                     <Button

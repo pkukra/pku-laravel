@@ -30,7 +30,8 @@ class PasienRujukanRepository
         return DB::connection('sqlsrvsimrs')
             ->table('CUSTOMER')
             ->select(
-                'CUSID','NAME'
+                'CUSID',
+                'NAME'
             )
             ->get();
     }
@@ -138,15 +139,13 @@ class PasienRujukanRepository
      */
     public function getPasienRujukanDetail($kode_reg)
     {
-        return DB::connection('sqlsrvsimrs')
+        $pasien =  DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
             ->leftJoin('TRANSAKSIPASIEN', 'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'TRANSAKSIPASIEN.FTNO_TRANSAKSI')
             ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
-
             ->leftJoin('CUSTOMER', 'PASIEN_RUJUKAN.FRPCUSTOMER_ID', '=', 'CUSTOMER.CUSID')
-            
             ->leftJoin('MR_CARA_MASUK_BPJS AS cm', 'PASIEN_RUJUKAN.CARA_MASUK', '=', 'cm.KODE')
             ->select(
                 'PASIEN.NAMAPASIEN',
@@ -163,7 +162,11 @@ class PasienRujukanRepository
                 'TRANSAKSIPASIEN.FTKODEINACBG'
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
-            ->first();  // Menggunakan `first` karena hanya mengambil satu data
+            ->first();
+        if ($pasien) {
+            $pasien->SUDAH_DIKREDIT = $this->SudahDiKredit($kode_reg);
+        }
+        return $pasien;
     }
 
     /**
@@ -945,5 +948,16 @@ class PasienRujukanRepository
                 ->first();
         }
         return $hasil;
+    }
+
+    public function SudahDiKredit($kode_reg_kj)
+    {
+        $exists = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIEND')
+            ->where('FDTNO_TRANSAKSI', $kode_reg_kj)
+            ->where('FDTKD_PRODUK', '2')
+            ->exists();
+
+        return $exists;
     }
 }
