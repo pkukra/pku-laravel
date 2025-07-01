@@ -955,7 +955,7 @@ class PasienRujukanRepository
         $exists = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIEND')
             ->where('FDTNO_TRANSAKSI', $kode_reg_kj)
-            ->where('FDTKD_PRODUK', '2')
+            ->where('FDTJENISTRANSAKSI', 'KR')
             ->exists();
 
         return $exists;
