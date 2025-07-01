@@ -682,4 +682,14 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingReeditKlaim($no_sep);
         return response()->json($data);
     }
+    
+    /**
+     * bridging_delete_klaim
+     * Process bridging data ke eklaim
+     */
+    public function bridging_delete_klaim($no_sep)
+    {
+        $data = $this->bridgingEKlaimRepo->bridgingDeleteKlaim($no_sep);
+        return response()->json($data);
+    }
 }

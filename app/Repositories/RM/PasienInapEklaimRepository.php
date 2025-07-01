@@ -1855,4 +1855,26 @@ class PasienInapEklaimRepository
         DB::connection('sqlsrvsimrs')->commit();
         return $responseFinal;
     }
+
+    /**
+     * Process bridgingDeleteKlaim by no_sep
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingDeleteKlaim($no_sep)
+    {
+        $user = Auth::user();
+        $key = $user->eklaim_key;
+
+        $data = json_encode([
+            "metadata" => ["method" => "delete_claim"],
+            "data" => [
+                "nomor_sep" => $no_sep,
+                "coder_nik" => $user->nik
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $response = sendRequest($key, $data);
+        return $response;
+    }
 }

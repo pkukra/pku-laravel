@@ -93,6 +93,8 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/bridging_send_invidual_klaim/{no_sep}', [PasienRujukanController::class, 'bridging_send_invidual_klaim'])->name('rm.pasien-rujukan.bridging_send_invidual_klaim');
         Route::get('/bridging_get_claim_data/{no_sep}', [PasienRujukanController::class, 'bridging_get_claim_data'])->name('rm.bridging_get_claim_data');
         Route::get('/bridging_cetak_klaim/{no_sep}', [PasienInapController::class, 'bridging_cetak_klaim'])->name('rm.bridging_cetak_klaim');
+
+        Route::get('/bridging_delete_klaim/{no_sep}', [PasienInapController::class, 'bridging_delete_klaim'])->name('rm.bridging_delete_klaim');
     });
 
     Route::prefix('pasien-inap')->group(function () {
