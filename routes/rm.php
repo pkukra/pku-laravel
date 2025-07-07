@@ -17,6 +17,8 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
     Route::post('/search_diagnosis_cbg', [PasienRujukanController::class, 'search_diagnosis_cbg'])->name('rm.search_diagnosis_cbg');
     Route::post('/search_procedure_cbg', [PasienRujukanController::class, 'search_procedure_cbg'])->name('rm.search_procedure_cbg');
 
+    Route::get('/get_permintaan_rad_n_lab/{kode_reg}', [PasienRujukanController::class, 'get_permintaan_rad_n_lab'])->name('rm.get_permintaan_rad_n_lab');
+
     Route::prefix('pasien-rujukan')->group(function () {
 
         Route::get('/list_rujukan', [PasienRujukanController::class, 'list_rujukan'])->name('rm.pasien-rujukan.list_rujukan');

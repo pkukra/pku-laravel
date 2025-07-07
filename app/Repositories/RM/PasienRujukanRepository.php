@@ -1874,4 +1874,57 @@ class PasienRujukanRepository
             return [];
         }
     }
+
+    /**
+     * Ambil permintaan radiologi/laboratorium berdasarkan nomor transaksi.
+     *
+     * @param string $no_transaksi
+     * @return \Illuminate\Support\Collection
+     */
+    public function getPermintaanRadLab($no_transaksi)
+    {
+        // Ambil kode tarif LAB dari TA_TRS_KARTU_PERIKSA4
+        $kodeTarifLab = DB::connection('sqlsrvemr')
+            ->table('TA_TRS_KARTU_PERIKSA AS A')
+            ->leftJoin('TA_TRS_KARTU_PERIKSA4 AS B', 'B.FS_KD_TRS', '=', 'A.FS_KD_TRS')
+            ->where('A.FS_KD_REG', $no_transaksi)
+            ->pluck('B.FS_KD_TARIF')
+            ->filter()
+            ->map(fn($kode) => trim($kode))
+            ->all();
+
+        // Ambil kode tarif RADIOLOGI dari TA_TRS_KARTU_PERIKSA5
+        $kodeTarifRad = DB::connection('sqlsrvemr')
+            ->table('TA_TRS_KARTU_PERIKSA AS A')
+            ->leftJoin('TA_TRS_KARTU_PERIKSA5 AS B', 'B.FS_KD_TRS', '=', 'A.FS_KD_TRS')
+            ->where('A.FS_KD_REG', $no_transaksi)
+            ->pluck('B.FS_KD_TARIF')
+            ->filter()
+            ->map(fn($kode) => trim($kode))
+            ->all();
+
+        // Ambil data produk LAB
+        $lab = !empty($kodeTarifLab)
+            ? DB::connection('sqlsrvsimrs')
+            ->table('PRODUK AS A')
+            ->select('A.FMPPRODUK_ID', 'A.FMPPRODUKN')
+            ->whereIn('FMPPRODUK_ID', $kodeTarifLab)
+            ->get()
+            : collect();
+
+        // Ambil data produk RADIOLOGI
+        $radiologi = !empty($kodeTarifRad)
+            ? DB::connection('sqlsrvsimrs')
+            ->table('PRODUK AS A')
+            ->select('A.FMPPRODUK_ID', 'A.FMPPRODUKN')
+            ->whereIn('FMPPRODUK_ID', $kodeTarifRad)
+            ->get()
+            : collect();
+
+        // Gabungkan hasil dalam bentuk array
+        return [
+            'lab' => $lab,
+            'radiologi' => $radiologi,
+        ];
+    }
 }

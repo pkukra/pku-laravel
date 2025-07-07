@@ -1058,4 +1058,14 @@ class PasienRujukanController extends Controller
 
         return response()->json($data);
     }
+    
+    /**
+     * get_permintaan_lab
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function get_permintaan_rad_n_lab($no_transaksi)
+    {
+        $data = $this->pasienRujukanRepo->getPermintaanRadLab($no_transaksi);
+        return response()->json($data);
+    }
 }
