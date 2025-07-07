@@ -8,24 +8,70 @@ import PasienRujukanDetailIMR from "./PasienRujukanDetailIMR";
 export default function Index({ dataTransaksi }) {
     const [hasilLabUrl, setHasilLabUrl] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [loadingPdf, setLoadingPdf] = useState(true); // Tambahkan state loading
+    const [loadingPdf, setLoadingPdf] = useState(true);
+
+    const [lodingFetchPermintaan, setLodingFetchPermintaan] = useState(false);
+    const [dataPermintaan, setDataPermintaan] = useState([]);
 
     const generateLabUrl = async () => {
         try {
             const response = await axios.get(route("common.lab_url"));
-            setHasilLabUrl(response?.data?.data + dataTransaksi.FRPNOTRANSAKSI);
+            setHasilLabUrl(
+                response?.data?.data + dataTransaksi?.FRPNOTRANSAKSI
+            );
         } catch (error) {
             console.error("Error fetching lab data:", error);
         }
     };
 
+    const fetchPermintaanLab = async () => {
+        setLodingFetchPermintaan(true);
+        try {
+            const response = await axios.get(
+                route("rm.get_permintaan_rad_n_lab", {
+                    kode_reg: dataTransaksi?.FRPNOTRANSAKSI,
+                })
+            );
+            setDataPermintaan(response?.data || []);
+        } catch (error) {
+            console.error("Error fetching hasil permintaan lab:", error);
+        } finally {
+            setLodingFetchPermintaan(false);
+        }
+    };
+
     useEffect(() => {
         generateLabUrl();
+        fetchPermintaanLab();
     }, []);
 
     return (
         <>
-            <Card title="Hasil Panunjang">
+            <Card title="Permintaan Panunjang" loading={lodingFetchPermintaan}>
+                <p>
+                    <strong>Permintaan Lab:</strong>{" "}
+                </p>
+                {dataPermintaan?.radiologi?.lab === 0 && (
+                    <span>Tidak ada permintaan lab.</span>
+                )}
+                <ol>
+                    {dataPermintaan?.lab?.map((item) => (
+                        <li>{item?.FMPPRODUKN}</li>
+                    ))}
+                </ol>
+                <p>
+                    <strong>Permintaan Radiologi:</strong>{" "}
+                </p>
+                {dataPermintaan?.radiologi?.length === 0 && (
+                    <span>Tidak ada permintaan radiologi.</span>
+                )}
+                <ol>
+                    {dataPermintaan?.radiologi?.map((item) => (
+                        <li>{item?.FMPPRODUKN}</li>
+                    ))}
+                </ol>
+            </Card>
+            <Card title="Hasil Panunjang" style={{ marginTop: 10 }}>
                 {/* Button untuk membuka modal */}
                 <Button
                     style={{ margin: 2 }}
