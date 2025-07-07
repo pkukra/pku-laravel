@@ -47,11 +47,11 @@ export default function Index({ dataTransaksi }) {
 
     return (
         <>
-            <Card title="Permintaan Panunjang" loading={lodingFetchPermintaan}>
+            <Card title="Permintaan Panunjang DPJP" loading={lodingFetchPermintaan}>
                 <p>
                     <strong>Permintaan Lab:</strong>{" "}
                 </p>
-                {dataPermintaan?.radiologi?.lab === 0 && (
+                {dataPermintaan?.lab?.length < 1 && (
                     <span>Tidak ada permintaan lab.</span>
                 )}
                 <ol>
@@ -62,7 +62,7 @@ export default function Index({ dataTransaksi }) {
                 <p>
                     <strong>Permintaan Radiologi:</strong>{" "}
                 </p>
-                {dataPermintaan?.radiologi?.length === 0 && (
+                {dataPermintaan?.radiologi?.length < 1 && (
                     <span>Tidak ada permintaan radiologi.</span>
                 )}
                 <ol>
@@ -76,7 +76,10 @@ export default function Index({ dataTransaksi }) {
                 <Button
                     style={{ margin: 2 }}
                     type="primary"
-                    onClick={() => setModalOpen(true)}
+                    onClick={() => {
+                        setModalOpen(true)
+                        return;
+                    }}
                     disabled={!hasilLabUrl}
                 >
                     Hasil Lab
