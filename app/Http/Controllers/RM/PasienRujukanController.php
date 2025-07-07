@@ -1060,12 +1060,21 @@ class PasienRujukanController extends Controller
     }
     
     /**
-     * get_permintaan_lab
-     * Menampilkan procedure berdasarkan kode transaksi
+     * get_permintaan_rad_n_lab
      */
     public function get_permintaan_rad_n_lab($no_transaksi)
     {
         $data = $this->pasienRujukanRepo->getPermintaanRadLab($no_transaksi);
+        return response()->json($data);
+    }
+    
+    /**
+     * procedures_history
+     * Menampilkan procedure berdasarkan kode pasien
+     */
+    public function procedures_history($pasien_id)
+    {
+        $data = $this->pasienRujukanRepo->getProceduresHistory($pasien_id);
         return response()->json($data);
     }
 }

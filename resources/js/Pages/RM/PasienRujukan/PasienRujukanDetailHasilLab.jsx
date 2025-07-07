@@ -4,8 +4,9 @@ import { Card, Button, Modal, Skeleton } from "antd";
 import PasienRujukanDetailHasilRadiologi from "./PasienRujukanDetailHasilRadiologi";
 import PasienRujukanDetailObat from "./PasienRujukanDetailObat";
 import PasienRujukanDetailIMR from "./PasienRujukanDetailIMR";
+import PasienRujukanDetailIHistoricalProcedure from "./PasienRujukanDetailIHistoricalProcedure";
 
-export default function Index({ dataTransaksi }) {
+export default function Index({ dataTransaksi, pasien }) {
     const [hasilLabUrl, setHasilLabUrl] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [loadingPdf, setLoadingPdf] = useState(true);
@@ -47,7 +48,10 @@ export default function Index({ dataTransaksi }) {
 
     return (
         <>
-            <Card title="Permintaan Panunjang DPJP" loading={lodingFetchPermintaan}>
+            <Card
+                title="Permintaan Panunjang DPJP"
+                loading={lodingFetchPermintaan}
+            >
                 <p>
                     <strong>Permintaan Lab:</strong>{" "}
                 </p>
@@ -55,8 +59,8 @@ export default function Index({ dataTransaksi }) {
                     <span>Tidak ada permintaan lab.</span>
                 )}
                 <ol>
-                    {dataPermintaan?.lab?.map((item) => (
-                        <li>{item?.FMPPRODUKN}</li>
+                    {dataPermintaan?.lab?.map((item, key) => (
+                        <li key={key}>{item?.FMPPRODUKN}</li>
                     ))}
                 </ol>
                 <p>
@@ -66,8 +70,8 @@ export default function Index({ dataTransaksi }) {
                     <span>Tidak ada permintaan radiologi.</span>
                 )}
                 <ol>
-                    {dataPermintaan?.radiologi?.map((item) => (
-                        <li>{item?.FMPPRODUKN}</li>
+                    {dataPermintaan?.radiologi?.map((item, key) => (
+                        <li key={key}>{item?.FMPPRODUKN}</li>
                     ))}
                 </ol>
             </Card>
@@ -77,7 +81,7 @@ export default function Index({ dataTransaksi }) {
                     style={{ margin: 2 }}
                     type="primary"
                     onClick={() => {
-                        setModalOpen(true)
+                        setModalOpen(true);
                         return;
                     }}
                     disabled={!hasilLabUrl}
@@ -90,6 +94,7 @@ export default function Index({ dataTransaksi }) {
                     dataTransaksi={dataTransaksi}
                 />
                 <PasienRujukanDetailIMR dataTransaksi={dataTransaksi} />
+                <PasienRujukanDetailIHistoricalProcedure pasien={pasien} />
 
                 {/* Modal Ant Design */}
                 <Modal

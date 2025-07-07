@@ -1927,4 +1927,36 @@ class PasienRujukanRepository
             'radiologi' => $radiologi,
         ];
     }
+
+    /**
+     * Ambil semua history procedures dari setiap pasien
+     *
+     * @param string $pasien_id
+     * @return \Illuminate\Support\Collection
+     */
+    public function getProceduresHistory($pasien_id)
+    {
+        $idrg = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_TINDAKAN_IM AS A')
+            ->leftJoin('ICD', 'ICD.code', '=', 'A.code')
+            ->select('ICD.code', 'ICD.description', 'A.no_transaksi', 'A.no_sep', 'A.created_at', 'A.is_primary', 'A.multiplicity')
+            ->where('A.pasien_id', $pasien_id)
+            ->orderBy('A.created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        $inacbg = DB::connection('sqlsrvsimrs')
+            ->table('MR_PENYAKIT AS A')
+            ->leftJoin('ICD', 'ICD.code', '=', 'A.MRPKD_PENYAKIT')
+            ->select('ICD.code', 'ICD.description', 'A.MRPTGL_MASUK AS created_at', 'A.NOSEP AS no_sep', 'A.MRPNO_TRANSAKSI AS no_transaksi')
+            ->where('A.MRPKD_PASIEN', $pasien_id)
+            ->orderBy('A.MRPTGL_MASUK', 'desc')
+            ->limit(50)
+            ->get();
+
+        return [
+            'idrg' => $idrg,
+            'inacbg' => $inacbg,
+        ];
+    }
 }
