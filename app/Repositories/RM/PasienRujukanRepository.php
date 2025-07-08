@@ -62,6 +62,9 @@ class PasienRujukanRepository
     {
         $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
+            ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
+            ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
             ->where(function ($query) {
                 $query->whereExists(function ($sub) {
                     $sub->select(DB::raw(1))
@@ -74,9 +77,6 @@ class PasienRujukanRepository
                             ->whereColumn('PKU.dbo.TAC_IGD_MEDIS.KD_REG', 'PASIEN_RUJUKAN.FRPNOTRANSAKSI');
                     });
             })
-            ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
-            ->leftJoin('DOKTER', 'PASIEN_RUJUKAN.FRPDOKTER_ID', '=', 'DOKTER.FMDDOKTER_ID')
-            ->leftJoin('POLIKLINIK', 'PASIEN_RUJUKAN.FRPUNIT', '=', 'POLIKLINIK.FMPKLINIK_ID')
             ->when($date, function ($query, $date) {
                 return $query->whereDate('PASIEN_RUJUKAN.FRPTGL', $date);
             })
@@ -93,7 +93,7 @@ class PasienRujukanRepository
                 if ($is_inacbg_final == "final") {
                     return $query->where('PASIEN_RUJUKAN.IS_INACBG_FINAL', 1);
                 }
-                return $query->whereNot('PASIEN_RUJUKAN.IS_INACBG_FINAL', 1);
+                return $query->whereNull('PASIEN_RUJUKAN.IS_INACBG_FINAL');
             });
 
         $total = (clone $baseQuery)->count();
