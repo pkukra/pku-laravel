@@ -895,8 +895,8 @@ class PasienRujukanEklaimRepository
      */
     public function getBloodPressure($kode_reg)
     {
-        $vitalSign = DB::connection('sqlsrvsimrs')
-            ->table('PKU.dbo.TAC_RJ_VITAL_SIGN')
+        $vitalSign = DB::connection('sqlsrvemr')
+            ->table('TAC_RJ_VITAL_SIGN')
             ->select('FS_TD as sistole', 'FS_TD2 as diastole')
             ->where('FS_KD_REG', $kode_reg)
             ->orderByDesc('FS_KD_REG') // TOP 1 digantikan dengan orderBy + first()
@@ -978,7 +978,7 @@ class PasienRujukanEklaimRepository
             'tgl_masuk' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'tgl_pulang' => Carbon::parse($transaksi_utama->FRPTGL)->format('Y-m-d H:i:s'),
             'jenis_rawat' => $transaksi_utama->FMJENISRAWAT, // 1 ranap, 2 rajal, 3 igd
-            'kelas_rawat' => 3, // kelas rawat BPJS 1,2,3
+            'kelas_rawat' => 3, // kelas rawat BPJS 3 regular. 1 eksekusi
             'birth_weight' => ($transaksi_utama->BERAT_LAHIR) ? $transaksi_utama->BERAT_LAHIR : "",
             'discharge_status' => $discharge_status,
             'tarif_rs' => $this->getTotalDetailTarifTransaksi($semua_transaksi)->tarif_rs,
@@ -998,6 +998,19 @@ class PasienRujukanEklaimRepository
             'cara_masuk' => $transaksi_utama->CARA_MASUK,
         ];
 
+        foreach ($semua_transaksi as $transaksi) {
+            $dializer = DB::connection('sqlsrvemr')
+                ->table('TAC_HD_DIALISER')
+                ->select('FS_TIPE_DIALISER')
+                ->where('FS_KD_REG', $transaksi->FRPNOTRANSAKSI)
+                ->first();
+
+            if ($dializer) {
+                $data->dializer_single_use = ($dializer->FS_TIPE_DIALISER == 1) ? 1 : 0;
+                break;
+            }
+        }
+
         $requestData = json_encode((object)[
             'metadata' => (object)[
                 'method' => 'set_claim_data',
@@ -1007,8 +1020,6 @@ class PasienRujukanEklaimRepository
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
-
-
 
         $this->idrgDiagnosaSet($no_sep, $diagnosa);
         $this->idrgProcedureSet($no_sep, $procedure);
@@ -1044,7 +1055,7 @@ class PasienRujukanEklaimRepository
         $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
 
         $code_grouping_1_idrg = $grouping_1_idrg->response->metadata->code ?? null;
-        if($code_grouping_1_idrg != 200){
+        if ($code_grouping_1_idrg != 200) {
             return $grouping_1_idrg;
         }
 
