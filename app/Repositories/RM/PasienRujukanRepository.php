@@ -1946,11 +1946,11 @@ class PasienRujukanRepository
             ->get();
 
         $inacbg = DB::connection('sqlsrvsimrs')
-            ->table('MR_PENYAKIT AS A')
-            ->leftJoin('ICD', 'ICD.code', '=', 'A.MRPKD_PENYAKIT')
-            ->select('ICD.code', 'ICD.description', 'A.MRPTGL_MASUK AS created_at', 'A.NOSEP AS no_sep', 'A.MRPNO_TRANSAKSI AS no_transaksi')
-            ->where('A.MRPKD_PASIEN', $pasien_id)
-            ->orderBy('A.MRPTGL_MASUK', 'desc')
+            ->table('MR_TINDAKAN AS A')
+            ->leftJoin('ICD', 'ICD.code', '=', 'A.MRTKD_TINDAKAN')
+            ->select('ICD.code', 'ICD.description', 'A.MRTTGL_MASUK AS created_at', 'A.NOSEP AS no_sep', 'A.MRTNOTRANSAKSI AS no_transaksi')
+            ->where('A.MRTKD_PASIEN', $pasien_id)
+            ->orderBy('A.MRTTGL_MASUK', 'desc')
             ->limit(50)
             ->get();
 
