@@ -51,7 +51,6 @@ export default function Index({ pasien, dataTransaksi }) {
                 }
             );
             setSugestDariAi(response?.data?.ICD10_Codes || []);
-            console.log(response?.data?.ICD10_Codes);
         } catch (error) {
             console.error("Error fetching ai sugest:", error);
         } finally {

@@ -173,7 +173,6 @@ export default function PasienRujukanList({ auth }) {
             const response = await axios.get(
                 route("rm.pasien-rujukan.list", { no_rm: noRmValue })
             );
-            console.log(response?.data);
 
             setDataPasienRujukans(response?.data?.pasien_rujukans || []);
         } catch (error) {
@@ -189,8 +188,6 @@ export default function PasienRujukanList({ auth }) {
             const response = await axios.get(
                 route("rm.pasien-inap.list", { no_rm: noRmValue })
             );
-
-            console.log(response?.data);
 
             setDataPasienInap(response?.data?.pasien_inaps || []);
         } catch (error) {

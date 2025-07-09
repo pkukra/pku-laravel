@@ -81,8 +81,6 @@ export default function Index({ pasien }) {
             });
     };
 
-    console.log("pasien IS_INACBG_FINAL==>", pasien?.IS_INACBG_FINAL);
-
     return (
         <>
             <Card

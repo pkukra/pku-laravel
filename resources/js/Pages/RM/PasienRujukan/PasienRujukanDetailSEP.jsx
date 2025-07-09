@@ -42,8 +42,6 @@ export default function Index({ pasien, user, reFetchPasien }) {
                 })
             );
 
-            console.log(response?.data);
-
             if (response?.data?.status === "nok") {
                 return notification.warning({
                     placement: "topRight",

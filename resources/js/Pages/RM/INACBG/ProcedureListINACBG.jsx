@@ -165,7 +165,6 @@ export default function Index({
             const data = response?.data?.response?.response?.data;
             const results = Array.isArray(data) ? data : [];
             setAnotherOptions(results);
-            console.log(results);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {

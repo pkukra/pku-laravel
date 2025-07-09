@@ -329,7 +329,6 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
             );
             fetchIDRGData(); // Fetch the latest IDRG data after saving
             fetchProcedure();
-            console.log(response.data);
         } catch (error) {
             console.error("Error updating multiplicity:", error);
         } finally {
