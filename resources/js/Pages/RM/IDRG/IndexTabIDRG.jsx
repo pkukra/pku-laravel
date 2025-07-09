@@ -13,6 +13,7 @@ function Index({
     idrgGroupData,
     loadingFetchIdrgData,
     isKlaimFinal,
+    reFetchPasien,
 }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
     const [bridgingLoading, setBridgingLoading] = useState(false);
@@ -20,6 +21,8 @@ function Index({
 
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
     const [finalLoading, setFinalLoading] = useState(false);
+
+    const [finalUmumLoading, setFinalUmumLoading] = useState(false);
 
     const [modalReEditIDRGOpen, setModalReEditIDRGOpen] = useState(false);
     const [reeditLoading, setReeditLoading] = useState(false);
@@ -113,6 +116,43 @@ function Index({
         }
     };
 
+    const handleFinalPasienUmum = async () => {
+        setFinalUmumLoading(true);
+
+        let routeName = "rm.pasien-rujukan.final_pasien_umum";
+        let kode_reg = pasien?.FRPNOTRANSAKSI;
+        let kode_reg_kj = pasien?.FRPNOTRANSAKSIKJ;
+
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.final_pasien_umum";
+            kode_reg = pasien?.FTNO_TRANSAKSI;
+            kode_reg_kj = pasien?.FTNO_TRANSAKSI;
+        }
+        try {
+            const response = await axios.post(route(routeName), {
+                kode_reg,
+                kode_reg_kj,
+            });
+            if (response?.data?.status == "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.message,
+                });
+            }
+
+            return notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: "Final data Berhasil",
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            reFetchPasien();
+            setFinalUmumLoading(false);
+        }
+    };
+
     const handleEditUlangData = async () => {
         setReeditLoading(true);
         let routeName = "rm.pasien-rujukan.edit_ulang_idrg";
@@ -126,14 +166,14 @@ function Index({
                 })
             );
 
-            if (response?.data?.status === "nok") {
+            if (response?.data?.status == "nok") {
                 return notification.warning({
                     placement: "topRight",
                     description: response?.data?.error,
                 });
             }
 
-            if (response?.data?.response?.metadata?.code === 400) {
+            if (response?.data?.response?.metadata?.code == 400) {
                 return notification.warning({
                     placement: "topRight",
                     description: response?.data?.response?.metadata?.message,
@@ -221,83 +261,32 @@ function Index({
             <Row gutter={12} style={{ marginTop: 16 }}>
                 <Col span={12} />
                 <Col span={12}>
-                    {(customer_id != "X002" && customer_id != "X003") && (
+                    {customer_id != "X002" && customer_id != "X003" ? (
                         <div style={{ marginBottom: 8 }}>
-                            <strong>
-                                Pasien UMUM
-                            </strong>
+                            <p>
+                                <strong>Pasien Non BPJS</strong>
+                            </p>
+                            <p>
+                                <strong>Status :</strong>{" "}
+                                {pasien?.FKUNCI_VALIDASI == "1"
+                                    ? "Final"
+                                    : "Belum Final"}
+                            </p>
+
+                            <Button
+                                loading={finalUmumLoading}
+                                disabled={finalUmumLoading}
+                                key="submit"
+                                type="primary"
+                                onClick={handleFinalPasienUmum}
+                                style={{ background: "#33cc33" }}
+                            >
+                                Final Pasien Non BPJS
+                            </Button>
                         </div>
-                    )}
-                    <Divider>Hasil Grouping iDRG</Divider>
-                    {loadingFetchIdrgData ? (
-                        <p>Loading...</p>
                     ) : (
-                        <table style={{ width: "100%", marginBottom: 16 }}>
-                            <tbody>
-                                <tr>
-                                    <td>Status Grouping</td>
-                                    <td>
-                                        <strong>
-                                            {idrgGroupData ? "Sudah Grouping" : "Belum Grouping"}
-                                        </strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Status Final IDRG</td>
-                                    <td>
-                                        <strong>
-                                            {isFinalIDRG ? "Sudah Final" : "Belum Final"}
-                                        </strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>MDC Number</td>
-                                    <td>{eklaim_group_data?.mdc_number || "-"}</td>
-                                </tr>
-                                <tr>
-                                    <td>MDC Description</td>
-                                    <td>{eklaim_group_data?.mdc_description || "-"}</td>
-                                </tr>
-                                <tr>
-                                    <td>DRG Code</td>
-                                    <td>{eklaim_group_data?.drg_code || "-"}</td>
-                                </tr>
-                                <tr>
-                                    <td>DRG Description</td>
-                                    <td>{eklaim_group_data?.drg_description || "-"}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <></>
                     )}
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <Button
-                            disabled={disableBridgeButton()}
-                            type="primary"
-                            onClick={() => setModalBridgeOpen(true)}
-                            style={{ background: "#33cc33" }}
-                        >
-                            Bridge & Grouping iDRG
-                        </Button>
-                        {!isFinalIDRG ? (
-                            <Button
-                                type="primary"
-                                onClick={() => setModalFinalOpen(true)}
-                                disabled={disableFinalButton()}
-                                style={{ background: "#cc66ff" }}
-                            >
-                                Final Data
-                            </Button>
-                        ) : (
-                            <Button
-                                disabled={isKlaimFinal}
-                                type="primary"
-                                style={{ background: "#F3732F" }}
-                                onClick={() => setModalReEditIDRGOpen(true)}
-                            >
-                                Edit Ulang iDRG
-                            </Button>
-                        )}
-                    </div>
                 </Col>
             </Row>
             <Modal
@@ -305,7 +294,11 @@ function Index({
                 title="Bridging Data IDRG"
                 onCancel={() => setModalBridgeOpen(false)}
                 footer={[
-                    <Button key="back" onClick={() => setModalBridgeOpen(false)} loading={bridgingLoading}>
+                    <Button
+                        key="back"
+                        onClick={() => setModalBridgeOpen(false)}
+                        loading={bridgingLoading}
+                    >
                         Cancel
                     </Button>,
                     <Button
@@ -321,7 +314,8 @@ function Index({
                 ]}
             >
                 <p>
-                    <strong>Nomor SEP:</strong> {no_sep || <span>Belum ada data SEP</span>}
+                    <strong>Nomor SEP:</strong>{" "}
+                    {no_sep || <span>Belum ada data SEP</span>}
                 </p>
             </Modal>
             <Modal
@@ -329,7 +323,11 @@ function Index({
                 title="Final Data IDRG"
                 onCancel={() => setModalFinalOpen(false)}
                 footer={[
-                    <Button key="back" onClick={() => setModalFinalOpen(false)} loading={finalLoading}>
+                    <Button
+                        key="back"
+                        onClick={() => setModalFinalOpen(false)}
+                        loading={finalLoading}
+                    >
                         Cancel
                     </Button>,
                     <Button
@@ -345,7 +343,8 @@ function Index({
                 ]}
             >
                 <p>
-                    <strong>Nomor SEP:</strong> {no_sep || <span>Belum ada data SEP</span>}
+                    <strong>Nomor SEP:</strong>{" "}
+                    {no_sep || <span>Belum ada data SEP</span>}
                 </p>
             </Modal>
             <Modal
@@ -353,7 +352,11 @@ function Index({
                 title="Edit Ulang iDRG"
                 onCancel={() => setModalReEditIDRGOpen(false)}
                 footer={[
-                    <Button key="back" onClick={() => setModalReEditIDRGOpen(false)} loading={reeditLoading}>
+                    <Button
+                        key="back"
+                        onClick={() => setModalReEditIDRGOpen(false)}
+                        loading={reeditLoading}
+                    >
                         Cancel
                     </Button>,
                     <Button
@@ -367,7 +370,8 @@ function Index({
                 ]}
             >
                 <p>
-                    <strong>Nomor SEP:</strong> {no_sep || <span>Belum ada data SEP</span>}
+                    <strong>Nomor SEP:</strong>{" "}
+                    {no_sep || <span>Belum ada data SEP</span>}
                 </p>
             </Modal>
         </>

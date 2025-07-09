@@ -69,7 +69,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/save-diagnosa-idrg', [PasienRujukanController::class, 'save_diagnosa_idrg'])->name('rm.pasien-rujukan.save_diagnosa_idrg');
         Route::delete('/diagnosa_idrg/{id}', [PasienRujukanController::class, 'delete_diagnosa_idrg'])->name('rm.pasien-rujukan.delete_diagnosa_idrg');
         Route::post('/diagnosa_idrg_set_primary/{id}', [PasienRujukanController::class, 'diagnosa_idrg_set_primary'])->name('rm.pasien-rujukan.diagnosa_idrg_set_primary');
-        
+
         //idrg procedure
         Route::get('/list_procedure_idrg/{kode_reg}/{no_sep?}', [PasienRujukanController::class, 'list_procedure_idrg'])->name('rm.pasien-rujukan.list_procedure_idrg');
         Route::post('/cari_procedure_im', [PasienRujukanController::class, 'cari_procedure_im'])->name('rm.pasien-rujukan.cari_procedure_im');
@@ -90,6 +90,8 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::get('/get_inacbg_group_data/{no_sep}', [PasienRujukanController::class, 'get_inacbg_group_data'])->name('rm.pasien-rujukan.get_inacbg_group_data');
         Route::post('/bridging_final_inacbg/{no_sep}', [PasienRujukanController::class, 'bridging_final_inacbg'])->name('rm.pasien-rujukan.bridging_final_inacbg');
         Route::post('/edit_ulang_inacbg/{no_sep}', [PasienRujukanController::class, 'edit_ulang_inacbg'])->name('rm.pasien-rujukan.edit_ulang_inacbg');
+
+        Route::post('/final_pasien_umum', [PasienRujukanController::class, 'final_pasien_umum'])->name('rm.pasien-rujukan.final_pasien_umum');
 
         Route::post('/bridging_final_klaim/{no_sep}', [PasienRujukanController::class, 'bridging_final_klaim'])->name('rm.pasien-rujukan.bridging_final_klaim');
         Route::post('/bridging_reedit_klaim/{no_sep}', [PasienRujukanController::class, 'bridging_reedit_klaim'])->name('rm.pasien-rujukan.bridging_reedit_klaim');
@@ -151,6 +153,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder']
         Route::post('/edit_ulang_inacbg/{no_sep}', [PasienInapController::class, 'edit_ulang_inacbg'])->name('rm.pasien-inap.edit_ulang_inacbg');
 
         Route::post('/bridging_final_klaim/{no_sep}', [PasienInapController::class, 'bridging_final_klaim'])->name('rm.pasien-inap.bridging_final_klaim');
+        Route::post('/final_pasien_umum', [PasienInapController::class, 'final_pasien_umum'])->name('rm.pasien-inap.final_pasien_umum');
 
         Route::post('/bridging_reedit_klaim/{no_sep}', [PasienInapController::class, 'bridging_reedit_klaim'])->name('rm.pasien-inap.bridging_reedit_klaim');
     });

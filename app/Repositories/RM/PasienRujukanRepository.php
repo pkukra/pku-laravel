@@ -165,6 +165,7 @@ class PasienRujukanRepository
                 'cm.KETERANGAN AS CARA_MASUK_BPJS',
                 'TRANSAKSIPASIEN.FTTARIPINACBG',
                 'TRANSAKSIPASIEN.FTKODEINACBG',
+                'TRANSAKSIPASIEN.FKUNCI_VALIDASI',
                 DB::raw("'rajal' as JENIS_RAWAT")
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
@@ -1957,6 +1958,59 @@ class PasienRujukanRepository
         return [
             'idrg' => $idrg,
             'inacbg' => $inacbg,
+        ];
+    }
+
+    /**
+     * Ambil semua history procedures dari setiap pasien
+     *
+     * @param string $kode_reg, kode_reg_kj
+     * @return \Illuminate\Support\Collection
+     */
+    public function finalPasienUmum($kode_reg, $kode_reg_kj)
+    {
+        $user = Auth::user();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('TRANSAKSIPASIEN')
+                ->where('FTNO_TRANSAKSI', $kode_reg_kj)
+                ->update([
+                    'FKUNCI_VALIDASI' => 1,
+                ]);
+
+            DB::connection('sqlsrvsimrs')
+                ->table('PASIEN_RUJUKAN')
+                ->where('FRPNOTRANSAKSI', $kode_reg)
+                ->update([
+                    'IS_INACBG_FINAL' => 1,
+                ]);
+
+            $this->auditTrail->insert([
+                "object_id" => $kode_reg_kj,
+                "action_id" => 24,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => [
+                    "no_transaksi" => $kode_reg,
+                    "no_transaksikj" => $kode_reg_kj,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienRujukanRepository finalPasienUmum : " . $e->getMessage());
+            return [
+                "status" => "nok",
+                "message" => "Terjadi kesalahan saat final data"
+            ];
+        }
+        DB::connection('sqlsrvsimrs')->commit();
+        return [
+            "status" => "ok",
+            "message" => "Sukses"
         ];
     }
 }

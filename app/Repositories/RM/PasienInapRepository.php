@@ -999,4 +999,43 @@ class PasienInapRepository
             });
         });
     }
+
+    function finalPasienUmum($kode_reg)
+    {
+        $user = Auth::user();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('TRANSAKSIPASIENINAP')
+                ->where('FTNO_TRANSAKSI', $kode_reg)
+                ->update([
+                    'FKUNCI_VALIDASI' => 1,
+                ]);
+
+            $this->auditTrail->insert([
+                "object_id" => $kode_reg,
+                "action_id" => 7,
+                "user_email" => $user->email,
+                "user_id" => $user->id,
+                "created_at" => $now,
+                "data" => [
+                    "kode_reg" => $kode_reg,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            Log::error("PasienInapRepository finalPasienUmum : " . $e->getMessage());
+            return [
+                "status" => "nok",
+                "message" => "Terjadi kesalahan saat final data"
+            ];
+        }
+        DB::connection('sqlsrvsimrs')->commit();
+        return [
+            "status" => "ok",
+            "message" => "Sukses"
+        ];
+    }
 }

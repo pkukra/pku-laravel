@@ -1077,4 +1077,22 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->getProceduresHistory($pasien_id);
         return response()->json($data);
     }
+
+    /**
+     * final_pasien_umum
+     * Process bridging data ke eklaim
+     */
+    public function final_pasien_umum(Request $request)
+    {
+        $validated = $request->validate([
+            'kode_reg' => 'required|string',
+            'kode_reg_kj' => 'required|string',
+        ]);
+
+        $kode_reg = $validated['kode_reg'];
+        $kode_reg_kj = $validated['kode_reg_kj'];
+
+        $data = $this->pasienRujukanRepo->finalPasienUmum($kode_reg, $kode_reg_kj);
+        return response()->json($data);
+    }
 }

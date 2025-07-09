@@ -682,7 +682,7 @@ class PasienInapController extends Controller
         $data = $this->bridgingEKlaimRepo->bridgingReeditKlaim($no_sep);
         return response()->json($data);
     }
-    
+
     /**
      * bridging_delete_klaim
      * Process bridging data ke eklaim
@@ -690,6 +690,24 @@ class PasienInapController extends Controller
     public function bridging_delete_klaim($no_sep)
     {
         $data = $this->bridgingEKlaimRepo->bridgingDeleteKlaim($no_sep);
+        return response()->json($data);
+    }
+
+    /**
+     * final_pasien_umum
+     * Process bridging data ke eklaim
+     */
+    public function final_pasien_umum(Request $request)
+    {
+        $validated = $request->validate([
+            'kode_reg' => 'required|string',
+            'kode_reg_kj' => 'required|string',
+        ]);
+
+        $kode_reg = $validated['kode_reg'];
+
+        // Process final pasien umum
+        $data = $this->pasienInapRepo->finalPasienUmum($kode_reg);
         return response()->json($data);
     }
 }

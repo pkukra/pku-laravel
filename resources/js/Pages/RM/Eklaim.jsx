@@ -259,6 +259,7 @@ function EKlaim({ pasien, setDisableINACBG, disableINACBG, reFetchPasien }) {
                 <IndexTabIDRG
                     fetchIDRGData={fetchIDRGData}
                     fetchINACBGData={fetchINACBGData}
+                    reFetchPasien={reFetchPasien}
                     loadingFetchIdrgData={loadingFetchIdrgData}
                     idrgGroupData={idrgGroupData}
                     pasien={pasien}
