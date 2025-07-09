@@ -200,10 +200,8 @@ function Index({
 
     return (
         <>
-            <p>
-                <strong>iDRG</strong>
-            </p>
-            <Row gutter={[5, 5]}>
+            <h3>iDRG</h3>
+            <Row gutter={12}>
                 <Col span={12}>
                     <DiagnosaListIDRG
                         isFinalIDRG={isFinalIDRG}
@@ -220,115 +218,86 @@ function Index({
                     />
                 </Col>
             </Row>
-            <Row gutter={[5, 5]}>
-                <Col span={12}></Col>
+            <Row gutter={12} style={{ marginTop: 16 }}>
+                <Col span={12} />
                 <Col span={12}>
-                    <Divider> Hasil Grouping iDRG </Divider>
+                    {(customer_id != "X002" && customer_id != "X003") && (
+                        <div style={{ marginBottom: 8 }}>
+                            <strong>
+                                Pasien UMUM
+                            </strong>
+                        </div>
+                    )}
+                    <Divider>Hasil Grouping iDRG</Divider>
                     {loadingFetchIdrgData ? (
                         <p>Loading...</p>
                     ) : (
-                        <table
-                            style={{
-                                borderCollapse: "collapse",
-                                width: "100%",
-                                margin: 10,
-                            }}
-                        >
+                        <table style={{ width: "100%", marginBottom: 16 }}>
                             <tbody>
                                 <tr>
-                                    <td style={{ width: "20%" }}>
-                                        Status Grouping
-                                    </td>
+                                    <td>Status Grouping</td>
                                     <td>
-                                        {idrgGroupData ? (
-                                            <strong>Sudah Grouping</strong>
-                                        ) : (
-                                            <strong>Belum Grouping</strong>
-                                        )}
+                                        <strong>
+                                            {idrgGroupData ? "Sudah Grouping" : "Belum Grouping"}
+                                        </strong>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Status Final IDRG</td>
                                     <td>
-                                        {isFinalIDRG ? (
-                                            <strong>Sudah Final</strong>
-                                        ) : (
-                                            <strong>Belum Final</strong>
-                                        )}
+                                        <strong>
+                                            {isFinalIDRG ? "Sudah Final" : "Belum Final"}
+                                        </strong>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>MDC Number</td>
-                                    <td>{eklaim_group_data?.mdc_number}</td>
+                                    <td>{eklaim_group_data?.mdc_number || "-"}</td>
                                 </tr>
                                 <tr>
-                                    <td
-                                        style={{
-                                            verticalAlign: "top",
-                                        }}
-                                    >
-                                        MDC Description
-                                    </td>
-                                    <td
-                                        style={{
-                                            verticalAlign: "top",
-                                        }}
-                                    >
-                                        {eklaim_group_data?.mdc_description}
-                                    </td>
+                                    <td>MDC Description</td>
+                                    <td>{eklaim_group_data?.mdc_description || "-"}</td>
                                 </tr>
                                 <tr>
                                     <td>DRG Code</td>
-                                    <td>{eklaim_group_data?.drg_code}</td>
+                                    <td>{eklaim_group_data?.drg_code || "-"}</td>
                                 </tr>
                                 <tr>
                                     <td>DRG Description</td>
-                                    <td>
-                                        {eklaim_group_data?.drg_description}
-                                    </td>
+                                    <td>{eklaim_group_data?.drg_description || "-"}</td>
                                 </tr>
                             </tbody>
                         </table>
                     )}
-
-                    <Divider />
-                    <Button
-                        disabled={disableBridgeButton()}
-                        type="primary"
-                        onClick={() => {
-                            setModalBridgeOpen(true);
-                            return;
-                        }}
-                        style={{ marginRight: 5, backgroundColor: " #33cc33" }}
-                    >
-                        Bridge & Grouping iDRG
-                    </Button>
-                    {!isFinalIDRG ? (
+                    <div style={{ display: "flex", gap: 8 }}>
                         <Button
+                            disabled={disableBridgeButton()}
                             type="primary"
-                            onClick={() => {
-                                setModalFinalOpen(true);
-                                return;
-                            }}
-                            disabled={disableFinalButton()}
-                            style={{ backgroundColor: " #cc66ff" }}
+                            onClick={() => setModalBridgeOpen(true)}
+                            style={{ background: "#33cc33" }}
                         >
-                            Final Data
+                            Bridge & Grouping iDRG
                         </Button>
-                    ) : (
-                        <Button
-                            disabled={isKlaimFinal}
-                            type="primary"
-                            style={{ backgroundColor: " #F3732F" }}
-                            variant="solid"
-                            onClick={() => {
-                                setModalReEditIDRGOpen(true);
-                                return;
-                            }}
-                        >
-                            Edit Ulang iDRG
-                        </Button>
-                    )}
+                        {!isFinalIDRG ? (
+                            <Button
+                                type="primary"
+                                onClick={() => setModalFinalOpen(true)}
+                                disabled={disableFinalButton()}
+                                style={{ background: "#cc66ff" }}
+                            >
+                                Final Data
+                            </Button>
+                        ) : (
+                            <Button
+                                disabled={isKlaimFinal}
+                                type="primary"
+                                style={{ background: "#F3732F" }}
+                                onClick={() => setModalReEditIDRGOpen(true)}
+                            >
+                                Edit Ulang iDRG
+                            </Button>
+                        )}
+                    </div>
                 </Col>
             </Row>
             <Modal
@@ -336,110 +305,70 @@ function Index({
                 title="Bridging Data IDRG"
                 onCancel={() => setModalBridgeOpen(false)}
                 footer={[
-                    <Button
-                        key="back"
-                        onClick={() => setModalBridgeOpen(false)}
-                        loading={bridgingLoading}
-                    >
+                    <Button key="back" onClick={() => setModalBridgeOpen(false)} loading={bridgingLoading}>
                         Cancel
                     </Button>,
                     <Button
-                        disabled={no_sep !== null ? false : true}
                         key="submit"
                         type="primary"
                         loading={bridgingLoading}
-                        onClick={() => handleBridgingData()}
-                        style={{ backgroundColor: " #33cc33" }}
+                        disabled={!no_sep}
+                        onClick={handleBridgingData}
+                        style={{ background: "#33cc33" }}
                     >
                         Ok, Bridge & Grouping Data
                     </Button>,
                 ]}
             >
-                {no_sep ? (
-                    <div>
-                        <p>
-                            <strong>Nomor SEP:</strong> {no_sep}
-                        </p>
-                    </div>
-                ) : (
-                    <p>
-                        <strong>Belum ada data SEP</strong>
-                    </p>
-                )}
+                <p>
+                    <strong>Nomor SEP:</strong> {no_sep || <span>Belum ada data SEP</span>}
+                </p>
             </Modal>
             <Modal
                 open={modalFinalOpen}
                 title="Final Data IDRG"
                 onCancel={() => setModalFinalOpen(false)}
                 footer={[
-                    <Button
-                        key="back"
-                        onClick={() => setModalFinalOpen(false)}
-                        loading={finalLoading}
-                    >
+                    <Button key="back" onClick={() => setModalFinalOpen(false)} loading={finalLoading}>
                         Cancel
                     </Button>,
                     <Button
-                        disabled={no_sep !== null ? false : true}
                         key="submit"
                         type="primary"
                         loading={finalLoading}
-                        onClick={() => handleFinalData()}
-                        style={{ backgroundColor: " #cc66ff" }}
+                        disabled={!no_sep}
+                        onClick={handleFinalData}
+                        style={{ background: "#cc66ff" }}
                     >
                         Ok, Final Data
                     </Button>,
                 ]}
             >
-                {no_sep ? (
-                    <div>
-                        <p>
-                            <strong>Nomor SEP:</strong> {no_sep}
-                        </p>
-                    </div>
-                ) : (
-                    <p>
-                        <strong>Belum ada data SEP</strong>
-                    </p>
-                )}
+                <p>
+                    <strong>Nomor SEP:</strong> {no_sep || <span>Belum ada data SEP</span>}
+                </p>
             </Modal>
             <Modal
                 open={modalReEditIDRGOpen}
                 title="Edit Ulang iDRG"
                 onCancel={() => setModalReEditIDRGOpen(false)}
                 footer={[
-                    <Button
-                        key="back"
-                        onClick={() => setModalReEditIDRGOpen(false)}
-                        loading={reeditLoading}
-                    >
+                    <Button key="back" onClick={() => setModalReEditIDRGOpen(false)} loading={reeditLoading}>
                         Cancel
                     </Button>,
                     <Button
                         type="primary"
                         loading={reeditLoading}
-                        style={{ backgroundColor: " #F3732F" }}
-                        variant="solid"
-                        onClick={() => {
-                            handleEditUlangData();
-                            return;
-                        }}
+                        style={{ background: "#F3732F" }}
+                        onClick={handleEditUlangData}
                     >
                         Ok, Edit Ulang iDRG
                     </Button>,
                 ]}
             >
-                {no_sep ? (
-                    <div>
-                        <p>
-                            <strong>Nomor SEP:</strong> {no_sep}
-                        </p>
-                    </div>
-                ) : (
-                    <p>
-                        <strong>Belum ada data SEP</strong>
-                    </p>
-                )}
+                <p>
+                    <strong>Nomor SEP:</strong> {no_sep || <span>Belum ada data SEP</span>}
+                </p>
             </Modal>
         </>
     );
