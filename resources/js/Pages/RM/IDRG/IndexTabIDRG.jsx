@@ -285,7 +285,128 @@ function Index({
                             </Button>
                         </div>
                     ) : (
-                        <></>
+                        <>
+                            <Divider> Hasil Grouping iDRG </Divider>
+                            {loadingFetchIdrgData ? (
+                                <p>Loading...</p>
+                            ) : (
+                                <table
+                                    style={{
+                                        borderCollapse: "collapse",
+                                        width: "100%",
+                                        margin: 10,
+                                    }}
+                                >
+                                    <tbody>
+                                        <tr>
+                                            <td style={{ width: "20%" }}>
+                                                Status Grouping
+                                            </td>
+                                            <td>
+                                                {idrgGroupData ? (
+                                                    <strong>
+                                                        Sudah Grouping
+                                                    </strong>
+                                                ) : (
+                                                    <strong>
+                                                        Belum Grouping
+                                                    </strong>
+                                                )}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Status Final IDRG</td>
+                                            <td>
+                                                {isFinalIDRG ? (
+                                                    <strong>Sudah Final</strong>
+                                                ) : (
+                                                    <strong>Belum Final</strong>
+                                                )}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>MDC Number</td>
+                                            <td>
+                                                {eklaim_group_data?.mdc_number}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td
+                                                style={{
+                                                    verticalAlign: "top",
+                                                }}
+                                            >
+                                                MDC Description
+                                            </td>
+                                            <td
+                                                style={{
+                                                    verticalAlign: "top",
+                                                }}
+                                            >
+                                                {
+                                                    eklaim_group_data?.mdc_description
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>DRG Code</td>
+                                            <td>
+                                                {eklaim_group_data?.drg_code}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>DRG Description</td>
+                                            <td>
+                                                {
+                                                    eklaim_group_data?.drg_description
+                                                }
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            )}
+
+                            <Button
+                                disabled={disableBridgeButton()}
+                                type="primary"
+                                onClick={() => {
+                                    setModalBridgeOpen(true);
+                                    return;
+                                }}
+                                style={{
+                                    marginRight: 5,
+                                    backgroundColor: " #33cc33",
+                                }}
+                            >
+                                Bridge & Grouping iDRG
+                            </Button>
+                            {!isFinalIDRG ? (
+                                <Button
+                                    type="primary"
+                                    onClick={() => {
+                                        setModalFinalOpen(true);
+                                        return;
+                                    }}
+                                    disabled={disableFinalButton()}
+                                    style={{ backgroundColor: " #cc66ff" }}
+                                >
+                                    Final Data
+                                </Button>
+                            ) : (
+                                <Button
+                                    disabled={isKlaimFinal}
+                                    type="primary"
+                                    style={{ backgroundColor: " #F3732F" }}
+                                    variant="solid"
+                                    onClick={() => {
+                                        setModalReEditIDRGOpen(true);
+                                        return;
+                                    }}
+                                >
+                                    Edit Ulang iDRG
+                                </Button>
+                            )}
+                        </>
                     )}
                 </Col>
             </Row>
