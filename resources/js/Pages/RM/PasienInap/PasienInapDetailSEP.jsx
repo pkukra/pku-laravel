@@ -206,61 +206,52 @@ export default function Index({ pasien, user, reFetchPasien }) {
                     <strong>Rp {RupiahFormat(pasien?.FTTARIPINACBG1)}</strong>
                 </p> */}
 
-                {/* <Tooltip
-                    title={
-                        disabled
-                            ? "User belum setup Eklaim Key"
-                            : "Tekan untuk bridgin data ke INACBG"
-                    }
-                    placement="topLeft"
+                <Button
+                    type="primary"
+                    onClick={() => setModalUpdateNoSEPOpen(true)}
+                    style={{ marginRight: 5 }}
                 >
-                    <Button
-                        type="primary"
-                        onClick={() => setModalUpdateNoSEPOpen(true)}
-                        style={{ marginRight: 5 }}
-                    >
-                        Ubah SEP
-                    </Button>
+                    Ubah SEP
+                </Button>
 
-                    <Button
-                        type="primary"
-                        onClick={() => setModalBridgeOpen(true)}
-                        disabled={disabled || !noSep}
-                        style={{ margin: 2, backgroundColor: " #33cc33" }}
-                    >
-                        {!noSep ? "Belum ada SEP" : "Bridge Data"}
-                    </Button>
+                {/* <Button
+                    type="primary"
+                    onClick={() => setModalBridgeOpen(true)}
+                    disabled={disabled || !noSep}
+                    style={{ margin: 2, backgroundColor: " #33cc33" }}
+                >
+                    {!noSep ? "Belum ada SEP" : "Bridge Data"}
+                </Button>
 
-                    <Button
-                        type="primary"
-                        onClick={() => setModalFinalOpen(true)}
-                        disabled={disabled || !noSep}
-                        style={{ margin: 2, backgroundColor: " #cc66ff" }}
-                    >
-                        {!noSep ? "Belum ada SEP" : "Final Data"}
-                    </Button>
+                <Button
+                    type="primary"
+                    onClick={() => setModalFinalOpen(true)}
+                    disabled={disabled || !noSep}
+                    style={{ margin: 2, backgroundColor: " #cc66ff" }}
+                >
+                    {!noSep ? "Belum ada SEP" : "Final Data"}
+                </Button>
 
-                    <Button
-                        type="primary"
-                        onClick={() => setModalKirimOpen(true)}
-                        disabled={disabled || !noSep}
-                        style={{ margin: 2, backgroundColor: " #fc0330" }}
-                    >
-                        {!noSep ? "Belum ada SEP" : "Kirim Berkas Klaim"}
-                    </Button>
+                <Button
+                    type="primary"
+                    onClick={() => setModalKirimOpen(true)}
+                    disabled={disabled || !noSep}
+                    style={{ margin: 2, backgroundColor: " #fc0330" }}
+                >
+                    {!noSep ? "Belum ada SEP" : "Kirim Berkas Klaim"}
+                </Button>
 
-                    <Button
-                        type="primary"
-                        onClick={() => hadleCetakKlaim()}
-                        disabled={disabled || !noSep}
-                        style={{
-                            margin: 2,
-                            backgroundColor: "rgb(0, 170, 255)",
-                        }}
-                    >
-                        {!noSep ? "Belum ada SEP" : "Cetak Klaim"}
-                    </Button>
-                </Tooltip> */}
+                <Button
+                    type="primary"
+                    onClick={() => hadleCetakKlaim()}
+                    disabled={disabled || !noSep}
+                    style={{
+                        margin: 2,
+                        backgroundColor: "rgb(0, 170, 255)",
+                    }}
+                >
+                    {!noSep ? "Belum ada SEP" : "Cetak Klaim"}
+                </Button> */}
             </Card>
 
             <Modal

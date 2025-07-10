@@ -189,7 +189,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
                 </p></>
                 )}
 
-                {/* <Tooltip
+                <Tooltip
                     title={
                         disabled
                             ? "User belum setup Eklaim Key"
@@ -205,7 +205,7 @@ export default function Index({ pasien, user, reFetchPasien }) {
                         Ubah SEP
                     </Button>
 
-                    <Button
+                    {/* <Button
                         type="primary"
                         onClick={() => setModalBridgeOpen(true)}
                         disabled={disabled || !noSep}
@@ -221,8 +221,8 @@ export default function Index({ pasien, user, reFetchPasien }) {
                         style={{ backgroundColor: " #cc66ff" }}
                     >
                         {!noSep ? "Belum ada SEP" : "Final Data"}
-                    </Button>
-                </Tooltip> */}
+                    </Button> */}
+                </Tooltip>
             </Card>
 
             <Modal
