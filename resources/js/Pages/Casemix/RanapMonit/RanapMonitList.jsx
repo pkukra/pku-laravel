@@ -170,45 +170,45 @@ export default function Index({ auth, role, bangsal }) {
                 <>{naikKelasSanitize(record?.RAWAT_NAIK)}</>
             ),
         },
-        {
-            title: "Kemungkinan Kode Diagnosa",
-            dataIndex: "FTNO_TRANSAKSI",
-            key: "KODE_DIAGNOSA",
-            render: (kodeReg, record) => (
-                <>
-                    {diagnosaData[kodeReg] &&
-                        diagnosaData[kodeReg]
-                            .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
-                            .join(" - ")}
-                    {rolename == "koder" && (
-                        <RanapMonitListModalDiagnosa
-                            pasien={record}
-                            reFecthListData={fetchData}
-                        />
-                    )}
-                </>
-            ),
-        },
-        {
-            title: "Kemungkinan Kode Prosedur",
-            dataIndex: "FTNO_TRANSAKSI",
-            key: "KODE_PROCEDURE",
-            width: 200,
-            render: (kodeReg, record) => (
-                <>
-                    {prosedurData[kodeReg] &&
-                        prosedurData[kodeReg]
-                            .map((procedure) => procedure?.MRTKD_TINDAKAN)
-                            .join(" - ")}
-                    {rolename == "koder" && (
-                        <RanapMonitListModalProcedure
-                            pasien={record}
-                            reFecthListData={fetchData}
-                        />
-                    )}
-                </>
-            ),
-        },
+        // {
+        //     title: "Kemungkinan Kode Diagnosa",
+        //     dataIndex: "FTNO_TRANSAKSI",
+        //     key: "KODE_DIAGNOSA",
+        //     render: (kodeReg, record) => (
+        //         <>
+        //             {diagnosaData[kodeReg] &&
+        //                 diagnosaData[kodeReg]
+        //                     .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
+        //                     .join(" - ")}
+        //             {rolename == "koder" && (
+        //                 <RanapMonitListModalDiagnosa
+        //                     pasien={record}
+        //                     reFecthListData={fetchData}
+        //                 />
+        //             )}
+        //         </>
+        //     ),
+        // },
+        // {
+        //     title: "Kemungkinan Kode Prosedur",
+        //     dataIndex: "FTNO_TRANSAKSI",
+        //     key: "KODE_PROCEDURE",
+        //     width: 200,
+        //     render: (kodeReg, record) => (
+        //         <>
+        //             {prosedurData[kodeReg] &&
+        //                 prosedurData[kodeReg]
+        //                     .map((procedure) => procedure?.MRTKD_TINDAKAN)
+        //                     .join(" - ")}
+        //             {rolename == "koder" && (
+        //                 <RanapMonitListModalProcedure
+        //                     pasien={record}
+        //                     reFecthListData={fetchData}
+        //                 />
+        //             )}
+        //         </>
+        //     ),
+        // },
         {
             title: "Perkiraan Klaim (Rp)",
             dataIndex: "klaim",
@@ -230,12 +230,12 @@ export default function Index({ auth, role, bangsal }) {
                         {perkiraanKlaim !== null
                             ? Math.abs(perkiraanKlaim).toLocaleString()
                             : "-"}
-                        {record?.NO_SEP && rolename == "koder" && (
+                        {/* {record?.NO_SEP && rolename == "koder" && (
                             <BridgingData
                                 pasien={record}
                                 refetchData={fetchData}
                             />
-                        )}
+                        )} */}
                     </>
                 );
             },
