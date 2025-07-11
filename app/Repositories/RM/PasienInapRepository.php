@@ -231,7 +231,6 @@ class PasienInapRepository
         try {
             $endpoint = 'SEP/' . $new_sep;
             $response = json_decode($bridging->getRequest($endpoint));
-
             // Menghindari error jika response kosong
             $detail_pasien_vclaim = optional($response->response);
             $peserta = optional($detail_pasien_vclaim->peserta);

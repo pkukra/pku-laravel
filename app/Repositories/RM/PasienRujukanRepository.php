@@ -169,7 +169,7 @@ class PasienRujukanRepository
                 DB::raw("'rajal' as JENIS_RAWAT")
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
-            ->first();  // Menggunakan `first` karena hanya mengambil satu data
+            ->first();
 
         if (!$pasienRujukan) {
             return (object)[
