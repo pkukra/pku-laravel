@@ -143,6 +143,14 @@ export default function Index({ pasien }) {
                                             <th>ID Transakasi</th>
                                             <td>{pasien.PRWINO_TRANSAKSI}</td>
                                         </tr>
+                                        <tr>
+                                            <th>Status Transaksional</th>
+                                            <td>
+                                                {pasien?.SUDAH_DIKREDIT
+                                                    ? "SUDAH DIKREDIT"
+                                                    : "BELUM DIKREDIT"}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </td>
