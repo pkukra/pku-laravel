@@ -207,10 +207,8 @@ function Index({
         if (!["X002", "X003"].includes(customer_id)) {
             return true; // Disable jika bukan X002 atau X003
         }
-        if (pasien?.JENIS_RAWAT == "rajal") {
-            if (!pasien?.SUDAH_DIKREDIT) {
-                return true; // Disable jika belum dikredit
-            }
+        if (!pasien?.SUDAH_DIKREDIT) {
+            return true; // Disable jika belum dikredit
         }
         return false; // Enable otherwise
     };

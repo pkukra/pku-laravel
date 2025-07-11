@@ -165,7 +165,7 @@ class PasienInapRepository
      */
     public function getPasienInapDetail($kode_reg)
     {
-        return DB::connection('sqlsrvsimrs')
+        $pasienInap = DB::connection('sqlsrvsimrs')
             ->table('PASIENRAWATINAP AS PRI')
             ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'PRI.PRWINO_TRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
             ->leftJoin('PASIEN', 'PRI.PRWIKD_PASIEN', '=', 'PASIEN.KD_PASIEN')
@@ -195,7 +195,13 @@ class PasienInapRepository
             )
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
-            ->first();  // Menggunakan `first` karena hanya mengambil satu data
+            ->first();
+            
+        if ($pasienInap) {
+            $pasienInap->SUDAH_DIKREDIT = $this->SudahDiKredit($kode_reg);
+        }
+
+        return $pasienInap;
     }
 
     /**
@@ -1036,5 +1042,16 @@ class PasienInapRepository
             "status" => "ok",
             "message" => "Sukses"
         ];
+    }
+
+    public function SudahDiKredit($kode_reg)
+    {
+        $exists = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIENINAPD')
+            ->where('FDTNO_TRANSAKSI', $kode_reg)
+            ->where('FDTJENISTRANSAKSI', 'KR')
+            ->exists();
+
+        return $exists;
     }
 }
