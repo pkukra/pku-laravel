@@ -130,6 +130,16 @@ export default function Index({
         kode_reg = pasien?.FTNO_TRANSAKSI;
         pasien_id = pasien?.FTKD_PASIEN;
     }
+    
+    const disableInvalidSEP = () => {
+        if (
+            ["X002", "X003"].includes(customer_id) &&
+            pasien?.IS_SEP_VALID == false
+        ) {
+            return true;
+        }
+        return false;
+    };
 
     // Fungsi untuk mengambil data diagnosa
     const fetchDiagnosa = () => {
@@ -347,7 +357,7 @@ export default function Index({
                         placement="topLeft"
                     >
                         <AutoComplete
-                            disabled={isFinalIDRG}
+                            disabled={isFinalIDRG || disableInvalidSEP()}
                             ref={inputRefStatusDdiagnosa}
                             loading={loading}
                             allowClear

@@ -147,6 +147,16 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
         pasien_id = pasien?.FTKD_PASIEN;
     }
 
+    const disableInvalidSEP = () => {
+        if (
+            ["X002", "X003"].includes(customer_id) &&
+            pasien?.IS_SEP_VALID == false
+        ) {
+            return true;
+        }
+        return false;
+    };
+
     // Fungsi untuk mengambil data procedure
     const fetchProcedure = () => {
         setLoadingFetchProcedure(true);
@@ -367,7 +377,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                         placement="topLeft"
                     >
                         <AutoComplete
-                            disabled={isFinalIDRG}
+                            disabled={isFinalIDRG || disableInvalidSEP()}
                             ref={inputRefStatusProcedure}
                             allowClear
                             onChange={() => {
