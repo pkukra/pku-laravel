@@ -129,6 +129,14 @@ export default function Index({ pasien }) {
                                                 {pasien.ALAMAT}
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <th>Status Transaksional</th>
+                                            <td>
+                                                {pasien?.SUDAH_DIKREDIT
+                                                    ? "SUDAH DIKREDIT"
+                                                    : "BELUM DIKREDIT"}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </td>
