@@ -18,7 +18,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
-    const [pasien, setPasien] = useState(initialPasien);
+    const [pasien, setPasien] = useState(initialPasien?.data);
     const [golbalSEP, setGolbalSEP] = useState(null);
 
     const [loadingRaber, setLoadingRaber] = useState(true);

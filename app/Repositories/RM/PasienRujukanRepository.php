@@ -137,7 +137,7 @@ class PasienRujukanRepository
      */
     public function getPasienRujukanDetail($kode_reg)
     {
-        return DB::connection('sqlsrvsimrs')
+        $pasienRujukan =  DB::connection('sqlsrvsimrs')
             ->table('PASIEN_RUJUKAN')
             ->leftJoin('TRANSAKSIPASIEN', 'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'TRANSAKSIPASIEN.FTNO_TRANSAKSI')
             ->leftJoin('PASIEN', 'PASIEN_RUJUKAN.FRPPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
@@ -170,6 +170,43 @@ class PasienRujukanRepository
             )
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
             ->first();  // Menggunakan `first` karena hanya mengambil satu data
+
+        if (!$pasienRujukan) {
+            return (object)[
+                "status" => "ok",
+                "error" => null,
+                "data" => $pasienRujukan
+            ];
+        }
+
+        $pasienRujukan->IS_SEP_VALID = false;
+        if ($pasienRujukan->FMNOSEP) {
+            $bridging = new BridgeVclaim();
+
+            try {
+                $endpoint = 'SEP/' . $pasienRujukan->FMNOSEP;
+                $vclaim_detail = json_decode($bridging->getRequest($endpoint));
+            } catch (\Exception $e) {
+                Log::error("PasienRujukanRepository getPasienRujukanDetail Vclaim Err get SEP: " . $e->getMessage());
+                return (object)[
+                    "status" => "nok",
+                    "error" => "Gagal terhubung ke vclaim, coba beberapa saat lagi.",
+                    "data" => null
+                ];
+            }
+
+            if ($vclaim_detail->response && $vclaim_detail->response->peserta->noMr == $pasienRujukan->FRPPASIEN_ID) {
+                $pasienRujukan->IS_SEP_VALID = true;
+            } else {
+                $pasienRujukan->IS_SEP_VALID = false;
+            }
+        }
+
+        return (object)[
+            "status" => "ok",
+            "error" => null,
+            "data" => $pasienRujukan,
+        ];
     }
 
     /**

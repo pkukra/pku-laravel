@@ -150,7 +150,7 @@ class PasienRujukanController extends Controller
         $pasien_rujukan = $this->pasienRujukanRepo->getPasienRujukanDetail($kode_reg);
 
         return response()->json([
-            'pasien' => $pasien_rujukan,
+            'pasien' => $pasien_rujukan->data,
         ]);
     }
 
