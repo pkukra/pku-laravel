@@ -158,57 +158,75 @@ export default function Index({ auth, role, bangsal }) {
             ),
         },
         {
-            title: "Hak Kelas",
-            dataIndex: "KELAS_RAWAT",
-            key: "KELAS_RAWAT",
+            title: "Penjamin",
+            dataIndex: "PRWIKD_CUSTOMER",
+            render: (value) => {
+                const cust = customerData?.find((c) => c?.CUSID == value);
+                const name = cust ? cust?.NAME : value;
+                const isBPJS = value == "X002" || value == "X003";
+                const displayName = isBPJS ? `BPJS ${name}` : name;
+
+                return (
+                    <span
+                        style={{
+                            color: isBPJS ? "green" : "inherit",
+                        }}
+                    >
+                        {displayName}
+                    </span>
+                );
+            },
         },
         {
-            title: "Naik Kelas",
-            dataIndex: "RAWAT_NAIK",
-            key: "RAWAT_NAIK",
+            title: "Hak Kelas/Naik Kelas",
+            dataIndex: "KELAS_RAWAT",
+            key: "KELAS_RAWAT",
             render: (text, record) => (
-                <>{naikKelasSanitize(record?.RAWAT_NAIK)}</>
+                <>
+                    <p>Hak Kelas: {record?.KELAS_RAWAT}</p>
+                    <p>Naik Kelas: {naikKelasSanitize(record?.RAWAT_NAIK)}</p>
+                </>
             ),
         },
-        // {
-        //     title: "Kemungkinan Kode Diagnosa",
-        //     dataIndex: "FTNO_TRANSAKSI",
-        //     key: "KODE_DIAGNOSA",
-        //     render: (kodeReg, record) => (
-        //         <>
-        //             {diagnosaData[kodeReg] &&
-        //                 diagnosaData[kodeReg]
-        //                     .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
-        //                     .join(" - ")}
-        //             {rolename == "koder" && (
-        //                 <RanapMonitListModalDiagnosa
-        //                     pasien={record}
-        //                     reFecthListData={fetchData}
-        //                 />
-        //             )}
-        //         </>
-        //     ),
-        // },
-        // {
-        //     title: "Kemungkinan Kode Prosedur",
-        //     dataIndex: "FTNO_TRANSAKSI",
-        //     key: "KODE_PROCEDURE",
-        //     width: 200,
-        //     render: (kodeReg, record) => (
-        //         <>
-        //             {prosedurData[kodeReg] &&
-        //                 prosedurData[kodeReg]
-        //                     .map((procedure) => procedure?.MRTKD_TINDAKAN)
-        //                     .join(" - ")}
-        //             {rolename == "koder" && (
-        //                 <RanapMonitListModalProcedure
-        //                     pasien={record}
-        //                     reFecthListData={fetchData}
-        //                 />
-        //             )}
-        //         </>
-        //     ),
-        // },
+        {
+            title: "Kemungkinan Kode Diagnosa",
+            dataIndex: "FTNO_TRANSAKSI",
+            key: "KODE_DIAGNOSA",
+            render: (kodeReg, record) => (
+                <>
+                    {diagnosaData[kodeReg] &&
+                        diagnosaData[kodeReg]
+                            .map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
+                            .join(" - ")}
+                    {rolename == "koder" && (
+                        <RanapMonitListModalDiagnosa
+                            pasien={record}
+                            reFecthListData={fetchData}
+                        />
+                    )}
+                </>
+            ),
+        },
+        {
+            title: "Kemungkinan Kode Prosedur",
+            dataIndex: "FTNO_TRANSAKSI",
+            key: "KODE_PROCEDURE",
+            width: 200,
+            render: (kodeReg, record) => (
+                <>
+                    {prosedurData[kodeReg] &&
+                        prosedurData[kodeReg]
+                            .map((procedure) => procedure?.MRTKD_TINDAKAN)
+                            .join(" - ")}
+                    {rolename == "koder" && (
+                        <RanapMonitListModalProcedure
+                            pasien={record}
+                            reFecthListData={fetchData}
+                        />
+                    )}
+                </>
+            ),
+        },
         {
             title: "Perkiraan Klaim (Rp)",
             dataIndex: "klaim",
@@ -387,9 +405,6 @@ export default function Index({ auth, role, bangsal }) {
     const [selectedStatusRawat, setSelectedStatusRawat] = useState("dirawat");
     const [selectedNoRM, setSelectedNoRM] = useState(null);
     const [selectedYearMonth, setSelectedYearMonth] = useState(null);
-    // const [selectedYearMonth, setSelectedYearMonth] = useState(
-    //     dayjs().format("YYYY-MM")
-    // );
     const [selectedBangsal, setSelectedBangsal] = useState("IK042");
 
     const [page, setPage] = useState(1);
@@ -409,6 +424,8 @@ export default function Index({ auth, role, bangsal }) {
     const [diagnosaData, setDiagnosaData] = useState([]);
     const [prosedurData, setProsedurData] = useState([]);
     const [abortController, setAbortController] = useState(null);
+
+    const [customerData, setCustomerData] = useState([]);
 
     const handleOpenModal = (param) => {
         setModalUpdateRecord(param?.data_record);
@@ -583,9 +600,19 @@ export default function Index({ auth, role, bangsal }) {
         if (selectedBangsal == "all") {
             return alert("Pilih salah satu bangsal");
         }
-
+        fetchCustomers();
         setPage(1); // Set nilai page
         setShouldFetch(true); // Aktifkan trigger untuk fetchData()
+    };
+
+    const fetchCustomers = async () => {
+        try {
+            const response = await axios.get(route("rm.get_cusromers"));
+            setCustomerData(response?.data || []);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        } finally {
+        }
     };
 
     useEffect(() => {

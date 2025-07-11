@@ -57,6 +57,7 @@ class RanapMonitRepository
             'PRI.PRWIKD_KELAS',
             'PRI.PRWIKD_DOKTER',
             'PRI.PRWITGL_KELUAR',
+            'PRI.PRWIKD_CUSTOMER',
             'TPI.FTTGL_TRANSAKSI',
             'TPI.FTKD_PASIEN',
             'TPI.FTTARIPINACBG',
