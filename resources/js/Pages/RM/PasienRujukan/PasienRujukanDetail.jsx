@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/react";
-import { Col, Row, Card, Tabs } from "antd";
+import { Col, Row, Card, Tabs, Alert } from "antd";
 
 import config from "../../../config";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -89,6 +89,25 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
         ),
     }));
 
+    let customer_id = pasien?.FRPCUSTOMER_ID;
+    let pasien_id = pasien?.FRPPASIEN_ID;
+
+    if (pasien?.JENIS_RAWAT == "ranap") {
+        customer_id = pasien?.PRWIKD_CUSTOMER;
+        kode_reg = pasien?.FTNO_TRANSAKSI;
+        pasien_id = pasien?.FTKD_PASIEN;
+    }
+
+    const disableInvalidSEP = () => {
+        if (
+            ["X002", "X003"].includes(customer_id) &&
+            pasien?.IS_SEP_VALID == false
+        ) {
+            return true;
+        }
+        return false;
+    };
+
     return (
         <>
             <Head title="Detail Kunjungan Pasien Rajal" />
@@ -148,6 +167,15 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
                         {config.is_idrg ? (
                             <Col span={24}>
+                                {disableInvalidSEP() && (
+                                    <Alert
+                                        message="Warning: Invalid SEP"
+                                        type="error"
+                                        banner
+                                        closable
+                                    />
+                                )}
+
                                 <EKlaim
                                     pasien={pasien}
                                     setDisableINACBG={setDisableINACBG}
