@@ -171,6 +171,10 @@ class PasienRujukanRepository
             ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg)
             ->first();
 
+        if ($pasienRujukan) {
+            $pasienRujukan->SUDAH_DIKREDIT = $this->SudahDiKredit($kode_reg);
+        }
+
         if (!$pasienRujukan) {
             return (object)[
                 "status" => "ok",
@@ -2049,5 +2053,16 @@ class PasienRujukanRepository
             "status" => "ok",
             "message" => "Sukses"
         ];
+    }
+
+    public function SudahDiKredit($kode_reg_kj)
+    {
+        $exists = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIEND')
+            ->where('FDTNO_TRANSAKSI', $kode_reg_kj)
+            ->where('FDTJENISTRANSAKSI', 'KR')
+            ->exists();
+
+        return $exists;
     }
 }
