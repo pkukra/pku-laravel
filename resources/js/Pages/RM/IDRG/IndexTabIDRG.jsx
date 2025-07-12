@@ -381,7 +381,7 @@ function Index({
                                     backgroundColor: " #33cc33",
                                 }}
                             >
-                                Bridge & Grouping iDRG
+                                Bridge & Grouping iDRG {!pasien?.SUDAH_DIKREDIT && <>(Belum Dikredit)</>}
                             </Button>
                             {!isFinalIDRG ? (
                                 <Button
