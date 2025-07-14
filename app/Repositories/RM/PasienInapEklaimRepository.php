@@ -979,9 +979,6 @@ class PasienInapEklaimRepository
             return $grouping_1_idrg;
         }
 
-        Log::info('grouping_1_idrg Inap ');
-        Log::info(json_encode($grouping_1_idrg));
-
         try {
             DB::connection('sqlsrvsimrs')
                 ->table('PASIEN_IDRG')
