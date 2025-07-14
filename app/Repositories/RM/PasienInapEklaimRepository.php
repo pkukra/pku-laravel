@@ -862,28 +862,17 @@ class PasienInapEklaimRepository
         $naik_kelas = null;
         if ($vclaim_detail->response->klsRawat->klsRawatNaik) {
             $klsRawat = $vclaim_detail->response->klsRawat;
-            if ($klsRawat->klsRawatHak === "1") {
-                // Jika hak kelas 1, maka naik kelas otomatis VIP
-                $naik_kelas = "vip";
-            } else {
-                // Jika hak kelas bukan 1, tentukan naik kelas dari klsRawatNaik
-                switch ($klsRawat->klsRawatNaik) {
-                    case "1":
-                        $naik_kelas = "vvip";
-                        break;
-                    case "2":
-                        $naik_kelas = "vip";
-                        break;
-                    case "3":
-                        $naik_kelas = "kelas_1";
-                        break;
-                    case "4":
-                        $naik_kelas = "kelas_2";
-                        break;
-                    default:
-                        $naik_kelas = null;
-                        break;
-                }
+            // Jika hak kelas bukan 1, tentukan naik kelas dari klsRawatNaik
+            switch ($klsRawat->klsRawatNaik) {
+                case "8":
+                    $naik_kelas = "vip";
+                    break;
+                case "3":
+                    $naik_kelas = "kelas_1";
+                    break;
+                default:
+                    $naik_kelas = null;
+                    break;
             }
         }
 
@@ -946,6 +935,7 @@ class PasienInapEklaimRepository
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $key = $user->eklaim_key;
         $response =  sendRequest($key, $requestData);
+
 
         if ($response->response->metadata->code != 200) {
             return $response;
