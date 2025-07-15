@@ -1716,57 +1716,9 @@ class PasienRujukanRepository
         $conn = DB::connection('sqlsrvsimrs');
 
         try {
-            // 1. Update PASIEN_RUJUKAN
             $conn->table('PASIEN_RUJUKAN')
                 ->where('FRPNOTRANSAKSIKJ', $data['no_transaksi_kj'])
                 ->update(['CARA_MASUK' => $data['cara_masuk']]);
-
-            // 2. Update KUNJUNGANPASIEN
-            $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : "";
-
-            $conn->table('KUNJUNGANPASIEN')
-                ->where('KPNO_TRANSAKSI', $data['no_transaksi_kj'])
-                ->update([
-                    'KPRUJUKLUAR' => $kodeRsRujukKeluar,
-                    'KPPERAWATAN' => $data['keperawatan'],
-                ]);
-
-            // 3. Update atau insert MR_KEMATIAN
-            $arrUpdate = [
-                'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
-                'MRKSEBAB'           => in_array($data['keadaan_keluar'], [3, 4]) ? ($data['sebab_kematian'] ?? "") : "",
-                'updated_at'         => $data['now'],
-                'updated_by'         => $data['email'],
-            ];
-
-            $exists = $conn->table('MR_KEMATIAN')
-                ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
-                ->exists();
-
-            $mrPayload = [];
-
-            if ($exists) {
-                $conn->table('MR_KEMATIAN')
-                    ->where('MRKNO_TRANSAKSI', $data['no_transaksi_kj'])
-                    ->update($arrUpdate);
-
-                $mrPayload = array_merge(['MRKNO_TRANSAKSI' => $data['no_transaksi_kj']], $arrUpdate);
-            } else {
-                $arrInsert = array_merge($arrUpdate, [
-                    'MRKNO_TRANSAKSI' => $data['no_transaksi_kj'],
-                    'MRKKD_PASIEN'    => $data['kode_pasien'],
-                    'MRKKD_UNIT'      => $data['kode_unit'],
-                    'MRKKD_DOKTER'    => $data['kode_dokter'],
-                    'MRKTGL_MASUK'    => $data['tgl_masuk'],
-                    'MRKTGL_KELUAR'   => $data['tgl_masuk'],
-                    'created_at'      => $data['now'],
-                    'created_by'      => $data['email'],
-                ]);
-
-                $conn->table('MR_KEMATIAN')->insert($arrInsert);
-
-                $mrPayload = $arrInsert;
-            }
 
             $conn->table('PASIEN')
                 ->where('KD_PASIEN', $data['kode_pasien'])
@@ -1775,7 +1727,6 @@ class PasienRujukanRepository
                     'SITB' => $data['sitb'],
                 ]);
 
-            // 4. Audit Trail
             $this->auditTrail->insert([
                 'object_id'  => $data['no_transaksi_kj'],
                 'action_id'  => 8, // update_perawatan
@@ -1786,13 +1737,9 @@ class PasienRujukanRepository
                     'PASIEN_RUJUKAN' => [
                         'FRPNOTRANSAKSIKJ' => $data['no_transaksi_kj'],
                         'CARA_MASUK' => $data['cara_masuk'],
+                        'BERAT_LAHIR' => $data['berat_lahir'],
+                        'SITB' => $data['sitb'],
                     ],
-                    'KUNJUNGANPASIEN' => [
-                        'KPNO_TRANSAKSI' => $data['no_transaksi_kj'],
-                        'KPRUJUKLUAR' => $kodeRsRujukKeluar,
-                        'KPPERAWATAN' => $data['keperawatan'],
-                    ],
-                    'MR_KEMATIAN' => $mrPayload,
                 ],
             ]);
 

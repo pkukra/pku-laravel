@@ -196,7 +196,7 @@ class PasienInapRepository
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
             ->first();
-            
+
         if ($pasienInap) {
             $pasienInap->SUDAH_DIKREDIT = $this->SudahDiKredit($kode_reg);
         }
@@ -846,57 +846,15 @@ class PasienInapRepository
 
     public function updateKeperawatan(array $data)
     {
+        $user = Auth::user();
         DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
-            // Jika keadaan_keluar selain 1, KPRUJUKLUAR harus kosong
-            $kodeRsRujukKeluar = ($data['keadaan_keluar'] == 7) ? $data['kode_rs_rujuk_keluar'] : null;
-
             DB::connection('sqlsrvsimrs')
                 ->table('PASIENRAWATINAP')
                 ->where('PRWINO_TRANSAKSI', $data['no_transaksi'])
                 ->update([
-                    'PRWIRUJUKLUAR' => $kodeRsRujukKeluar,
                     'CARA_MASUK' => $data['cara_masuk'], // cara masuk standara BPJS opsi
                 ]);
-
-            // mulai update mr kematian
-            $arrUpdate = [
-                'MRKKEADAAN_KELUAR' => $data['keadaan_keluar'],
-                'updated_at' => $data['now'],
-                'updated_by' => $data['email'],
-            ];
-
-            // Jika keadaan_keluar adalah 4 atau 3, gunakan sebab_kematian, selain itu kosongkan
-            $arrUpdate['MRKSEBAB'] = in_array($data['keadaan_keluar'], [3, 4]) ? ($data['sebab_kematian'] ?? "") : "";
-
-            $exists = DB::connection('sqlsrvsimrs')
-                ->table('MR_KEMATIAN')
-                ->where('MRKNO_TRANSAKSI', $data['no_transaksi'])
-                ->exists();
-
-            if ($exists) {
-                // Jika sudah ada, lakukan update
-                DB::connection('sqlsrvsimrs')
-                    ->table('MR_KEMATIAN')
-                    ->where('MRKNO_TRANSAKSI', $data['no_transaksi'])
-                    ->update($arrUpdate);
-            } else {
-                // Jika belum ada, lakukan insert
-                $arrInsert = array_merge($arrUpdate, [
-                    'MRKNO_TRANSAKSI' => $data['no_transaksi'],
-                    'MRKKD_PASIEN' => $data['kode_pasien'],
-                    'MRKKD_UNIT' => $data['kode_unit'],
-                    'MRKKD_DOKTER' => $data['kode_dokter'],
-                    'MRKTGL_MASUK' => $data['tgl_masuk'],
-                    'MRKTGL_KELUAR' => $data['tgl_masuk'],
-                    'created_at' => $data['now'],
-                    'created_by' => $data['email'],
-                ]);
-
-                DB::connection('sqlsrvsimrs')
-                    ->table('MR_KEMATIAN')
-                    ->insert($arrInsert);
-            }
 
             DB::connection('sqlsrvsimrs')
                 ->table('PASIEN')
@@ -905,6 +863,23 @@ class PasienInapRepository
                     'BERAT_LAHIR' => $data['berat_lahir'],
                     'SITB' => $data['sitb'],
                 ]);
+
+            // 4. Audit Trail
+            $this->auditTrail->insert([
+                'object_id'  => $data['no_transaksi'],
+                'action_id'  => 8,
+                'user_email' => $user->email,
+                'user_id'    => $user->id,
+                'created_at' => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                'data'       => [
+                    'PASIENRAWATINAP' => [
+                        'PRWINO_TRANSAKSI' => $data['no_transaksi'],
+                        'CARA_MASUK' => $data['cara_masuk'],
+                        'BERAT_LAHIR' => $data['berat_lahir'],
+                        'SITB' => $data['sitb'],
+                    ],
+                ],
+            ]);
         } catch (\Exception $e) {
             DB::connection('sqlsrvsimrs')->rollBack();
             Log::error('Error update/insert Cara masuk: ' . $e->getMessage());

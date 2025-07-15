@@ -454,7 +454,7 @@ class PasienInapController extends Controller
             'kode_dokter' => 'required',
             'tgl_masuk' => 'required',
             'cara_masuk' => 'required',
-            'keadaan_keluar' => 'required',
+            'keadaan_keluar' => 'nullable',
             'sebab_kematian' => 'nullable|string',
             'keperawatan' => 'nullable',
             'kode_rs_rujuk_keluar' => 'nullable',
