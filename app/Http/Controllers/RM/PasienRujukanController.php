@@ -830,7 +830,7 @@ class PasienRujukanController extends Controller
             'keadaan_keluar' => 'required',
             'sebab_kematian' => 'nullable|string',
 
-            'keperawatan' => 'required',
+            'keperawatan' => 'nullable',
             'kode_rs_rujuk_keluar' => 'nullable',
 
             'berat_lahir' => 'nullable',
