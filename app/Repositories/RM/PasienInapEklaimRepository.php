@@ -853,11 +853,7 @@ class PasienInapEklaimRepository
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_utama->PRWINO_TRANSAKSI);
         // defaultnya atas persetujuan dokter
-        $discharge_status =  1;
-        if ($transaksi_utama->DISCHARGE_STATUS) {
-            // jika berhasil maka dilakukan join dengan tabel mr_kematian untuk hasil yang lain
-            $discharge_status =  $transaksi_utama->DISCHARGE_STATUS;
-        }
+        $discharge_status =  $this->dischargeStatusEMR($transaksi_utama->PRWINO_TRANSAKSI);
 
         $naik_kelas = null;
         if ($vclaim_detail->response->klsRawat->klsRawatNaik) {
@@ -1852,5 +1848,26 @@ class PasienInapEklaimRepository
 
         $response = sendRequest($key, $data);
         return $response;
+    }
+
+    /**
+     * Process dischargeStatusEMR
+     */
+    public function dischargeStatusEMR($kode_reg)
+    {
+        $cara_pulang = DB::connection('sqlsrvemr')
+            ->table('TAB_PX_PULANG_RESUME')
+            ->leftJoin('DEV_CARA_PULANG_RANAP AS master', 'master.id', '=', 'TAB_PX_PULANG_RESUME.FS_CARA_PULANG')
+            ->select('master.code_bpjs')
+            ->where('FS_KD_REG', $kode_reg)
+            ->orderByDesc('mdd')
+            ->orderByDesc('mdd_time')
+            ->first();
+
+        if ($cara_pulang) {
+            $cara_pulang = $cara_pulang->code_bpjs ?? 1;
+            return $cara_pulang;
+        }
+        return 1;
     }
 }

@@ -951,14 +951,8 @@ class PasienRujukanEklaimRepository
             return $new_claim;
         }
 
-        $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_utama->FRPNOTRANSAKSI);
-        // defaultnya atas persetujuan dokter
-        $discharge_status =  1;
-        if ($transaksi_utama->DISCHARGE_SRARTUS) {
-            // jika berhasil di join dengan tabel mr_kematian untuk hasil yang lain
-            $discharge_status =  $transaksi_utama->DISCHARGE_SRARTUS;
-        }
+        $discharge_status = $this->dischargeStatusEMR($transaksi_utama->FRPNOTRANSAKSI);
 
         $is_pasien_tb = false;
         $diagnosa = $this->getAllDiagnosaIDRG($semua_transaksi);
@@ -972,6 +966,7 @@ class PasienRujukanEklaimRepository
             }
         }
 
+        $user = Auth::user();
         // mapping data
         $data = (object)[
             'nomor_sep' => $no_sep,
@@ -1858,5 +1853,38 @@ class PasienRujukanEklaimRepository
 
         $response = sendRequest($key, $data);
         return $response;
+    }
+
+    /**
+     * Process dischargeStatusEMR
+     */
+    public function dischargeStatusEMR($kode_reg)
+    {
+        if (!str_starts_with($kode_reg, 'RGD')) {
+            // jika bukan IGD
+            $cara_pulang = DB::connection('sqlsrvemr')
+                ->table('TAC_RJ_MEDIS')
+                ->leftJoin('MASTER_CARA_PULANG AS master', 'master.ID_CARA_PULANG', '=', 'TAC_RJ_MEDIS.FS_CARA_PULANG')
+                ->select('master.code_bpjs')
+                ->where('FS_KD_REG', $kode_reg)
+                ->orderByDesc('mdd')
+                ->orderByDesc('FS_JAM_TRS')
+                ->first();
+        } else {
+            // jika IGD
+            $cara_pulang = DB::connection('sqlsrvemr')
+                ->table('TAC_IGD_MEDIS')
+                ->leftJoin('TAC_IGD_PLH_CARA_PULANG_RTL AS master', 'master.ID', '=', 'TAC_IGD_MEDIS.CARA_PULANG')
+                ->select('master.code_bpjs')
+                ->where('KD_REG', $kode_reg)
+                ->orderByDesc('created_at')
+                ->first();
+        }
+
+        if ($cara_pulang) {
+            $cara_pulang = $cara_pulang->code_bpjs ?? 1;
+            return $cara_pulang;
+        }
+        return 1;
     }
 }
