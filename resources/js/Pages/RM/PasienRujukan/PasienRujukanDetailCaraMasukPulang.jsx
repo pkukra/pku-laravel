@@ -222,7 +222,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
     return (
         <>
             <Card
-                title="Cara Masuk & Pulang"
+                title="Perawatan"
                 loading={pasienLoading || keadaanKeluarLoading}
             >
                 <table style={{ width: "100%" }}>
@@ -257,7 +257,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             </td>
                         </tr> */}
 
-                        <tr>
+                        {/* <tr>
                             <td>Keadaan Keluar RS</td>
                             <td>: {keadaanKeluar?.FMKKRSKETERANGAN}</td>
                         </tr>
@@ -280,7 +280,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                                 <td>Sebab Kematian</td>
                                 <td>: {keadaanKeluar?.MRKSEBAB}</td>
                             </tr>
-                        )}
+                        )} */}
                         <tr>
                             <td></td>
                             <td>
@@ -360,7 +360,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     }
                     options={perawatanOptions}
                 />*/}
-                <label>Keadaan Keluar RS: </label>
+                {/* <label>Keadaan Keluar RS: </label>
                 <Select
                     value={selectedKeadaanKeluar}
                     style={{ width: "100%" }}
@@ -399,7 +399,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             options={RSRujukanOptions}
                         />
                     </>
-                )}
+                )} */}
             </Modal>
         </>
     );

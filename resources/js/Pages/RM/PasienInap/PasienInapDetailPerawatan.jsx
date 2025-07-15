@@ -198,7 +198,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             </td>
                         </tr>
 
-                        <tr>
+                        {/* <tr>
                             <td>Keadaan Keluar RS</td>
                             <td>: {keadaanKeluar?.FMKKRSKETERANGAN}</td>
                         </tr>
@@ -211,7 +211,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                                     {pasien?.RS_RUJUKAN_KELUAR}
                                 </td>
                             </tr>
-                        )}
+                        )} */}
 
                         {(selectedKeadaanKeluar == 4 ||
                             selectedKeadaanKeluar == 3) && (
@@ -290,7 +290,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     onChange={setSelectedCaraMasuk}
                     options={caraMasukOptions}
                 />
-                <label>Keadaan Keluar RS: </label>
+                {/* <label>Keadaan Keluar RS: </label>
                 <Select
                     value={selectedKeadaanKeluar}
                     style={{ width: "100%" }}
@@ -329,7 +329,7 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             options={RSRujukanOptions}
                         />
                     </>
-                )}
+                )} */}
             </Modal>
         </>
     );
