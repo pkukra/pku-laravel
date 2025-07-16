@@ -939,9 +939,6 @@ class PasienRujukanEklaimRepository
             }
         }
 
-        // return $semua_transaksi;
-        return $this->getTotalDetailTarifTransaksi($semua_transaksi);
-
         // update/reedit claim
         $update_claim = $this->bridgingReEditClaim($no_sep);
         if ($update_claim->status != 'ok') {
