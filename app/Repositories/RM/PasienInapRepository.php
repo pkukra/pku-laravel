@@ -71,23 +71,9 @@ class PasienInapRepository
         $kode_bangsal = null,
         $is_inacbg_final = null
     ) {
-        // Subquery untuk ambil baris terakhir berdasarkan TGL_KELUAR atau PRWINO_URUT
-        $subquery = DB::connection('sqlsrvsimrs')
-            ->table('PASIENRAWATINAP')
-            ->select('PRWINO_TRANSAKSI', DB::raw('MAX(PRWITGL_KELUAR) AS TGL_KELUAR'))
-            ->groupBy('PRWINO_TRANSAKSI');
-
-        $latestRowSub = DB::connection('sqlsrvsimrs')
-            ->table('PASIENRAWATINAP AS PRI')
-            ->select('PRI.*')
-            ->joinSub($subquery, 'LAST', function ($join) {
-                $join->on('PRI.PRWINO_TRANSAKSI', '=', 'LAST.PRWINO_TRANSAKSI')
-                    ->on(DB::raw('ISNULL(PRI.PRWITGL_KELUAR, \'1900-01-01\')'), '=', DB::raw('ISNULL(LAST.TGL_KELUAR, \'1900-01-01\')'));
-            });
-
         $baseQuery = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAP AS TPI')
-            ->joinSub($latestRowSub, 'PRI', function ($join) {
+            ->join('PASIENRAWATINAP AS PRI', function ($join) {
                 $join->on(DB::raw('CAST(PRI.PRWINO_TRANSAKSI AS NVARCHAR)'), '=', 'TPI.FTNO_TRANSAKSI')
                     ->whereRaw('CAST(PRI.PRWINO_URUT AS NVARCHAR) = CAST(TPI.FTNO_URUT AS NVARCHAR)');
             })
