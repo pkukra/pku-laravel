@@ -224,11 +224,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             <td></td>
                             <td>
                                 <Button
-                                    disabled={
-                                        pasien?.FKUNCI_VALIDASI == 1
-                                            ? true
-                                            : false
-                                    }
                                     type="primary"
                                     onClick={handleOpenModal}
                                 >

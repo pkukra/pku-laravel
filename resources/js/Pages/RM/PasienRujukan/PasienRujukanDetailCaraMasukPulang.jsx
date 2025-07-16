@@ -285,11 +285,6 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             <td></td>
                             <td>
                                 <Button
-                                    disabled={
-                                        pasien?.IS_INACBG_FINAL == 1
-                                            ? true
-                                            : false
-                                    }
                                     type="primary"
                                     onClick={handleOpenModal}
                                 >
