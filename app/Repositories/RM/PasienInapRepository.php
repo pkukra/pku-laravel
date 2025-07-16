@@ -166,8 +166,11 @@ class PasienInapRepository
     public function getPasienInapDetail($kode_reg)
     {
         $pasienInap = DB::connection('sqlsrvsimrs')
-            ->table('PASIENRAWATINAP AS PRI')
-            ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'PRI.PRWINO_TRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
+            ->table('TRANSAKSIPASIENINAP AS TPI')
+            ->leftJoin('PASIENRAWATINAP AS PRI', function ($join) {
+                $join->on('PRI.PRWINO_TRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
+                    ->on('TPI.FTNO_URUT', '=', 'PRI.PRWINO_URUT');
+            })
             ->leftJoin('PASIEN', 'PRI.PRWIKD_PASIEN', '=', 'PASIEN.KD_PASIEN')
             ->leftJoin('DOKTER', 'PRI.PRWIKD_DOKTER', '=', 'DOKTER.FMDDOKTER_ID')
             ->leftJoin('SPESIALISASI', 'PRI.PRWIKD_SPECIAL', '=', 'SPESIALISASI.FMSPESIALISASI_ID')
@@ -176,10 +179,10 @@ class PasienInapRepository
             ->leftJoin('MR_RUJUKAN_KELUAR AS rk', 'PRI.PRWIRUJUKLUAR', '=', 'rk.MRKODERUJUKAN')
             ->leftJoin('BPJS_SEP AS sep', 'PRI.PRWINO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
             ->select(
+                'TPI.*',
                 'PASIEN.BERAT_LAHIR AS BBL',
                 'PASIEN.SITB',
                 'sep.FMNOSEP',
-                'TPI.*',
                 'PASIEN.NAMAPASIEN',
                 'PASIEN.TGL_LAHIR',
                 'PASIEN.GOL_DARAH',
@@ -193,7 +196,7 @@ class PasienInapRepository
                 'rk.MRKODERUJUKANN AS RS_RUJUKAN_KELUAR',
                 DB::raw("'ranap' as JENIS_RAWAT")
             )
-            ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
+            ->where('TPI.FTNO_TRANSAKSI', $kode_reg)
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
             ->first();
 

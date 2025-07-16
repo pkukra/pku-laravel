@@ -29,11 +29,13 @@ export default function Index({ pasien }) {
                                                     width: "30%",
                                                 }}
                                             >
-                                                Tanggal Periksa
+                                                Tanggal Masuk - Keluar
                                             </th>
                                             <td>
                                                 {moment(
                                                     pasien.PRWITGL_MASUK
+                                                ).format("DD/MM/YYYY")} - {moment(
+                                                    pasien.PRWITGL_KELUAR
                                                 ).format("DD/MM/YYYY")}
                                             </td>
                                         </tr>
