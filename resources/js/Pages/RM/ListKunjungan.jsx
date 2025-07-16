@@ -87,22 +87,22 @@ const columnsInap = [
     },
     {
         title: "Tanggal Masuk",
-        dataIndex: "FTTGL_TRANSAKSI",
+        dataIndex: "PRWITGL_MASUK",
         render: (_, record) => (
             <>
-            {moment(record?.FTTGL_TRANSAKSI).format("DD/MM/YYYY")}
+            {moment(record?.PRWITGL_MASUK).format("DD/MM/YYYY")}
             </>
         ),
     },
     {
         title: "Tanggal Keluar",
-        dataIndex: "TGL_KELUAR",
+        dataIndex: "PRWITGL_KELUAR",
         render: (_, record) => (
             <>
             {
-                (record?.TGL_KELUAR)
+                (record?.PRWITGL_KELUAR)
                 &&
-                moment(record?.TGL_KELUAR).format("DD/MM/YYYY")
+                moment(record?.PRWITGL_KELUAR).format("DD/MM/YYYY")
             }
             </>
         ),

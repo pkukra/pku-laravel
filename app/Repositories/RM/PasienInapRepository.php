@@ -41,6 +41,8 @@ class PasienInapRepository
             ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
             ->select(
                 'TPI.*',
+                'PRI.PRWITGL_MASUK',
+                'PRI.PRWITGL_KELUAR',
                 'KK.FMKKAMARN',
                 'K.FMKNAMA_KAMAR',
                 'S.FMSPESIALISASIN',
@@ -52,10 +54,7 @@ class PasienInapRepository
             ->orderBy('TPI.FTTGL_TRANSAKSI', 'desc')
             ->get();
 
-        return $data->map(function ($data_detail) {
-            $data_detail->TGL_KELUAR = get_tgl_keluar_inap($data_detail->FTNO_TRANSAKSI);
-            return $data_detail;
-        });
+        return $data;
     }
 
     /**
