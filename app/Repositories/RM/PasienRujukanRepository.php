@@ -183,6 +183,18 @@ class PasienRujukanRepository
             ];
         }
 
+        $pasienRujukan->LANJUT_RANAP = false;
+        if (
+            str_starts_with($pasienRujukan->FRPNOTRANSAKSIKJ, 'RGD') &&
+            in_array($pasienRujukan->FRPCUSTOMER_ID, ['X002', 'X003'])
+        ) {
+            $lanjutRanap = DB::connection('sqlsrvsimrs')
+                ->table('TRANSAKSIPASIENINAPD')
+                ->where('FDTNO_FAKTUR', $kode_reg)
+                ->first();
+            $pasienRujukan->LANJUT_RANAP = (bool) $lanjutRanap;
+        }
+
         $pasienRujukan->IS_SEP_VALID = false;
         if ($pasienRujukan->FMNOSEP) {
             $bridging = new BridgeVclaim();

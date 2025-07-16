@@ -137,6 +137,14 @@ export default function Index({ pasien }) {
                                                     : "BELUM DIKREDIT"}
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <th>Lanjut Ranap</th>
+                                            <td>
+                                                {pasien?.LANJUT_RANAP
+                                                    ? "LANJUT RANAP"
+                                                    : "TIDAK"}
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </td>

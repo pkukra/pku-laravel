@@ -101,7 +101,8 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
     const disableInvalidSEP = () => {
         if (
             ["X002", "X003"].includes(customer_id) &&
-            pasien?.IS_SEP_VALID == false
+            pasien?.IS_SEP_VALID == false &&
+            pasien?.LANJUT_RANAP == false
         ) {
             return true;
         }

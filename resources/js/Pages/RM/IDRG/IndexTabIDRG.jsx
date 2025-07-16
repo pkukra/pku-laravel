@@ -266,7 +266,7 @@ function Index({
             <Row gutter={12} style={{ marginTop: 16 }}>
                 <Col span={12} />
                 <Col span={12}>
-                    {customer_id != "X002" && customer_id != "X003" ? (
+                    {pasien?.LANJUT_RANAP == true || (customer_id != "X002" && customer_id != "X003") ? (
                         <div style={{ marginBottom: 8 }}>
                             <p>
                                 <strong>Pasien Non BPJS</strong>
