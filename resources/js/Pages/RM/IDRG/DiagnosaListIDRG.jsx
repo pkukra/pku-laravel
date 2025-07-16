@@ -130,11 +130,12 @@ export default function Index({
         kode_reg = pasien?.FTNO_TRANSAKSI;
         pasien_id = pasien?.FTKD_PASIEN;
     }
-    
+
     const disableInvalidSEP = () => {
         if (
             ["X002", "X003"].includes(customer_id) &&
-            pasien?.IS_SEP_VALID == false
+            pasien?.IS_SEP_VALID == false &&
+            pasien?.LANJUT_RANAP == false
         ) {
             return true;
         }
@@ -219,7 +220,7 @@ export default function Index({
             });
         }
 
-        if (["X002", "X003"].includes(customer_id) && !no_sep) {
+        if (["X002", "X003"].includes(customer_id) && !no_sep && pasien?.LANJUT_RANAP == false) {
             return notification.error({
                 placement: "top",
                 message: "Tidak dapat menyimpan diagnosa",

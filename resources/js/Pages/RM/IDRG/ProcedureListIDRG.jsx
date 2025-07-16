@@ -150,7 +150,8 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
     const disableInvalidSEP = () => {
         if (
             ["X002", "X003"].includes(customer_id) &&
-            pasien?.IS_SEP_VALID == false
+            pasien?.IS_SEP_VALID == false &&
+            pasien?.LANJUT_RANAP == false
         ) {
             return true;
         }
@@ -223,7 +224,11 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
 
     // Function to save procedure
     const saveProcedure = async () => {
-        if (["X002", "X003"].includes(customer_id) && !no_sep) {
+        if (
+            ["X002", "X003"].includes(customer_id) &&
+            !no_sep &&
+            pasien?.LANJUT_RANAP == false
+        ) {
             return notification.error({
                 placement: "top",
                 message: "Tidak dapat menyimpan diagnosa",
