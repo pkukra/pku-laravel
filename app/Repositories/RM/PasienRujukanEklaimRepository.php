@@ -840,58 +840,53 @@ class PasienRujukanEklaimRepository
     /**
      * Get all diagnosa idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
      * 
-     * @param array $array_pasien_rujukan
+     * @param array $no_sep
      * @return string Diagnosa dalam format "S71.0#A00.1"
      */
-    public function getAllDiagnosaIDRG($array_pasien_rujukan)
+    public function getAllDiagnosaIDRG($no_sep)
     {
-        $diagnoses_array = [];
-        foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $diagnosa = DB::connection('sqlsrvsimrs')
-                ->table('PASIEN_DIAGNOSA_IM')
-                ->where('no_sep', '=', $pasien_rujukan->FMNOSEP)
-                ->pluck('code') // Ambil kolom code sebagai array
-                ->toArray();
+        $diagnoses_final_arr = [];
+        $diagnosa = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_DIAGNOSA_IM')
+            ->where('no_sep', '=', $no_sep)
+            ->pluck('code') // Ambil kolom code sebagai array
+            ->toArray();
 
-            // Bersihkan spasi tiap kode sebelum gabung
-            $diagnosa = array_map('trim', $diagnosa);
+        // Bersihkan spasi tiap kode sebelum gabung
+        $diagnosa = array_map('trim', $diagnosa);
 
-            $diagnoses_array = array_merge($diagnoses_array, $diagnosa);
-        }
+        $diagnoses_final_arr = array_merge($diagnoses_final_arr, $diagnosa);
 
         // Hilangkan duplikat dan gabungkan dengan '#'
-        return implode('#', array_unique($diagnoses_array));
+        return implode('#', array_unique($diagnoses_final_arr));
     }
 
     /**
      * Get all procedure idrg from all pasien_rujukan based on array of pasien rujukan->kode_reg (by no SEP)
      * 
-     * @param array $array_pasien_rujukan
+     * @param array $no_sep
      * @return string Procedure dalam format "S71.0#A00.1"
      */
-    public function getAllProcedureIDRG($array_pasien_rujukan)
+    public function getAllProcedureIDRG($no_sep)
     {
-        $procedures_array = [];
-        foreach ($array_pasien_rujukan as $pasien_rujukan) {
-            $diagnosa = DB::connection('sqlsrvsimrs')
-                ->table('PASIEN_TINDAKAN_IM')
-                ->where('no_sep', '=', $pasien_rujukan->FMNOSEP)
-                ->select('code', 'multiplicity')
-                ->get();
+        $procedures_final_arr = [];
+        $procedures = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_TINDAKAN_IM')
+            ->where('no_sep', '=', $no_sep)
+            ->select('code', 'multiplicity')
+            ->get();
 
-            foreach ($diagnosa as $item) {
-                $code = trim($item->code);
-                $multiplicity = trim($item->multiplicity);
+        foreach ($procedures as $item) {
+            $code = trim($item->code);
+            $multiplicity = trim($item->multiplicity);
 
-                if ($multiplicity > 1) {
-                    $procedures_array[] = $code . '+' . $multiplicity;
-                } else {
-                    $procedures_array[] = $code;
-                }
+            if ($multiplicity > 1) {
+                $procedures_final_arr[] = $code . '+' . $multiplicity;
+            } else {
+                $procedures_final_arr[] = $code;
             }
         }
-
-        return implode('#', $procedures_array);
+        return implode('#', $procedures_final_arr);
     }
 
     /**
@@ -962,8 +957,8 @@ class PasienRujukanEklaimRepository
         $discharge_status = $this->dischargeStatusEMR($transaksi_utama->FRPNOTRANSAKSI);
 
         $is_pasien_tb = false;
-        $diagnosa = $this->getAllDiagnosaIDRG($semua_transaksi);
-        $procedure = $this->getAllProcedureIDRG($semua_transaksi);
+        $diagnosa = $this->getAllDiagnosaIDRG($transaksi_utama->FMNOSEP);
+        $procedure = $this->getAllProcedureIDRG($transaksi_utama->FMNOSEP);
 
         $diagnosaArray = explode("#", $diagnosa);
         foreach ($diagnosaArray as $d) {
