@@ -191,12 +191,12 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                             <td>SITB</td>
                             <td>: {pasien?.SITB}</td>
                         </tr>
-                        <tr>
+                        {/* <tr>
                             <td>Cara Masuk</td>
                             <td>
                                 : {pasien?.CARA_MASUK_BPJS ?? <>Belum diisi</>}
                             </td>
-                        </tr>
+                        </tr> */}
 
                         {/* <tr>
                             <td>Keadaan Keluar RS</td>
@@ -278,13 +278,13 @@ export default function Index({ pasien, reFetchPasien, pasienLoading }) {
                     style={{ width: "100%" }}
                 />{" "}
                 <br />
-                <label>Cara Masuk:</label>
+                {/* <label>Cara Masuk:</label>
                 <Select
                     value={selectedCaraMasuk}
                     style={{ width: "100%", marginBottom: "10px" }}
                     onChange={setSelectedCaraMasuk}
                     options={caraMasukOptions}
-                />
+                /> */}
                 {/* <label>Keadaan Keluar RS: </label>
                 <Select
                     value={selectedKeadaanKeluar}
