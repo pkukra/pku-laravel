@@ -506,7 +506,7 @@ class PasienInapEklaimRepository
                     'p.KD_PASIEN',
                     'p.TGL_LAHIR',
                     'p.JENIS_KELAMIN',
-                    'MR_KEADAAN_KELUAR_RS.FMKKRSKODE_BPJS AS DISCHARGE_STATUS'
+                    'MR_KEADAAN_KELUAR_RS.FMKKRSKODE_BPJS AS DISCHARGE_STATUS',
                 )
                 ->where('sep.FMNOSEP', $no_sep)
                 ->first();
@@ -514,11 +514,12 @@ class PasienInapEklaimRepository
                 $detail_pasien_rawat_inap = DB::connection('sqlsrvsimrs')
                     ->table('PASIENRAWATINAP AS PRI')
                     ->leftJoin('DOKTER AS dr', 'PRI.PRWIKD_DOKTER', '=', 'dr.FMDDOKTER_ID')
+                    ->leftJoin('ASAL_PASIEN', 'PRI.PRWIASALPASIEN', '=', 'ASAL_PASIEN.FAPKD_ASAL')
                     ->where('PRI.PRWINO_TRANSAKSI', $detailTransaksi->FTNO_TRANSAKSI)
                     ->where('PRI.PRWINO_URUT', $detailTransaksi->FTNO_URUT)
                     ->select(
                         'PRI.PRWINO_TRANSAKSI',
-                        'PRI.CARA_MASUK',
+                        'ASAL_PASIEN.KODE AS CARA_MASUK',
                         DB::raw("FORMAT(PRI.PRWITGL_MASUK, 'yyyy-MM-dd') + ' ' + FORMAT(PRI.PRWIKPJAM_MASUK, 'HH:mm:ss') AS PRWI_TGLJAM_MASUK"),
                         DB::raw("FORMAT(PRI.PRWITGL_KELUAR, 'yyyy-MM-dd') + ' ' + FORMAT(PRI.PRWIJAM_KELUAR, 'HH:mm:ss') AS PRWI_TGLJAM_KELUAR"),
                         'dr.FMDDOKTERN',
@@ -919,7 +920,7 @@ class PasienInapEklaimRepository
             'coder_nik' => $user->nik,
             'sistole' => $bloodPresure->sistole ?? 0,
             'diastole' => $bloodPresure->diastole ?? 0,
-            'cara_masuk' => $transaksi_utama->CARA_MASUK,
+            'cara_masuk' => $transaksi_utama->CARA_MASUK ?: "emd",
         ];
 
         $requestData = json_encode((object)[
