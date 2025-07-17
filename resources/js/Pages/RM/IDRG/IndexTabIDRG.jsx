@@ -250,8 +250,6 @@ function Index({
         idrgGroupData?.response_eklaim || "{}"
     );
 
-    console.log(diagnosaTab);
-
     return (
         <>
             <h3>iDRG</h3>
