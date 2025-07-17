@@ -277,7 +277,7 @@ function Index({
                     (customer_id != "X002" && customer_id != "X003") ? (
                         <div style={{ marginBottom: 8 }}>
                             <p>
-                                <strong>Pasien Non BPJS</strong>
+                                {pasien?.LANJUT_RANAP == true ? <strong>Pasien Lanjut Ranap</strong> : <strong>Pasien Non BPJS</strong>}
                             </p>
                             <p>
                                 <strong>Status :</strong>{" "}
