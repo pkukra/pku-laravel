@@ -117,6 +117,13 @@ function Index({
     };
 
     const handleFinalPasienUmum = async () => {
+        if (diagnosaTab.length < 1) {
+            return notification.error({
+                placement: "topRight",
+                description:
+                    "Tidak ada diagnosa yang dipilih untuk finalisasi.",
+            });
+        }
         setFinalUmumLoading(true);
 
         let routeName = "rm.pasien-rujukan.final_pasien_umum";
@@ -243,6 +250,8 @@ function Index({
         idrgGroupData?.response_eklaim || "{}"
     );
 
+    console.log(diagnosaTab);
+
     return (
         <>
             <h3>iDRG</h3>
@@ -266,7 +275,8 @@ function Index({
             <Row gutter={12} style={{ marginTop: 16 }}>
                 <Col span={12} />
                 <Col span={12}>
-                    {pasien?.LANJUT_RANAP == true || (customer_id != "X002" && customer_id != "X003") ? (
+                    {pasien?.LANJUT_RANAP == true ||
+                    (customer_id != "X002" && customer_id != "X003") ? (
                         <div style={{ marginBottom: 8 }}>
                             <p>
                                 <strong>Pasien Non BPJS</strong>
