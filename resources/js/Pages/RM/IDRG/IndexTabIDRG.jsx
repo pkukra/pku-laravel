@@ -294,7 +294,7 @@ function Index({
                                 onClick={handleFinalPasienUmum}
                                 style={{ background: "#33cc33" }}
                             >
-                                Final Pasien Non BPJS
+                                Final Pasien
                             </Button>
                         </div>
                     ) : (
