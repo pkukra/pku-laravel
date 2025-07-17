@@ -121,7 +121,7 @@ function Index({
             return notification.error({
                 placement: "topRight",
                 description:
-                    "Tidak ada diagnosa yang dipilih untuk finalisasi.",
+                    "Belum ada diagnosa.",
             });
         }
         setFinalUmumLoading(true);
