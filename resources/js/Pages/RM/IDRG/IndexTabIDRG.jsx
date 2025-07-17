@@ -118,7 +118,7 @@ function Index({
 
     const handleFinalPasienUmum = async () => {
         if (diagnosaTab.length < 1) {
-            return notification.error({
+            return notification.warning({
                 placement: "topRight",
                 description:
                     "Belum ada diagnosa.",
