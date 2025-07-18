@@ -185,8 +185,28 @@ class PasienInapRepository
             ->orderBy('PRI.PRWITGL_MASUK', 'ASC')
             ->first();
 
-        if ($pasienInap) {
-            $pasienInap->SUDAH_DIKREDIT = $this->SudahDiKredit($kode_reg);
+        if (!$pasienInap) {
+            return null;
+        }
+
+        $pasienInap->SUDAH_DIKREDIT = $this->SudahDiKredit($kode_reg);
+        $pasienInap->IS_SEP_VALID = false;
+        if ($pasienInap->FMNOSEP) {
+            $bridging = new BridgeVclaim();
+
+            try {
+                $endpoint = 'SEP/' . $pasienInap->FMNOSEP;
+                $vclaim_detail = json_decode($bridging->getRequest($endpoint));
+            } catch (\Exception $e) {
+                Log::error("PasienInapRepository getPasienInapDetail Vclaim Err get SEP: " . $e->getMessage());
+                return null;
+            }
+
+            if ($vclaim_detail->response && $vclaim_detail->response->peserta->noMr == $pasienInap->PRWIKD_PASIEN) {
+                $pasienInap->IS_SEP_VALID = true;
+            } else {
+                $pasienInap->IS_SEP_VALID = false;
+            }
         }
 
         return $pasienInap;

@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/react";
-import { Col, Row, Card } from "antd";
+import { Col, Row, Card, Alert } from "antd";
 import { useState } from "react";
 import axios from "axios";
 
@@ -31,6 +31,25 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
             .finally(() => setPasienLoading(false));
     };
 
+    let customer_id = pasien?.FRPCUSTOMER_ID;
+    let pasien_id = pasien?.FRPPASIEN_ID;
+
+    if (pasien?.JENIS_RAWAT == "ranap") {
+        customer_id = pasien?.PRWIKD_CUSTOMER;
+        kode_reg = pasien?.FTNO_TRANSAKSI;
+        pasien_id = pasien?.FTKD_PASIEN;
+    }
+
+    const disableInvalidSEP = () => {
+        if (
+            ["X002", "X003"].includes(customer_id) &&
+            pasien?.IS_SEP_VALID == false
+        ) {
+            return true;
+        }
+        return false;
+    };
+
     return (
         <>
             <Head title="Detail Kunjungan Pasien Ranap" />
@@ -53,6 +72,14 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
 
                         {config.is_idrg ? (
                             <Col span={24}>
+                                {disableInvalidSEP() && (
+                                    <Alert
+                                        message="Warning: Invalid SEP"
+                                        type="error"
+                                        banner
+                                        closable
+                                    />
+                                )}
                                 <EKlaim
                                     pasien={pasien}
                                     setDisableINACBG={setDisableINACBG}
