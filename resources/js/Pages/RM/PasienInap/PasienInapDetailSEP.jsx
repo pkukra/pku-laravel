@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal, Card, Button, Tooltip, notification, Input } from "antd";
 import axios from "axios";
 
+import ModalHistorySep from "./ModalHistorySep";
+
 export default function Index({ pasien, user, reFetchPasien }) {
     const [loadingSep, setLoadingSep] = useState(false);
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
@@ -205,6 +207,8 @@ export default function Index({ pasien, user, reFetchPasien }) {
                     Tarif INACBG Kelas 1: &nbsp;&nbsp;{" "}
                     <strong>Rp {RupiahFormat(pasien?.FTTARIPINACBG1)}</strong>
                 </p> */}
+
+                <ModalHistorySep pasien={pasien} fetchNoSep={fetchNoSep} />
 
                 <Button
                     type="primary"
