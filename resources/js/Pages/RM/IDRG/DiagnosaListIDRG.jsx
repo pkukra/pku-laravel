@@ -132,10 +132,12 @@ export default function Index({
     }
 
     const disableInvalidSEP = () => {
+        if (pasien?.LANJUT_RANAP == true) {
+            return false;
+        }
         if (
             ["X002", "X003"].includes(customer_id) &&
-            pasien?.IS_SEP_VALID == false &&
-            pasien?.LANJUT_RANAP == false
+            pasien?.IS_SEP_VALID == false
         ) {
             return true;
         }
@@ -220,7 +222,11 @@ export default function Index({
             });
         }
 
-        if (["X002", "X003"].includes(customer_id) && !no_sep && pasien?.LANJUT_RANAP == false) {
+        if (
+            ["X002", "X003"].includes(customer_id) &&
+            !no_sep &&
+            pasien?.LANJUT_RANAP == false
+        ) {
             return notification.error({
                 placement: "top",
                 message: "Tidak dapat menyimpan diagnosa",
