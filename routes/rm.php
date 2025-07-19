@@ -12,6 +12,7 @@ Route::prefix('rm')->middleware(['auth'])->group(function () {
 
 Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
+    Route::get('/agregate_sep/{pasien_id}', [PasienRujukanController::class, 'agregate_sep'])->name('rm.agregate_sep');
 
     Route::get('/get_cusromers', [PasienRujukanController::class, 'get_cusromers'])->name('rm.get_cusromers');
     Route::post('/search_diagnosis_cbg', [PasienRujukanController::class, 'search_diagnosis_cbg'])->name('rm.search_diagnosis_cbg');

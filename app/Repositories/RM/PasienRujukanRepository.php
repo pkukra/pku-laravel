@@ -37,6 +37,58 @@ class PasienRujukanRepository
     }
 
     /**
+     * agregateSEP
+     * 
+     * @param string $pasien_id
+     * @return \Illuminate\Support\Collection
+     */
+    public function agregateSEP($pasien_id)
+    {
+        $pasien =  DB::connection('sqlsrvsimrs')
+            ->table('PASIEN')
+            ->select('*')
+            ->where('PASIEN.KD_PASIEN', $pasien_id)
+            ->first();
+
+        if (!$pasien) {
+            return (object)[
+                "status" => "nok",
+                "message" => "Pasien not found.",
+                "data" => null
+            ];
+        }
+
+        $bridging = new BridgeVclaim();
+        try {
+            $no_kartu = $pasien->NO_ASURANSI;
+            $tglMulai = now()->subMonth()->format('Y-m-d');
+            $tglAkhir = now()->format('Y-m-d');
+            $endpoint = "/monitoring/HistoriPelayanan/NoKartu/$no_kartu/tglMulai/$tglMulai/tglAkhir/$tglAkhir";
+            $vclaim_detail = json_decode($bridging->getRequest($endpoint));
+        } catch (\Exception $e) {
+            Log::error("PasienRujukanRepository agregateSEP Vclaim Err : " . $e->getMessage());
+            return (object)[
+                "status" => "nok",
+                "message" => "Gagal terhubung ke vclaim, coba beberapa saat lagi.",
+                "data" => null
+            ];
+        }
+        if (!isset($vclaim_detail->metaData->code) && ($vclaim_detail->metaData->code != 200)) {
+            return (object)[
+                "status" => "nok",
+                "message" => "Data SEP tidak ditemukan.",
+                "data" => null
+            ];
+        }
+
+        return (object)[
+            "status" => "ok",
+            "message" => $vclaim_detail->metaData->message,
+            "data" => $vclaim_detail->response
+        ];
+    }
+
+    /**
      * Get the list of pasien rujukan based on no_rm
      * 
      * @param string $no_rm

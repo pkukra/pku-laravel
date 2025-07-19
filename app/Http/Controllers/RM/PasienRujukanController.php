@@ -34,6 +34,16 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->getCustomers();
         return response()->json($data);
     }
+    
+    /**
+     * agregate_sep
+     */
+    public function agregate_sep($pasien_id)
+    {
+        // Mendapatkan detail pasien rujukan berdasarkan pasien_id
+        $data = $this->pasienRujukanRepo->agregateSEP($pasien_id);
+        return response()->json($data);
+    }
 
     /**
      * search_diagnosis_cbg langsung dari eklaim
