@@ -37,6 +37,58 @@ class PasienRujukanRepository
     }
 
     /**
+     * agregateSEP
+     * 
+     * @param string $pasien_id
+     * @return \Illuminate\Support\Collection
+     */
+    public function agregateSEP($pasien_id)
+    {
+        $pasien =  DB::connection('sqlsrvsimrs')
+            ->table('PASIEN')
+            ->select('*')
+            ->where('PASIEN.KD_PASIEN', $pasien_id)
+            ->first();
+
+        if (!$pasien) {
+            return (object)[
+                "status" => "nok",
+                "message" => "Pasien not found.",
+                "data" => null
+            ];
+        }
+
+        $bridging = new BridgeVclaim();
+        try {
+            $no_kartu = $pasien->NO_ASURANSI;
+            $tglMulai = now()->subMonth()->format('Y-m-d');
+            $tglAkhir = now()->format('Y-m-d');
+            $endpoint = "/monitoring/HistoriPelayanan/NoKartu/$no_kartu/tglMulai/$tglMulai/tglAkhir/$tglAkhir";
+            $vclaim_detail = json_decode($bridging->getRequest($endpoint));
+        } catch (\Exception $e) {
+            Log::error("PasienRujukanRepository agregateSEP Vclaim Err : " . $e->getMessage());
+            return (object)[
+                "status" => "nok",
+                "message" => "Gagal terhubung ke vclaim, coba beberapa saat lagi.",
+                "data" => null
+            ];
+        }
+        if (!isset($vclaim_detail->metaData->code) && ($vclaim_detail->metaData->code != 200)) {
+            return (object)[
+                "status" => "nok",
+                "message" => "Data SEP tidak ditemukan.",
+                "data" => null
+            ];
+        }
+
+        return (object)[
+            "status" => "ok",
+            "message" => $vclaim_detail->metaData->message,
+            "data" => $vclaim_detail->response
+        ];
+    }
+
+    /**
      * Get the list of pasien rujukan based on no_rm
      * 
      * @param string $no_rm
@@ -277,6 +329,39 @@ class PasienRujukanRepository
         $bridging = new BridgeVclaim();
         $user = Auth::user();
 
+        $pasienRujukan =  DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_RUJUKAN')
+            ->leftJoin('BPJS_SEP AS sep', function ($join) use ($kode_reg) {
+                $join->on('PASIEN_RUJUKAN.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                    ->orOn('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
+            })
+            ->select(
+                'sep.FMNOSEP'
+            )
+            ->where('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', $kode_reg_kj)
+            ->first();
+        if ($pasienRujukan) {
+            if ($pasienRujukan->FMNOSEP) {
+                $diagnosa = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_DIAGNOSA_IM')
+                    ->where('no_sep', '=', $pasienRujukan->FMNOSEP)
+                    ->pluck('code')
+                    ->toArray();
+
+                $procedures = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_TINDAKAN_IM')
+                    ->where('no_sep', '=', $pasienRujukan->FMNOSEP)
+                    ->select('code', 'multiplicity')
+                    ->get();
+                if (count($diagnosa) > 0 || count($procedures) > 0) {
+                    return [
+                        "status" => "nok",
+                        "message" => "Sudah punya diagnosa dari SEP sebelumnya"
+                    ];
+                }
+            }
+        }
+
         try {
             $endpoint = 'SEP/' . $new_sep;
             $response = json_decode($bridging->getRequest($endpoint));
@@ -326,14 +411,14 @@ class PasienRujukanRepository
                 ->whereIn('FMNOTRANSAKSI', [$kode_reg, $kode_reg_kj])
                 ->first();
 
-            $diagnosa = $this->getDiagnosaUtamaPasienRujukan($kode_reg_kj);
-            $diagnosa = $diagnosa ? $diagnosa->MRPKD_PENYAKIT : null;
-            if (!$diagnosa) {
-                return [
-                    "status" => "nok",
-                    "message" => "Belum ada diagnosa, ganti nomer sep dari aplikasi rajal"
-                ];
-            }
+            // $diagnosa = $this->getDiagnosaUtamaPasienRujukan($kode_reg_kj);
+            // $diagnosa = $diagnosa ? $diagnosa->MRPKD_PENYAKIT : null;
+            // if (!$diagnosa) {
+            //     return [
+            //         "status" => "nok",
+            //         "message" => "Belum ada diagnosa, ganti nomer sep dari aplikasi rajal"
+            //     ];
+            // }
 
             if ($existingRecord) {
                 // Jika sudah ada, update berdasarkan FMNOTRANSAKSI yang ditemukan
@@ -352,7 +437,7 @@ class PasienRujukanRepository
                         'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
                         'FMPOLYN'         => $kode_poli,
                         'dpjpn'           => $dpjp,
-                        'FMDIAGNOSA'      => $diagnosa
+                        // 'FMDIAGNOSA'      => $diagnosa
                     ]);
             } else {
                 // Jika tidak ada, lakukan insert
