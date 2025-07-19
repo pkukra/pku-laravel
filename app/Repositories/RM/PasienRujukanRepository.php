@@ -402,6 +402,13 @@ class PasienRujukanRepository
             ];
         }
 
+        if ($detail_pasien_vclaim->jnsPelayanan != "Rawat Jalan") {
+            return [
+                "status" => "nok",
+                "message" => "Gagal, SEP bukan rawat jalan"
+            ];
+        }
+
         // Mulai transaksi database
         DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
