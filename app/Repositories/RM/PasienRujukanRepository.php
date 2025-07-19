@@ -356,7 +356,7 @@ class PasienRujukanRepository
                 if (count($diagnosa) > 0 || count($procedures) > 0) {
                     return [
                         "status" => "nok",
-                        "message" => "Sudah punya diagnosa dari SEP sebelumnya"
+                        "message" => "Sudah punya diagnosa/prosedur dari SEP sebelumnya"
                     ];
                 }
             }
@@ -399,6 +399,13 @@ class PasienRujukanRepository
             return [
                 "status" => "nok",
                 "message" => "Gagal mendapatkan data SEP dari VClaim"
+            ];
+        }
+
+        if ($detail_pasien_vclaim->jnsPelayanan != "Rawat Jalan") {
+            return [
+                "status" => "nok",
+                "message" => "Gagal, SEP bukan rawat jalan"
             ];
         }
 

@@ -240,8 +240,38 @@ class PasienInapRepository
      */
     public function updateNomerSepPasienInap($kode_reg, $no_rm, $new_sep, $kode_poli, $dpjp)
     {
-        $bridging = new BridgeVclaim();
+        $pasienInap =  DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIENINAP')
+            ->leftJoin('BPJS_SEP AS sep', 'TRANSAKSIPASIENINAP.FTNO_TRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+            ->select(
+                'sep.FMNOSEP'
+            )
+            ->where('TRANSAKSIPASIENINAP.FTNO_TRANSAKSI', $kode_reg)
+            ->first();
 
+        if ($pasienInap) {
+            if ($pasienInap->FMNOSEP) {
+                $diagnosa = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_DIAGNOSA_IM')
+                    ->where('no_sep', '=', $pasienInap->FMNOSEP)
+                    ->pluck('code')
+                    ->toArray();
+
+                $procedures = DB::connection('sqlsrvsimrs')
+                    ->table('PASIEN_TINDAKAN_IM')
+                    ->where('no_sep', '=', $pasienInap->FMNOSEP)
+                    ->select('code')
+                    ->get();
+                if (count($diagnosa) > 0 || count($procedures) > 0) {
+                    return [
+                        "status" => "nok",
+                        "message" => "Sudah punya diagnosa/prosedur dari SEP sebelumnya"
+                    ];
+                }
+            }
+        }
+
+        $bridging = new BridgeVclaim();
         try {
             $endpoint = 'SEP/' . $new_sep;
             $response = json_decode($bridging->getRequest($endpoint));
@@ -281,6 +311,13 @@ class PasienInapRepository
             ];
         }
 
+        if ($detail_pasien_vclaim->jnsPelayanan != "Rawat Inap") {
+            return [
+                "status" => "nok",
+                "message" => "Gagal, SEP bukan rawat inap"
+            ];
+        }
+
         // Mulai transaksi database
         DB::connection('sqlsrvsimrs')->beginTransaction();
         try {
@@ -290,14 +327,14 @@ class PasienInapRepository
                 ->where('FMNOTRANSAKSI', $kode_reg)
                 ->first();
 
-            $diagnosa = optional(app()->call([$this, 'getDiagnosaUtamaPasienInap'], ['kode_reg' => $kode_reg]))->MRPKD_PENYAKIT ?? null;
+            // $diagnosa = optional(app()->call([$this, 'getDiagnosaUtamaPasienInap'], ['kode_reg' => $kode_reg]))->MRPKD_PENYAKIT ?? null;
 
-            if (!$diagnosa) {
-                return [
-                    "status" => "nok",
-                    "message" => "Belum ada diagnosa, ganti nomer sep dari aplikasi ranap"
-                ];
-            }
+            // if (!$diagnosa) {
+            //     return [
+            //         "status" => "nok",
+            //         "message" => "Belum ada diagnosa, ganti nomer sep dari aplikasi ranap"
+            //     ];
+            // }
 
             if ($existingRecord) {
                 // Jika sudah ada, update berdasarkan FMNOTRANSAKSI yang ditemukan
@@ -316,7 +353,7 @@ class PasienInapRepository
                         'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
                         'FMPOLYN'         => $kode_poli,
                         'dpjpn'           => $dpjp,
-                        'FMDIAGNOSA'      => $diagnosa
+                        // 'FMDIAGNOSA'      => $diagnosa
                     ]);
             } else {
                 // Jika tidak ada, lakukan insert
@@ -335,7 +372,7 @@ class PasienInapRepository
                         'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
                         'FMPOLYN'         => $kode_poli,
                         'dpjpn'           => $dpjp,
-                        'FMDIAGNOSA'      => $diagnosa
+                        // 'FMDIAGNOSA'      => $diagnosa
                     ]);
             }
 
