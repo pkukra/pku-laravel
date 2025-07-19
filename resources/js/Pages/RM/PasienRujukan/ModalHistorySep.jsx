@@ -68,8 +68,7 @@ export default function Index({ pasien, fetchNoSep }) {
             title: "Tgl Terbit",
             dataIndex: "tglSep",
             width: 120,
-            render: (text) => <>{text}</>,
-            // render: (text) => <>{moment(text).format("DD/MMMM/YYYY")}</>,
+            render: (text) => <>{moment(text).format("DD/MMMM/YYYY")}</>,
         },
         {
             title: "Jenis Rawat",
@@ -165,8 +164,6 @@ export default function Index({ pasien, fetchNoSep }) {
         },
     ];
 
-    console.log(pasien?.FRPTGL);
-
     return (
         <>
             <Button
@@ -194,6 +191,7 @@ export default function Index({ pasien, fetchNoSep }) {
                     size="small"
                     loading={loadingFecth}
                     rowKey="noSep"
+                    pagination={false}
                 />
             </Modal>
         </>
