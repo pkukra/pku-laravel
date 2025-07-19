@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Card, Button, Tooltip, notification, Input } from "antd";
 import axios from "axios";
+import ModalHistorySep from "./ModalHistorySep";
 
 export default function Index({ pasien, user, reFetchPasien }) {
     const [loadingSep, setLoadingSep] = useState(false);
@@ -174,38 +175,31 @@ export default function Index({ pasien, user, reFetchPasien }) {
                 <p>{ketSep} </p>
 
                 {ketSep == "Bukan Pasien BPJS" ? (
-                    <>
-                    </>
+                    <></>
                 ) : (
-                    <><p>
-                    KODE INAGROUPER:{" "}
-                    <strong>{pasien?.FTKODEINACBG}</strong>
-                </p>
-                <p>
-                    Tarif INACBG: &nbsp;&nbsp;{" "}
-                    <strong>
-                        Rp {RupiahFormat(pasien?.FTTARIPINACBG)}
-                    </strong>
-                </p></>
+                    <>
+                        <p>
+                            KODE INAGROUPER:{" "}
+                            <strong>{pasien?.FTKODEINACBG}</strong>
+                        </p>
+                        <p>
+                            Tarif INACBG: &nbsp;&nbsp;{" "}
+                            <strong>
+                                Rp {RupiahFormat(pasien?.FTTARIPINACBG)}
+                            </strong>
+                        </p>
+                    </>
                 )}
 
-                <Tooltip
-                    title={
-                        disabled
-                            ? "User belum setup Eklaim Key"
-                            : "Tekan untuk bridgin data ke INACBG"
-                    }
-                    placement="topLeft"
+                <ModalHistorySep pasien={pasien} fetchNoSep={fetchNoSep} />
+                <Button
+                    type="primary"
+                    onClick={() => setModalUpdateNoSEPOpen(true)}
+                    style={{ marginRight: 5 }}
                 >
-                    <Button
-                        type="primary"
-                        onClick={() => setModalUpdateNoSEPOpen(true)}
-                        style={{ marginRight: 5 }}
-                    >
-                        Ubah SEP
-                    </Button>
-
-                    {/* <Button
+                    Ubah SEP
+                </Button>
+                {/* <Button
                         type="primary"
                         onClick={() => setModalBridgeOpen(true)}
                         disabled={disabled || !noSep}
@@ -222,7 +216,6 @@ export default function Index({ pasien, user, reFetchPasien }) {
                     >
                         {!noSep ? "Belum ada SEP" : "Final Data"}
                     </Button> */}
-                </Tooltip>
             </Card>
 
             <Modal

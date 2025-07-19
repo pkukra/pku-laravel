@@ -329,6 +329,8 @@ class PasienRujukanRepository
         $bridging = new BridgeVclaim();
         $user = Auth::user();
 
+        Log::info("updateNomerSepPasienRujukan");
+
         try {
             $endpoint = 'SEP/' . $new_sep;
             $response = json_decode($bridging->getRequest($endpoint));
