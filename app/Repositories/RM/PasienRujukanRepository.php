@@ -463,7 +463,7 @@ class PasienRujukanRepository
                         'FMTGL_LAHIR'     => date('Y-m-d H:i:s', strtotime($tgl_lahir)),
                         'FMPOLYN'         => $kode_poli,
                         'dpjpn'           => $dpjp,
-                        'FMDIAGNOSA'      => $diagnosa
+                        // 'FMDIAGNOSA'      => $diagnosa
                     ]);
             }
 
