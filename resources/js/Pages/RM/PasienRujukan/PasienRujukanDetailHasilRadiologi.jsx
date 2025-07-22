@@ -50,12 +50,23 @@ export default function Index({ dataTransaksi }) {
             >
                 <table
                     className="tw-table tw-table-xs"
-                    style={{ width: "100%" }}
+                    style={{
+                        width: "100%",
+                        border: "1px solid #ccc",
+                        borderCollapse: "collapse",
+                    }}
                 >
                     <tbody align="left">
                         {hasilRadiologiData.length < 1 ? (
                             <tr>
-                                <td>Tidak ada hasil radiologi</td>
+                                <td
+                                    style={{
+                                        border: "1px solid #ccc",
+                                        padding: "8px",
+                                    }}
+                                >
+                                    Tidak ada hasil radiologi
+                                </td>
                             </tr>
                         ) : (
                             hasilRadiologiData.map((item, index) => (
@@ -64,12 +75,18 @@ export default function Index({ dataTransaksi }) {
                                         style={{
                                             width: "25%",
                                             verticalAlign: "top",
+                                            border: "1px solid #ccc",
+                                            padding: "8px",
                                         }}
                                     >
                                         {item?.MRHNO_TRANSAKSI}
                                     </td>
                                     <td
-                                        style={{ verticalAlign: "top" }}
+                                        style={{
+                                            verticalAlign: "top",
+                                            border: "1px solid #ccc",
+                                            padding: "8px",
+                                        }}
                                         dangerouslySetInnerHTML={{
                                             __html: item?.MRHHASIL,
                                         }}
