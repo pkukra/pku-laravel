@@ -681,8 +681,8 @@ class PasienRujukanEklaimRepository
             ->leftJoin('TRANSAKSIPASIEND AS b', 'a.FTNO_TRANSAKSI', '=', 'b.FDTNO_TRANSAKSI')
             ->leftJoin('PRODUK AS p', 'p.FMPPRODUK_ID', '=', 'b.FDTKD_PRODUK')
             ->leftJoin('PRODUK_UNIT AS pu', 'p.FMPUNITPRODUK', '=', 'pu.FTUKODE')
-            ->whereNull('b.FDTNO_FAKTUR')
             ->where('b.FDTJENISTRANSAKSI', 'DB')
+            ->whereNot('b.FDTKD_PRODUK', 'ADL002') // sendirikan obat, nanti dicari sendiri
             ->whereIn('a.FTNO_TRANSAKSI', $noTransaksiArr)
             ->select('a.FTNO_TRANSAKSI', 'b.FDTQTY', 'b.FDTHARGA', 'b.FDTKD_PRODUK', 'pu.FTUKD_EKLAIM')
             ->get()
