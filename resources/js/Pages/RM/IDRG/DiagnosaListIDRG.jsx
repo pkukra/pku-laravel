@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { usePage } from "@inertiajs/react";
 import {
     Modal,
     Spin,
@@ -13,6 +14,7 @@ import {
 } from "antd";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
+import moment from "moment";
 
 export default function Index({
     pasien,
@@ -20,6 +22,9 @@ export default function Index({
     isFinalIDRG,
     fetchIDRGData,
 }) {
+    const { props } = usePage();
+    const role = props?.auth?.user?.role?.name;
+
     const columns = [
         {
             title: "Kode",
@@ -43,6 +48,24 @@ export default function Index({
             title: "Penyakit",
             dataIndex: "description",
             key: "description",
+            render: (text, record) => {
+                return (
+                    <>
+                        {text}
+                        {(role === "klaim" || role === "superadmin") && (
+                            <>
+                                <br />
+                                <small style={{ fontSize: 10 }}>
+                                    created_at:{" "}
+                                    {moment(record.created_at).format(
+                                        "D MMMM YYYY HH:mm:ss"
+                                    )} created_by: {record.created_by}
+                                </small>
+                            </>
+                        )}
+                    </>
+                );
+            },
         },
         {
             title: "Action",
