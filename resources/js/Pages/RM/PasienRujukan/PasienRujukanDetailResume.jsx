@@ -108,6 +108,18 @@ export default function Index({ pasien, dataTransaksi }) {
                                 {dataTransaksi.FRPNOTRANSAKSIKJ}
                             </td>
                         </tr>
+                        <tr>
+                            <th>Status Final INACBG</th>
+                            <td>
+                                {
+                                    (dataTransaksi.IS_INACBG_FINAL == 1)
+                                    ?
+                                    <>✅ Sudah</>
+                                    :
+                                    <>❌ Belum</>
+                                } 
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </Card>

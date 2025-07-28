@@ -1956,6 +1956,7 @@ class PasienRujukanRepository
                     'pr.FRPTGL',
                     'pr.FRPJAM',
                     'pr.FRPPASIEN_ID',
+                    'pr.IS_INACBG_FINAL',
                 )
                 ->where('sep.FMNOSEP', $no_sep)
                 ->distinct()
