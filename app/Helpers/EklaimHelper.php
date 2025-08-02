@@ -85,8 +85,8 @@ if (! function_exists('sendRequest')) {
                     'Accept' => 'application/json'
                 ],
                 'body' => $encryptedData,
-                'timeout' => 5,  // Maksimal waktu tunggu response 5 detik
-                'connect_timeout' => 5, // Maksimal waktu koneksi 5 detik
+                'timeout' => 120,  // Maksimal waktu tunggu response 5 detik
+                'connect_timeout' => 120, // Maksimal waktu koneksi 5 detik
             ]);
 
             $responseBody = $response->getBody()->getContents();
