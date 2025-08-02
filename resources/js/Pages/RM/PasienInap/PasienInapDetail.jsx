@@ -64,10 +64,27 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                         </Col>
 
                         <Col span={12}>
-                            <PasienInapDetailAssesmenAwal pasien={pasien} />
+                            <PasienInapDetailPerawatan
+                                pasien={pasien}
+                                kode_reg={kode_reg}
+                                pasienLoading={pasienLoading}
+                                reFetchPasien={reFetchPasien}
+                            />
                         </Col>
-                        <Col span={12}>
-                            <PasienInapDetailBerkasPenunjang pasien={pasien} />
+
+                        <Col span={24}>
+                            <Row gutter={[5, 5]}>
+                                <Col span={12}>
+                                    <PasienInapDetailAssesmenAwal
+                                        pasien={pasien}
+                                    />
+                                </Col>
+                                <Col span={12}>
+                                    <PasienInapDetailBerkasPenunjang
+                                        pasien={pasien}
+                                    />
+                                </Col>
+                            </Row>
                         </Col>
 
                         {config.is_idrg ? (
@@ -101,14 +118,8 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                                 </Col>
                             </>
                         )}
-
                         <Col span={12}>
-                            <PasienInapDetailPerawatan
-                                pasien={pasien}
-                                kode_reg={kode_reg}
-                                pasienLoading={pasienLoading}
-                                reFetchPasien={reFetchPasien}
-                            />
+                            
                         </Col>
                         <Col span={12}>
                             <PasienInapDetailSEP

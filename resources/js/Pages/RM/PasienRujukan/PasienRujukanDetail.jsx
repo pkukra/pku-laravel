@@ -120,6 +120,14 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         <Col span={24}>
                             <PasienRujukanDetailProfile pasien={pasien} />
                         </Col>
+                        <Col span={12}>
+                            <PasienRujukanDetailCaraMasukPulang
+                                pasien={pasien}
+                                kode_reg={kode_reg}
+                                pasienLoading={pasienLoading}
+                                reFetchPasien={reFetchPasien}
+                            />
+                        </Col>
                         <Col span={24}>
                             {pasien?.FRPUNIT === "PK011" ? (
                                 <Row gutter={[5, 5]}>
@@ -202,12 +210,6 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
                         <Col span={12}>
                             <PasienRujukanDetailAmnanesaCatatan
                                 pasien={pasien}
-                            />
-                            <PasienRujukanDetailCaraMasukPulang
-                                pasien={pasien}
-                                kode_reg={kode_reg}
-                                pasienLoading={pasienLoading}
-                                reFetchPasien={reFetchPasien}
                             />
                         </Col>
                         <Col span={12}>
