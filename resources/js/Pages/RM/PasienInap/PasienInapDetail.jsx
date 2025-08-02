@@ -63,15 +63,6 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             <PasienInapDetailProfile pasien={pasien} />
                         </Col>
 
-                        <Col span={12}>
-                            <PasienInapDetailPerawatan
-                                pasien={pasien}
-                                kode_reg={kode_reg}
-                                pasienLoading={pasienLoading}
-                                reFetchPasien={reFetchPasien}
-                            />
-                        </Col>
-
                         <Col span={24}>
                             <Row gutter={[5, 5]}>
                                 <Col span={12}>
@@ -119,7 +110,12 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                             </>
                         )}
                         <Col span={12}>
-                            
+                            <PasienInapDetailPerawatan
+                                pasien={pasien}
+                                kode_reg={kode_reg}
+                                pasienLoading={pasienLoading}
+                                reFetchPasien={reFetchPasien}
+                            />
                         </Col>
                         <Col span={12}>
                             <PasienInapDetailSEP
