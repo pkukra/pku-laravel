@@ -1962,7 +1962,11 @@ class PasienRujukanRepository
                 ->distinct()
                 ->orderBy('pr.RUBBER', 'asc')
                 ->get();
-            return $detailTransaksi;
+            $filtered = $detailTransaksi->filter(function ($item) {
+                return !is_null($item->FRPNOTRANSAKSI) || !is_null($item->FRPNOTRANSAKSIKJ);
+            })->values();
+
+            return $filtered;
         } catch (\Exception $e) {
             Log::error('Error get data listAllRaber: ' . $e->getMessage());
             return [];

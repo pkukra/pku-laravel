@@ -590,23 +590,21 @@ class PasienRujukanEklaimRepository
     public function allTransactionsBySep($no_sep)
     {
         $detailTransaksiFinalArray = [];
+
         try {
             $detailTransaksiArray = DB::connection('sqlsrvsimrs')
                 ->table('BPJS_SEP AS sep')
-                ->leftJoin('PASIEN_RUJUKAN AS pr', function ($join) use ($no_sep) {
+                ->leftJoin('PASIEN_RUJUKAN AS pr', function ($join) {
                     $join->on('pr.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
                         ->orOn('pr.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
                 })
                 ->leftJoin('DOKTER AS dr', 'pr.FRPDOKTER_ID', '=', 'dr.FMDDOKTER_ID')
                 ->leftJoin('POLIKLINIK AS poli', 'pr.FRPUNIT', '=', 'poli.FMPKLINIK_ID')
                 ->leftJoin('PASIEN AS p', 'pr.FRPPASIEN_ID', '=', 'p.KD_PASIEN')
-                // ->leftJoin('MR_KEMATIAN AS mati', 'sep.FMNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
-
-                ->leftJoin('MR_KEMATIAN AS mati', function ($join) use ($no_sep) {
+                ->leftJoin('MR_KEMATIAN AS mati', function ($join) {
                     $join->on('pr.FRPNOTRANSAKSI', '=', 'mati.MRKNO_TRANSAKSI')
                         ->orOn('pr.FRPNOTRANSAKSIKJ', '=', 'mati.MRKNO_TRANSAKSI');
                 })
-
                 ->leftJoin('MR_KEADAAN_KELUAR_RS', 'mati.MRKKEADAAN_KELUAR', '=', 'MR_KEADAAN_KELUAR_RS.FMKKRSKODE')
                 ->select(
                     'sep.FMNOSEP',
@@ -627,8 +625,14 @@ class PasienRujukanEklaimRepository
                 ->where('sep.FMNOSEP', $no_sep)
                 ->get();
 
+            // Filter hanya data yang punya transaksi (tidak null di kolom kunci)
+            $filteredData = $detailTransaksiArray->filter(function ($row) {
+                return !is_null($row->FRPNOTRANSAKSI) || !is_null($row->FRPNOTRANSAKSIKJ);
+            });
+
+            // Hilangkan duplikat berdasarkan FRPNOTRANSAKSI
             $existingKeys = [];
-            foreach ($detailTransaksiArray as $row) {
+            foreach ($filteredData as $row) {
                 $key = $row->FRPNOTRANSAKSI;
 
                 if (!in_array($key, $existingKeys)) {
@@ -637,10 +641,10 @@ class PasienRujukanEklaimRepository
                 }
             }
         } catch (\Exception $e) {
-            // Log the error if any exception occurs
             Log::error('Error get data allTransactionsBySep: ' . $e->getMessage());
             return false;
         }
+
         return $detailTransaksiFinalArray;
     }
 
