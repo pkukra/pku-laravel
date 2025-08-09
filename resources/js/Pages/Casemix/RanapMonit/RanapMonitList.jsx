@@ -158,9 +158,29 @@ export default function Index({ auth, role, bangsal }) {
             ),
         },
         {
-            title: "Hak Kelas",
-            dataIndex: "KELAS_RAWAT",
-            key: "KELAS_RAWAT",
+            title: "Penjamin & Hak Kelas",
+            dataIndex: "PRWIKD_CUSTOMER",
+            key: "PRWIKD_CUSTOMER",
+            render: (value, record) => {
+                const cust = customerData?.find((c) => c?.CUSID === value);
+                const name = cust ? cust?.NAME : value;
+                const isBPJS = value === "X002" || value === "X003";
+                const displayName = isBPJS ? `BPJS ${name}` : name;
+
+                return (
+                    <>
+                        <span
+                            style={{
+                                color: isBPJS ? "green" : "inherit",
+                            }}
+                        >
+                            {displayName}
+                        </span>{" "}
+                        <br />
+                        {isBPJS && <span>kelas: {record?.KELAS_RAWAT}</span>}
+                    </>
+                );
+            },
         },
         {
             title: "Naik Kelas",
@@ -409,6 +429,7 @@ export default function Index({ auth, role, bangsal }) {
     const [diagnosaData, setDiagnosaData] = useState([]);
     const [prosedurData, setProsedurData] = useState([]);
     const [abortController, setAbortController] = useState(null);
+    const [customerData, setCustomerData] = useState([]);
 
     const handleOpenModal = (param) => {
         setModalUpdateRecord(param?.data_record);
@@ -468,6 +489,16 @@ export default function Index({ auth, role, bangsal }) {
                 }
             })
         );
+    };
+
+    const fetchCustomers = async () => {
+        try {
+            const response = await axios.get(route("rm.get_cusromers"));
+            setCustomerData(response?.data || []);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        } finally {
+        }
     };
 
     const naikKelasSanitize = (naik_kelas) => {
@@ -557,6 +588,7 @@ export default function Index({ auth, role, bangsal }) {
             setTotalData(data.total);
 
             fetchDiagnosaProsedur(data.pasiens);
+            fetchCustomers();
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
