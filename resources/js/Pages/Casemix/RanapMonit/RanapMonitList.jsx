@@ -583,12 +583,11 @@ export default function Index({ auth, role, bangsal }) {
                     },
                 }
             );
-
+            fetchCustomers();
             setDataSource(data.pasiens);
             setTotalData(data.total);
 
             fetchDiagnosaProsedur(data.pasiens);
-            fetchCustomers();
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
