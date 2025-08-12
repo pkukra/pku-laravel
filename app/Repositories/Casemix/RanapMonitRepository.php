@@ -67,7 +67,8 @@ class RanapMonitRepository
             'P.NAMAPASIEN',
             'DR.FMDDOKTERN AS DPJP',
             'FMKODEKELAS AS KELAS_RAWAT',
-            'K.FMKNAMA_KAMAR'
+            'K.FMKNAMA_KAMAR',
+            'SEP.FMNOSEP'
         );
         if ($order_kamar) {
             $query->orderBy('K.FMKKAMARINDUK', 'asc');
@@ -166,17 +167,17 @@ class RanapMonitRepository
     /**
      * Get diagnosa penyakit by transaksi (MR_PENYAKIT)
      *
-     * @param string $no_transaksi
+     * @param string $nosep
      * @return \Illuminate\Support\Collection
      */
-    public function getDiagnosaByTransaksi($no_transaksi)
+    public function getDiagnosaByTransaksi($nosep)
     {
         return DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->join('PENYAKIT', 'MR_PENYAKIT.MRPKD_PENYAKIT', '=', 'PENYAKIT.KD_PENYAKIT')
             ->orderBy('MR_PENYAKIT.MRPURUT_MASUK', 'ASC')
             ->select('MR_PENYAKIT.*', 'PENYAKIT.PENYAKIT')
-            ->where('MR_PENYAKIT.MRPNO_TRANSAKSI', $no_transaksi)
+            ->where('MR_PENYAKIT.NOSEP', $nosep)
             ->get();
     }
 
@@ -378,17 +379,17 @@ class RanapMonitRepository
     /**
      * Get procedure penyakit by transaksi (MR_TINDAKAN)
      *
-     * @param string $no_transaksi
+     * @param string $no_sep
      * @return \Illuminate\Support\Collection
      */
-    public function getProcedureByTransaksi($no_transaksi)
+    public function getProcedureByTransaksi($no_sep)
     {
         return DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
             ->select('MR_TINDAKAN.*', 'MR_ICD9.FMI9KETERANGAN')
             ->join('MR_ICD9', 'MR_TINDAKAN.MRTKD_TINDAKAN', '=', 'MR_ICD9.FMI9KODE')
             ->orderBy('MR_TINDAKAN.MRTURUT_MASUK', 'ASC')
-            ->where('MR_TINDAKAN.MRTNOTRANSAKSI', $no_transaksi)
+            ->where('MR_TINDAKAN.NOSEP', $no_sep)
             ->get();
     }
 
