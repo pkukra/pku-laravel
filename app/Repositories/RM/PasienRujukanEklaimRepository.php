@@ -836,9 +836,15 @@ class PasienRujukanEklaimRepository
             $allTindakan = array_merge($allTindakan, $tindakan);
         }
 
+        // Jika kosong, langsung return "#"
+        if (empty($allTindakan)) {
+            return "#";
+        }
+
         // Hilangkan duplikat dan gabungkan dengan tanda #
         return implode('#', array_unique($allTindakan));
     }
+
 
 
     /**
