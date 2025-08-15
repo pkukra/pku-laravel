@@ -1068,6 +1068,7 @@ class PasienInapEklaimRepository
         $diagnosa = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM')
             ->where('no_sep', '=', $transaksi_utama->FMNOSEP)
+            ->orderBy('is_primary', 'desc') // Primary (1) di atas
             ->pluck('code') // Ambil kolom code sebagai array
             ->toArray();
 
@@ -1089,6 +1090,7 @@ class PasienInapEklaimRepository
         $procedures = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_TINDAKAN_IM')
             ->where('no_sep', '=', $transaksi_utama->FMNOSEP)
+            ->orderBy('is_primary', 'desc') // Primary (1) di atas
             ->pluck('code') // Ambil kolom code sebagai array
             ->toArray();
 

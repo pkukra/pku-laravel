@@ -859,6 +859,7 @@ class PasienRujukanEklaimRepository
         $diagnosa = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM')
             ->where('no_sep', '=', $no_sep)
+            ->orderBy('is_primary', 'desc') // Primary (1) di atas
             ->pluck('code') // Ambil kolom code sebagai array
             ->toArray();
 
@@ -883,6 +884,7 @@ class PasienRujukanEklaimRepository
         $procedures = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_TINDAKAN_IM')
             ->where('no_sep', '=', $no_sep)
+            ->orderBy('is_primary', 'desc') // Primary (1) di atas
             ->select('code', 'multiplicity')
             ->get();
 
