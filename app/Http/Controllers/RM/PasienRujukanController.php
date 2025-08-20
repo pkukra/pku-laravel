@@ -34,7 +34,7 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->getCustomers();
         return response()->json($data);
     }
-    
+
     /**
      * agregate_sep
      */
@@ -1068,7 +1068,7 @@ class PasienRujukanController extends Controller
 
         return response()->json($data);
     }
-    
+
     /**
      * get_permintaan_rad_n_lab
      */
@@ -1077,7 +1077,7 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->getPermintaanRadLab($no_transaksi);
         return response()->json($data);
     }
-    
+
     /**
      * procedures_history
      * Menampilkan procedure berdasarkan kode pasien
@@ -1103,6 +1103,16 @@ class PasienRujukanController extends Controller
         $kode_reg_kj = $validated['kode_reg_kj'];
 
         $data = $this->pasienRujukanRepo->finalPasienUmum($kode_reg, $kode_reg_kj);
+        return response()->json($data);
+    }
+
+    /**
+     * dev_isi_kode_reg
+     * Menampilkan procedure berdasarkan kode pasien
+     */
+    public function dev_isi_kode_reg()
+    {
+        $data = $this->pasienRujukanRepo->setKodeRegRajal();
         return response()->json($data);
     }
 }

@@ -2121,4 +2121,59 @@ class PasienRujukanRepository
 
         return $exists;
     }
+
+    public function setKodeRegRajal()
+    {
+        $dx = DB::connection('sqlsrvsimrs')
+            ->table('MR_PENYAKIT AS p')
+            ->leftJoin('BPJS_SEP AS sep', 'sep.FMNOSEP', '=', 'p.NOSEP')
+            ->leftJoin('PASIEN_RUJUKAN', function ($join) {
+                $join->on('PASIEN_RUJUKAN.FRPNOTRANSAKSI', '=', 'sep.FMNOTRANSAKSI')
+                    ->orOn('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
+            })
+            ->whereNull('p.MRPNO_TRANSAKSI')
+            // ->where('sep.FMNOTRANSAKSI', 'not like', 'RBI%')
+            ->select(
+                'p.ID',
+                'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ'
+            )
+            ->orderBy('p.MRPTGL_MASUK', 'DESC')
+            ->limit(10) // kamu bisa naikkan ini kalau perlu
+            ->get();
+
+        return $dx;
+
+        if ($dx->isEmpty()) {
+            return response()->json(['message' => 'Tidak ada data untuk di-update.']);
+        }
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        try {
+            foreach ($dx as $item) {
+                // Pastikan nilai tidak null
+                if ($item->FRPNOTRANSAKSIKJ) {
+                    DB::connection('sqlsrvsimrs')
+                        ->table('MR_PENYAKIT')
+                        ->where('ID', $item->ID)
+                        ->update([
+                            'MRPNO_TRANSAKSI' => $item->FRPNOTRANSAKSIKJ
+                        ]);
+                }
+            }
+
+            DB::connection('sqlsrvsimrs')->commit();
+
+            return response()->json([
+                'message' => 'Update berhasil.',
+                'jumlah' => $dx->count()
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            return response()->json([
+                'error' => true,
+                'message' => 'Update gagal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
