@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Repositories\RM\RMAuditTrail;
 use Bpjs\Bridging\Vclaim\BridgeVclaim;
+use PhpParser\Node\Expr\Cast\Object_;
 
 class PasienInapEklaimRepository
 {
@@ -592,12 +593,12 @@ class PasienInapEklaimRepository
         $ventilator_hours = 0;
         foreach ($transaksiPasien as $transaksi) {
             // hitung icu los dulu
-            if ($transaksi->FDTKDPRODUKN == "ADMICU101") {
+            if ($transaksi->FDTKD_PRODUK == "ADMICU101") {
                 $icu_los += (is_numeric($transaksi->FDTQTY) ? (int) $transaksi->FDTQTY : 0);
             }
 
             // hitung icu los dulu
-            if ($transaksi->FDTKDPRODUKN == "ADMICU106" || $transaksi->FDTKDPRODUKN == "SABICU319") {
+            if ($transaksi->FDTKD_PRODUK == "ADMICU106" || $transaksi->FDTKD_PRODUK == "SABICU319") {
                 $ventilator_hours += (is_numeric($transaksi->FDTQTY) ? ((int) $transaksi->FDTQTY * 24) : 0);
             }
 
@@ -752,7 +753,7 @@ class PasienInapEklaimRepository
      */
     public function getBloodPressure($kode_reg)
     {
-        $vitalSign = DB::connection('sqlsrvsimrs')
+        $vitalSign = DB::connection('sqlsrvemr')
             ->table('PKU.dbo.TAB_PX_PULANG_RESUME')
             ->select('FS_TD')
             ->where('FS_KD_REG', $kode_reg)
@@ -854,6 +855,7 @@ class PasienInapEklaimRepository
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_utama->PRWINO_TRANSAKSI);
         $ventilator = $this->getVentilatorDetail($transaksi_utama->PRWINO_TRANSAKSI);
+        $icu = $this->getLOSICU($transaksi_utama->PRWINO_TRANSAKSI);
         $discharge_status =  $this->dischargeStatusEMR($transaksi_utama->PRWINO_TRANSAKSI); // defaultnya atas persetujuan dokter
 
         $naik_kelas = null;
@@ -911,9 +913,7 @@ class PasienInapEklaimRepository
             'adl_sub_acute' => "",
             'adl_chronic' => "",
             'nama_dokter' => $transaksi_utama->FMDDOKTERN,
-            'icu_indikator' => ($ploting_tarif->icu_los > 0) ? 1 : 0,
-            'icu_los' => $ploting_tarif->icu_los,
-            'ventilator_hour' => $ploting_tarif->ventilator_hours,
+
             'kode_tarif' => "CS",
             'payor_id' => "3",
             'payor_cd' => "JKN",
@@ -922,6 +922,11 @@ class PasienInapEklaimRepository
             'diastole' => $bloodPresure->diastole ?? 0,
             'cara_masuk' => $transaksi_utama->CARA_MASUK ?: "emd",
         ];
+
+        if ($icu) {
+            $data->icu_indikator = 1;
+            $data->icu_los = $icu->total_los_icu;
+        }
 
         if ($ventilator) {
             $data->ventilator_hour = $ventilator->ventilator_hour ?? 0;
@@ -1917,6 +1922,37 @@ class PasienInapEklaimRepository
             'intubasi'   => $intubasi ? $intubasi->format('Y-m-d H:i:s') : null,
             'ekstubasi'  => $ekstubasi ? $ekstubasi->format('Y-m-d H:i:s') : null,
             'ventilator_hour'  => $ventilator_hour
+        ];
+    }
+
+    public function getLOSICU($kode_reg)
+    {
+        $historyBangsal = DB::connection('sqlsrvsimrs')
+            ->table('PASIENRAWATINAP AS PRI')
+            ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
+            ->select('PRI.PRWITGL_MASUK', 'PRI.PRWITGL_KELUAR', 'K.FMKKAMARINDUK')
+            ->where('PRI.PRWINO_TRANSAKSI', $kode_reg) // kemungkinan maksudnya ini, bukan 'PRI'
+            ->where('K.FMKKAMARINDUK', 'IK009')
+            ->get();
+
+        if ($historyBangsal->isEmpty()) {
+            return null;
+        }
+
+        $totalLos = 0;
+
+        foreach ($historyBangsal as $row) {
+            $tglMasuk  = $row->PRWITGL_INAP ? Carbon::parse($row->PRWITGL_INAP) : null;
+            $tglKeluar = $row->PRWITGL_KELUAR ? Carbon::parse($row->PRWITGL_KELUAR) : Carbon::now();
+
+            if ($tglMasuk) {
+                $los = $tglMasuk->diffInDays($tglKeluar); // hitung lama LOS ICU per periode
+                $totalLos += $los;
+            }
+        }
+
+        return (object)[
+            "total_los_icu" => $totalLos,
         ];
     }
 }
