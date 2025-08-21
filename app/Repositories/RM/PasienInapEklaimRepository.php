@@ -892,7 +892,10 @@ class PasienInapEklaimRepository
         $tgl_pulang = $transaksi_utama->PRWITGL_KELUAR
             ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)
             : now(); // Jika belum pulang, pakai waktu sekarang
-        $los = $tgl_masuk->diffInDays($tgl_pulang) ?: 1; // Jika hasilnya 0, set minimal 1 hari
+        $los = (int) ceil($tgl_masuk->diffInHours($tgl_pulang) / 24);
+        $los = $los > 0 ? $los : 1; // minimal 1 hari
+
+        // return $los;
 
         $ploting_tarif = $this->getTotalDetailTarifTransaksi($transaksi_utama); /// listing dan ploting data dari tabel TRANSAKSIPASIENINAPD
 
@@ -905,7 +908,7 @@ class PasienInapEklaimRepository
             'kelas_rawat' => $vclaim_detail->response->klsRawat->klsRawatHak, // kelas rawat BPJS 1,2,3. Tapi ini ambil dari vclaim sekalian saja agar akurat
             "upgrade_class_ind" => ($vclaim_detail->response->klsRawat->klsRawatNaik) ? 1 : 0,
             "upgrade_class_class" => $naik_kelas,
-            "upgrade_class_los" => ($ploting_tarif->icu_los) ? $los - $ploting_tarif->icu_los : $los, // jika icu_los ada isinya, maka los minus icu_los
+            "upgrade_class_los" => ($icu) ? $los - $icu->total_los_icu : $los, // jika icu_los ada isinya, maka los minus icu_los
             'birth_weight' => ($transaksi_utama->BERAT_LAHIR) ? $transaksi_utama->BERAT_LAHIR : "",
             'discharge_status' => $discharge_status,
             'tarif_rs' => $ploting_tarif->tarif_rs,
@@ -1914,23 +1917,24 @@ class PasienInapEklaimRepository
 
             // Hitung total jam pemakaian jika ada intubasi
             if ($intubasi) {
-                $ventilator_hour = $intubasi->diffInHours($ekstubasi);
+                $ventilator_hour = (int) ceil($intubasi->diffInMinutes($ekstubasi) / 60);
             }
         }
 
         return (object)[
-            'intubasi'   => $intubasi ? $intubasi->format('Y-m-d H:i:s') : null,
-            'ekstubasi'  => $ekstubasi ? $ekstubasi->format('Y-m-d H:i:s') : null,
-            'ventilator_hour'  => $ventilator_hour
+            'intubasi'        => $intubasi ? $intubasi->format('Y-m-d H:i:s') : null,
+            'ekstubasi'       => $ekstubasi ? $ekstubasi->format('Y-m-d H:i:s') : null,
+            'ventilator_hour' => $ventilator_hour
         ];
     }
+
 
     public function getLOSICU($kode_reg)
     {
         $historyBangsal = DB::connection('sqlsrvsimrs')
             ->table('PASIENRAWATINAP AS PRI')
             ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
-            ->select('PRI.PRWITGL_MASUK', 'PRI.PRWITGL_KELUAR', 'K.FMKKAMARINDUK')
+            ->select('PRI.PRWITGL_MASUK', 'PRI.PRWITGL_KELUAR', 'PRI.PRWITGL_INAP', 'K.FMKKAMARINDUK')
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg) // kemungkinan maksudnya ini, bukan 'PRI'
             ->where('K.FMKKAMARINDUK', 'IK009')
             ->get();
