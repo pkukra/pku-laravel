@@ -853,8 +853,8 @@ class PasienInapEklaimRepository
 
         $user = Auth::user();
         $bloodPresure = $this->getBloodPressure($transaksi_utama->PRWINO_TRANSAKSI);
-        // defaultnya atas persetujuan dokter
-        $discharge_status =  $this->dischargeStatusEMR($transaksi_utama->PRWINO_TRANSAKSI);
+        $ventilator = $this->getVentilatorDetail($transaksi_utama->PRWINO_TRANSAKSI);
+        $discharge_status =  $this->dischargeStatusEMR($transaksi_utama->PRWINO_TRANSAKSI); // defaultnya atas persetujuan dokter
 
         $naik_kelas = null;
         if ($vclaim_detail->response->klsRawat->klsRawatNaik) {
@@ -922,6 +922,15 @@ class PasienInapEklaimRepository
             'diastole' => $bloodPresure->diastole ?? 0,
             'cara_masuk' => $transaksi_utama->CARA_MASUK ?: "emd",
         ];
+
+        if ($ventilator) {
+            $data->ventilator_hour = $ventilator->ventilator_hour ?? 0;
+            $data->ventilator = (object)[
+                'use_ind'   => 1,
+                'start_dttm' => $ventilator->intubasi,
+                'stop_dttm' => $ventilator->ekstubasi,
+            ];
+        }
 
         $requestData = json_encode((object)[
             'metadata' => (object)[
@@ -1872,5 +1881,42 @@ class PasienInapEklaimRepository
             return $cara_pulang;
         }
         return 1;
+    }
+
+    public function getVentilatorDetail($kode_reg)
+    {
+        $ventilator = DB::connection('sqlsrvemr')
+            ->table('VENTILATOR')
+            ->select('*')
+            ->where('FS_KD_REG', $kode_reg)
+            ->first();
+
+        // Inisialisasi default
+        $intubasi = null;
+        $ekstubasi = null;
+        $ventilator_hour = 0;
+
+        if ($ventilator) {
+            // Ambil INTUBASI
+            $intubasi = $ventilator->INTUBASI ? Carbon::parse($ventilator->INTUBASI) : null;
+
+            // Cek EKSTUBASI
+            if (empty($ventilator->EKSTUBASI) || $ventilator->EKSTUBASI < $ventilator->INTUBASI) {
+                $ekstubasi = Carbon::now();
+            } else {
+                $ekstubasi = Carbon::parse($ventilator->EKSTUBASI);
+            }
+
+            // Hitung total jam pemakaian jika ada intubasi
+            if ($intubasi) {
+                $ventilator_hour = $intubasi->diffInHours($ekstubasi);
+            }
+        }
+
+        return (object)[
+            'intubasi'   => $intubasi ? $intubasi->format('Y-m-d H:i:s') : null,
+            'ekstubasi'  => $ekstubasi ? $ekstubasi->format('Y-m-d H:i:s') : null,
+            'ventilator_hour'  => $ventilator_hour
+        ];
     }
 }
