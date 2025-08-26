@@ -940,6 +940,16 @@ class PasienInapEklaimRepository
             ];
         }
 
+        $dializer = DB::connection('sqlsrvemr')
+            ->table('TAC_HD_DIALISER')
+            ->select('FS_TIPE_DIALISER')
+            ->where('FS_KD_REG', $transaksi_utama->PRWINO_TRANSAKSI)
+            ->first();
+
+        if ($dializer) {
+            $data->dializer_single_use = 1;
+        }
+
         $requestData = json_encode((object)[
             'metadata' => (object)[
                 'method' => 'set_claim_data',
