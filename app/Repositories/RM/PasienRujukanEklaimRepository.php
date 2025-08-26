@@ -1015,7 +1015,8 @@ class PasienRujukanEklaimRepository
                 ->first();
 
             if ($dializer) {
-                $data->dializer_single_use = ($dializer->FS_TIPE_DIALISER == 1) ? 1 : 0;
+                // $data->dializer_single_use = ($dializer->FS_TIPE_DIALISER == 1) ? 1 : 0;
+                $data->dializer_single_use = 1;
                 break;
             }
         }
