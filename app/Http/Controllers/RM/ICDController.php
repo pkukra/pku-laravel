@@ -34,4 +34,10 @@ class ICDController extends Controller
         $data = $this->icdRepo->listData($system, $kode_icd, $page, $per_page);
         return response()->json(['data' => $data]);
     }
+
+    public function list_alert($code)
+    {
+        $data = $this->icdRepo->listAlert($code);
+        return response()->json(['data' => $data]);
+    }
 }

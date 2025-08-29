@@ -43,4 +43,23 @@ class ICDRepository
             'data'  => $data,
         ];
     }
+
+    public function listAlert($code)
+    {
+        $baseQuery = DB::connection('sqlsrvsimrs')
+            ->table('ICD_ALERT')
+            ->where('ICD_ALERT.icd_code', $code);
+
+        $total = (clone $baseQuery)->count();
+
+        $data = $baseQuery
+            ->select('ICD_ALERT.*')
+            ->orderBy('ICD_ALERT.id', 'asc')
+            ->get();
+
+        return (object)[
+            'total' => $total,
+            'data'  => $data,
+        ];
+    }
 }

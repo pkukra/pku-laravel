@@ -24,6 +24,7 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
 
     Route::get('/list-icd', [ICDController::class, 'index'])->name('rm.icd.index');
     Route::get('/list-icd-data', [ICDController::class, 'index_data'])->name('rm.icd.index_data');
+    Route::get('/list-icd-alert/{code}', [ICDController::class, 'list_alert'])->name('rm.icd.list_alert');
 
     Route::prefix('pasien-rujukan')->group(function () {
 

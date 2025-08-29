@@ -29,6 +29,9 @@ export default function Index({ auth, icdData }) {
     const [totalData, setTotalData] = useState(0);
 
     const [selectedKode, setSelectedKode] = useState(null);
+    const [loadingAlert, setLoadingAlert] = useState(false);
+    const [modalAlertOpen, setModalAlertOpen] = useState(false);
+    const [alertData, setAlertData] = useState([]);
 
     const [systemFilter, setSystemFilter] = useState(initialSystem);
     const [kodeICDFilter, setKodeICDFilter] = useState(initialKodeICDFilter);
@@ -62,8 +65,6 @@ export default function Index({ auth, icdData }) {
                 params: paramObj,
             });
 
-            console.log(response);
-
             setDataKodeICD(response?.data?.data?.data || []);
             setTotalData(response?.data?.data?.total || 0);
         } catch (error) {
@@ -71,6 +72,23 @@ export default function Index({ auth, icdData }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchDataAlert = async (code) => {
+        setSelectedKode(code)
+        setLoadingAlert(true);
+        setModalAlertOpen(true);
+        axios
+            .get(route("rm.icd.list_alert", { code: code }))
+            .then((response) => {
+                setAlertData(response?.data || []);
+            })
+            .catch((error) =>
+                console.error("Error fetching data pasien:", error)
+            )
+            .finally(() => {
+                setLoadingAlert(false);
+            });
     };
 
     const handleTableChange = (pagination) => {
@@ -201,7 +219,9 @@ export default function Index({ auth, icdData }) {
                                 <Button
                                     type="primary"
                                     size="small"
-                                    onClick={() => setSelectedKode(record.code)}
+                                    onClick={() => {
+                                        fetchDataAlert(record.code);
+                                    }}
                                 >
                                     Tampilkan {record.code}
                                 </Button>
@@ -222,14 +242,18 @@ export default function Index({ auth, icdData }) {
             </Card>
 
             <Modal
+                destroyOnClose
                 title="Tambahkan Alert Kode ICD"
-                open={!!selectedKode}
-                onCancel={() => setSelectedKode(null)}
+                open={modalAlertOpen}
+                onCancel={() => {
+                    setModalAlertOpen(false)
+                    setAlertData([])
+                }}
                 footer={null}
-                width={800}
-                loading={false}
+                width={1000}
+                loading={loadingAlert}
             >
-                {selectedKode}
+                {JSON.stringify(alertData)}
             </Modal>
         </AuthenticatedLayout>
     );
