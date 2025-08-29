@@ -356,7 +356,7 @@ class PasienRujukanRepository
                 if (count($diagnosa) > 0 || count($procedures) > 0) {
                     return [
                         "status" => "nok",
-                        "message" => "Sudah punya diagnosa/prosedur dari SEP sebelumnya"
+                        "message" => "Untuk mengganti SEP hapus dulu diagnosa/prosedur dari SEP sebelumnya."
                     ];
                 }
             }
