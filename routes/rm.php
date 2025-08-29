@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\RM\PasienRujukanController;
 use App\Http\Controllers\RM\PasienInapController;
+use App\Http\Controllers\RM\ICDController;
 use App\Http\Controllers\Cesemix\RanapMonitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckRole;
@@ -20,6 +21,9 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
 
     Route::get('/get_permintaan_rad_n_lab/{kode_reg}', [PasienRujukanController::class, 'get_permintaan_rad_n_lab'])->name('rm.get_permintaan_rad_n_lab');
     Route::get('/procedures_history/{pasien_id}', [PasienRujukanController::class, 'procedures_history'])->name('rm.procedures_history');
+
+    Route::get('/list-icd', [ICDController::class, 'index'])->name('rm.icd.index');
+    Route::get('/list-icd-data', [ICDController::class, 'index_data'])->name('rm.icd.index_data');
 
     Route::prefix('pasien-rujukan')->group(function () {
 
