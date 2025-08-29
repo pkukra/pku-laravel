@@ -7,7 +7,7 @@ import {
     Table,
     Row,
     Col,
-    DatePicker,
+    Modal,
     Input,
     Select,
     Typography,
@@ -27,6 +27,8 @@ export default function Index({ auth, icdData }) {
     const [loading, setLoading] = useState(false);
     const [dataKodeICD, setDataKodeICD] = useState(icdData || []);
     const [totalData, setTotalData] = useState(0);
+
+    const [selectedKode, setSelectedKode] = useState(null);
 
     const [systemFilter, setSystemFilter] = useState(initialSystem);
     const [kodeICDFilter, setKodeICDFilter] = useState(initialKodeICDFilter);
@@ -196,7 +198,11 @@ export default function Index({ auth, icdData }) {
                             dataIndex: "action",
                             width: 100,
                             render: (_, record) => (
-                                <Button type="primary" size="small">
+                                <Button
+                                    type="primary"
+                                    size="small"
+                                    onClick={() => setSelectedKode(record.code)}
+                                >
                                     Tampilkan {record.code}
                                 </Button>
                             ),
@@ -214,6 +220,17 @@ export default function Index({ auth, icdData }) {
                     onChange={handleTableChange}
                 />
             </Card>
+
+            <Modal
+                title="Tambahkan Alert Kode ICD"
+                open={!!selectedKode}
+                onCancel={() => setSelectedKode(null)}
+                footer={null}
+                width={800}
+                loading={false}
+            >
+                {selectedKode}
+            </Modal>
         </AuthenticatedLayout>
     );
 }
