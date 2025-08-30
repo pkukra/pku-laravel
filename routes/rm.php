@@ -24,6 +24,8 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
 
     Route::get('/list-icd', [ICDController::class, 'index'])->name('rm.icd.index');
     Route::get('/list-icd-data', [ICDController::class, 'index_data'])->name('rm.icd.index_data');
+    Route::get('/detail-icd-data/{code}', [ICDController::class, 'detail_icd_data'])->name('rm.icd.detail_icd_data');
+    Route::post('/update-icd-warning/{id}', [ICDController::class, 'update_icd_warning'])->name('rm.icd.update_warning');
     Route::get('/list-icd-alert/{code}', [ICDController::class, 'list_alert'])->name('rm.icd.list_alert');
     Route::post('/save-icd-alert', [ICDController::class, 'save_alert'])->name('rm.icd.save_alert');
     Route::put('/update-icd-alert/{id}', [ICDController::class, 'update_alert'])->name('rm.icd.update_alert');

@@ -1,5 +1,15 @@
-import React, { useState } from "react";
-import { Modal, Button, Input, message, Space, Spin } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+    Modal,
+    Button,
+    Input,
+    message,
+    Space,
+    Spin,
+    Radio,
+    Flex,
+    notification,
+} from "antd";
 import axios from "axios";
 
 const { confirm } = Modal;
@@ -14,7 +24,24 @@ const ModalAlert = ({ dataCode }) => {
     const [editingValue, setEditingValue] = useState("");
     const [newAlert, setNewAlert] = useState("");
 
+    const [detailCode, setDetailCode] = useState(null);
+    const [isWarning, setIsWarning] = useState("0"); // default value radio rawan pending
+
     const code = dataCode?.code || null;
+
+    const fetchDetailCode = async () => {
+        try {
+            const response = await axios.get(
+                route("rm.icd.detail_icd_data", { code })
+            );
+            setDetailCode(response?.data?.data || null);
+        } catch (error) {
+            console.error(error);
+            message.error("Gagal memuat data code icd");
+        } finally {
+            setLoadingTable(false);
+        }
+    };
 
     const fetchDataAlert = async () => {
         setModalAlertOpen(true);
@@ -115,9 +142,60 @@ const ModalAlert = ({ dataCode }) => {
         }
     };
 
+    const handleChangeRawanPending = (e) => {
+        const newValue = e.target.value;
+        const numericValue = newValue === "1" ? 1 : 0;
+        const previousValue = isWarning; // simpan nilai lama
+
+        const id = detailCode?.id;
+        if (!id) {
+            return notification.error({
+                placement: "top",
+                description: "Gagal mendapatkan detail kode ICD.",
+            });
+        }
+
+        Modal.confirm({
+            title: "Konfirmasi",
+            content: "Yakin ingin mengubah status Rawan Pending?",
+            okText: "Ya",
+            cancelText: "Batal",
+            onOk: async () => {
+                setIsWarning(newValue); // update state
+                try {
+                    await axios.post(route("rm.icd.update_warning", { id }), {
+                        is_code_warning: numericValue,
+                    });
+                    message.success("Perubahan berhasil disimpan");
+                    if (fetchDataAlert) fetchDataAlert();
+                } catch (err) {
+                    console.error(err);
+                    message.error("Gagal menyimpan data");
+                    setIsWarning(previousValue); // rollback jika gagal
+                }
+            },
+            onCancel: () => {
+                setIsWarning(previousValue); // rollback ke nilai lama
+            },
+        });
+    };
+
+    useEffect(() => {
+        if (detailCode) {
+            setIsWarning(detailCode.is_code_warning == 1 ? "1" : "0");
+        }
+    }, [detailCode]); // update setiap kali detailCode berubah
+
     return (
         <>
-            <Button onClick={fetchDataAlert}>Tampilkan {code}</Button>
+            <Button
+                onClick={() => {
+                    fetchDetailCode();
+                    fetchDataAlert();
+                }}
+            >
+                Tampilkan {code}
+            </Button>
             <Modal
                 destroyOnClose
                 title="Tambahkan Syarat Kode ICD"
@@ -137,6 +215,19 @@ const ModalAlert = ({ dataCode }) => {
                 <p>
                     Desc: <strong>{dataCode.description}</strong>
                 </p>
+                <Flex vertical gap="middle" style={{ marginBottom: 16 }}>
+                    <Radio.Group
+                        value={isWarning}
+                        buttonStyle="solid"
+                        onChange={handleChangeRawanPending}
+                        disabled={loadingCrud} // optional, agar tidak bisa klik saat CRUD
+                    >
+                        <Radio.Button value="0">
+                            Tidak Rawan Pending
+                        </Radio.Button>
+                        <Radio.Button value="1">Rawan Pending</Radio.Button>
+                    </Radio.Group>
+                </Flex>
 
                 {/* TextArea untuk input alert baru */}
                 <TextArea
@@ -152,7 +243,7 @@ const ModalAlert = ({ dataCode }) => {
                     onClick={handleAddAlert}
                     loading={loadingCrud}
                 >
-                    Tambah Data
+                    Tambahkan Data
                 </Button>
 
                 {loadingTable ? (

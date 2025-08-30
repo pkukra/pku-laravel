@@ -48,6 +48,27 @@ class ICDRepository
         ];
     }
 
+    public function getDetailByCode($code)
+    {
+        $query = DB::connection('sqlsrvsimrs')
+            ->table('ICD')
+            ->select('ICD.*')
+            ->where('ICD.code', $code);
+
+        return $query->first();
+    }
+
+    public function updateWarning($id, $value)
+    {
+        return DB::connection('sqlsrvsimrs')
+            ->table('ICD')
+            ->where('id', $id)
+            ->update([
+                'is_code_warning' => $value,
+                'mdd' => now(), // update modified date
+            ]);
+    }
+
     /**
      * List alert berdasarkan kode ICD
      */

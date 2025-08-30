@@ -34,6 +34,36 @@ class ICDController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function detail_icd_data($code)
+    {
+
+        $icdDetail = $this->icdRepo->getDetailByCode($code);
+        return response()->json([
+            'success' => true,
+            'data' => $icdDetail,
+        ]);
+    }
+
+    public function update_icd_warning($id, Request $request)
+    {
+        $request->validate([
+            'is_code_warning' => 'required|in:0,1',
+        ]);
+
+        $updated = $this->icdRepo->updateWarning($id, $request->is_code_warning);
+        if (!$updated) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Update gagal atau data tidak ditemukan',
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status warning berhasil diperbarui',
+        ]);
+    }
+
     public function list_alert($code)
     {
         $data = $this->icdRepo->listAlert($code);

@@ -41,7 +41,7 @@ const items = [
                 ),
             },
             {
-                key: "rm-ranap",
+                key: "rm-master-kelengkapan",
                 label: (
                     <a href={route("rm.icd.index")}>Master Kelengkapan</a>
                 ),
