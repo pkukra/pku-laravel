@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import {
-    Card,
-    Button,
-    Table,
-    Row,
-    Col,
-    Input,
-    Select,
-    Typography,
-} from "antd";
+import { Card, Button, Table, Row, Col, Input, Select, Typography } from "antd";
 import axios from "axios";
 import ModalAlert from "./ModalAlert";
 
 export default function Index({ auth, icdData }) {
     const queryParams = new URLSearchParams(window.location.search);
-
     const initialPage = parseInt(queryParams.get("page")) || 1;
     const initialPerPage = parseInt(queryParams.get("per_page")) || 100;
-    const initialKodeICDFilter = queryParams.get("kode_icd_filter") || "";
-    const initialSystem = queryParams.get("kode_icd_filter") || "all";
+    const initialKodeICDFilter = queryParams.get("kode_icd") || "";
+    const initialSystem = queryParams.get("system") || "all";
 
     const [loading, setLoading] = useState(false);
     const [dataKodeICD, setDataKodeICD] = useState(icdData || []);
@@ -192,7 +182,9 @@ export default function Index({ auth, icdData }) {
                             dataIndex: "action",
                             width: 100,
                             render: (_, record) => (
-                                <ModalAlert dataCode={record}>Tampilkan</ModalAlert>
+                                <ModalAlert dataCode={record}>
+                                    Tampilkan
+                                </ModalAlert>
                             ),
                         },
                     ]}
