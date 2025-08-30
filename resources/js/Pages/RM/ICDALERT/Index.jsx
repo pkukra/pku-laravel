@@ -7,14 +7,14 @@ import {
     Table,
     Row,
     Col,
-    Modal,
     Input,
     Select,
     Typography,
 } from "antd";
 import axios from "axios";
-import moment from "moment";
-import dayjs from "dayjs";
+
+import ModalAlert from "./ModalAlert";
+
 
 export default function Index({ auth, icdData }) {
     const queryParams = new URLSearchParams(window.location.search);
@@ -27,11 +27,6 @@ export default function Index({ auth, icdData }) {
     const [loading, setLoading] = useState(false);
     const [dataKodeICD, setDataKodeICD] = useState(icdData || []);
     const [totalData, setTotalData] = useState(0);
-
-    const [selectedKode, setSelectedKode] = useState(null);
-    const [loadingAlert, setLoadingAlert] = useState(false);
-    const [modalAlertOpen, setModalAlertOpen] = useState(false);
-    const [alertData, setAlertData] = useState([]);
 
     const [systemFilter, setSystemFilter] = useState(initialSystem);
     const [kodeICDFilter, setKodeICDFilter] = useState(initialKodeICDFilter);
@@ -72,23 +67,6 @@ export default function Index({ auth, icdData }) {
         } finally {
             setLoading(false);
         }
-    };
-
-    const fetchDataAlert = async (code) => {
-        setSelectedKode(code)
-        setLoadingAlert(true);
-        setModalAlertOpen(true);
-        axios
-            .get(route("rm.icd.list_alert", { code: code }))
-            .then((response) => {
-                setAlertData(response?.data || []);
-            })
-            .catch((error) =>
-                console.error("Error fetching data pasien:", error)
-            )
-            .finally(() => {
-                setLoadingAlert(false);
-            });
     };
 
     const handleTableChange = (pagination) => {
@@ -216,15 +194,7 @@ export default function Index({ auth, icdData }) {
                             dataIndex: "action",
                             width: 100,
                             render: (_, record) => (
-                                <Button
-                                    type="primary"
-                                    size="small"
-                                    onClick={() => {
-                                        fetchDataAlert(record.code);
-                                    }}
-                                >
-                                    Tampilkan {record.code}
-                                </Button>
+                                <ModalAlert code={record?.code}>Tampilkan</ModalAlert>
                             ),
                         },
                     ]}
@@ -240,21 +210,6 @@ export default function Index({ auth, icdData }) {
                     onChange={handleTableChange}
                 />
             </Card>
-
-            <Modal
-                destroyOnClose
-                title="Tambahkan Alert Kode ICD"
-                open={modalAlertOpen}
-                onCancel={() => {
-                    setModalAlertOpen(false)
-                    setAlertData([])
-                }}
-                footer={null}
-                width={1000}
-                loading={loadingAlert}
-            >
-                {JSON.stringify(alertData)}
-            </Modal>
         </AuthenticatedLayout>
     );
 }
