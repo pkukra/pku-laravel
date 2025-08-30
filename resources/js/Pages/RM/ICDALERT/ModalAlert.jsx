@@ -120,7 +120,7 @@ const ModalAlert = ({ dataCode }) => {
             <Button onClick={fetchDataAlert}>Tampilkan {code}</Button>
             <Modal
                 destroyOnClose
-                title="Tambahkan Alert Kode ICD"
+                title="Tambahkan Syarat Kode ICD"
                 open={modalAlertOpen}
                 onCancel={() => {
                     setModalAlertOpen(false);
@@ -177,7 +177,7 @@ const ModalAlert = ({ dataCode }) => {
                                         padding: "8px",
                                     }}
                                 >
-                                    Syarat Kelengkapan
+                                    Syarat/Kelengkapan Data Pengkodean
                                 </th>
                                 <th
                                     style={{

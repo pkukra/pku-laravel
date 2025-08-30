@@ -40,6 +40,12 @@ const items = [
                     <a href={route("rm.pasien-inap.list_inap")}>List Ranap</a>
                 ),
             },
+            {
+                key: "rm-ranap",
+                label: (
+                    <a href={route("rm.icd.index")}>Master Kelengkapan</a>
+                ),
+            },
         ],
     },
     {
