@@ -12,9 +12,7 @@ import {
     Typography,
 } from "antd";
 import axios from "axios";
-
 import ModalAlert from "./ModalAlert";
-
 
 export default function Index({ auth, icdData }) {
     const queryParams = new URLSearchParams(window.location.search);
@@ -194,7 +192,7 @@ export default function Index({ auth, icdData }) {
                             dataIndex: "action",
                             width: 100,
                             render: (_, record) => (
-                                <ModalAlert code={record?.code}>Tampilkan</ModalAlert>
+                                <ModalAlert dataCode={record}>Tampilkan</ModalAlert>
                             ),
                         },
                     ]}
