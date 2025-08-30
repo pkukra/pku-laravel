@@ -13,9 +13,8 @@ class ICDController extends Controller
 {
     protected $icdRepo;
 
-    public function __construct(
-        ICDRepository $icdRepo,
-    ) {
+    public function __construct(ICDRepository $icdRepo)
+    {
         $this->icdRepo = $icdRepo;
     }
 
@@ -39,5 +38,46 @@ class ICDController extends Controller
     {
         $data = $this->icdRepo->listAlert($code);
         return response()->json(['data' => $data]);
+    }
+
+    // ===== Tambahan baru =====
+
+    public function save_alert(Request $request)
+    {
+        $request->validate([
+            'icd_code' => 'required|string|max:10',
+            'description' => 'required|string',
+            'is_code_warning' => 'nullable|boolean',
+        ]);
+
+        $id = $this->icdRepo->saveAlert(
+            $request->icd_code,
+            $request->description,
+            $request->is_code_warning ?? 0
+        );
+
+        return response()->json(['success' => true, 'id' => $id]);
+    }
+
+    public function update_alert(Request $request, $id)
+    {
+        $request->validate([
+            'description' => 'required|string',
+            'is_code_warning' => 'nullable|boolean',
+        ]);
+
+        $this->icdRepo->updateAlert(
+            $id,
+            $request->description,
+            $request->is_code_warning ?? null
+        );
+
+        return response()->json(['success' => true]);
+    }
+
+    public function delete_alert($id)
+    {
+        $this->icdRepo->deleteAlert($id);
+        return response()->json(['success' => true]);
     }
 }

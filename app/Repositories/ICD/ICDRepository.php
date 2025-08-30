@@ -2,11 +2,15 @@
 
 namespace App\Repositories\ICD;
 
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ICDRepository
 {
+    protected $connection = 'sqlsrvsimrs';
+    protected $table = 'ICD_ALERT';
+
     public function listData($system = null, $code = null, $page = 1, $per_page = 10)
     {
         $baseQuery = DB::connection('sqlsrvsimrs')
@@ -44,22 +48,108 @@ class ICDRepository
         ];
     }
 
+    /**
+     * List alert berdasarkan kode ICD
+     */
     public function listAlert($code)
     {
-        $baseQuery = DB::connection('sqlsrvsimrs')
-            ->table('ICD_ALERT')
-            ->where('ICD_ALERT.icd_code', $code);
+        $baseQuery = DB::connection($this->connection)
+            ->table($this->table)
+            ->where('icd_code', $code);
 
         $total = (clone $baseQuery)->count();
 
         $data = $baseQuery
-            ->select('ICD_ALERT.*')
-            ->orderBy('ICD_ALERT.id', 'asc')
+            ->select('*')
+            ->orderBy('id', 'asc')
             ->get();
+
+        Log::info("List alert for ICD code {$code}, total: {$total}");
 
         return (object)[
             'total' => $total,
             'data'  => $data,
         ];
+    }
+
+    /**
+     * Simpan data baru
+     *
+     * @param string $icdCode
+     * @param string $description
+     * @param bool $isCodeWarning
+     * @return int Inserted ID
+     */
+    public function saveAlert($icdCode, $description, $isCodeWarning = 0)
+    {
+        $user = Auth::user();
+
+        try {
+            $id = DB::connection($this->connection)
+                ->table($this->table)
+                ->insertGetId([
+                    'icd_code' => $icdCode,
+                    'description' => $description,
+                    'is_code_warning' => $isCodeWarning,
+                    'mdd' => now(),
+                    'mdb' => $user->email,
+                ]);
+
+            Log::info("Inserted new ICD_ALERT with id {$id}, code: {$icdCode}");
+
+            return $id;
+        } catch (\Exception $e) {
+            Log::error("Failed to insert ICD_ALERT: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Update alert
+     */
+    public function updateAlert($id, $description, $isCodeWarning = null)
+    {
+        try {
+            $data = [
+                'description' => $description,
+                'mdd' => now(),
+            ];
+
+            if (!is_null($isCodeWarning)) {
+                $data['is_code_warning'] = $isCodeWarning;
+            }
+
+            $updated = DB::connection($this->connection)
+                ->table($this->table)
+                ->where('id', $id)
+                ->update($data);
+
+            Log::info("Updated ICD_ALERT id {$id} with data: " . json_encode($data));
+
+            return $updated;
+        } catch (\Exception $e) {
+            Log::error("Failed to update ICD_ALERT id {$id}: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete alert
+     */
+    public function deleteAlert($id)
+    {
+        try {
+            $deleted = DB::connection($this->connection)
+                ->table($this->table)
+                ->where('id', $id)
+                ->delete();
+
+            Log::info("Deleted ICD_ALERT id {$id}");
+
+            return $deleted;
+        } catch (\Exception $e) {
+            Log::error("Failed to delete ICD_ALERT id {$id}: " . $e->getMessage());
+            throw $e;
+        }
     }
 }

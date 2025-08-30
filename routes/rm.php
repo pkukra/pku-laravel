@@ -25,6 +25,9 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
     Route::get('/list-icd', [ICDController::class, 'index'])->name('rm.icd.index');
     Route::get('/list-icd-data', [ICDController::class, 'index_data'])->name('rm.icd.index_data');
     Route::get('/list-icd-alert/{code}', [ICDController::class, 'list_alert'])->name('rm.icd.list_alert');
+    Route::post('/save-icd-alert', [ICDController::class, 'save_alert'])->name('rm.icd.save_alert');
+    Route::put('/update-icd-alert/{id}', [ICDController::class, 'update_alert'])->name('rm.icd.update_alert');
+    Route::delete('/delete-icd-alert/{id}', [ICDController::class, 'delete_alert'])->name('rm.icd.delete_alert');
 
     Route::prefix('pasien-rujukan')->group(function () {
 
