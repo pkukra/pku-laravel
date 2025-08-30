@@ -151,6 +151,9 @@ export default function Index({
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(false); // Loading state
 
+    const [loadingDiagnosaAlert, setLoadingDiagnosaAlert] = useState(false); // State untuk menyimpan data diagnosa
+    const [diagnosaAlert, setDiagnosaAlert] = useState(null); // State untuk menyimpan data diagnosa
+
     const no_sep = pasien?.FMNOSEP || null;
     let pasien_id = pasien?.FRPPASIEN_ID;
     let kode_reg = pasien?.FRPNOTRANSAKSIKJ;
@@ -190,12 +193,36 @@ export default function Index({
                 );
                 setDiagnosa(response?.data?.data || []); // Simpan data yang diterima ke dalam state
                 setDiagnosaTab(response?.data?.data || []); // Simpan data yang diterima ke dalam state parent component
+                const diagnosaCodesArr = response?.data?.data?.map(
+                    (item) => item.code
+                );
+                fetchAlertDiagnosa(diagnosaCodesArr);
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
             })
             .finally(() => {
                 setLoadingFetchDiagnosa(false);
+            });
+    };
+
+    const fetchAlertDiagnosa = (diagnosaCodes = []) => {
+        if (diagnosaCodes.length === 0) return;
+
+        setLoadingDiagnosaAlert(true);
+
+        axios
+            .post(route("rm.icd.list_alert_by_codes"), {
+                codes: diagnosaCodes, // kirim array langsung ["I63.9","I10",...]
+            })
+            .then((response) => {
+                setDiagnosaAlert(response?.data?.data || []);
+            })
+            .catch((error) => {
+                console.error("Error fetching alert data:", error);
+            })
+            .finally(() => {
+                setLoadingDiagnosaAlert(false);
             });
     };
 
@@ -531,6 +558,19 @@ export default function Index({
                         Apakah anda yakin ingin menjadikan diagnosa ini primary?
                     </p>
                 </Modal>
+            </Card>
+
+            <Card
+                title={`Syarat/Kelengkapan Data Pengkodean Diagnosa`}
+                style={{ marginTop: 10 }}
+                loading={loadingDiagnosaAlert}
+            >
+                {diagnosaAlert?.length < 1 && <>Belum ada data</>}
+                {diagnosaAlert?.map((item, index) => (
+                    <p key={index} style={{ marginBottom: 10 }}>
+                        {item.icd_code} - {item.description}
+                    </p>
+                ))}
             </Card>
         </>
     );

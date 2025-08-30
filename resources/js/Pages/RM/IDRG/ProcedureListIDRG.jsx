@@ -161,6 +161,9 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
     const [procedure, setProcedure] = useState([]); // State untuk menyimpan data procedure
     const [loadingFetchProcedure, setLoadingFetchProcedure] = useState(true); // Loading state
 
+    const [loadingProcedureAlert, setLoadingProcedureAlert] = useState(false); // State untuk menyimpan data diagnosa
+    const [procedureAlert, setProcedureAlert] = useState(null); // State untuk menyimpan data procedure
+
     const no_sep = pasien?.FMNOSEP || null;
     let pasien_id = pasien?.FRPPASIEN_ID;
     let kode_reg = pasien?.FRPNOTRANSAKSIKJ;
@@ -197,12 +200,34 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                     response.data.data.map((item) => item.code)
                 );
                 setProcedure(response?.data?.data || []); // Simpan data yang diterima ke dalam state
+                const procedureCodesArr = response?.data?.data?.map(
+                    (item) => item.code
+                );
+                fetchAlertProcedure(procedureCodesArr);
             })
             .catch((error) => {
                 console.error("Error fetching procedure data:", error);
             })
             .finally(() => {
                 setLoadingFetchProcedure(false);
+            });
+    };
+
+    const fetchAlertProcedure = (procedureCodes = []) => {
+        if (procedureCodes.length === 0) return;
+        setLoadingProcedureAlert(true);
+        axios
+            .post(route("rm.icd.list_alert_by_codes"), {
+                codes: procedureCodes, // kirim array langsung ["I63.9","I10",...]
+            })
+            .then((response) => {
+                setProcedureAlert(response?.data?.data || []);
+            })
+            .catch((error) => {
+                console.error("Error fetching alert data:", error);
+            })
+            .finally(() => {
+                setLoadingProcedureAlert(false);
             });
     };
 
@@ -255,7 +280,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
         ) {
             return notification.error({
                 placement: "top",
-                message: "Tidak dapat menyimpan diagnosa",
+                message: "Tidak dapat menyimpan procedure",
                 description: "Pasien BPJS tapi belum ada SEP.",
             });
         }
@@ -398,184 +423,203 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
     }, [pasien]);
 
     return (
-        <Card title={`Procedure`}>
-            <Row gutter={16} style={{ marginBottom: 10 }}>
-                <Col span={17}>
-                    <Tooltip
-                        title={"Shift+F2 untuk shortcut"}
-                        placement="topLeft"
-                    >
-                        <AutoComplete
-                            disabled={isFinalIDRG || disableInvalidSEP()}
-                            ref={inputRefStatusProcedure}
-                            allowClear
-                            onChange={() => {
-                                setSelectedProcedureForm(null); // Clear the stored code
-                                setSelectedProcedureDisplay(""); // Clear the display value
-                            }}
-                            options={anotherOptions.map((item) => ({
-                                value: `${item.code} - ${item.description}`, // Display both code and name
-                                label: (
-                                    <div
-                                        style={{
-                                            wordBreak: "break-word",
-                                            whiteSpace: "normal",
-                                            overflowWrap: "break-word",
-                                            display: "block",
-                                            color:
-                                                item.validcode != 1
-                                                    ? "red"
-                                                    : "inherit", // Tambahkan warna merah jika invalid
-                                        }}
-                                    >
-                                        <strong>
-                                            {item.code}{" "}
-                                            {item.asterisk == 1 && <>* </>}
-                                        </strong>{" "}
-                                        {item.validcode != 1 && (
-                                            <span>(Invalid) </span>
-                                        )}
-                                        <span>{item.description}</span>
-                                    </div>
-                                ),
-                                disabled:
-                                    // selectedProcedure.includes(item.code) ||
-                                    item.validcode != 1, // Disable jika sudah dipilih atau invalid
-                            }))}
-                            style={{ width: "100%" }}
-                            onSelect={(value) => {
-                                const kdPenyakit = value.split(" - ")[0]; // Extract code
-                                const displayValue = value; // Full display value with name and code
-                                setSelectedProcedureForm(kdPenyakit); // Store only the code
-                                setSelectedProcedureDisplay(displayValue); // Display both the code and name
-                            }}
-                            onSearch={(text) => {
-                                setSelectedProcedureDisplay(text); // Update the display value during search
-                                fetchSugetProcedure(text, 1); // Trigger the fetch for suggestions
-                            }}
-                            placeholder="Cari procedure/tindakan"
-                            onScroll={onScroll} // Attach scroll event for lazy loading
-                            value={selectedProcedureDisplay} // Show both code and name in the input
-                        />
-                    </Tooltip>
-                </Col>
-                <Col span={3}>
-                    <InputNumber
-                        disabled={isFinalIDRG}
-                        placeholder="Multiplicity"
-                        value={multiplicityForm}
-                        style={{ width: "100%" }}
-                        onChange={setMultiplicityForm}
-                        min={1}
-                    />
-                </Col>
-                <Col span={4}>
-                    <Button
-                        type="primary"
-                        size="medium"
-                        style={{ width: "100%" }}
-                        onClick={saveProcedure}
-                        disabled={
-                            loadingSaveDiag || selectedProcedureForm === null
-                        }
-                    >
-                        {loadingSaveDiag ? (
-                            <Spin
-                                indicator={<LoadingOutlined spin />}
-                                size="small"
+        <>
+            <Card title={`Procedure`}>
+                <Row gutter={16} style={{ marginBottom: 10 }}>
+                    <Col span={17}>
+                        <Tooltip
+                            title={"Shift+F2 untuk shortcut"}
+                            placement="topLeft"
+                        >
+                            <AutoComplete
+                                disabled={isFinalIDRG || disableInvalidSEP()}
+                                ref={inputRefStatusProcedure}
+                                allowClear
+                                onChange={() => {
+                                    setSelectedProcedureForm(null); // Clear the stored code
+                                    setSelectedProcedureDisplay(""); // Clear the display value
+                                }}
+                                options={anotherOptions.map((item) => ({
+                                    value: `${item.code} - ${item.description}`, // Display both code and name
+                                    label: (
+                                        <div
+                                            style={{
+                                                wordBreak: "break-word",
+                                                whiteSpace: "normal",
+                                                overflowWrap: "break-word",
+                                                display: "block",
+                                                color:
+                                                    item.validcode != 1
+                                                        ? "red"
+                                                        : "inherit", // Tambahkan warna merah jika invalid
+                                            }}
+                                        >
+                                            <strong>
+                                                {item.code}{" "}
+                                                {item.asterisk == 1 && <>* </>}
+                                            </strong>{" "}
+                                            {item.validcode != 1 && (
+                                                <span>(Invalid) </span>
+                                            )}
+                                            <span>{item.description}</span>
+                                        </div>
+                                    ),
+                                    disabled:
+                                        // selectedProcedure.includes(item.code) ||
+                                        item.validcode != 1, // Disable jika sudah dipilih atau invalid
+                                }))}
+                                style={{ width: "100%" }}
+                                onSelect={(value) => {
+                                    const kdPenyakit = value.split(" - ")[0]; // Extract code
+                                    const displayValue = value; // Full display value with name and code
+                                    setSelectedProcedureForm(kdPenyakit); // Store only the code
+                                    setSelectedProcedureDisplay(displayValue); // Display both the code and name
+                                }}
+                                onSearch={(text) => {
+                                    setSelectedProcedureDisplay(text); // Update the display value during search
+                                    fetchSugetProcedure(text, 1); // Trigger the fetch for suggestions
+                                }}
+                                placeholder="Cari procedure/tindakan"
+                                onScroll={onScroll} // Attach scroll event for lazy loading
+                                value={selectedProcedureDisplay} // Show both code and name in the input
                             />
-                        ) : (
-                            <PlusOutlined />
-                        )}
-                    </Button>
-                </Col>
-            </Row>
-
-            <>
-                <Table
-                    pagination={false}
-                    columns={columns}
-                    dataSource={procedure}
-                    size="small"
-                    loading={loadingFetchProcedure}
-                    rowKey="id"
-                />
-            </>
-            {/* Modal for Confirming Deletion */}
-            <Modal
-                title="Hapus Procedure"
-                open={isModalHapusProcedureOpen}
-                onOk={() => {
-                    deleteProcedureId &&
-                        deleteProcedure(
-                            deleteProcedureId,
-                            selectedProcedureForm
-                        );
-                }}
-                onCancel={handleCancelDelProcedure}
-                okText="Ya"
-                cancelText="Tidak"
-                okButtonProps={{ danger: true }}
-            >
-                <p>Apakah anda yakin ingin menghapus procedure ini?</p>
-            </Modal>
-
-            {/* Modal for set primary */}
-            <Modal
-                title="Set Primary Procedure"
-                open={isModalSetPrimaryOpen}
-                onOk={() => {
-                    primaryProcedureId &&
-                        makePrimaryProcedure(primaryProcedureId);
-                }}
-                onCancel={() => {
-                    setIsModalSetPrimaryOpen(false);
-                }}
-                okText="Ya"
-                cancelText="Tidak"
-                okButtonProps={{ primary: true }}
-                loading={loadingPrimaryProcedure}
-            >
-                <p>Apakah anda yakin ingin menjadikan procedure ini primary?</p>
-            </Modal>
-
-            {/* Modal update multiplicity */}
-            <Modal
-                title="Update Multiplicity"
-                open={isModalSetMultiplicityOpen}
-                onOk={() => {
-                    updateMultiplicity();
-                }}
-                onCancel={() => {
-                    setIsModalSetMultiplicityOpen(false);
-                }}
-                okText="Simpan"
-                cancelText="Cancel"
-                okButtonProps={{ primary: true }}
-                loading={loadingPrimaryProcedure}
-            >
-                <Row gutter={16} style={{ marginBottom: 10 }}>
-                    <Col span={5}>Kode</Col>
-                    <Col>: {multiplicityProcedureData?.code}</Col>
-                </Row>
-
-                <Row gutter={16} style={{ marginBottom: 10 }}>
-                    <Col span={5}>Description</Col>
-                    <Col>: {multiplicityProcedureData?.description}</Col>
-                </Row>
-
-                <Row gutter={16}>
-                    <Col span={5}>Multiplicity</Col>
-                    <Col>
-                        :{" "}
+                        </Tooltip>
+                    </Col>
+                    <Col span={3}>
                         <InputNumber
+                            disabled={isFinalIDRG}
+                            placeholder="Multiplicity"
+                            value={multiplicityForm}
+                            style={{ width: "100%" }}
+                            onChange={setMultiplicityForm}
                             min={1}
-                            value={multiplicityUpdate}
-                            onChange={setMultiplicityUpdate}
                         />
                     </Col>
+                    <Col span={4}>
+                        <Button
+                            type="primary"
+                            size="medium"
+                            style={{ width: "100%" }}
+                            onClick={saveProcedure}
+                            disabled={
+                                loadingSaveDiag ||
+                                selectedProcedureForm === null
+                            }
+                        >
+                            {loadingSaveDiag ? (
+                                <Spin
+                                    indicator={<LoadingOutlined spin />}
+                                    size="small"
+                                />
+                            ) : (
+                                <PlusOutlined />
+                            )}
+                        </Button>
+                    </Col>
                 </Row>
-            </Modal>
-        </Card>
+
+                <>
+                    <Table
+                        pagination={false}
+                        columns={columns}
+                        dataSource={procedure}
+                        size="small"
+                        loading={loadingFetchProcedure}
+                        rowKey="id"
+                    />
+                </>
+                {/* Modal for Confirming Deletion */}
+                <Modal
+                    title="Hapus Procedure"
+                    open={isModalHapusProcedureOpen}
+                    onOk={() => {
+                        deleteProcedureId &&
+                            deleteProcedure(
+                                deleteProcedureId,
+                                selectedProcedureForm
+                            );
+                    }}
+                    onCancel={handleCancelDelProcedure}
+                    okText="Ya"
+                    cancelText="Tidak"
+                    okButtonProps={{ danger: true }}
+                >
+                    <p>Apakah anda yakin ingin menghapus procedure ini?</p>
+                </Modal>
+
+                {/* Modal for set primary */}
+                <Modal
+                    title="Set Primary Procedure"
+                    open={isModalSetPrimaryOpen}
+                    onOk={() => {
+                        primaryProcedureId &&
+                            makePrimaryProcedure(primaryProcedureId);
+                    }}
+                    onCancel={() => {
+                        setIsModalSetPrimaryOpen(false);
+                    }}
+                    okText="Ya"
+                    cancelText="Tidak"
+                    okButtonProps={{ primary: true }}
+                    loading={loadingPrimaryProcedure}
+                >
+                    <p>
+                        Apakah anda yakin ingin menjadikan procedure ini
+                        primary?
+                    </p>
+                </Modal>
+
+                {/* Modal update multiplicity */}
+                <Modal
+                    title="Update Multiplicity"
+                    open={isModalSetMultiplicityOpen}
+                    onOk={() => {
+                        updateMultiplicity();
+                    }}
+                    onCancel={() => {
+                        setIsModalSetMultiplicityOpen(false);
+                    }}
+                    okText="Simpan"
+                    cancelText="Cancel"
+                    okButtonProps={{ primary: true }}
+                    loading={loadingPrimaryProcedure}
+                >
+                    <Row gutter={16} style={{ marginBottom: 10 }}>
+                        <Col span={5}>Kode</Col>
+                        <Col>: {multiplicityProcedureData?.code}</Col>
+                    </Row>
+
+                    <Row gutter={16} style={{ marginBottom: 10 }}>
+                        <Col span={5}>Description</Col>
+                        <Col>: {multiplicityProcedureData?.description}</Col>
+                    </Row>
+
+                    <Row gutter={16}>
+                        <Col span={5}>Multiplicity</Col>
+                        <Col>
+                            :{" "}
+                            <InputNumber
+                                min={1}
+                                value={multiplicityUpdate}
+                                onChange={setMultiplicityUpdate}
+                            />
+                        </Col>
+                    </Row>
+                </Modal>
+            </Card>
+            <Card
+                title={`Syarat/Kelengkapan Data Pengkodean Procedure`}
+                style={{ marginTop: 10 }}
+                loading={loadingProcedureAlert}
+            >
+                {diagnosaAlert?.length < 1 && <>Belum ada data</>}
+
+                {procedureAlert?.map((item, index) => (
+                    <p key={index} style={{ marginBottom: 10 }}>
+                        {item.icd_code} - {item.description}
+                    </p>
+                ))}
+            </Card>
+        </>
     );
 }

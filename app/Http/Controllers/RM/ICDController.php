@@ -70,6 +70,20 @@ class ICDController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function list_alert_by_codes(request $request)
+    {
+        $codes = $request->get('codes');
+        if (!$codes) {
+            return response()->json([
+                'data' => [],
+            ]);
+        }
+        $alerts = $this->icdRepo->listAlertByCodes($codes);
+        return response()->json([
+            'data' => $alerts,
+        ]);
+    }
+
     // ===== Tambahan baru =====
 
     public function save_alert(Request $request)

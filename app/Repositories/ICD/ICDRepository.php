@@ -93,6 +93,16 @@ class ICDRepository
         ];
     }
 
+    public function listAlertByCodes($codes)
+    {
+        $alerts = DB::connection('sqlsrvsimrs')
+            ->table('ICD_ALERT')
+            ->whereIn('icd_code', $codes)
+            ->get();
+
+        return $alerts;
+    }
+
     /**
      * Simpan data baru
      *
