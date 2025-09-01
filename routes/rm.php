@@ -159,5 +159,5 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
         Route::post('/bridging_reedit_klaim/{no_sep}', [PasienInapController::class, 'bridging_reedit_klaim'])->name('rm.pasien-inap.bridging_reedit_klaim');
     });
 
-    Route::get('/dev_isi_kode_reg', [PasienRujukanController::class, 'dev_isi_kode_reg'])->middleware(['auth', CheckRole::class . ':superadmin'])->name('rm.dev_isi_kode_reg');
+    Route::get('/dev_isi_kode_reg/{limit}', [PasienRujukanController::class, 'dev_isi_kode_reg'])->middleware(['auth', CheckRole::class . ':superadmin'])->name('rm.dev_isi_kode_reg');
 });

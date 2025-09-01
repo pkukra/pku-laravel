@@ -1110,9 +1110,9 @@ class PasienRujukanController extends Controller
      * dev_isi_kode_reg
      * Menampilkan procedure berdasarkan kode pasien
      */
-    public function dev_isi_kode_reg()
+    public function dev_isi_kode_reg($limit)
     {
-        $data = $this->pasienRujukanRepo->setKodeRegRajal();
+        $data = $this->pasienRujukanRepo->setKodeRegRajal($limit);
         return response()->json($data);
     }
 }

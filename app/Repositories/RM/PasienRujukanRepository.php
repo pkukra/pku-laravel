@@ -2122,7 +2122,7 @@ class PasienRujukanRepository
         return $exists;
     }
 
-    public function setKodeRegRajal()
+    public function setKodeRegRajal($limit = 10)
     {
         $dx = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT AS p')
@@ -2138,7 +2138,7 @@ class PasienRujukanRepository
                 'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ'
             )
             ->orderBy('p.MRPTGL_MASUK', 'DESC')
-            ->limit(10) // kamu bisa naikkan ini kalau perlu
+            ->limit($limit) // kamu bisa naikkan ini kalau perlu
             ->get();
 
         return $dx;
