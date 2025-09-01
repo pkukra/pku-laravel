@@ -2132,7 +2132,7 @@ class PasienRujukanRepository
                     ->orOn('PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'sep.FMNOTRANSAKSI');
             })
             ->whereNull('p.MRPNO_TRANSAKSI')
-            // ->where('sep.FMNOTRANSAKSI', 'not like', 'RBI%')
+            ->where('sep.FMNOTRANSAKSI', 'not like', 'RBI%')
             ->select(
                 'p.ID',
                 'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ'
