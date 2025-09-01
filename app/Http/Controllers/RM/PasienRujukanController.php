@@ -1115,4 +1115,14 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->setKodeRegRajal($limit);
         return response()->json($data);
     }
+    
+    /**
+     * dev_isi_kode_reg_ranap
+     * Menampilkan procedure berdasarkan kode pasien
+     */
+    public function dev_isi_kode_reg_ranap($limit)
+    {
+        $data = $this->pasienRujukanRepo->setKodeRegRanap($limit);
+        return response()->json($data);
+    }
 }

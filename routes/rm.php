@@ -160,4 +160,5 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
     });
 
     Route::get('/dev_isi_kode_reg/{limit}', [PasienRujukanController::class, 'dev_isi_kode_reg'])->middleware(['auth', CheckRole::class . ':superadmin'])->name('rm.dev_isi_kode_reg');
+    Route::get('/dev_isi_kode_reg_ranap/{limit}', [PasienRujukanController::class, 'dev_isi_kode_reg_ranap'])->middleware(['auth', CheckRole::class . ':superadmin'])->name('rm.dev_isi_kode_reg_ranap');
 });

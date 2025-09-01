@@ -2174,4 +2174,53 @@ class PasienRujukanRepository
             ], 500);
         }
     }
+
+    public function setKodeRegRanap($limit = 10)
+    {
+        $dx = DB::connection('sqlsrvsimrs')
+            ->table('MR_PENYAKIT AS p')
+            ->leftJoin('BPJS_SEP AS sep', 'sep.FMNOSEP', '=', 'p.NOSEP')
+            ->whereNull('p.MRPNO_TRANSAKSI')
+            ->where('sep.FMNOTRANSAKSI', 'like', 'RBI%') // Mengubah "not like" menjadi "like" untuk mencari yang diawali dengan 'RBI'
+            ->select(
+                'p.ID',
+                'sep.FMNOTRANSAKSI'
+            )
+            ->orderBy('p.MRPTGL_MASUK', 'DESC')
+            ->limit($limit) // kamu bisa naikkan ini kalau perlu
+            ->get();
+
+        if ($dx->isEmpty()) {
+            return response()->json(['message' => 'Tidak ada data untuk di-update.']);
+        }
+
+        DB::connection('sqlsrvsimrs')->beginTransaction();
+
+        try {
+            foreach ($dx as $item) {
+                // Pastikan nilai tidak null
+                if ($item->FMNOTRANSAKSI) {
+                    DB::connection('sqlsrvsimrs')
+                        ->table('MR_PENYAKIT')
+                        ->where('ID', $item->ID)
+                        ->update([
+                            'MRPNO_TRANSAKSI' => $item->FMNOTRANSAKSI
+                        ]);
+                }
+            }
+
+            DB::connection('sqlsrvsimrs')->commit();
+
+            return response()->json([
+                'message' => 'Update berhasil.',
+                'jumlah' => $dx->count()
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('sqlsrvsimrs')->rollBack();
+            return response()->json([
+                'error' => true,
+                'message' => 'Update gagal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
