@@ -2141,8 +2141,6 @@ class PasienRujukanRepository
             ->limit($limit) // kamu bisa naikkan ini kalau perlu
             ->get();
 
-        return $dx;
-
         if ($dx->isEmpty()) {
             return response()->json(['message' => 'Tidak ada data untuk di-update.']);
         }
