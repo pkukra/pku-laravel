@@ -612,7 +612,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                 style={{ marginTop: 10 }}
                 loading={loadingProcedureAlert}
             >
-                {diagnosaAlert?.length < 1 && <>Belum ada data</>}
+                {procedureAlert?.length < 1 && <>Belum ada data</>}
 
                 {procedureAlert?.map((item, index) => (
                     <p key={index} style={{ marginBottom: 10 }}>
