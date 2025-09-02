@@ -6,7 +6,7 @@ export default function Guest({ children, showTitle = true }) {
             <Layout.Content>
                 {showTitle && (
                     <Typography.Title level={2}>
-                        X App PKU Muhammadiyah Karangnyar
+                        Prima App PKU Muhammadiyah Karanganyar
                     </Typography.Title>
                 )}
                 <div className="guest-content">{children}</div>
