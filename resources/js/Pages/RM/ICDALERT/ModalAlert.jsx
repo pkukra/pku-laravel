@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
     Modal,
     Button,
-    Input,
     message,
     Space,
     Spin,
@@ -11,13 +10,14 @@ import {
     notification,
 } from "antd";
 import axios from "axios";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const { confirm } = Modal;
-const { TextArea } = Input;
 
 const ModalAlert = ({ dataCode }) => {
-    const [loadingTable, setLoadingTable] = useState(false); // loading tabel
-    const [loadingCrud, setLoadingCrud] = useState(false); // loading saat CRUD
+    const [loadingTable, setLoadingTable] = useState(false);
+    const [loadingCrud, setLoadingCrud] = useState(false);
     const [modalAlertOpen, setModalAlertOpen] = useState(false);
     const [alertData, setAlertData] = useState([]);
     const [editingIndex, setEditingIndex] = useState(null);
@@ -25,7 +25,7 @@ const ModalAlert = ({ dataCode }) => {
     const [newAlert, setNewAlert] = useState("");
 
     const [detailCode, setDetailCode] = useState(null);
-    const [isWarning, setIsWarning] = useState("0"); // default value radio rawan pending
+    const [isWarning, setIsWarning] = useState("0");
 
     const code = dataCode?.code || null;
 
@@ -145,7 +145,7 @@ const ModalAlert = ({ dataCode }) => {
     const handleChangeRawanPending = (e) => {
         const newValue = e.target.value;
         const numericValue = newValue === "1" ? 1 : 0;
-        const previousValue = isWarning; // simpan nilai lama
+        const previousValue = isWarning;
 
         const id = detailCode?.id;
         if (!id) {
@@ -161,7 +161,7 @@ const ModalAlert = ({ dataCode }) => {
             okText: "Ya",
             cancelText: "Batal",
             onOk: async () => {
-                setIsWarning(newValue); // update state
+                setIsWarning(newValue);
                 try {
                     await axios.post(route("rm.icd.update_warning", { id }), {
                         is_code_warning: numericValue,
@@ -171,11 +171,11 @@ const ModalAlert = ({ dataCode }) => {
                 } catch (err) {
                     console.error(err);
                     message.error("Gagal menyimpan data");
-                    setIsWarning(previousValue); // rollback jika gagal
+                    setIsWarning(previousValue);
                 }
             },
             onCancel: () => {
-                setIsWarning(previousValue); // rollback ke nilai lama
+                setIsWarning(previousValue);
             },
         });
     };
@@ -184,7 +184,7 @@ const ModalAlert = ({ dataCode }) => {
         if (detailCode) {
             setIsWarning(detailCode.is_code_warning == 1 ? "1" : "0");
         }
-    }, [detailCode]); // update setiap kali detailCode berubah
+    }, [detailCode]);
 
     return (
         <>
@@ -220,7 +220,7 @@ const ModalAlert = ({ dataCode }) => {
                         value={isWarning}
                         buttonStyle="solid"
                         onChange={handleChangeRawanPending}
-                        disabled={loadingCrud} // optional, agar tidak bisa klik saat CRUD
+                        disabled={loadingCrud}
                     >
                         <Radio.Button value="0">
                             Tidak Rawan Pending
@@ -229,13 +229,12 @@ const ModalAlert = ({ dataCode }) => {
                     </Radio.Group>
                 </Flex>
 
-                {/* TextArea untuk input alert baru */}
-                <TextArea
-                    rows={4}
-                    placeholder="Tambahkan alert baru di sini..."
+                {/* ReactQuill untuk input alert baru */}
+                <ReactQuill
+                    theme="snow"
                     value={newAlert}
-                    onChange={(e) => setNewAlert(e.target.value)}
-                    disabled={loadingCrud}
+                    onChange={setNewAlert}
+                    readOnly={loadingCrud}
                 />
                 <Button
                     type="primary"
@@ -299,26 +298,18 @@ const ModalAlert = ({ dataCode }) => {
                                             }}
                                         >
                                             {editingIndex === index ? (
-                                                <TextArea
-                                                    rows={4}
+                                                <ReactQuill
+                                                    theme="snow"
                                                     value={editingValue}
-                                                    onChange={(e) =>
-                                                        setEditingValue(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    autoFocus
-                                                    disabled={loadingCrud}
+                                                    onChange={setEditingValue}
+                                                    readOnly={loadingCrud}
                                                 />
                                             ) : (
-                                                <pre
-                                                    style={{
-                                                        whiteSpace: "pre-wrap",
-                                                        margin: 0,
+                                                <div
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: alert.description,
                                                     }}
-                                                >
-                                                    {alert.description}
-                                                </pre>
+                                                />
                                             )}
                                         </td>
                                         <td
