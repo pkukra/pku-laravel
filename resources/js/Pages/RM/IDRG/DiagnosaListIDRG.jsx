@@ -51,15 +51,22 @@ export default function Index({
             render: (text, record) => {
                 return (
                     <>
-                        {text}
+                        {text} <br />
+                        {record.is_code_warning == 1 && (
+                            <>
+                                <strong style={{ color: "red" }}>
+                                    (Rawan Pending){" "}
+                                </strong>
+                            </>
+                        )}
                         {(role === "klaim" || role === "superadmin") && (
                             <>
-                                <br />
                                 <small style={{ fontSize: 10 }}>
                                     created_at:{" "}
                                     {moment(record.created_at).format(
                                         "D MMMM YYYY HH:mm:ss"
-                                    )} created_by: {record.created_by}
+                                    )}{" "}
+                                    created_by: {record.created_by}
                                 </small>
                             </>
                         )}
@@ -144,6 +151,9 @@ export default function Index({
     const [diagnosa, setDiagnosa] = useState([]); // State untuk menyimpan data diagnosa
     const [loadingFetchDiagnosa, setLoadingFetchDiagnosa] = useState(false); // Loading state
 
+    const [loadingDiagnosaAlert, setLoadingDiagnosaAlert] = useState(false); // State untuk menyimpan data diagnosa
+    const [diagnosaAlert, setDiagnosaAlert] = useState(null); // State untuk menyimpan data diagnosa
+
     const no_sep = pasien?.FMNOSEP || null;
     let pasien_id = pasien?.FRPPASIEN_ID;
     let kode_reg = pasien?.FRPNOTRANSAKSIKJ;
@@ -183,12 +193,36 @@ export default function Index({
                 );
                 setDiagnosa(response?.data?.data || []); // Simpan data yang diterima ke dalam state
                 setDiagnosaTab(response?.data?.data || []); // Simpan data yang diterima ke dalam state parent component
+                const diagnosaCodesArr = response?.data?.data?.map(
+                    (item) => item.code
+                );
+                fetchAlertDiagnosa(diagnosaCodesArr);
             })
             .catch((error) => {
                 console.error("Error fetching diagnosa data:", error);
             })
             .finally(() => {
                 setLoadingFetchDiagnosa(false);
+            });
+    };
+
+    const fetchAlertDiagnosa = (diagnosaCodes = []) => {
+        if (diagnosaCodes.length === 0) return;
+
+        setLoadingDiagnosaAlert(true);
+
+        axios
+            .post(route("rm.icd.list_alert_by_codes"), {
+                codes: diagnosaCodes, // kirim array langsung ["I63.9","I10",...]
+            })
+            .then((response) => {
+                setDiagnosaAlert(response?.data?.data || []);
+            })
+            .catch((error) => {
+                console.error("Error fetching alert data:", error);
+            })
+            .finally(() => {
+                setLoadingDiagnosaAlert(false);
             });
     };
 
@@ -379,137 +413,165 @@ export default function Index({
     }, [pasien]);
 
     return (
-        <Card title={`Diagnosa`}>
-            <Row gutter={16} style={{ marginBottom: 10 }}>
-                <Col span={20}>
-                    <Tooltip
-                        title={"Shift+F1 untuk shortcut"}
-                        placement="topLeft"
-                    >
-                        <AutoComplete
-                            disabled={isFinalIDRG || disableInvalidSEP()}
-                            ref={inputRefStatusDdiagnosa}
-                            loading={loading}
-                            allowClear
-                            onChange={() => {
-                                setSelectedDiagnosaForm(null); // Clear the stored code
-                                setSelectedDiagnosaDisplay(""); // Clear the display value
-                            }}
-                            options={anotherOptions.map((item) => ({
-                                value: `${item.code} - ${item.description} - ${item.accpdx}`,
-                                label: (
-                                    <div
-                                        style={{
-                                            wordBreak: "break-word",
-                                            whiteSpace: "normal",
-                                            overflowWrap: "break-word",
-                                            display: "block",
-                                            color:
-                                                item.validcode != 1
-                                                    ? "red"
-                                                    : "inherit", // Warna merah jika invalid
-                                        }}
-                                    >
-                                        <strong>
-                                            {item.code}{" "}
-                                            {item.asterisk == 1 && <>* </>}
-                                        </strong>{" "}
-                                        -{" "}
-                                        {item.validcode != 1 && (
-                                            <span>(Invalid) </span>
-                                        )}
-                                        <span>{item.description}</span>
-                                    </div>
-                                ),
-                                disabled:
-                                    // selectedDiagnosa.includes(item.code) ||
-                                    item.validcode != 1,
-                            }))}
-                            style={{ width: "100%" }}
-                            onSelect={(value) => {
-                                const kdPenyakit = value.split(" - ")[0]; // Extract code
-                                const accpdx = value.split(" - ")[2]; // Extract code
-                                const displayValue = value; // Full display value with name and code
-                                setSelectedDiagnosaForm(kdPenyakit); // Store only the code
-                                setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
-                                setSelectedDiagnosaAcceptedPrimaryForm(accpdx);
-                            }}
-                            onSearch={(text) => {
-                                setSelectedDiagnosaDisplay(text); // Update the display value during search
-                                fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
-                            }}
-                            onClick={(text) => {
-                                fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
-                            }}
-                            placeholder="Cari Diagnosa/Penyakit"
-                            onScroll={onScroll} // Attach scroll event for lazy loading
-                            value={selectedDiagnosaDisplay} // Show both code and name in the input
-                        />
-                    </Tooltip>
-                </Col>
-                <Col span={4}>
-                    <Button
-                        type="primary"
-                        size="medium"
-                        style={{ width: "100%" }}
-                        onClick={saveDiagnosa}
-                        disabled={
-                            loadingSaveDiag || selectedDiagnosaForm === null
-                        }
-                    >
-                        {loadingSaveDiag ? (
-                            <Spin
-                                indicator={<LoadingOutlined spin />}
-                                size="small"
+        <>
+            <Card title={`Diagnosa`}>
+                <Row gutter={16} style={{ marginBottom: 10 }}>
+                    <Col span={20}>
+                        <Tooltip
+                            title={"Shift+F1 untuk shortcut"}
+                            placement="topLeft"
+                        >
+                            <AutoComplete
+                                disabled={isFinalIDRG || disableInvalidSEP()}
+                                ref={inputRefStatusDdiagnosa}
+                                loading={loading}
+                                allowClear
+                                onChange={() => {
+                                    setSelectedDiagnosaForm(null); // Clear the stored code
+                                    setSelectedDiagnosaDisplay(""); // Clear the display value
+                                }}
+                                options={anotherOptions.map((item) => ({
+                                    value: `${item.code} - ${item.description} - ${item.accpdx}`,
+                                    label: (
+                                        <div
+                                            style={{
+                                                wordBreak: "break-word",
+                                                whiteSpace: "normal",
+                                                overflowWrap: "break-word",
+                                                display: "block",
+                                                color:
+                                                    item.validcode != 1
+                                                        ? "red"
+                                                        : "inherit", // Warna merah jika invalid
+                                            }}
+                                        >
+                                            <strong>
+                                                {item.code}{" "}
+                                                {item.asterisk == 1 && <>* </>}
+                                            </strong>{" "}
+                                            -{" "}
+                                            {item.validcode != 1 && (
+                                                <span>(Invalid) </span>
+                                            )}
+                                            <span>{item.description}</span>
+                                        </div>
+                                    ),
+                                    disabled:
+                                        // selectedDiagnosa.includes(item.code) ||
+                                        item.validcode != 1,
+                                }))}
+                                style={{ width: "100%" }}
+                                onSelect={(value) => {
+                                    const kdPenyakit = value.split(" - ")[0]; // Extract code
+                                    const accpdx = value.split(" - ")[2]; // Extract code
+                                    const displayValue = value; // Full display value with name and code
+                                    setSelectedDiagnosaForm(kdPenyakit); // Store only the code
+                                    setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
+                                    setSelectedDiagnosaAcceptedPrimaryForm(
+                                        accpdx
+                                    );
+                                }}
+                                onSearch={(text) => {
+                                    setSelectedDiagnosaDisplay(text); // Update the display value during search
+                                    fetchSugetDiagnosa(text, 1); // Trigger the fetch for suggestions
+                                }}
+                                onClick={(text) => {
+                                    fetchSugetDiagnosa("a", 1); // Trigger the fetch for suggestions
+                                }}
+                                placeholder="Cari Diagnosa/Penyakit"
+                                onScroll={onScroll} // Attach scroll event for lazy loading
+                                value={selectedDiagnosaDisplay} // Show both code and name in the input
                             />
-                        ) : (
-                            <PlusOutlined />
-                        )}
-                    </Button>
-                </Col>
-            </Row>
-            <>
-                <Table
-                    pagination={false}
-                    columns={columns}
-                    dataSource={diagnosa}
-                    size="small"
-                    loading={loadingFetchDiagnosa}
-                    rowKey="id"
-                />
-            </>
-            {/* Modal for Confirming Deletion */}
-            <Modal
-                title="Hapus Diagnosa"
-                open={isModalHapusDiagnosaOpen}
-                onOk={() => {
-                    deleteDiagnosaId &&
-                        deleteDiagnosa(deleteDiagnosaId, selectedDiagnosaForm);
-                }}
-                onCancel={handleCancelDelDiagnosa}
-                okText="Ya"
-                cancelText="Tidak"
-                okButtonProps={{ danger: true }}
-            >
-                <p>Apakah anda yakin ingin menghapus diagnosa ini?</p>
-            </Modal>
+                        </Tooltip>
+                    </Col>
+                    <Col span={4}>
+                        <Button
+                            type="primary"
+                            size="medium"
+                            style={{ width: "100%" }}
+                            onClick={saveDiagnosa}
+                            disabled={
+                                loadingSaveDiag || selectedDiagnosaForm === null
+                            }
+                        >
+                            {loadingSaveDiag ? (
+                                <Spin
+                                    indicator={<LoadingOutlined spin />}
+                                    size="small"
+                                />
+                            ) : (
+                                <PlusOutlined />
+                            )}
+                        </Button>
+                    </Col>
+                </Row>
+                <>
+                    <Table
+                        pagination={false}
+                        columns={columns}
+                        dataSource={diagnosa}
+                        size="small"
+                        loading={loadingFetchDiagnosa}
+                        rowKey="id"
+                        rowClassName={(record) => {
+                            return record.is_code_warning == 1
+                                ? "rawan-pending"
+                                : "";
+                        }}
+                    />
+                </>
+                {/* Modal for Confirming Deletion */}
+                <Modal
+                    title="Hapus Diagnosa"
+                    open={isModalHapusDiagnosaOpen}
+                    onOk={() => {
+                        deleteDiagnosaId &&
+                            deleteDiagnosa(
+                                deleteDiagnosaId,
+                                selectedDiagnosaForm
+                            );
+                    }}
+                    onCancel={handleCancelDelDiagnosa}
+                    okText="Ya"
+                    cancelText="Tidak"
+                    okButtonProps={{ danger: true }}
+                >
+                    <p>Apakah anda yakin ingin menghapus diagnosa ini?</p>
+                </Modal>
 
-            {/* Modal for set primary */}
-            <Modal
-                title="Set Primary Diagnosa"
-                open={isModalSetPrimaryOpen}
-                onOk={() => {
-                    primaryDiagnosaId && makePrimaryDiagnoda(primaryDiagnosaId);
-                }}
-                onCancel={() => {
-                    setIsModalSetPrimaryOpen(false);
-                }}
-                okText="Ya"
-                cancelText="Tidak"
-                okButtonProps={{ primary: true }}
+                {/* Modal for set primary */}
+                <Modal
+                    title="Set Primary Diagnosa"
+                    open={isModalSetPrimaryOpen}
+                    onOk={() => {
+                        primaryDiagnosaId &&
+                            makePrimaryDiagnoda(primaryDiagnosaId);
+                    }}
+                    onCancel={() => {
+                        setIsModalSetPrimaryOpen(false);
+                    }}
+                    okText="Ya"
+                    cancelText="Tidak"
+                    okButtonProps={{ primary: true }}
+                >
+                    <p>
+                        Apakah anda yakin ingin menjadikan diagnosa ini primary?
+                    </p>
+                </Modal>
+            </Card>
+
+            {/* <Card
+                title={`Syarat/Kelengkapan Data Pengkodean Diagnosa`}
+                style={{ marginTop: 10 }}
+                loading={loadingDiagnosaAlert}
             >
-                <p>Apakah anda yakin ingin menjadikan diagnosa ini primary?</p>
-            </Modal>
-        </Card>
+                {diagnosaAlert?.length < 1 && <>Belum ada data</>}
+                {diagnosaAlert?.map((item, index) => (
+                    <p key={index} style={{ marginBottom: 10 }}>
+                        {item.icd_code} - {item.description}
+                    </p>
+                ))}
+            </Card> */}
+        </>
     );
 }

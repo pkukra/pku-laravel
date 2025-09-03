@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\RM\PasienRujukanController;
 use App\Http\Controllers\RM\PasienInapController;
+use App\Http\Controllers\RM\ICDController;
 use App\Http\Controllers\Cesemix\RanapMonitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckRole;
+use Illuminate\Support\Facades\Auth;
 
 Route::prefix('rm')->middleware(['auth'])->group(function () {
     Route::get('/pasien-inap/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
@@ -20,6 +22,26 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
 
     Route::get('/get_permintaan_rad_n_lab/{kode_reg}', [PasienRujukanController::class, 'get_permintaan_rad_n_lab'])->name('rm.get_permintaan_rad_n_lab');
     Route::get('/procedures_history/{pasien_id}', [PasienRujukanController::class, 'procedures_history'])->name('rm.procedures_history');
+
+    // Route::get('/list-icd', [ICDController::class, 'index'])->name('rm.icd.index');
+    Route::get('/list-icd', function () {
+        $allowed = ['admin@admin.com', 'dyah.rochani@gmail.com'];
+
+        if (! in_array(Auth::user()->email, $allowed)) {
+            abort(403, 'Unauthorized');
+        }
+
+        return app(ICDController::class)->index();
+    })->middleware('auth')->name('rm.icd.index');
+
+    Route::get('/list-icd-data', [ICDController::class, 'index_data'])->name('rm.icd.index_data');
+    Route::get('/detail-icd-data/{code}', [ICDController::class, 'detail_icd_data'])->name('rm.icd.detail_icd_data');
+    Route::post('/update-icd-warning/{id}', [ICDController::class, 'update_icd_warning'])->name('rm.icd.update_warning');
+    Route::get('/list-icd-alert/{code}', [ICDController::class, 'list_alert'])->name('rm.icd.list_alert');
+    Route::post('/list-icd-alert', [ICDController::class, 'list_alert_by_codes'])->name('rm.icd.list_alert_by_codes');
+    Route::post('/save-icd-alert', [ICDController::class, 'save_alert'])->name('rm.icd.save_alert');
+    Route::put('/update-icd-alert/{id}', [ICDController::class, 'update_alert'])->name('rm.icd.update_alert');
+    Route::delete('/delete-icd-alert/{id}', [ICDController::class, 'delete_alert'])->name('rm.icd.delete_alert');
 
     Route::prefix('pasien-rujukan')->group(function () {
 

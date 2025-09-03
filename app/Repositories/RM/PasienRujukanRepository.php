@@ -570,7 +570,7 @@ class PasienRujukanRepository
         $query =  DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM')
             ->join('ICD', 'PASIEN_DIAGNOSA_IM.code', '=', 'ICD.code')
-            ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.code', 'ICD.description', 'ICD.accpdx',)
+            ->select('PASIEN_DIAGNOSA_IM.*', 'ICD.code', 'ICD.description', 'ICD.accpdx', 'ICD.is_code_warning')
             ->orderBy('PASIEN_DIAGNOSA_IM.is_primary', 'DESC')
             ->orderBy('PASIEN_DIAGNOSA_IM.created_at', 'ASC');
 
