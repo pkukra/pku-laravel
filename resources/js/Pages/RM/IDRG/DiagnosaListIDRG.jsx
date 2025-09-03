@@ -560,7 +560,7 @@ export default function Index({
                 </Modal>
             </Card>
 
-            <Card
+            {/* <Card
                 title={`Syarat/Kelengkapan Data Pengkodean Diagnosa`}
                 style={{ marginTop: 10 }}
                 loading={loadingDiagnosaAlert}
@@ -571,7 +571,7 @@ export default function Index({
                         {item.icd_code} - {item.description}
                     </p>
                 ))}
-            </Card>
+            </Card> */}
         </>
     );
 }

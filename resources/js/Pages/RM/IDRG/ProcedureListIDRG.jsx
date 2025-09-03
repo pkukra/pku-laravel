@@ -607,7 +607,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                     </Row>
                 </Modal>
             </Card>
-            <Card
+            {/* <Card
                 title={`Syarat/Kelengkapan Data Pengkodean Procedure`}
                 style={{ marginTop: 10 }}
                 loading={loadingProcedureAlert}
@@ -619,7 +619,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                         {item.icd_code} - {item.description}
                     </p>
                 ))}
-            </Card>
+            </Card> */}
         </>
     );
 }
