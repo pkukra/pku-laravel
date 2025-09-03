@@ -1105,6 +1105,20 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->finalPasienUmum($kode_reg, $kode_reg_kj);
         return response()->json($data);
     }
+    
+    public function store_not_found_data(Request $request)
+    {
+        $validated = $request->validate([
+            'kode_reg' => 'required|string',
+            'urls' => 'required|string',
+        ]);
+
+        $kode_reg = $validated['kode_reg'];
+        $urls = $validated['urls'];
+
+        $data = $this->pasienRujukanRepo->insertStoreNotFound($kode_reg, $urls);
+        return response()->json($data);
+    }
 
     /**
      * dev_isi_kode_reg
