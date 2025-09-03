@@ -115,7 +115,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
             <Head title="Detail Kunjungan Pasien Rajal" />
             <div className="py-12">
                 {!pasien ? (
-                    <PasienRujukanNotFound />
+                    <PasienRujukanNotFound pasien={pasien} />
                 ) : (
                     <Row gutter={[5, 5]}>
                         <Col span={24}>

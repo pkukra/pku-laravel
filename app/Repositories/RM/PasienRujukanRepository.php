@@ -2224,14 +2224,15 @@ class PasienRujukanRepository
         }
     }
 
-    public function insertStoreNotFound($kode_reg_kj)
+    public function insertStoreNotFound($kode_reg, $urls)
     {
         $user = Auth::user();
         try {
             DB::connection('sqlsrv')
                 ->table('log_store_not_found')
                 ->insert([
-                    "object_id" => $kode_reg_kj,
+                    "object_id" => $kode_reg,
+                    "urls" => $urls,
                     "user_email" => $user->email,
                     "user_id" => $user->id,
                     "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),

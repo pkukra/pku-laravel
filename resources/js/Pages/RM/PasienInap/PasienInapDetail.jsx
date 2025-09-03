@@ -13,6 +13,7 @@ import PasienInapDetailSEP from "./PasienInapDetailSEP";
 import PasienInapDetailAssesmenAwal from "./PasienInapDetailAssesmenAwal";
 import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
+import PasienInapNotFound from "./PasienInapNotFound";
 import EKlaim from "../Eklaim";
 
 function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
@@ -56,7 +57,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
 
             <div className="py-12">
                 {!pasien ? (
-                    <Card>Pasien tidak ditemukan</Card>
+                    <PasienInapNotFound pasien={pasien} />
                 ) : (
                     <Row gutter={[5, 5]}>
                         <Col span={24}>

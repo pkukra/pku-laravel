@@ -1109,12 +1109,14 @@ class PasienRujukanController extends Controller
     public function store_not_found_data(Request $request)
     {
         $validated = $request->validate([
-            'kode_reg_kj' => 'required|string',
+            'kode_reg' => 'required|string',
+            'urls' => 'required|string',
         ]);
 
-        $kode_reg_kj = $validated['kode_reg_kj'];
+        $kode_reg = $validated['kode_reg'];
+        $urls = $validated['urls'];
 
-        $data = $this->pasienRujukanRepo->insertStoreNotFound($kode_reg_kj);
+        $data = $this->pasienRujukanRepo->insertStoreNotFound($kode_reg, $urls);
         return response()->json($data);
     }
 
