@@ -2223,4 +2223,23 @@ class PasienRujukanRepository
             ], 500);
         }
     }
+
+    public function insertStoreNotFound($kode_reg_kj)
+    {
+        $user = Auth::user();
+        try {
+            DB::connection('sqlsrv')
+                ->table('log_store_not_found')
+                ->insert([
+                    "object_id" => $kode_reg_kj,
+                    "user_email" => $user->email,
+                    "user_id" => $user->id,
+                    "created_at" => Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
+                ]);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('insertStoreNotFound insert err: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

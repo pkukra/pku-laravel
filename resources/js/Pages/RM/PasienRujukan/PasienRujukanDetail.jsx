@@ -12,6 +12,7 @@ import PasienRujukanDetailHasilLab from "./PasienRujukanDetailHasilLab";
 import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPulang";
 import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
+import PasienRujukanNotFound from "./PasienRujukanNotFound";
 import EKlaim from "../Eklaim";
 
 import { useState, useEffect } from "react";
@@ -114,7 +115,7 @@ function PasienRujukanDetail({ auth, pasien: initialPasien, kode_reg }) {
             <Head title="Detail Kunjungan Pasien Rajal" />
             <div className="py-12">
                 {!pasien ? (
-                    <Card>Pasien tidak ditemukan</Card>
+                    <PasienRujukanNotFound />
                 ) : (
                     <Row gutter={[5, 5]}>
                         <Col span={24}>
