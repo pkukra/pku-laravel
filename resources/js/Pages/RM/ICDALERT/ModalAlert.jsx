@@ -225,7 +225,21 @@ const ModalAlert = ({ dataCode }) => {
                         <Radio.Button value="0">
                             Tidak Rawan Pending
                         </Radio.Button>
-                        <Radio.Button value="1">Rawan Pending</Radio.Button>
+
+                        <Radio.Button
+                            value="1"
+                            style={{
+                                backgroundColor:
+                                    isWarning === "1" ? "#ff4d4f" : undefined,
+                                color: isWarning === "1" ? "white" : undefined,
+                                borderColor:
+                                    isWarning === "1" ? "#ff4d4f" : undefined, // border merah
+                                boxShadow:
+                                    isWarning === "1" ? "none" : undefined, // hilangkan efek biru
+                            }}
+                        >
+                            Rawan Pending
+                        </Radio.Button>
                     </Radio.Group>
                 </Flex>
 
