@@ -52,13 +52,13 @@ export default function Index({
                 return (
                     <>
                         {text} <br />
-                        {record.is_code_warning == 1 && (
+                        {/* {record.is_code_warning == 1 && (
                             <>
                                 <strong style={{ color: "red" }}>
                                     (Rawan Pending){" "}
                                 </strong>
                             </>
-                        )}
+                        )} */}
                         {(role === "klaim" || role === "superadmin") && (
                             <>
                                 <small style={{ fontSize: 10 }}>
