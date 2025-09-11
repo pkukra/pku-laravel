@@ -66,7 +66,7 @@ class RanapMonitRepository
             'TPI.FTTARIPINACBG3',
             'P.NAMAPASIEN',
             'DR.FMDDOKTERN AS DPJP',
-            'FMKODEKELAS AS KELAS_RAWAT',
+            'SEP.FMKODEKELAS AS KELAS_RAWAT',
             'K.FMKNAMA_KAMAR',
             'SEP.FMNOSEP'
         );
