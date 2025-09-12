@@ -209,6 +209,30 @@ export default function Index({ auth, role, bangsal }) {
             },
         },
         {
+            title: "Alert Kode Diagnosa & Prosedur",
+            dataIndex: "ALERTS",
+            key: "KODE_DIAGNOSA",
+            width: 170,
+            render: (alerts) => {
+                if (!alerts || alerts?.length === 0) {
+                    return <span style={{ color: "gray" }}>-</span>;
+                }
+
+                return (
+                    <ul style={{ paddingLeft: 16, margin: 0 }}>
+                        {alerts.map((a, idx) => (
+                            <li key={idx}>
+                                <strong>{a.icd_code}</strong>{" "}
+                                <span
+                                    dangerouslySetInnerHTML={{ __html: a.desc }}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                );
+            },
+        },
+        {
             title: "Perkiraan Klaim (Rp)",
             dataIndex: "klaim",
             key: "klaim",

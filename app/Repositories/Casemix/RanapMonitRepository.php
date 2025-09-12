@@ -138,7 +138,7 @@ class RanapMonitRepository
         $tindakan = $tindakanRows
             ->groupBy('NOSEP')
             ->map(fn($rows) => $rows->pluck('MRTKD_TINDAKAN')->implode(', '));
-        
+
         $allTindakanCodes = $tindakanRows->pluck('MRTKD_TINDAKAN')->unique()->toArray();
 
         // merger kode tindakan dan kode procedure
@@ -166,11 +166,23 @@ class RanapMonitRepository
             $item->DIAGNOSA = $diagnosa[$item->FMNOSEP] ?? '';
             $item->TINDAKAN = $tindakan[$item->FMNOSEP] ?? '';
 
-            // alert ICD by diagnosa
-            $codes = $item->DIAGNOSA ? explode(', ', $item->DIAGNOSA) : [];
-            $item->ALERTS = collect($codes)
-                ->map(fn($c) => $alerts[$c]->description ?? null)
-                ->filter()
+            // kumpulkan semua kode dari diagnosa & tindakan
+            $codes = collect([]);
+            if ($item->DIAGNOSA) {
+                $codes = $codes->merge(explode(', ', $item->DIAGNOSA));
+            }
+            if ($item->TINDAKAN) {
+                $codes = $codes->merge(explode(', ', $item->TINDAKAN));
+            }
+
+            // filter hanya yang ada di ICD_ALERT lalu bentuk [{icd_code, desc}]
+            $item->ALERTS = $codes
+                ->unique()
+                ->filter(fn($c) => isset($alerts[$c]))
+                ->map(fn($c) => [
+                    'icd_code' => $c,
+                    'desc'     => $alerts[$c]->description
+                ])
                 ->values()
                 ->toArray();
 
