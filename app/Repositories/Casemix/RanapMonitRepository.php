@@ -20,8 +20,17 @@ class RanapMonitRepository
     /**
      * Get the list of pasien ranap each bangsal based on bangsal_induk
      */
-    public function getOrCountPasienRanap($bulan, $tahun, $bangsal_induk, $nomer_rm, $status, $perPage = null, $offset = null, $countOnly = false, $order_kamar = false)
-    {
+    public function getOrCountPasienRanap(
+        $bulan,
+        $tahun,
+        $bangsal_induk,
+        $nomer_rm,
+        $status,
+        $perPage = null,
+        $offset = null,
+        $countOnly = false,
+        $order_kamar = false
+    ) {
         $query = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAP AS TPI')
             ->join('PASIENRAWATINAP AS PRI', function ($join) {
@@ -32,14 +41,12 @@ class RanapMonitRepository
             ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
             ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
             ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
-            ->when($bulan != null && $tahun != null, function ($query) use ($bulan, $tahun) {
-                return $query->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
-                    ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun]);
-            })
-            ->when($status === 'dirawat', fn($query) => $query->whereNull('PRI.PRWITGL_KELUAR'))
-            ->when($status === 'sudah_pulang', fn($query) => $query->whereNotNull('PRI.PRWITGL_KELUAR'));
+            ->when($bulan && $tahun, fn($q) => $q->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
+                ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun]))
+            ->when($status === 'dirawat', fn($q) => $q->whereNull('PRI.PRWITGL_KELUAR'))
+            ->when($status === 'sudah_pulang', fn($q) => $q->whereNotNull('PRI.PRWITGL_KELUAR'));
 
-        if ($bangsal_induk != 'all') {
+        if ($bangsal_induk && $bangsal_induk !== 'all') {
             $query->where('K.FMKKAMARINDUK', $bangsal_induk);
         }
 
@@ -51,7 +58,7 @@ class RanapMonitRepository
             return $query->count();
         }
 
-        $data = $query->select(
+        $query->select(
             'TPI.FTNO_TRANSAKSI',
             'PRI.PRWIKD_KAMAR',
             'PRI.PRWIKD_KELAS',
@@ -70,37 +77,56 @@ class RanapMonitRepository
             'K.FMKNAMA_KAMAR',
             'SEP.FMNOSEP'
         );
+
         if ($order_kamar) {
             $query->orderBy('K.FMKKAMARINDUK', 'asc');
         } else {
             $query->orderBy('TPI.FTTGL_TRANSAKSI', 'desc');
         }
-        $data = $data->offset($offset)
-            ->limit($perPage)
+
+        $data = $query->offset($offset)->limit($perPage)->get();
+
+        if ($data->isEmpty()) {
+            return $data;
+        }
+
+        // Ambil semua FTNO_TRANSAKSI sekali saja
+        $transaksiIds = $data->pluck('FTNO_TRANSAKSI')->toArray();
+
+        // === Ambil bills sekaligus ===
+        $bills = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIENINAPD')
+            ->select('FDTNO_TRANSAKSI', 'FDTQTY', 'FDTHARGA')
+            ->whereIn('FDTNO_TRANSAKSI', $transaksiIds)
+            ->where('FDTJENISTRANSAKSI', 'DB')
             ->get();
 
+        $billMap = [];
+        foreach ($bills as $b) {
+            $billMap[$b->FDTNO_TRANSAKSI] = ($billMap[$b->FDTNO_TRANSAKSI] ?? 0) + ($b->FDTQTY * $b->FDTHARGA);
+        }
 
+        // === Ambil casemix sekaligus ===
+        $casemix = DB::connection('sqlsrvsimrs')
+            ->table('CASEMIX_RANAP')
+            ->whereIn('NO_TRANSAKSI', $transaksiIds)
+            ->get()
+            ->keyBy('NO_TRANSAKSI');
 
-        return collect($data)->map(function ($data_detail) {
-            $ranap = get_casemix_ranap_data($data_detail->FTNO_TRANSAKSI);
-            if ($ranap) {
-                foreach ($ranap as $key => $value) {
-                    $data_detail->$key = $value;
+        // Merge hasil
+        return $data->map(function ($item) use ($billMap, $casemix) {
+            $item->TOTAL_BILL = $billMap[$item->FTNO_TRANSAKSI] ?? 0;
+
+            if (isset($casemix[$item->FTNO_TRANSAKSI])) {
+                foreach ($casemix[$item->FTNO_TRANSAKSI] as $key => $val) {
+                    $item->$key = $val;
                 }
             }
 
-            $sep = get_sep_by_kode_reg($data_detail->FTNO_TRANSAKSI);
-            if ($sep) {
-                foreach ($sep as $key => $value) {
-                    $data_detail->$key = $value;
-                }
-            }
-
-            $data_detail->TOTAL_BILL = get_total_bill($data_detail->FTNO_TRANSAKSI);
-
-            return $data_detail;
+            return $item;
         });
     }
+
 
 
     /**
