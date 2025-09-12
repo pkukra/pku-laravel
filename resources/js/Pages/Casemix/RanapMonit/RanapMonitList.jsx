@@ -195,21 +195,13 @@ export default function Index({ auth, role, bangsal }) {
             dataIndex: "FTNO_TRANSAKSI",
             key: "KODE_DIAGNOSA",
             render: (kodeReg, record) => {
-                const diagnosa = diagnosaData[kodeReg]
-                    ?.map((diagnosa) => diagnosa?.MRPKD_PENYAKIT)
-                    .join(" - ");
-
-                const prosedur = prosedurData[kodeReg]
-                    ?.map((procedure) => procedure?.MRTKD_TINDAKAN)
-                    .join(" - ");
-
                 return (
                     <>
-                        {diagnosa}
-                        {prosedur && (
+                        {record?.DIAGNOSA}
+                        {record?.TINDAKAN && (
                             <>
                                 <hr />
-                                {prosedur}
+                                {record?.TINDAKAN}
                             </>
                         )}
                     </>
@@ -426,57 +418,57 @@ export default function Index({ auth, role, bangsal }) {
         setOpenModalUpdate(true);
     };
 
-    const fetchDiagnosaProsedur = async (pasienList) => {
-        // Batalkan request sebelumnya jika ada
-        if (abortController) {
-            abortController.abort();
-        }
+    // const fetchDiagnosaProsedur = async (pasienList) => {
+    //     // Batalkan request sebelumnya jika ada
+    //     if (abortController) {
+    //         abortController.abort();
+    //     }
 
-        // Buat AbortController baru
-        const controller = new AbortController();
-        setAbortController(controller);
+    //     // Buat AbortController baru
+    //     const controller = new AbortController();
+    //     setAbortController(controller);
 
-        await Promise.allSettled(
-            pasienList.map(async (pasien) => {
-                try {
-                    const [diagnosaRes, prosedurRes] = await Promise.all([
-                        axios.get(
-                            route("casemix.ranap-monit.list_diagnosa", {
-                                kode_reg: pasien.FMNOSEP,
-                            }),
-                            { signal: controller.signal }
-                        ),
-                        axios.get(
-                            route("casemix.ranap-monit.list_procedure", {
-                                kode_reg: pasien.FMNOSEP,
-                            }),
-                            { signal: controller.signal }
-                        ),
-                    ]);
+    //     await Promise.allSettled(
+    //         pasienList.map(async (pasien) => {
+    //             try {
+    //                 const [diagnosaRes, prosedurRes] = await Promise.all([
+    //                     axios.get(
+    //                         route("casemix.ranap-monit.list_diagnosa", {
+    //                             kode_reg: pasien.FMNOSEP,
+    //                         }),
+    //                         { signal: controller.signal }
+    //                     ),
+    //                     axios.get(
+    //                         route("casemix.ranap-monit.list_procedure", {
+    //                             kode_reg: pasien.FMNOSEP,
+    //                         }),
+    //                         { signal: controller.signal }
+    //                     ),
+    //                 ]);
 
-                    // Update state setelah tiap pasien berhasil di-fetch
-                    setDiagnosaData((prev) => ({
-                        ...prev,
-                        [pasien.FTNO_TRANSAKSI]: diagnosaRes.data?.data || [],
-                    }));
+    //                 // Update state setelah tiap pasien berhasil di-fetch
+    //                 setDiagnosaData((prev) => ({
+    //                     ...prev,
+    //                     [pasien.FTNO_TRANSAKSI]: diagnosaRes.data?.data || [],
+    //                 }));
 
-                    setProsedurData((prev) => ({
-                        ...prev,
-                        [pasien.FTNO_TRANSAKSI]: prosedurRes.data?.data || [],
-                    }));
-                } catch (error) {
-                    if (axios.isCancel(error)) {
-                        console.log("Fetch dibatalkan:", pasien.FTNO_TRANSAKSI);
-                    } else {
-                        console.error(
-                            `Error fetching data for ${pasien.FTNO_TRANSAKSI}`,
-                            error
-                        );
-                    }
-                }
-            })
-        );
-    };
+    //                 setProsedurData((prev) => ({
+    //                     ...prev,
+    //                     [pasien.FTNO_TRANSAKSI]: prosedurRes.data?.data || [],
+    //                 }));
+    //             } catch (error) {
+    //                 if (axios.isCancel(error)) {
+    //                     console.log("Fetch dibatalkan:", pasien.FTNO_TRANSAKSI);
+    //                 } else {
+    //                     console.error(
+    //                         `Error fetching data for ${pasien.FTNO_TRANSAKSI}`,
+    //                         error
+    //                     );
+    //                 }
+    //             }
+    //         })
+    //     );
+    // };
 
     const fetchCustomers = async () => {
         try {
@@ -574,7 +566,7 @@ export default function Index({ auth, role, bangsal }) {
             setDataSource(data.pasiens);
             setTotalData(data.total);
 
-            fetchDiagnosaProsedur(data.pasiens);
+            // fetchDiagnosaProsedur(data.pasiens);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {

@@ -90,10 +90,11 @@ class RanapMonitRepository
             return $data;
         }
 
-        // Ambil semua FTNO_TRANSAKSI sekali saja
+        // === Kumpulkan semua ID ===
         $transaksiIds = $data->pluck('FTNO_TRANSAKSI')->toArray();
+        $noseps       = $data->pluck('FMNOSEP')->filter()->toArray();
 
-        // === Ambil bills sekaligus ===
+        // === Bills by transaksi ===
         $bills = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAPD')
             ->select('FDTNO_TRANSAKSI', 'FDTQTY', 'FDTHARGA')
@@ -106,28 +107,50 @@ class RanapMonitRepository
             $billMap[$b->FDTNO_TRANSAKSI] = ($billMap[$b->FDTNO_TRANSAKSI] ?? 0) + ($b->FDTQTY * $b->FDTHARGA);
         }
 
-        // === Ambil casemix sekaligus ===
+        // === Casemix by transaksi ===
         $casemix = DB::connection('sqlsrvsimrs')
             ->table('CASEMIX_RANAP')
             ->whereIn('NO_TRANSAKSI', $transaksiIds)
             ->get()
             ->keyBy('NO_TRANSAKSI');
 
-        // Merge hasil
-        return $data->map(function ($item) use ($billMap, $casemix) {
+        // === Diagnosa by NOSEP ===
+        $diagnosa = DB::connection('sqlsrvsimrs')
+            ->table('MR_PENYAKIT')
+            ->select('NOSEP', 'MRPKD_PENYAKIT')
+            ->whereIn('NOSEP', $noseps)
+            ->get()
+            ->groupBy('NOSEP')
+            ->map(fn($rows) => $rows->pluck('MRPKD_PENYAKIT')->implode(', '));
+
+        // === Tindakans by NOSEP ===
+        $tindakan = DB::connection('sqlsrvsimrs')
+            ->table('MR_TINDAKAN')
+            ->select('NOSEP', 'MRTKD_TINDAKAN')
+            ->whereIn('NOSEP', $noseps)
+            ->get()
+            ->groupBy('NOSEP')
+            ->map(fn($rows) => $rows->pluck('MRTKD_TINDAKAN')->implode(', '));
+
+        // === Merge hasil ===
+        return $data->map(function ($item) use ($billMap, $casemix, $diagnosa, $tindakan) {
+            // total bill by transaksi
             $item->TOTAL_BILL = $billMap[$item->FTNO_TRANSAKSI] ?? 0;
 
+            // casemix by transaksi
             if (isset($casemix[$item->FTNO_TRANSAKSI])) {
                 foreach ($casemix[$item->FTNO_TRANSAKSI] as $key => $val) {
                     $item->$key = $val;
                 }
             }
 
+            // diagnosa by SEP
+            $item->DIAGNOSA = $diagnosa[$item->FMNOSEP] ?? '';
+            $item->TINDAKAN = $tindakan[$item->FMNOSEP] ?? '';
+
             return $item;
         });
     }
-
-
 
     /**
      * Update data in CASEMIX_RANAP table
