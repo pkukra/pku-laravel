@@ -115,25 +115,43 @@ class RanapMonitRepository
             ->keyBy('NO_TRANSAKSI');
 
         // === Diagnosa by NOSEP ===
-        $diagnosa = DB::connection('sqlsrvsimrs')
+        $diagnosaRows = DB::connection('sqlsrvsimrs')
             ->table('MR_PENYAKIT')
             ->select('NOSEP', 'MRPKD_PENYAKIT')
             ->whereIn('NOSEP', $noseps)
-            ->get()
+            ->get();
+
+        $diagnosa = $diagnosaRows
             ->groupBy('NOSEP')
             ->map(fn($rows) => $rows->pluck('MRPKD_PENYAKIT')->implode(', '));
 
+        // === ICD Alerts (cek diagnosa di ICD_ALERT) ===
+        $allDiagnosaCodes = $diagnosaRows->pluck('MRPKD_PENYAKIT')->unique()->toArray();
+
         // === Tindakans by NOSEP ===
-        $tindakan = DB::connection('sqlsrvsimrs')
+        $tindakanRows = DB::connection('sqlsrvsimrs')
             ->table('MR_TINDAKAN')
             ->select('NOSEP', 'MRTKD_TINDAKAN')
             ->whereIn('NOSEP', $noseps)
-            ->get()
+            ->get();
+
+        $tindakan = $tindakanRows
             ->groupBy('NOSEP')
             ->map(fn($rows) => $rows->pluck('MRTKD_TINDAKAN')->implode(', '));
+        
+        $allTindakanCodes = $tindakanRows->pluck('MRTKD_TINDAKAN')->unique()->toArray();
+
+        // merger kode tindakan dan kode procedure
+        $allCodes = array_unique(array_merge($allDiagnosaCodes, $allTindakanCodes));
+
+        $alerts = DB::connection('sqlsrvsimrs')
+            ->table('ICD_ALERT')
+            ->whereIn('icd_code', $allCodes)
+            ->get()
+            ->keyBy('icd_code');
 
         // === Merge hasil ===
-        return $data->map(function ($item) use ($billMap, $casemix, $diagnosa, $tindakan) {
+        return $data->map(function ($item) use ($billMap, $casemix, $diagnosa, $tindakan, $alerts) {
             // total bill by transaksi
             $item->TOTAL_BILL = $billMap[$item->FTNO_TRANSAKSI] ?? 0;
 
@@ -144,13 +162,22 @@ class RanapMonitRepository
                 }
             }
 
-            // diagnosa by SEP
+            // diagnosa & tindakan by SEP
             $item->DIAGNOSA = $diagnosa[$item->FMNOSEP] ?? '';
             $item->TINDAKAN = $tindakan[$item->FMNOSEP] ?? '';
+
+            // alert ICD by diagnosa
+            $codes = $item->DIAGNOSA ? explode(', ', $item->DIAGNOSA) : [];
+            $item->ALERTS = collect($codes)
+                ->map(fn($c) => $alerts[$c]->description ?? null)
+                ->filter()
+                ->values()
+                ->toArray();
 
             return $item;
         });
     }
+
 
     /**
      * Update data in CASEMIX_RANAP table
