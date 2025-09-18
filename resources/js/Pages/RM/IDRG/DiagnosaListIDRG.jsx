@@ -52,13 +52,13 @@ export default function Index({
                 return (
                     <>
                         {text} <br />
-                        {/* {record.is_code_warning == 1 && (
+                        {record.is_code_warning == 1 && (
                             <>
                                 <strong style={{ color: "red" }}>
                                     (Rawan Pending){" "}
                                 </strong>
                             </>
-                        )} */}
+                        )}
                         {(role === "klaim" || role === "superadmin") && (
                             <>
                                 <small style={{ fontSize: 10 }}>
@@ -560,18 +560,22 @@ export default function Index({
                 </Modal>
             </Card>
 
-            {/* <Card
-                title={`Syarat/Kelengkapan Data Pengkodean Diagnosa`}
+            <Card
+                title={`Analisa/Syarat Pengkodean Diagnosa`}
                 style={{ marginTop: 10 }}
                 loading={loadingDiagnosaAlert}
             >
                 {diagnosaAlert?.length < 1 && <>Belum ada data</>}
                 {diagnosaAlert?.map((item, index) => (
-                    <p key={index} style={{ marginBottom: 10 }}>
-                        {item.icd_code} - {item.description}
-                    </p>
+                    <div
+                        key={index}
+                        style={{ marginBottom: 10 }}
+                        dangerouslySetInnerHTML={{
+                            __html: `${item.icd_code} - ${item.description}`,
+                        }}
+                    />
                 ))}
-            </Card> */}
+            </Card>
         </>
     );
 }
