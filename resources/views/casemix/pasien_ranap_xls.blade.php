@@ -21,122 +21,143 @@ function naikKelasSanitize($naik_kelas)
 
     return null;
 }
+$no_urut = 1;
 ?>
 
 <table>
     <tr>
-        <td>Kamar</td>
-        <td>
-            No Transakasi
-        </td>
-        <td>
-            Nama Pasien
-        </td>
+        <td>No Urut</td>
         <td>Nomer RM</td>
+        <td>Nama Pasien</td>
+        <td>Alamat</td>
+        <td>Umur</td>
+        <td>Jenis Kelamin</td>
+        <td>Kode Diagnosa Utama</td>
+        <td>Deskripsi Diagnosa Utama</td>
+        <td>Diagnosa Sekunder</td>
+        <td>Tindakan</td>
+        <td>Bangsal</td>
+        <td>Cara Pulang</td>
         <td>DPJP</td>
         <td>Tanggal Masuk</td>
-        <td>Total Hari Rawat</td>
-        <!-- <td>
-            Pemeriksaan Penunjang
-        </td>
-        <td>
-            Hasil Penunjang Abnormal
-        </td> -->
-        <td>
-            No SEP
-        </td>
-        <td>
-            Hak Kelas
-        </td>
-        <td>Naik Kelas</td>
-        <td>
-            Kemungkinan Kode Diagnosa
-        </td>
-        <td>
-            Kemungkinan Kode Prosedur
-        </td>
-        <td>
-            Perkiraan Klaim (Rp)
-        </td>
-        <td>
-            Billing Sementara (Rp)
-        </td>
-        <td>
-            selisih (Rp)
-        </td>
-        <!-- <td>
-            Konfirmasi Koder
-        </td>
-        <td>
-            Rekomendasi Dokter Bangsal
-        </td>
-        <td>
-            Follow Up SPV Bangsal
-        </td>
-        <td>
-            Follow Up MPP
-        </td> -->
+        <td>Tanggal Keluar</td>
+        <td>LOS</td>
+        <td>Tarif INACBG</td>
+        <td>Tarif RS</td>
+        <td>Selisih</td>
+        <td>Kode Grouper</td>
+        <td>Penjamin</td>
+        <td>Pontensi Readmisi</td>
     </tr>
     @foreach ($data as $val)
 
+    <?php
+    $tglMasuk = \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->startOfDay();
+    $hariIni = now()->startOfDay();
+    $selisihHari = $tglMasuk->diffInDays($hariIni) + ($tglMasuk <= $hariIni ? 1 : 0);
+    ?>
+
+    <?php
+    $perkiraanKlaim = null;
+    $naikKelas = null;
+    if (isset($val->RAWAT_NAIK)) {
+        $naikKelas = naikKelasSanitize($val->RAWAT_NAIK);
+        if (!$naikKelas) {
+            $perkiraanKlaim = $val->FTTARIPINACBG;
+        } elseif ($naikKelas == 1) {
+            $perkiraanKlaim = $val->FTTARIPINACBG1;
+        } elseif ($naikKelas == 2) {
+            $perkiraanKlaim = $val->FTTARIPINACBG2;
+        } elseif ($naikKelas == "vip") {
+            $perkiraanKlaim = $val->FTTARIPINACBG1;
+        } else {
+            $perkiraanKlaim = null;
+        }
+    }
+    ?>
+
+
+    <?php
+    $tglMasuk = \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->startOfDay();
+    $tglKeluar = \Carbon\Carbon::parse($val->PRWITGL_KELUAR)->startOfDay();
+    $selisihHari = $tglMasuk->diffInDays($tglKeluar) + ($tglMasuk <= $tglKeluar ? 1 : 0);
+    $selisihTarif = (int) $val->FTTARIPINACBG - (int) $val->TOTAL_BILL;
+    ?>
+
     <tr>
-        <td>{{ $val->FMKNAMA_KAMAR ?? '' }}</td>
-        <td>{{ $val->FTNO_TRANSAKSI ?? '' }}</td>
-        <td>{{ $val->NAMAPASIEN ?? '' }}</td>
+        <td>{{ $no_urut }}</td>
         <td>{{ $val->FTKD_PASIEN ?? '' }}</td>
+        <td>{{ $val->NAMAPASIEN ?? '' }}</td>
+        <td>{{ $val->ALAMAT ?? '' }}</td>
+        <td>
+            @if(!empty($val->TGL_LAHIR))
+            {{ \Carbon\Carbon::parse($val->TGL_LAHIR)->age }}
+            @else
+            -
+            @endif
+        </td>
+        <td>
+            @if($val->JENIS_KELAMIN == 1)
+            L
+            @elseif($val->JENIS_KELAMIN == 2)
+            P
+            @else
+            -
+            @endif
+        </td>
+
+        {{-- Diagnosa utama (kode) --}}
+        <td>
+            {{ $val->DIAGNOSA_LENGKAP
+            ->where('is_primary', 1)
+            ->pluck('code')
+            ->implode("\n") ?: '-' }}
+        </td>
+
+        {{-- Diagnosa utama (deskripsi) --}}
+        <td>
+            {{ $val->DIAGNOSA_LENGKAP
+            ->where('is_primary', 1)
+            ->pluck('description')
+            ->implode("\n") }}
+        </td>
+
+        {{-- Diagnosa sekunder --}}
+        <td>
+            {{ $val->DIAGNOSA_LENGKAP
+        ->where('is_primary', '!=', 1)
+        ->map(fn($d) => $d->code . ' - ' . $d->description)
+        ->implode(PHP_EOL) }}
+        </td>
+
+        {{-- Tindakan --}}
+        <td>
+            {{ $val->TINDAKAN_LENGKAP
+        ->where('is_primary', '!=', 1)
+        ->map(fn($t) => $t->code . ' - ' . $t->description)
+        ->implode(PHP_EOL) }}
+        </td>
+
+        <td>{{ $val->FMKNAMA_KAMAR ?? '' }}</td>
+        <td>{{ $val->CARA_PULANG }}</td>
         <td>{{ $val->DPJP ?? '' }}</td>
-        <td>{{ $val->FTTGL_TRANSAKSI ? \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->format('d-m-Y') : '' }}</td>
-        <?php
-        $tglMasuk = \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->startOfDay();
-        $hariIni = now()->startOfDay();
-        $selisihHari = $tglMasuk->diffInDays($hariIni) + ($tglMasuk <= $hariIni ? 1 : 0);
-        ?>
-
-        <?php
-        $perkiraanKlaim = null;
-        $naikKelas = null;
-        if (isset($val->RAWAT_NAIK)) {
-            $naikKelas = naikKelasSanitize($val->RAWAT_NAIK);
-            if (!$naikKelas) {
-                $perkiraanKlaim = $val->FTTARIPINACBG;
-            } elseif ($naikKelas == 1) {
-                $perkiraanKlaim = $val->FTTARIPINACBG1;
-            } elseif ($naikKelas == 2) {
-                $perkiraanKlaim = $val->FTTARIPINACBG2;
-            } elseif ($naikKelas == "vip") {
-                $perkiraanKlaim = $val->FTTARIPINACBG1;
-            } else {
-                $perkiraanKlaim = null;
-            }
-        }
-        ?>
-
-        <?php
-        $selisih = null;
-        if (!empty($val->NO_SEP)) {
-            $selisih = $perkiraanKlaim - ($val->TOTAL_BILL ?? 0);
-        }
-        ?>
-
+        <td>{{ $val->PRWITGL_MASUK ? \Carbon\Carbon::parse($val->PRWITGL_MASUK)->format('d-m-Y H:i:s') : '' }}</td>
+        <td>{{ $val->PRWITGL_KELUAR ? \Carbon\Carbon::parse($val->PRWITGL_KELUAR)->format('d-m-Y H:i:s') : '' }}</td>
         <td>{{ $selisihHari }}</td>
-        <!-- <td>{{ $val->PEMERIKSAAN_PENUNJANG ?? '' }}</td>
-        <td>{{ $val->HASIL_PENUNJANG_ABNORMAL ?? '' }}</td> -->
-        <td>{{ $val->NO_SEP ?? '' }}</td>
-        <td>{{ $val->KELAS_RAWAT ?? '' }}</td>
-        <td>{{ $naikKelas }}</td>
-        <td>
-            {{ get_diagnosa_by_transaksi($val->FTNO_TRANSAKSI)->pluck('MRPKD_PENYAKIT')->implode(', ') }}
-        </td>
-        <td>
-            {{ get_procedure_by_transaksi($val->FTNO_TRANSAKSI)->pluck('MRTKD_TINDAKAN')->implode(', ') }}
-        </td>
-        <td>{{ $perkiraanKlaim }}</td>
+        <td>{{ $val->FTTARIPINACBG }}</td>
         <td>{{ $val->TOTAL_BILL ?? '' }}</td>
-        <td>{{ $selisih }}</td>
-        <!-- <td>{{ isset($val->KONFIRMASI_KODER)?strip_tags($val->KONFIRMASI_KODER):"" }}</td>
-        <td>{{ isset($val->REKOMENDASI_DOKTER_BANGSAL)?strip_tags($val->REKOMENDASI_DOKTER_BANGSAL):"" }}</td>
-        <td>{{ isset($val->FOLLOW_UP_SPV_BANGSAL)?strip_tags($val->FOLLOW_UP_SPV_BANGSAL):"" }}</td>
-        <td>{{ isset($val->FOLLOW_UP_MPP)?strip_tags($val->FOLLOW_UP_MPP):"" }}</td> -->
+        <td>{{ $selisihTarif }}</td>
+        <td>{{ $val->FTKODEINACBG ?? '' }}</td>
+        <td>{{ $val->PENJAMIN ?? '' }}</td>
+
+        {{-- Alerts --}}
+        <td>
+            {{ collect($val->ALERTS)
+        ->map(fn($a) => $a->icd_code . ' - ' . strip_tags($a->desc))
+        ->implode(PHP_EOL) }}
+        </td>
     </tr>
+
+    <?php $no_urut++; ?>
     @endforeach
 </table>

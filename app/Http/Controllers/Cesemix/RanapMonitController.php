@@ -25,7 +25,7 @@ class RanapMonitController extends Controller
     public function list_pasien()
     {
         $bangsal =  $this->RanapMonitRepo->getListKamarIndukRanap();
-        
+
         return Inertia::render('Casemix/RanapMonit/RanapMonitList', [
             "bangsal" => $bangsal,
             'role' => Auth::user()->role,
@@ -79,8 +79,12 @@ class RanapMonitController extends Controller
         // Get all data without pagination
         $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false);
 
+        // return view('casemix.pasien_ranap_xls', [
+        //     'data' => $data,
+        // ]);
+
         // Create and return Excel file
-        return Excel::download(new PasienRanapExport($data), 'pasien-ranap-'.date('Y-m-d').'.xlsx');
+        return Excel::download(new PasienRanapExport($data), 'pasien-ranap-' . date('Y-m-d') . '.xlsx');
     }
 
     // update_monit_row

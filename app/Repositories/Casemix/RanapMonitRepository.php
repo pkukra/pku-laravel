@@ -41,6 +41,7 @@ class RanapMonitRepository
             ->leftJoin('DOKTER AS DR', 'DR.FMDDOKTER_ID', '=', 'PRI.PRWIKD_DOKTER')
             ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
             ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
+            ->leftJoin('CUSTOMER AS C', 'C.CUSID', '=', 'PRI.PRWIKD_CUSTOMER')
             ->when($bulan && $tahun, fn($q) => $q->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
                 ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun]))
             ->when($status === 'dirawat', fn($q) => $q->whereNull('PRI.PRWITGL_KELUAR'))
@@ -63,15 +64,21 @@ class RanapMonitRepository
             'PRI.PRWIKD_KAMAR',
             'PRI.PRWIKD_KELAS',
             'PRI.PRWIKD_DOKTER',
+            'PRI.PRWITGL_MASUK',
             'PRI.PRWITGL_KELUAR',
             'PRI.PRWIKD_CUSTOMER',
+            'C.NAME AS PENJAMIN',
             'TPI.FTTGL_TRANSAKSI',
             'TPI.FTKD_PASIEN',
+            'TPI.FTKODEINACBG',
             'TPI.FTTARIPINACBG',
             'TPI.FTTARIPINACBG1',
             'TPI.FTTARIPINACBG2',
             'TPI.FTTARIPINACBG3',
             'P.NAMAPASIEN',
+            'P.TGL_LAHIR',
+            'P.JENIS_KELAMIN',
+            'P.ALAMAT',
             'DR.FMDDOKTERN AS DPJP',
             'SEP.FMKODEKELAS AS KELAS_RAWAT',
             'K.FMKNAMA_KAMAR',
@@ -116,30 +123,45 @@ class RanapMonitRepository
 
         // === Diagnosa by NOSEP ===
         $diagnosaRows = DB::connection('sqlsrvsimrs')
-            ->table('MR_PENYAKIT')
-            ->select('NOSEP', 'MRPKD_PENYAKIT')
-            ->whereIn('NOSEP', $noseps)
+            ->table('PASIEN_DIAGNOSA_IM as A')
+            ->leftJoin('ICD', 'A.code', '=', 'ICD.code')
+            ->select(
+                'A.code',
+                'A.no_sep as no_sep',
+                'A.is_primary',
+                'ICD.description'
+            )
+            ->whereIn('A.no_sep', $noseps)
             ->get();
 
+        $diagnosaLengkap = $diagnosaRows->groupBy('no_sep');
+
         $diagnosa = $diagnosaRows
-            ->groupBy('NOSEP')
-            ->map(fn($rows) => $rows->pluck('MRPKD_PENYAKIT')->implode(', '));
+            ->groupBy('A.no_sep')
+            ->map(fn($rows) => $rows->pluck('code')->implode(', '));
 
         // === ICD Alerts (cek diagnosa di ICD_ALERT) ===
-        $allDiagnosaCodes = $diagnosaRows->pluck('MRPKD_PENYAKIT')->unique()->toArray();
+        $allDiagnosaCodes = $diagnosaRows->pluck('code')->unique()->toArray();
 
         // === Tindakans by NOSEP ===
         $tindakanRows = DB::connection('sqlsrvsimrs')
-            ->table('MR_TINDAKAN')
-            ->select('NOSEP', 'MRTKD_TINDAKAN')
-            ->whereIn('NOSEP', $noseps)
+            ->table('PASIEN_TINDAKAN_IM as A')
+            ->leftJoin('ICD', 'A.code', '=', 'ICD.code')
+            ->select(
+                'A.code',
+                'A.no_sep as no_sep',
+                'A.is_primary',
+                'ICD.description'
+            )
+            ->whereIn('A.no_sep', $noseps)
             ->get();
+        $tindakanLengkap = $tindakanRows->groupBy('no_sep');
 
         $tindakan = $tindakanRows
             ->groupBy('NOSEP')
-            ->map(fn($rows) => $rows->pluck('MRTKD_TINDAKAN')->implode(', '));
+            ->map(fn($rows) => $rows->pluck('code')->implode(', '));
 
-        $allTindakanCodes = $tindakanRows->pluck('MRTKD_TINDAKAN')->unique()->toArray();
+        $allTindakanCodes = $tindakanRows->pluck('code')->unique()->toArray();
 
         // merger kode tindakan dan kode procedure
         $allCodes = array_unique(array_merge($allDiagnosaCodes, $allTindakanCodes));
@@ -150,8 +172,23 @@ class RanapMonitRepository
             ->get()
             ->keyBy('icd_code');
 
+
+        // cari cara pulang by transaksi
+        $caraPulangRows = DB::connection('sqlsrvemr')
+            ->table('TAB_PX_PULANG_RESUME as R')
+            ->leftJoin('DEV_CARA_PULANG_RANAP as M', 'M.id', '=', 'R.FS_CARA_PULANG')
+            ->select('R.FS_KD_REG', 'M.nama')
+            ->whereIn('R.FS_KD_REG', $transaksiIds) // atau pakai $noseps jika FS_KD_REG = no_sep
+            ->get();
+
+        $caraPulangMap = [];
+        foreach ($caraPulangRows as $row) {
+            // jika ada duplikat, ambil yang terakhir sesuai order DESC
+            $caraPulangMap[$row->FS_KD_REG] = $row->nama;
+        }
+
         // === Merge hasil ===
-        return $data->map(function ($item) use ($billMap, $casemix, $diagnosa, $tindakan, $alerts) {
+        return $data->map(function ($item) use ($billMap, $casemix, $diagnosa, $diagnosaLengkap, $tindakan, $tindakanLengkap, $alerts, $caraPulangMap) {
             // total bill by transaksi
             $item->TOTAL_BILL = $billMap[$item->FTNO_TRANSAKSI] ?? 0;
 
@@ -164,7 +201,10 @@ class RanapMonitRepository
 
             // diagnosa & tindakan by SEP
             $item->DIAGNOSA = $diagnosa[$item->FMNOSEP] ?? '';
+            $item->DIAGNOSA_LENGKAP = $diagnosaLengkap[$item->FMNOSEP] ?? collect();
+
             $item->TINDAKAN = $tindakan[$item->FMNOSEP] ?? '';
+            $item->TINDAKAN_LENGKAP = $tindakanLengkap[$item->FMNOSEP] ?? collect();
 
             // kumpulkan semua kode dari diagnosa & tindakan
             $codes = collect([]);
@@ -175,11 +215,13 @@ class RanapMonitRepository
                 $codes = $codes->merge(explode(', ', $item->TINDAKAN));
             }
 
+            $item->CARA_PULANG = $caraPulangMap[$item->FTNO_TRANSAKSI] ?? '';
+
             // filter hanya yang ada di ICD_ALERT lalu bentuk [{icd_code, desc}]
             $item->ALERTS = $codes
                 ->unique()
                 ->filter(fn($c) => isset($alerts[$c]))
-                ->map(fn($c) => [
+                ->map(fn($c) => (object)[
                     'icd_code' => $c,
                     'desc'     => $alerts[$c]->description
                 ])
