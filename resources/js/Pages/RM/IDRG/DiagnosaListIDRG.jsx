@@ -207,7 +207,10 @@ export default function Index({
     };
 
     const fetchAlertDiagnosa = (diagnosaCodes = []) => {
-        if (diagnosaCodes.length === 0) return;
+        if (diagnosaCodes.length === 0) {
+            setDiagnosaAlert([]);
+            return;
+        };
 
         setLoadingDiagnosaAlert(true);
 

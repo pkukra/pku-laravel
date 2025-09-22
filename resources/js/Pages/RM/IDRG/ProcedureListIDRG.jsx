@@ -214,7 +214,10 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
     };
 
     const fetchAlertProcedure = (procedureCodes = []) => {
-        if (procedureCodes.length === 0) return;
+        if (procedureCodes.length == 0) {
+            setProcedureAlert([]);
+            return;
+        }
         setLoadingProcedureAlert(true);
         axios
             .post(route("rm.icd.list_alert_by_codes"), {
