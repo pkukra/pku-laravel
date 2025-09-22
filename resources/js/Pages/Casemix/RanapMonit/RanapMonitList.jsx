@@ -197,11 +197,11 @@ export default function Index({ auth, role, bangsal }) {
             render: (kodeReg, record) => {
                 return (
                     <>
-                        {record?.DIAGNOSA}
-                        {record?.TINDAKAN && (
+                        {record?.DIAGNOSA_LENGKAP.map(item => item.code).join(", ")}
+                        {record?.TINDAKAN_LENGKAP && (
                             <>
                                 <hr />
-                                {record?.TINDAKAN}
+                                {record?.TINDAKAN_LENGKAP.map(item => item.code).join(", ")}
                             </>
                         )}
                     </>
