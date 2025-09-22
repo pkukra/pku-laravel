@@ -129,6 +129,7 @@ class RanapMonitRepository
                 'A.code',
                 'A.no_sep as no_sep',
                 'A.is_primary',
+                'ICD.is_code_warning',
                 'ICD.description'
             )
             ->whereIn('A.no_sep', $noseps)

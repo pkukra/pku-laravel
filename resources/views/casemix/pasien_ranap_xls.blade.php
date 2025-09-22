@@ -1,163 +1,114 @@
-<?php
-function naikKelasSanitize($naik_kelas)
-{
-    if (!is_string($naik_kelas)) return null;
-
-    $naik_kelas = trim($naik_kelas);
-    if ($naik_kelas === '' || $naik_kelas === '-- Pilih --') return null;
-
-    if (preg_match('/^(\d+)\.\s*(.+)$/', $naik_kelas, $matches)) {
-        $angka = (int) $matches[1];
-
-        $mapping = [
-            1 => '1',
-            2 => 'vip',
-            3 => '1',
-            4 => '2',
-        ];
-
-        return $mapping[$angka] ?? null;
-    }
-
-    return null;
-}
-$no_urut = 1;
-?>
-
-<table>
+<table border="1" cellpadding="5">
     <tr>
-        <td>No Urut</td>
-        <td>Nomer RM</td>
-        <td>Nama Pasien</td>
-        <td>Alamat</td>
-        <td>Umur</td>
-        <td>Jenis Kelamin</td>
-        <td>Kode Diagnosa Utama</td>
-        <td>Deskripsi Diagnosa Utama</td>
-        <td>Diagnosa Sekunder</td>
-        <td>Tindakan</td>
-        <td>Bangsal</td>
-        <td>Cara Pulang</td>
-        <td>DPJP</td>
-        <td>Tanggal Masuk</td>
-        <td>Tanggal Keluar</td>
-        <td>LOS</td>
-        <td>Tarif INACBG</td>
-        <td>Tarif RS</td>
-        <td>Selisih</td>
-        <td>Kode Grouper</td>
-        <td>Penjamin</td>
-        <td>Pontensi Readmisi</td>
+        <th>No Urut</th>
+        <th>Nomer RM</th>
+        <th>Nama Pasien</th>
+        <th>Alamat</th>
+        <th>Umur</th>
+        <th>Jenis Kelamin</th>
+        <th>Kode Diagnosa Utama</th>
+        <th>Deskripsi Diagnosa Utama</th>
+        <th>Diagnosa Sekunder</th>
+        <th>Tindakan</th>
+        <th>Alert</th>
+        <th>Bangsal</th>
+        <th>Cara Pulang</th>
+        <th>DPJP</th>
+        <th>Tanggal Masuk</th>
+        <th>Tanggal Keluar</th>
+        <th>LOS</th>
+        <th>Tarif INACBG</th>
+        <th>Tarif RS</th>
+        <th>Selisih</th>
+        <th>Kode Grouper</th>
+        <th>Penjamin</th>
     </tr>
+
+    @php $no_urut = 1; @endphp
     @foreach ($data as $val)
+    @php
+    // kumpulkan diagnosa sekunder
+    $diagnosaSekunder = collect($val->DIAGNOSA_LENGKAP)
+    ->where('is_primary', '!=', 1)
+    ->map(fn($d) => $d->code.($d->is_code_warning ? ' (Rawan Pending) ' : '') . ' - ' . $d->description)
+    ->values();
 
-    <?php
-    $tglMasuk = \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->startOfDay();
-    $hariIni = now()->startOfDay();
-    $selisihHari = $tglMasuk->diffInDays($hariIni) + ($tglMasuk <= $hariIni ? 1 : 0);
-    ?>
+    // kumpulkan tindakan
+    $tindakan = collect($val->TINDAKAN_LENGKAP)
+    ->where('is_primary', '!=', 1)
+    ->map(fn($t) => $t->code . ' - ' . $t->description)
+    ->values();
 
-    <?php
-    $perkiraanKlaim = null;
-    $naikKelas = null;
-    if (isset($val->RAWAT_NAIK)) {
-        $naikKelas = naikKelasSanitize($val->RAWAT_NAIK);
-        if (!$naikKelas) {
-            $perkiraanKlaim = $val->FTTARIPINACBG;
-        } elseif ($naikKelas == 1) {
-            $perkiraanKlaim = $val->FTTARIPINACBG1;
-        } elseif ($naikKelas == 2) {
-            $perkiraanKlaim = $val->FTTARIPINACBG2;
-        } elseif ($naikKelas == "vip") {
-            $perkiraanKlaim = $val->FTTARIPINACBG1;
-        } else {
-            $perkiraanKlaim = null;
-        }
-    }
-    ?>
+    // kumpulkan alert
+    $alerts = collect($val->ALERTS)
+    ->map(fn($a) => $a['icd_code'].' - '.strip_tags($a['description']))
+    ->values();
 
+    // ambil jumlah baris terbanyak
+    $rowCount = max($diagnosaSekunder->count(), $tindakan->count(), $alerts->count(), 1);
+    @endphp
 
-    <?php
-    $tglMasuk = \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->startOfDay();
-    $tglKeluar = \Carbon\Carbon::parse($val->PRWITGL_KELUAR)->startOfDay();
-    $selisihHari = $tglMasuk->diffInDays($tglKeluar) + ($tglMasuk <= $tglKeluar ? 1 : 0);
-    $selisihTarif = (int) $val->FTTARIPINACBG - (int) $val->TOTAL_BILL;
-    ?>
-
-    <tr>
-        <td>{{ $no_urut }}</td>
-        <td>{{ $val->FTKD_PASIEN ?? '' }}</td>
-        <td>{{ $val->NAMAPASIEN ?? '' }}</td>
-        <td>{{ $val->ALAMAT ?? '' }}</td>
-        <td>
-            @if(!empty($val->TGL_LAHIR))
-            {{ \Carbon\Carbon::parse($val->TGL_LAHIR)->age }}
-            @else
-            -
+    @for ($i = 0; $i < $rowCount; $i++)
+        <tr>
+        @if ($i === 0)
+        {{-- kolom utama dengan rowspan --}}
+        <td rowspan="{{ $rowCount }}">{{ $no_urut }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->FTKD_PASIEN ?? '' }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->NAMAPASIEN ?? '' }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->ALAMAT ?? '' }}</td>
+        <td rowspan="{{ $rowCount }}">
+            {{ !empty($val->TGL_LAHIR) ? \Carbon\Carbon::parse($val->TGL_LAHIR)->age : '-' }}
+        </td>
+        <td rowspan="{{ $rowCount }}">
+            @if ($val->JENIS_KELAMIN == 1) L
+            @elseif ($val->JENIS_KELAMIN == 2) P
+            @else -
             @endif
         </td>
-        <td>
-            @if($val->JENIS_KELAMIN == 1)
-            L
-            @elseif($val->JENIS_KELAMIN == 2)
-            P
-            @else
-            -
-            @endif
+        <td rowspan="{{ $rowCount }}">
+            {{ $val->DIAGNOSA_LENGKAP->where('is_primary', 1)->pluck('code')->implode(', ') ?: '-' }}
         </td>
-
-        {{-- Diagnosa utama (kode) --}}
-        <td>
-            {{ $val->DIAGNOSA_LENGKAP
-            ->where('is_primary', 1)
-            ->pluck('code')
-            ->implode("\n") ?: '-' }}
+        <td rowspan="{{ $rowCount }}">
+            {{
+                $val->DIAGNOSA_LENGKAP
+                    ->where('is_primary', 1)
+                    ->map(function($d) {
+                        return ($d->is_code_warning ? ' (rawan pending) ' : '').$d->description ;
+                    })
+                    ->implode(', ') ?: '-'
+            }}
         </td>
+        @endif
 
-        {{-- Diagnosa utama (deskripsi) --}}
-        <td>
-            {{ $val->DIAGNOSA_LENGKAP
-            ->where('is_primary', 1)
-            ->pluck('description')
-            ->implode("\n") }}
-        </td>
+        {{-- kolom dinamis (berbeda tiap baris) --}}
+        <td>{{ $diagnosaSekunder[$i] ?? '' }}</td>
+        <td>{{ $tindakan[$i] ?? '' }}</td>
+        <td>{{ $alerts[$i] ?? '' }}</td>
 
-        {{-- Diagnosa sekunder --}}
-        <td>
-            {{ $val->DIAGNOSA_LENGKAP
-        ->where('is_primary', '!=', 1)
-        ->map(fn($d) => $d->code . ' - ' . $d->description)
-        ->implode(PHP_EOL) }}
-        </td>
+        @if ($i === 0)
+        {{-- kolom tetap --}}
+        <td rowspan="{{ $rowCount }}">{{ $val->FMKNAMA_KAMAR ?? '' }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->CARA_PULANG }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->DPJP ?? '' }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->PRWITGL_MASUK ? \Carbon\Carbon::parse($val->PRWITGL_MASUK)->format('d-m-Y H:i:s') : '' }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->PRWITGL_KELUAR ? \Carbon\Carbon::parse($val->PRWITGL_KELUAR)->format('d-m-Y H:i:s') : '' }}</td>
+        <td rowspan="{{ $rowCount }}">
+            @php
+            $tglMasuk = \Carbon\Carbon::parse($val->FTTGL_TRANSAKSI)->startOfDay();
+            $tglKeluar = \Carbon\Carbon::parse($val->PRWITGL_KELUAR)->startOfDay();
+            $selisihHari = $tglMasuk->diffInDays($tglKeluar) + ($tglMasuk <= $tglKeluar ? 1 : 0);
+                @endphp
+                {{ $selisihHari }}
+                </td>
+        <td rowspan="{{ $rowCount }}">{{ $val->FTTARIPINACBG }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->TOTAL_BILL ?? '' }}</td>
+        <td rowspan="{{ $rowCount }}">{{ (int) $val->FTTARIPINACBG - (int) $val->TOTAL_BILL }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->FTKODEINACBG ?? '' }}</td>
+        <td rowspan="{{ $rowCount }}">{{ $val->PENJAMIN ?? '' }}</td>
+        @endif
+        </tr>
+        @endfor
 
-        {{-- Tindakan --}}
-        <td>
-            {{ $val->TINDAKAN_LENGKAP
-        ->where('is_primary', '!=', 1)
-        ->map(fn($t) => $t->code . ' - ' . $t->description)
-        ->implode(PHP_EOL) }}
-        </td>
-
-        <td>{{ $val->FMKNAMA_KAMAR ?? '' }}</td>
-        <td>{{ $val->CARA_PULANG }}</td>
-        <td>{{ $val->DPJP ?? '' }}</td>
-        <td>{{ $val->PRWITGL_MASUK ? \Carbon\Carbon::parse($val->PRWITGL_MASUK)->format('d-m-Y H:i:s') : '' }}</td>
-        <td>{{ $val->PRWITGL_KELUAR ? \Carbon\Carbon::parse($val->PRWITGL_KELUAR)->format('d-m-Y H:i:s') : '' }}</td>
-        <td>{{ $selisihHari }}</td>
-        <td>{{ $val->FTTARIPINACBG }}</td>
-        <td>{{ $val->TOTAL_BILL ?? '' }}</td>
-        <td>{{ $selisihTarif }}</td>
-        <td>{{ $val->FTKODEINACBG ?? '' }}</td>
-        <td>{{ $val->PENJAMIN ?? '' }}</td>
-
-        {{-- Alerts --}}
-        <td>
-            {{ collect($val->ALERTS)
-        ->map(fn($a) => $a->icd_code . ' - ' . strip_tags($a->desc))
-        ->implode(PHP_EOL) }}
-        </td>
-    </tr>
-
-    <?php $no_urut++; ?>
-    @endforeach
+        @php $no_urut++; @endphp
+        @endforeach
 </table>
