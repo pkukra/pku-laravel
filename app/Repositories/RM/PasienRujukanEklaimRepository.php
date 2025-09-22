@@ -868,6 +868,10 @@ class PasienRujukanEklaimRepository
 
         $diagnoses_final_arr = array_merge($diagnoses_final_arr, $diagnosa);
 
+        if (empty($diagnoses_final_arr)) {
+            return '#';
+        }
+
         // Hilangkan duplikat dan gabungkan dengan '#'
         return implode('#', array_unique($diagnoses_final_arr));
     }
@@ -898,6 +902,11 @@ class PasienRujukanEklaimRepository
                 $procedures_final_arr[] = $code;
             }
         }
+
+        if (empty($procedures_final_arr)) {
+            return '#';
+        }
+
         return implode('#', $procedures_final_arr);
     }
 
