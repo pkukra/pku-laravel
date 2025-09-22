@@ -193,19 +193,59 @@ export default function Index({ auth, role, bangsal }) {
         {
             title: "Kemungkinan Kode Diagnosa & Prosedur",
             dataIndex: "FTNO_TRANSAKSI",
-            key: "KODE_DIAGNOSA",
-            render: (kodeReg, record) => {
+            key: "DIAGNOSA_LENGKAP",
+            render: (text, record) => {
                 return (
                     <>
-                        {record?.DIAGNOSA_LENGKAP.map((item) => item.code).join(
-                            ", "
-                        )}
-                        {record?.TINDAKAN_LENGKAP && (
+                        {/* Diagnosa */}
+                        {record?.DIAGNOSA_LENGKAP?.map((item, idx) => {
+                            const content = `${item.code}${
+                                item.is_code_warning ? " (rawan pending)" : ""
+                            }`;
+                            return (
+                                <span
+                                    key={`diag-${idx}`}
+                                    style={{
+                                        color: item.is_code_warning
+                                            ? "red"
+                                            : "inherit",
+                                    }}
+                                >
+                                    {content}
+                                    {idx < record.DIAGNOSA_LENGKAP.length - 1
+                                        ? ", "
+                                        : ""}
+                                </span>
+                            );
+                        })}
+
+                        {/* Tindakan */}
+                        {record?.TINDAKAN_LENGKAP?.length > 0 && (
                             <>
                                 <hr />
-                                {record?.TINDAKAN_LENGKAP.map(
-                                    (item) => item.code
-                                ).join(", ")}
+                                {record.TINDAKAN_LENGKAP.map((item, idx) => {
+                                    const content = `${item.code}${
+                                        item.is_code_warning
+                                            ? " (rawan pending)"
+                                            : ""
+                                    }`;
+                                    return (
+                                        <span
+                                            key={`proc-${idx}`}
+                                            style={{
+                                                color: item.is_code_warning
+                                                    ? "red"
+                                                    : "inherit",
+                                            }}
+                                        >
+                                            {content}
+                                            {idx <
+                                            record.TINDAKAN_LENGKAP.length - 1
+                                                ? ", "
+                                                : ""}
+                                        </span>
+                                    );
+                                })}
                             </>
                         )}
                     </>
@@ -226,16 +266,6 @@ export default function Index({ auth, role, bangsal }) {
                         {alerts.map((a, idx) => (
                             <li key={idx}>
                                 <strong>{a.icd_code}</strong>{" "}
-                                {a.is_code_warning && (
-                                    <span
-                                        style={{
-                                            color: "red",
-                                            fontWeight: "bold",
-                                        }}
-                                    >
-                                        (⚠️ Rawan Pending{" "})
-                                    </span>
-                                )}
                                 <span
                                     dangerouslySetInnerHTML={{
                                         __html: a.description,

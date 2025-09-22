@@ -30,7 +30,7 @@
     // kumpulkan diagnosa sekunder
     $diagnosaSekunder = collect($val->DIAGNOSA_LENGKAP)
     ->where('is_primary', '!=', 1)
-    ->map(fn($d) => $d->code.($d->is_code_warning ? ' (Rawan Pending) ' : '') . ' - ' . $d->description)
+    ->map(fn($d) => ' - ' . $d->code.($d->is_code_warning ? ' (Rawan Pending) ' : '') . $d->description)
     ->values();
 
     // kumpulkan tindakan

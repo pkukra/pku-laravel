@@ -136,11 +136,6 @@ class RanapMonitRepository
             ->get();
 
         $diagnosaLengkap = $diagnosaRows->groupBy('no_sep');
-
-        $diagnosa = $diagnosaRows
-            ->groupBy('no_sep')
-            ->map(fn($rows) => $rows->pluck('code')->implode(', '));
-
         $allDiagnosaCodes = $diagnosaRows->pluck('code')->unique()->toArray();
 
         // === Tindakan by NOSEP ===
@@ -157,11 +152,6 @@ class RanapMonitRepository
             ->get();
 
         $tindakanLengkap = $tindakanRows->groupBy('no_sep');
-
-        $tindakan = $tindakanRows
-            ->groupBy('no_sep')
-            ->map(fn($rows) => $rows->pluck('code')->implode(', '));
-
         $allTindakanCodes = $tindakanRows->pluck('code')->unique()->toArray();
 
         // === ICD Alerts ===
@@ -187,12 +177,11 @@ class RanapMonitRepository
         }
 
         // === Merge hasil ===
+        // === Merge hasil ===
         return $data->map(function ($item) use (
             $billMap,
             $casemix,
-            $diagnosa,
             $diagnosaLengkap,
-            $tindakan,
             $tindakanLengkap,
             $alerts,
             $caraPulangMap
@@ -208,26 +197,19 @@ class RanapMonitRepository
             }
 
             // diagnosa & tindakan by SEP
-            $item->DIAGNOSA = $diagnosa[$item->FMNOSEP] ?? '';
             $item->DIAGNOSA_LENGKAP = ($diagnosaLengkap[$item->FMNOSEP] ?? collect())->values();
-
-            $item->TINDAKAN = $tindakan[$item->FMNOSEP] ?? '';
             $item->TINDAKAN_LENGKAP = ($tindakanLengkap[$item->FMNOSEP] ?? collect())->values();
-
-            // kumpulkan semua kode dari diagnosa & tindakan
-            $codes = collect([]);
-            if ($item->DIAGNOSA) {
-                $codes = $codes->merge(explode(', ', $item->DIAGNOSA));
-            }
-            if ($item->TINDAKAN) {
-                $codes = $codes->merge(explode(', ', $item->TINDAKAN));
-            }
 
             $item->CARA_PULANG = $caraPulangMap[$item->FTNO_TRANSAKSI] ?? '';
 
+            // kumpulkan semua kode dari diagnosa & tindakan lengkap
+            $codes = collect()
+                ->merge($item->DIAGNOSA_LENGKAP->pluck('code'))
+                ->merge($item->TINDAKAN_LENGKAP->pluck('code'))
+                ->unique();
+
             // ICD Alerts
             $item->ALERTS = $codes
-                ->unique()
                 ->filter(fn($c) => isset($alerts[$c]))
                 ->flatMap(fn($c) => $alerts[$c]->map(fn($a) => [
                     'icd_code'        => $c,
