@@ -217,14 +217,13 @@ export default function Index({ auth, role, bangsal }) {
                 if (!alerts || alerts?.length === 0) {
                     return <span style={{ color: "gray" }}>-</span>;
                 }
-
                 return (
                     <ul style={{ paddingLeft: 16, margin: 0 }}>
                         {alerts.map((a, idx) => (
                             <li key={idx}>
                                 <strong>{a.icd_code}</strong>{" "}
                                 <span
-                                    dangerouslySetInnerHTML={{ __html: a.desc }}
+                                    dangerouslySetInnerHTML={{ __html: a.description }}
                                 />
                             </li>
                         ))}

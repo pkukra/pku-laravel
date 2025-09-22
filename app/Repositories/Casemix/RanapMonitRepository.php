@@ -137,13 +137,12 @@ class RanapMonitRepository
         $diagnosaLengkap = $diagnosaRows->groupBy('no_sep');
 
         $diagnosa = $diagnosaRows
-            ->groupBy('A.no_sep')
+            ->groupBy('no_sep')
             ->map(fn($rows) => $rows->pluck('code')->implode(', '));
 
-        // === ICD Alerts (cek diagnosa di ICD_ALERT) ===
         $allDiagnosaCodes = $diagnosaRows->pluck('code')->unique()->toArray();
 
-        // === Tindakans by NOSEP ===
+        // === Tindakan by NOSEP ===
         $tindakanRows = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_TINDAKAN_IM as A')
             ->leftJoin('ICD', 'A.code', '=', 'ICD.code')
@@ -155,25 +154,25 @@ class RanapMonitRepository
             )
             ->whereIn('A.no_sep', $noseps)
             ->get();
+
         $tindakanLengkap = $tindakanRows->groupBy('no_sep');
 
         $tindakan = $tindakanRows
-            ->groupBy('NOSEP')
+            ->groupBy('no_sep')
             ->map(fn($rows) => $rows->pluck('code')->implode(', '));
 
         $allTindakanCodes = $tindakanRows->pluck('code')->unique()->toArray();
 
-        // merger kode tindakan dan kode procedure
+        // === ICD Alerts ===
         $allCodes = array_unique(array_merge($allDiagnosaCodes, $allTindakanCodes));
 
         $alerts = DB::connection('sqlsrvsimrs')
             ->table('ICD_ALERT')
             ->whereIn('icd_code', $allCodes)
             ->get()
-            ->keyBy('icd_code');
+            ->groupBy('icd_code');
 
-
-        // cari cara pulang by transaksi
+        // === Cara Pulang by transaksi ===
         $caraPulangRows = DB::connection('sqlsrvemr')
             ->table('TAB_PX_PULANG_RESUME as R')
             ->leftJoin('DEV_CARA_PULANG_RANAP as M', 'M.id', '=', 'R.FS_CARA_PULANG')
@@ -183,12 +182,20 @@ class RanapMonitRepository
 
         $caraPulangMap = [];
         foreach ($caraPulangRows as $row) {
-            // jika ada duplikat, ambil yang terakhir sesuai order DESC
             $caraPulangMap[$row->FS_KD_REG] = $row->nama;
         }
 
         // === Merge hasil ===
-        return $data->map(function ($item) use ($billMap, $casemix, $diagnosa, $diagnosaLengkap, $tindakan, $tindakanLengkap, $alerts, $caraPulangMap) {
+        return $data->map(function ($item) use (
+            $billMap,
+            $casemix,
+            $diagnosa,
+            $diagnosaLengkap,
+            $tindakan,
+            $tindakanLengkap,
+            $alerts,
+            $caraPulangMap
+        ) {
             // total bill by transaksi
             $item->TOTAL_BILL = $billMap[$item->FTNO_TRANSAKSI] ?? 0;
 
@@ -201,10 +208,10 @@ class RanapMonitRepository
 
             // diagnosa & tindakan by SEP
             $item->DIAGNOSA = $diagnosa[$item->FMNOSEP] ?? '';
-            $item->DIAGNOSA_LENGKAP = $diagnosaLengkap[$item->FMNOSEP] ?? collect();
+            $item->DIAGNOSA_LENGKAP = ($diagnosaLengkap[$item->FMNOSEP] ?? collect())->values();
 
             $item->TINDAKAN = $tindakan[$item->FMNOSEP] ?? '';
-            $item->TINDAKAN_LENGKAP = $tindakanLengkap[$item->FMNOSEP] ?? collect();
+            $item->TINDAKAN_LENGKAP = ($tindakanLengkap[$item->FMNOSEP] ?? collect())->values();
 
             // kumpulkan semua kode dari diagnosa & tindakan
             $codes = collect([]);
@@ -217,21 +224,21 @@ class RanapMonitRepository
 
             $item->CARA_PULANG = $caraPulangMap[$item->FTNO_TRANSAKSI] ?? '';
 
-            // filter hanya yang ada di ICD_ALERT lalu bentuk [{icd_code, desc}]
+            // ICD Alerts
             $item->ALERTS = $codes
                 ->unique()
                 ->filter(fn($c) => isset($alerts[$c]))
-                ->map(fn($c) => (object)[
-                    'icd_code' => $c,
-                    'desc'     => $alerts[$c]->description
-                ])
+                ->flatMap(fn($c) => $alerts[$c]->map(fn($a) => [
+                    'icd_code'        => $c,
+                    'description'     => $a->description,
+                    'is_code_warning' => $a->is_code_warning,
+                ]))
                 ->values()
                 ->toArray();
 
             return $item;
         });
     }
-
 
     /**
      * Update data in CASEMIX_RANAP table
