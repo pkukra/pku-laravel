@@ -197,11 +197,15 @@ export default function Index({ auth, role, bangsal }) {
             render: (kodeReg, record) => {
                 return (
                     <>
-                        {record?.DIAGNOSA_LENGKAP.map(item => item.code).join(", ")}
+                        {record?.DIAGNOSA_LENGKAP.map((item) => item.code).join(
+                            ", "
+                        )}
                         {record?.TINDAKAN_LENGKAP && (
                             <>
                                 <hr />
-                                {record?.TINDAKAN_LENGKAP.map(item => item.code).join(", ")}
+                                {record?.TINDAKAN_LENGKAP.map(
+                                    (item) => item.code
+                                ).join(", ")}
                             </>
                         )}
                     </>
@@ -222,8 +226,20 @@ export default function Index({ auth, role, bangsal }) {
                         {alerts.map((a, idx) => (
                             <li key={idx}>
                                 <strong>{a.icd_code}</strong>{" "}
+                                {a.is_code_warning && (
+                                    <span
+                                        style={{
+                                            color: "red",
+                                            fontWeight: "bold",
+                                        }}
+                                    >
+                                        (⚠️ Rawan Pending{" "})
+                                    </span>
+                                )}
                                 <span
-                                    dangerouslySetInnerHTML={{ __html: a.description }}
+                                    dangerouslySetInnerHTML={{
+                                        __html: a.description,
+                                    }}
                                 />
                             </li>
                         ))}
