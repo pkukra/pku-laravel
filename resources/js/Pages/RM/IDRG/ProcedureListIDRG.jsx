@@ -214,7 +214,10 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
     };
 
     const fetchAlertProcedure = (procedureCodes = []) => {
-        if (procedureCodes.length === 0) return;
+        if (procedureCodes.length == 0) {
+            setProcedureAlert([]);
+            return;
+        }
         setLoadingProcedureAlert(true);
         axios
             .post(route("rm.icd.list_alert_by_codes"), {
@@ -607,19 +610,23 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                     </Row>
                 </Modal>
             </Card>
-            {/* <Card
-                title={`Syarat/Kelengkapan Data Pengkodean Procedure`}
+            <Card
+                title={`Analisa/Syarat Pengkodean Procedure`}
                 style={{ marginTop: 10 }}
                 loading={loadingProcedureAlert}
             >
                 {procedureAlert?.length < 1 && <>Belum ada data</>}
 
                 {procedureAlert?.map((item, index) => (
-                    <p key={index} style={{ marginBottom: 10 }}>
-                        {item.icd_code} - {item.description}
-                    </p>
+                    <div
+                        key={index}
+                        style={{ marginBottom: 10 }}
+                        dangerouslySetInnerHTML={{
+                            __html: `${item.icd_code} - ${item.description}`,
+                        }}
+                    />
                 ))}
-            </Card> */}
+            </Card>
         </>
     );
 }
