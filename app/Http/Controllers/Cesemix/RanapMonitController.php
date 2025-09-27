@@ -45,18 +45,26 @@ class RanapMonitController extends Controller
         $month = $request->month;
         $year = $request->year;
 
+        $month_pulang = $request->month_pulang;
+        $year_pulang = $request->year_pulang;
+
         $perPage = $request->get('per_page', 10);
         $page = $request->get('page', 1);
 
         $offset = ($page - 1) * $perPage;
 
         // Ambil total pasien untuk pagination
-        $total = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, true);
+        $total = $this->RanapMonitRepo->getOrCountPasienRanap($month_pulang, $year_pulang, $month, $year, $bangsal_induk, $nomer_rm, $status, null, null, true);
 
         // Ambil data pasien
-        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, false);
+        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month_pulang, $year_pulang, $month, $year, $bangsal_induk, $nomer_rm, $status, $perPage, $offset, false);
 
         return response()->json([
+            'month_pulang' => $month_pulang,
+            'year_pulang' => $year_pulang,
+            'month' => $month,
+            'year' => $year,
+
             'pasiens' => $data,
             'total' => $total,
             'page' => $page,
@@ -70,20 +78,33 @@ class RanapMonitController extends Controller
     public function download_pasien_data(Request $request)
     {
         $bangsal_induk = $request->bangsal_induk ?? "IK009";
-        $status = $request->status ?? "dirawat";
-        $nomer_rm = $request->nomer_rm ?? "";
+        $status        = $request->status ?? "dirawat";
+        $nomer_rm      = $request->nomer_rm ?? "";
 
-        $month = $request->month ?? date('m');
-        $year = $request->year ?? date('Y');
+        $month         = $request->month ?? null;
+        $year          = $request->year ?? null;
 
-        // Get all data without pagination
-        $data = $this->RanapMonitRepo->getOrCountPasienRanap($month, $year, $bangsal_induk, $nomer_rm, $status, null, null, false);
+        $month_pulang  = $request->month_pulang;
+        $year_pulang   = $request->year_pulang;
+
+        // Get all data tanpa pagination
+        $data = $this->RanapMonitRepo->getOrCountPasienRanap(
+            $month_pulang,
+            $year_pulang,
+            $month,
+            $year,
+            $bangsal_induk,
+            $nomer_rm,
+            $status,
+            null,
+            null,
+            false
+        );
 
         // return view('casemix.pasien_ranap_xls', [
         //     'data' => $data,
         // ]);
 
-        // Create and return Excel file
         return Excel::download(new PasienRanapExport($data), 'pasien-ranap-' . date('Y-m-d') . '.xlsx');
     }
 
