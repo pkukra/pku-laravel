@@ -25,9 +25,9 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
 
     // Route::get('/list-icd', [ICDController::class, 'index'])->name('rm.icd.index');
     Route::get('/list-icd', function () {
-        $allowed = ['admin@admin.com', 'dyah.rochani@gmail.com'];
+        $allowedRoles = [1, 2, 4];
 
-        if (! in_array(Auth::user()->email, $allowed)) {
+        if (! in_array(Auth::user()->role_id, $allowedRoles)) {
             abort(403, 'Unauthorized');
         }
 
