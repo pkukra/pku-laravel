@@ -21,13 +21,8 @@ import dayjs from "dayjs";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-import RanapMonitListModalDiagnosa from "./RanapMonitListModalDiagnosa";
-import RanapMonitListModalProcedure from "./RanapMonitListModalProcedure";
 import PasienMonitModalObat from "./PasienMonitModalObat";
 import ModalCPPT from "./ModalCPPT";
-import BridgingData from "./BridgingData";
-
-const Textarea = Input.TextArea;
 
 export default function Index({ auth, role, bangsal }) {
     const rolename = role?.name ?? null;
@@ -455,9 +450,9 @@ export default function Index({ auth, role, bangsal }) {
     const [selectedStatusRawat, setSelectedStatusRawat] = useState("dirawat");
     const [selectedNoRM, setSelectedNoRM] = useState(null);
     const [selectedYearMonth, setSelectedYearMonth] = useState(null);
-    // const [selectedYearMonth, setSelectedYearMonth] = useState(
-    //     dayjs().format("YYYY-MM")
-    // );
+    const [selectedYearMonthPulang, setSelectedYearMonthPulang] =
+        useState(null);
+
     const [selectedBangsal, setSelectedBangsal] = useState("IK042");
 
     const [page, setPage] = useState(1);
@@ -473,10 +468,6 @@ export default function Index({ auth, role, bangsal }) {
     const [modalUpdateKey, setModalUpdateKey] = useState(null);
     const [modalUpdateKodeReg, setModalUpdateKodeReg] = useState(null);
     const [modalUpdateValue, setModalUpdateValue] = useState(null);
-
-    const [diagnosaData, setDiagnosaData] = useState([]);
-    const [prosedurData, setProsedurData] = useState([]);
-    const [abortController, setAbortController] = useState(null);
     const [customerData, setCustomerData] = useState([]);
 
     const handleOpenModal = (param) => {
@@ -486,58 +477,6 @@ export default function Index({ auth, role, bangsal }) {
         setModalUpdateValue(param?.value);
         setOpenModalUpdate(true);
     };
-
-    // const fetchDiagnosaProsedur = async (pasienList) => {
-    //     // Batalkan request sebelumnya jika ada
-    //     if (abortController) {
-    //         abortController.abort();
-    //     }
-
-    //     // Buat AbortController baru
-    //     const controller = new AbortController();
-    //     setAbortController(controller);
-
-    //     await Promise.allSettled(
-    //         pasienList.map(async (pasien) => {
-    //             try {
-    //                 const [diagnosaRes, prosedurRes] = await Promise.all([
-    //                     axios.get(
-    //                         route("casemix.ranap-monit.list_diagnosa", {
-    //                             kode_reg: pasien.FMNOSEP,
-    //                         }),
-    //                         { signal: controller.signal }
-    //                     ),
-    //                     axios.get(
-    //                         route("casemix.ranap-monit.list_procedure", {
-    //                             kode_reg: pasien.FMNOSEP,
-    //                         }),
-    //                         { signal: controller.signal }
-    //                     ),
-    //                 ]);
-
-    //                 // Update state setelah tiap pasien berhasil di-fetch
-    //                 setDiagnosaData((prev) => ({
-    //                     ...prev,
-    //                     [pasien.FTNO_TRANSAKSI]: diagnosaRes.data?.data || [],
-    //                 }));
-
-    //                 setProsedurData((prev) => ({
-    //                     ...prev,
-    //                     [pasien.FTNO_TRANSAKSI]: prosedurRes.data?.data || [],
-    //                 }));
-    //             } catch (error) {
-    //                 if (axios.isCancel(error)) {
-    //                     console.log("Fetch dibatalkan:", pasien.FTNO_TRANSAKSI);
-    //                 } else {
-    //                     console.error(
-    //                         `Error fetching data for ${pasien.FTNO_TRANSAKSI}`,
-    //                         error
-    //                     );
-    //                 }
-    //             }
-    //         })
-    //     );
-    // };
 
     const fetchCustomers = async () => {
         try {
@@ -617,6 +556,10 @@ export default function Index({ auth, role, bangsal }) {
             const [year, month] = selectedYearMonth
                 ? selectedYearMonth.split("-")
                 : [null, null];
+
+            const [yearPulang, monthPulang] = selectedYearMonthPulang
+                ? selectedYearMonthPulang.split("-")
+                : [null, null];
             const { data } = await axios.get(
                 route("casemix.ranap-monit.list_pasien_data"),
                 {
@@ -625,6 +568,10 @@ export default function Index({ auth, role, bangsal }) {
                         per_page: perPage,
                         year: year,
                         month: month,
+
+                        year_pulang: yearPulang,
+                        month_pulang: monthPulang,
+
                         status: selectedStatusRawat,
                         nomer_rm: selectedNoRM,
                         bangsal_induk: selectedBangsal,
@@ -645,6 +592,9 @@ export default function Index({ auth, role, bangsal }) {
 
     const hadleCetakKlaim = () => {
         const [year, month] = selectedYearMonth?.split("-") || [];
+        const [yearPulang, monthPulang] =
+            selectedYearMonthPulang?.split("-") || [];
+
         const baseUrl = route(
             "casemix.ranap-monit.download_pasien_data_xls"
         ).toString();
@@ -652,6 +602,10 @@ export default function Index({ auth, role, bangsal }) {
         const query = new URLSearchParams({
             ...(year && { year }),
             ...(month && { month }),
+            ...(yearPulang && { year_pulang: yearPulang }),
+            ...(monthPulang && { month_pulang: monthPulang }),
+            ...(selectedStatusRawat && { status: selectedStatusRawat }),
+            ...(selectedNoRM && { nomer_rm: selectedNoRM }),
             ...(selectedBangsal && { bangsal_induk: selectedBangsal }),
         });
 
@@ -728,6 +682,26 @@ export default function Index({ auth, role, bangsal }) {
                             }
                             onChange={(date, dateString) => {
                                 setSelectedYearMonth(dateString);
+                            }}
+                            picker="month"
+                            placeholder="Pilih Bulan/Tahun"
+                            disabledDate={(current) =>
+                                current && current > moment().endOf("day")
+                            }
+                        />
+                    </Col>
+                    <Col span={3}>
+                        <Typography.Text strong>Bulan Keluar</Typography.Text>
+                        <DatePicker
+                            style={{ width: "100%" }}
+                            allowClear
+                            value={
+                                selectedYearMonthPulang
+                                    ? dayjs(selectedYearMonthPulang, "YYYY-MM")
+                                    : null
+                            }
+                            onChange={(date, dateString) => {
+                                setSelectedYearMonthPulang(dateString);
                             }}
                             picker="month"
                             placeholder="Pilih Bulan/Tahun"

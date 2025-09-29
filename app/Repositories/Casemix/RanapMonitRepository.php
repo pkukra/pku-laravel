@@ -21,6 +21,8 @@ class RanapMonitRepository
      * Get the list of pasien ranap each bangsal based on bangsal_induk
      */
     public function getOrCountPasienRanap(
+        $month_pulang,
+        $year_pulang,
         $bulan,
         $tahun,
         $bangsal_induk,
@@ -42,6 +44,12 @@ class RanapMonitRepository
             ->leftJoin('KAMAR AS K', 'K.FMKKAMAR_ID', '=', 'PRI.PRWIKD_KAMAR')
             ->leftJoin('BPJS_SEP AS SEP', 'SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
             ->leftJoin('CUSTOMER AS C', 'C.CUSID', '=', 'PRI.PRWIKD_CUSTOMER')
+            ->when(
+                $month_pulang && $year_pulang,
+                fn($q) =>
+                $q->whereRaw('MONTH(PRI.PRWITGL_KELUAR) = ?', [$month_pulang])
+                    ->whereRaw('YEAR(PRI.PRWITGL_KELUAR) = ?', [$year_pulang])
+            )
             ->when($bulan && $tahun, fn($q) => $q->whereRaw('MONTH(TPI.FTTGL_TRANSAKSI) = ?', [$bulan])
                 ->whereRaw('YEAR(TPI.FTTGL_TRANSAKSI) = ?', [$tahun]))
             ->when($status === 'dirawat', fn($q) => $q->whereNull('PRI.PRWITGL_KELUAR'))
