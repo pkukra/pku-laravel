@@ -7,12 +7,13 @@ use App\Http\Controllers\Cesemix\RanapMonitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 Route::prefix('rm')->middleware(['auth'])->group(function () {
     Route::get('/pasien-inap/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
 });
 
-Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,klaim'])->group(function () {
+Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,klaim,dokter'])->group(function () {
     Route::get('/', [PasienRujukanController::class, 'index'])->name('rm.index');
     Route::get('/agregate_sep/{pasien_id}', [PasienRujukanController::class, 'agregate_sep'])->name('rm.agregate_sep');
 
@@ -26,7 +27,6 @@ Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,k
     // Route::get('/list-icd', [ICDController::class, 'index'])->name('rm.icd.index');
     Route::get('/list-icd', function () {
         $allowedRoles = [1, 2, 4];
-
         if (! in_array(Auth::user()->role_id, $allowedRoles)) {
             abort(403, 'Unauthorized');
         }
