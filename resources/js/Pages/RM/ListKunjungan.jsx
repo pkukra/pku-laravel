@@ -53,17 +53,29 @@ const columnsRujukan = [
         title: "Action",
         dataIndex: "action",
         key: "action",
-        render: (_, record) => (
-            <a
-                href={route("rm.pasien-rujukan.detail", {
-                    kode_reg: record?.FRPNOTRANSAKSIKJ,
-                })}
-            >
-                <Button type="primary" size="small">
-                    Tampilkan
-                </Button>
-            </a>
-        ),
+        render: (_, record) => {
+            const kodeReg = record?.FRPNOTRANSAKSIKJ;
+
+            if (!kodeReg) {
+                return (
+                    <Button type="default" size="small" disabled>
+                        Tidak Ada Data
+                    </Button>
+                );
+            }
+
+            return (
+                <a
+                    href={route("rm.pasien-rujukan.detail", {
+                        kode_reg: kodeReg,
+                    })}
+                >
+                    <Button type="primary" size="small">
+                        Tampilkan
+                    </Button>
+                </a>
+            );
+        },
     },
 ];
 const columnsInap = [
@@ -89,9 +101,7 @@ const columnsInap = [
         title: "Tanggal Masuk",
         dataIndex: "PRWITGL_MASUK",
         render: (_, record) => (
-            <>
-            {moment(record?.PRWITGL_MASUK).format("DD/MM/YYYY")}
-            </>
+            <>{moment(record?.PRWITGL_MASUK).format("DD/MM/YYYY")}</>
         ),
     },
     {
@@ -99,11 +109,8 @@ const columnsInap = [
         dataIndex: "PRWITGL_KELUAR",
         render: (_, record) => (
             <>
-            {
-                (record?.PRWITGL_KELUAR)
-                &&
-                moment(record?.PRWITGL_KELUAR).format("DD/MM/YYYY")
-            }
+                {record?.PRWITGL_KELUAR &&
+                    moment(record?.PRWITGL_KELUAR).format("DD/MM/YYYY")}
             </>
         ),
     },
@@ -127,17 +134,27 @@ const columnsInap = [
         title: "Action",
         dataIndex: "action",
         key: "action",
-        render: (_, record) => (
-            <a
-                href={route("rm.pasien-inap.detail", {
-                    kode_reg: record?.FTNO_TRANSAKSI,
-                })}
-            >
-                <Button type="primary" size="small">
-                    Tampilkan
-                </Button>
-            </a>
-        ),
+        render: (_, record) => {
+            if (!record?.FTNO_TRANSAKSI) {
+                return (
+                    <Button type="default" size="small" disabled>
+                        Tidak Ada Data
+                    </Button>
+                );
+            }
+
+            return (
+                <a
+                    href={route("rm.pasien-inap.detail", {
+                        kode_reg: record.FTNO_TRANSAKSI,
+                    })}
+                >
+                    <Button type="primary" size="small">
+                        Tampilkan
+                    </Button>
+                </a>
+            );
+        },
     },
 ];
 
