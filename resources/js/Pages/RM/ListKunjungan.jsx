@@ -23,8 +23,8 @@ const columnsRujukan = [
         dataIndex: "FRPTGL",
         render: (_, record) => (
             <>
-                {moment(record.FRPTGL).format("DD/MM/YYYY")}{" "}
-                {moment(record.FRPJAM).format("HH:mm")}
+                {moment(record?.FRPTGL).format("DD/MM/YYYY")}{" "}
+                {moment(record?.FRPJAM).format("HH:mm")}
             </>
         ),
     },
@@ -56,7 +56,7 @@ const columnsRujukan = [
         render: (_, record) => (
             <a
                 href={route("rm.pasien-rujukan.detail", {
-                    kode_reg: record.FRPNOTRANSAKSIKJ,
+                    kode_reg: record?.FRPNOTRANSAKSIKJ,
                 })}
             >
                 <Button type="primary" size="small">
