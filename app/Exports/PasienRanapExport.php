@@ -16,6 +16,10 @@ class PasienRanapExport implements FromView
 
     public function view(): View
     {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300);
+        libxml_use_internal_errors(true);
+
         return view('casemix.pasien_ranap_xls', [
             'data' => $this->data,
         ]);

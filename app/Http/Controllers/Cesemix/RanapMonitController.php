@@ -77,6 +77,9 @@ class RanapMonitController extends Controller
      */
     public function download_pasien_data(Request $request)
     {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300); // 5 menit
+        
         $bangsal_induk = $request->bangsal_induk ?? "IK009";
         $status        = $request->status ?? "dirawat";
         $nomer_rm      = $request->nomer_rm ?? "";
@@ -101,11 +104,12 @@ class RanapMonitController extends Controller
             false
         );
 
+        // return response()->json(['data' => $data]);
         // return view('casemix.pasien_ranap_xls', [
         //     'data' => $data,
         // ]);
 
-        return Excel::download(new PasienRanapExport($data), 'pasien-ranap-' . date('Y-m-d') . '.xlsx');
+        return Excel::download(new PasienRanapExport($data), "pasien-ranap-$bangsal_induk-$month_pulang-$year_pulang.xlsx");
     }
 
     // update_monit_row
