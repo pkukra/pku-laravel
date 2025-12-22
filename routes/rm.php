@@ -9,6 +9,8 @@ use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+Route::get('/check_database', [PasienRujukanController::class, 'check_database'])->name('rm.pasien-rujukan.check_database');
+
 Route::prefix('rm')->middleware(['auth'])->group(function () {
     Route::get('/pasien-inap/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
 });

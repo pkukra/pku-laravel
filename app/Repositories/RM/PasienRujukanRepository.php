@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\DB;
 use Bpjs\Bridging\Vclaim\BridgeVclaim;
 use App\Repositories\RM\RMAuditTrail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use App\Mail\DbDownNotification;
 
 class PasienRujukanRepository
 {
@@ -2240,6 +2242,47 @@ class PasienRujukanRepository
             return true;
         } catch (\Exception $e) {
             Log::error('insertStoreNotFound insert err: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function checkDb()
+    {
+        $ip = '10.10.10.10'; // IP server SQL
+
+        // Cek koneksi ping dulu
+        $pingResult = null;
+
+        // Windows / Linux kompatibel
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Windows
+            $pingResult = exec("ping -n 1 $ip", $output, $status);
+        } else {
+            // Linux / Mac
+            $pingResult = exec("ping -c 1 $ip", $output, $status);
+        }
+
+        if ($status !== 0) {
+            // Server tidak reachable, kirim email
+            Mail::to('emixbal@gmail.com')
+                ->send(new DbDownNotification("Server $ip tidak reachable via ping"));
+
+            return false;
+        }
+
+        // Server reachable, coba query kecil
+        try {
+            DB::connection('sqlsrvsimrs')
+                ->table('CUSTOMER')
+                ->select('CUSID')
+                ->first();
+
+            return true;
+        } catch (\Exception $e) {
+            // Query gagal, kirim email
+            Mail::to('emixbal@gmail.com')
+                ->send(new DbDownNotification($e->getMessage()));
+
             return false;
         }
     }

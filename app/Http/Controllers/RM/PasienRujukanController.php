@@ -1105,7 +1105,7 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->finalPasienUmum($kode_reg, $kode_reg_kj);
         return response()->json($data);
     }
-    
+
     public function store_not_found_data(Request $request)
     {
         $validated = $request->validate([
@@ -1129,7 +1129,7 @@ class PasienRujukanController extends Controller
         $data = $this->pasienRujukanRepo->setKodeRegRajal($limit);
         return response()->json($data);
     }
-    
+
     /**
      * dev_isi_kode_reg_ranap
      * Menampilkan procedure berdasarkan kode pasien
@@ -1138,5 +1138,11 @@ class PasienRujukanController extends Controller
     {
         $data = $this->pasienRujukanRepo->setKodeRegRanap($limit);
         return response()->json($data);
+    }
+
+    public function check_database()
+    {
+        $status = $this->pasienRujukanRepo->checkDb();
+        return response()->json(['db_status' => $status ? 'up' : 'down']);
     }
 }
