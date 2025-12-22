@@ -2273,7 +2273,7 @@ class PasienRujukanRepository
         // Server reachable, coba query kecil
         try {
             DB::connection('sqlsrvsimrs')
-                ->table('CUSTOMER')
+                ->table('CUSTOMERx')
                 ->select('CUSID')
                 ->first();
 
