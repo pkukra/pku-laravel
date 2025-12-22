@@ -2248,7 +2248,7 @@ class PasienRujukanRepository
 
     public function checkDb()
     {
-        $ip = '10.10.10.10'; // IP server SQL
+        $ip = '10.90.10.10'; // IP server SQL
 
         // Cek koneksi ping dulu
         $pingResult = null;
