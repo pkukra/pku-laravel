@@ -168,7 +168,7 @@ class PasienInapEklaimRepository
         if (!empty($transaksi_utama->PRWITGL_KELUAR) && $tgl_pulang->lessThan($tgl_masuk)) {
             return (object)[
                 "status" => "nok",
-                "error" => "Tanggal pulang lebih kecil dari tanggal masuk. Klaim dibatalkan."
+                "error" => "Tanggal pulang lebih kecil dari tanggal masuk"
             ];
         }
 
