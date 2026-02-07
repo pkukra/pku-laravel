@@ -889,24 +889,21 @@ class PasienInapEklaimRepository
         // tanggal masuk
         $tgl_masuk = Carbon::parse($transaksi_utama->TGL_MASUK);
 
-        // tanggal pulang
-        if (!empty($transaksi_utama->PRWITGL_KELUAR)) {
-            $tgl_pulang = Carbon::parse($transaksi_utama->PRWITGL_KELUAR);
+        // set tanggal pulang default dulu
+        $tgl_pulang = !empty($transaksi_utama->PRWITGL_KELUAR)
+            ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)
+            : Carbon::now();
 
-            // jika tanggal pulang <= tanggal masuk, paksa +1 jam
-            if ($tgl_pulang->lessThanOrEqualTo($tgl_masuk)) {
-                $tgl_pulang = $tgl_masuk->copy()->addHours(1);
-            }
-        } else {
-            // jika belum pulang, tanggal masuk +1 jam
-            $tgl_pulang = $tgl_masuk->copy()->addHours(1);
+        // pastikan tanggal pulang > tanggal masuk
+        if ($tgl_pulang->lessThanOrEqualTo($tgl_masuk)) {
+            $tgl_pulang = $tgl_masuk->copy()->addHours(12);
         }
 
         // hitung LOS
-        $los = (int) ceil($tgl_masuk->diffInHours($tgl_pulang) / 24);
-        $los = max($los, 1);
-
-        // return $los;
+        $los = max(
+            (int) ceil($tgl_masuk->diffInHours($tgl_pulang) / 24),
+            1
+        );
 
         $ploting_tarif = $this->getTotalDetailTarifTransaksi($transaksi_utama); /// listing dan ploting data dari tabel TRANSAKSIPASIENINAPD
 
@@ -1955,8 +1952,11 @@ class PasienInapEklaimRepository
         $historyBangsal = DB::connection('sqlsrvsimrs')
             ->table('PASIENRAWATINAP AS PRI')
             ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
-            ->select('PRI.PRWITGL_MASUK', 'PRI.PRWITGL_KELUAR', 'PRI.PRWITGL_INAP', 'K.FMKKAMARINDUK')
-            ->where('PRI.PRWINO_TRANSAKSI', $kode_reg) // kemungkinan maksudnya ini, bukan 'PRI'
+            ->select(
+                'PRI.PRWITGL_INAP',
+                'PRI.PRWITGL_KELUAR'
+            )
+            ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->where('K.FMKKAMARINDUK', 'IK009')
             ->get();
 
@@ -1967,17 +1967,34 @@ class PasienInapEklaimRepository
         $totalLos = 0;
 
         foreach ($historyBangsal as $row) {
-            $tglMasuk  = $row->PRWITGL_INAP ? Carbon::parse($row->PRWITGL_INAP) : null;
-            $tglKeluar = $row->PRWITGL_KELUAR ? Carbon::parse($row->PRWITGL_KELUAR) : Carbon::now();
 
-            if ($tglMasuk) {
-                $los = $tglMasuk->diffInDays($tglKeluar); // hitung lama LOS ICU per periode
-                $totalLos += $los;
+            if (empty($row->PRWITGL_INAP)) {
+                continue;
             }
+
+            $tglMasuk  = Carbon::parse($row->PRWITGL_INAP);
+
+            // 1️⃣ set tanggal keluar default dulu
+            $tglKeluar = !empty($row->PRWITGL_KELUAR)
+                ? Carbon::parse($row->PRWITGL_KELUAR)
+                : Carbon::now();
+
+            // 2️⃣ pastikan keluar > masuk
+            if ($tglKeluar->lessThanOrEqualTo($tglMasuk)) {
+                $tglKeluar = $tglMasuk->copy()->addHours(12);
+            }
+
+            // 3️⃣ hitung LOS (minimal 1)
+            $los = max(
+                (int) ceil($tglMasuk->diffInHours($tglKeluar) / 24),
+                1
+            );
+
+            $totalLos += $los;
         }
 
         return (object)[
-            "total_los_icu" => $totalLos,
+            'total_los_icu' => $totalLos,
         ];
     }
 }
