@@ -165,9 +165,22 @@ class PasienInapEklaimRepository
         $tgl_pulang = $transaksi_utama->PRWITGL_KELUAR
             ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)
             : now(); // Jika belum pulang, pakai waktu sekarang
-        $los = $tgl_masuk->diffInDays($tgl_pulang) ?: 1; // Jika hasilnya 0, set minimal 1 hari
+        if (!empty($transaksi_utama->PRWITGL_KELUAR) && $tgl_pulang->lessThan($tgl_masuk)) {
+            return (object)[
+                "status" => "nok",
+                "error" => "Tanggal pulang lebih kecil dari tanggal masuk. Klaim dibatalkan."
+            ];
+        }
 
         $ploting_tarif = $this->getTotalDetailTarifTransaksi($transaksi_utama); /// listing dan ploting data dari tabel TRANSAKSIPASIENINAPD
+
+        $los = $tgl_masuk->diffInDays($tgl_pulang) ?: 1; // Jika hasilnya 0, set minimal 1 hari
+        if ($ploting_tarif->icu_los > 0 && $los < $ploting_tarif->icu_los) {
+            return (object)[
+                "status" => "nok",
+                "error" => "Tanggal pulang - tanggal masuk lebih kecil dari ICU LOS"
+            ];
+        }
 
         // mapping data
         $data = (object)[
