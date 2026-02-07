@@ -886,13 +886,20 @@ class PasienInapEklaimRepository
             }
         }
 
-        // perhitungan tanggal dan los
+        // perhitungan tanggal dan LOS
         $tgl_masuk = Carbon::parse($transaksi_utama->TGL_MASUK);
-        $tgl_pulang = $transaksi_utama->PRWITGL_KELUAR
-            ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)
-            : now(); // Jika belum pulang, pakai waktu sekarang
+
+        if (!empty($transaksi_utama->PRWITGL_KELUAR)) {
+            $tgl_pulang = Carbon::parse($transaksi_utama->PRWITGL_KELUAR);
+        } else {
+            // jika belum pulang, tanggal masuk + 1 jam
+            $tgl_pulang = $tgl_masuk->copy()->addHours(1);
+        }
+
+        // hitung LOS
         $los = (int) ceil($tgl_masuk->diffInHours($tgl_pulang) / 24);
-        $los = $los > 0 ? $los : 1; // minimal 1 hari
+        $los = max($los, 1); // minimal 1 hari
+
 
         // return $los;
 
