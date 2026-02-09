@@ -800,6 +800,7 @@ class PasienInapEklaimRepository
      */
     public function bridgingDataIdrgProcess($no_sep)
     {
+        $now = Carbon::now();
         $transaksi_utama = $this->getDetailTransactionBySep($no_sep);
         if (!$transaksi_utama) {
             return (object)[
@@ -816,7 +817,6 @@ class PasienInapEklaimRepository
         }
 
         $bridging = new BridgeVclaim();
-        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
         try {
             $endpoint = 'SEP/' . $no_sep;
             $vclaim_detail = json_decode($bridging->getRequest($endpoint));
@@ -905,7 +905,7 @@ class PasienInapEklaimRepository
         // set tanggal pulang default dulu
         $tgl_pulang = !empty($transaksi_utama->PRWITGL_KELUAR)
             ? Carbon::parse($transaksi_utama->PRWITGL_KELUAR)
-            : Carbon::now();
+            : $now;
 
         // pastikan tanggal pulang > tanggal masuk
         if ($tgl_pulang->lessThanOrEqualTo($tgl_masuk)) {
@@ -949,7 +949,11 @@ class PasienInapEklaimRepository
 
         if ($icu) {
             $data->icu_indikator = 1;
-            $data->icu_los = $icu->total_los_icu;
+            if (empty($transaksi_utama->PRWITGL_KELUAR)) {
+                $data->icu_los = $los;
+            } else {
+                $data->icu_los = $icu->total_los_icu;
+            }
         }
 
         if ($ventilator) {
@@ -1035,7 +1039,7 @@ class PasienInapEklaimRepository
                     [
                         "response_eklaim" => json_encode($grouping_1_idrg->response->response_idrg),
                         'is_final' => 0,
-                        "updated_at" => $now,
+                        "updated_at" => $now->copy()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
                         "updated_by" => $user->email,
                     ]
                 );
@@ -1045,7 +1049,7 @@ class PasienInapEklaimRepository
                 "action_id" => 6,
                 "user_email" => $user->email,
                 "user_id" => $user->id,
-                "created_at" => $now,
+                "created_at" => $now->copy()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
                 "data" => $data,
             ]);
         } catch (\Exception $e) {
