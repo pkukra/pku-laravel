@@ -1966,52 +1966,73 @@ class PasienInapEklaimRepository
 
     public function getLOSICU($kode_reg)
     {
-        $historyBangsal = DB::connection('sqlsrvsimrs')
+        $rows = DB::connection('sqlsrvsimrs')
             ->table('PASIENRAWATINAP AS PRI')
             ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
-            ->select(
-                'PRI.PRWITGL_INAP',
-                'PRI.PRWITGL_KELUAR'
-            )
             ->where('PRI.PRWINO_TRANSAKSI', $kode_reg)
             ->where('K.FMKKAMARINDUK', 'IK009')
-            ->get();
+            ->orderBy('PRI.PRWITGL_INAP')
+            ->get([
+                'PRI.PRWITGL_INAP',
+                'PRI.PRWITGL_KELUAR'
+            ]);
 
-        if ($historyBangsal->isEmpty()) {
+        if ($rows->isEmpty()) {
             return null;
         }
 
-        $totalLos = 0;
+        $intervals = [];
 
-        foreach ($historyBangsal as $row) {
+        foreach ($rows as $row) {
 
-            if (empty($row->PRWITGL_INAP)) {
-                continue;
-            }
+            if (empty($row->PRWITGL_INAP)) continue;
 
-            $tglMasuk  = Carbon::parse($row->PRWITGL_INAP);
-
-            // 1️⃣ set tanggal keluar default dulu
-            $tglKeluar = !empty($row->PRWITGL_KELUAR)
+            $start = Carbon::parse($row->PRWITGL_INAP);
+            $end   = !empty($row->PRWITGL_KELUAR)
                 ? Carbon::parse($row->PRWITGL_KELUAR)
                 : Carbon::now();
 
-            // 2️⃣ pastikan keluar > masuk
-            if ($tglKeluar->lessThanOrEqualTo($tglMasuk)) {
-                $tglKeluar = $tglMasuk->copy()->addHours(12);
+            if ($end->lessThanOrEqualTo($start)) {
+                $end = $start->copy()->addHours(12);
             }
 
-            // 3️⃣ hitung LOS (minimal 1)
-            $los = max(
-                (int) ceil($tglMasuk->diffInHours($tglKeluar) / 24),
-                1
-            );
-
-            $totalLos += $los;
+            $intervals[] = [$start, $end];
         }
 
+        // 🔥 MERGE INTERVAL
+        $merged = [];
+        foreach ($intervals as $interval) {
+
+            if (empty($merged)) {
+                $merged[] = $interval;
+                continue;
+            }
+
+            $lastIndex = count($merged) - 1;
+            $last = $merged[$lastIndex];
+
+            // Jika overlap atau nempel
+            if ($interval[0]->lessThanOrEqualTo($last[1])) {
+                $merged[$lastIndex][1] =
+                    $interval[1]->greaterThan($last[1])
+                    ? $interval[1]
+                    : $last[1];
+            } else {
+                $merged[] = $interval;
+            }
+        }
+
+        // 🔢 HITUNG TOTAL LOS
+        $totalHours = 0;
+
+        foreach ($merged as $interval) {
+            $totalHours += $interval[0]->diffInHours($interval[1]);
+        }
+
+        $los = max((int) ceil($totalHours / 24), 1);
+
         return (object)[
-            'total_los_icu' => $totalLos,
+            'total_los_icu' => $los,
         ];
     }
 }
