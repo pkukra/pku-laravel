@@ -1025,6 +1025,49 @@ class PasienInapRepository
         });
     }
 
+    /**
+     * Get list of laporan ok by kode reg
+     *
+     * @param string $kode_reg
+     * @return \Illuminate\Support\Collection
+     */
+    public function getListLaporanOKByTransaksi($kode_reg)
+    {
+        $transaksi = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIEN')
+            ->select('FTNO_TRANSAKSI')
+            ->where('FTNO_TRANSAKSIINAP', $kode_reg)
+            ->where('FTKD_UNIT', "PK002")
+            ->get();
+
+        // N+1: query ke OK_JADWAL per transaksi
+        $jadwal_arr = [];
+        foreach ($transaksi as $item) {
+            $jadwal = DB::connection('sqlsrvsimrs')
+                ->table('OK_JADWAL')
+                ->select('*')
+                ->where('FJOKNO_TRANSAKSI', $item->FTNO_TRANSAKSI)
+                ->first();
+
+            $jadwal_arr[] = [
+                'FTNO_TRANSAKSI' => $item->FTNO_TRANSAKSI,
+                'FJOKNO_JADWAL' => $jadwal ? $jadwal->FJOKNO_JADWAL : null,
+                'FJOKKD_TINDAKAN' => $jadwal ? $jadwal->FJOKKD_TINDAKAN : null,
+            ];
+        }
+
+        $laporan_ok_arr = [];
+        foreach ($jadwal_arr as $jadwal) {
+            $laporan_ok_arr[] = DB::connection('sqlsrvemr')
+                ->table('TAC_RI_OK')
+                ->select('*')
+                ->where('FJOKNO_JADWAL', $jadwal['FJOKNO_JADWAL'])
+                ->first();
+        }
+
+        return $laporan_ok_arr;
+    }
+
     function finalPasienUmum($kode_reg)
     {
         $user = Auth::user();

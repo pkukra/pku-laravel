@@ -551,6 +551,16 @@ class PasienInapController extends Controller
             'data' => $data,
         ]);
     }
+    
+    // get_laporan_ok
+    public function get_laporan_ok($kode_reg)
+    {
+        $data = $this->pasienInapRepo->getListLaporanOKByTransaksi($kode_reg);
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 
     /**
      * bridging_cetak_klaim

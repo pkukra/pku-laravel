@@ -13,6 +13,7 @@ Route::get('/check_database', [PasienRujukanController::class, 'check_database']
 
 Route::prefix('rm')->middleware(['auth'])->group(function () {
     Route::get('/pasien-inap/get_all_obat/{kode_reg}', [PasienInapController::class, 'get_all_obat'])->name('rm.pasien-inap.get_all_obat');
+    Route::get('/pasien-inap/get_laporan_ok/{kode_reg}', [PasienInapController::class, 'get_laporan_ok'])->name('rm.pasien-inap.get_laporan_ok');
 });
 
 Route::prefix('rm')->middleware(['auth', CheckRole::class . ':superadmin,koder,klaim,dokter'])->group(function () {

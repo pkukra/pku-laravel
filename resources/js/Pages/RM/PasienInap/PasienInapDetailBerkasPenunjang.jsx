@@ -5,6 +5,7 @@ import PasienInapDetailHasilRadiologi from "./PasienInapDetailHasilRadiologi";
 import PasienInapDetailResumePulang from "./PasienInapDetailResumePulang";
 import PasienInapDetailCPPT from "./PasienInapDetailCPPT";
 import PasienInapDetailObat from "./PasienInapDetailObat";
+import PasienInapDetailLaporanOK from "./PasienInapDetailLaporanOK";
 
 export default function Index({ pasien }) {
     const [modalOpen, setModalOpen] = useState(false);
@@ -66,6 +67,8 @@ export default function Index({ pasien }) {
                         {berkas.FS_KETERANGAN}
                     </Button>
                 ))}
+
+                <PasienInapDetailLaporanOK pasien={pasien} />
 
                 {/* Modal Ant Design */}
                 <Modal
