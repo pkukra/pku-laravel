@@ -36,7 +36,7 @@ export default function Index({ dataTransaksi }) {
 
                 {/* PDF Viewer */}
                 <iframe
-                    src={`http://10.10.10.10/emr/index.php/rm/rawat_jalan_no_auth/irm/${dataTransaksi?.FRPNOTRANSAKSI}/${dataTransaksi?.FRPPASIEN_ID}`}
+                    src={`http://10.10.10.10/emr/index.php/rm/rawat_jalan_no_auth/irm2/${dataTransaksi?.FRPNOTRANSAKSI}/${dataTransaksi?.FRPPASIEN_ID}`}
                     width="100%"
                     height="600px"
                     style={{
