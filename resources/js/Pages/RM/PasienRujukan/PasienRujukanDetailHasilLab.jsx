@@ -5,6 +5,7 @@ import PasienRujukanDetailHasilRadiologi from "./PasienRujukanDetailHasilRadiolo
 import PasienRujukanDetailObat from "./PasienRujukanDetailObat";
 import PasienRujukanDetailIMR from "./PasienRujukanDetailIMR";
 import PasienRujukanDetailIHistoricalProcedure from "./PasienRujukanDetailIHistoricalProcedure";
+import PasienRujukanDetailLaporanOK from "./PasienRujukanDetailLaporanOK";
 
 export default function Index({ dataTransaksi, pasien }) {
     const [hasilLabUrl, setHasilLabUrl] = useState(null);
@@ -95,6 +96,7 @@ export default function Index({ dataTransaksi, pasien }) {
                 />
                 <PasienRujukanDetailIMR dataTransaksi={dataTransaksi} />
                 <PasienRujukanDetailIHistoricalProcedure pasien={pasien} />
+                <PasienRujukanDetailLaporanOK pasien={pasien} />
 
                 {/* Modal Ant Design */}
                 <Modal

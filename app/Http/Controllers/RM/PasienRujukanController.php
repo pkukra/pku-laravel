@@ -1145,4 +1145,14 @@ class PasienRujukanController extends Controller
         $status = $this->pasienRujukanRepo->checkDb();
         return response()->json(['db_status' => $status ? 'up' : 'down']);
     }
+
+    // get_laporan_ok
+    public function get_laporan_ok($kode_reg)
+    {
+        $data = $this->pasienRujukanRepo->getListLaporanOKByTransaksi($kode_reg);
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 }

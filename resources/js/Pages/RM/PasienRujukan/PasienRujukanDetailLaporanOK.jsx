@@ -13,8 +13,8 @@ export default function LaporanOK({ pasien }) {
         setLoading(true);
         try {
             const response = await axios.get(
-                route("rm.pasien-inap.get_laporan_ok", {
-                    kode_reg: pasien.PRWINO_TRANSAKSI,
+                route("rm.pasien-rujukan.get_laporan_ok", {
+                    kode_reg: pasien.FRPNOTRANSAKSI,
                 }),
             );
             setDataOK(response?.data?.data || []);

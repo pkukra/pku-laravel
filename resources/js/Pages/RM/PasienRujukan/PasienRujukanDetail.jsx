@@ -13,6 +13,7 @@ import PasienRujukanDetailCaraMasukPulang from "./PasienRujukanDetailCaraMasukPu
 import PasienRujukanDetailProcedureList from "./PasienRujukanDetailProcedureList";
 import PasienRujukanDetailDiagnosaList from "./PasienRujukanDetailDiagnosaList";
 import PasienRujukanNotFound from "./PasienRujukanNotFound";
+
 import EKlaim from "../Eklaim";
 
 import { useState, useEffect } from "react";
