@@ -17,9 +17,14 @@ export default function LaporanOK({ pasien }) {
                     kode_reg: pasien.PRWINO_TRANSAKSI,
                 }),
             );
-            setDataOK(response?.data?.data || []);
+
+            // ambil data + buang null
+            const data = (response?.data?.data || []).filter(Boolean);
+
+            setDataOK(data);
         } catch (error) {
             console.error("Error fetching laporan OK:", error);
+            setDataOK([]); // biar tidak error di UI
         } finally {
             setLoading(false);
         }
