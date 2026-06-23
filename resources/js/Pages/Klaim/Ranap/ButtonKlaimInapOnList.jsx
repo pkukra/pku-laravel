@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Popover, Row, Col, Button  } from "antd";
 
-export default function Index({ namapasien, nomer_rm, kode_reg }) {
+export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
     const [open, setOpen] = useState(false);
     const hide = () => {
         setOpen(false);
@@ -13,7 +13,7 @@ export default function Index({ namapasien, nomer_rm, kode_reg }) {
     return (
         <>
             <Popover
-                title={`${namapasien} - ${nomer_rm}`}
+                title={`${nama_pasien} - ${nomer_rm}`}
                 trigger="click"
                 content={
                     <Row gutter={[8, 8]} style={{ width: 250 }}>
@@ -31,7 +31,7 @@ export default function Index({ namapasien, nomer_rm, kode_reg }) {
                             <Button
                                 block
                                 size="small"
-                                onClick={() => alert(JSON.stringify(namapasien))}
+                                onClick={() => alert(JSON.stringify(nama_pasien))}
                             >
                                 Resume
                             </Button>
@@ -41,7 +41,7 @@ export default function Index({ namapasien, nomer_rm, kode_reg }) {
                             <Button
                                 block
                                 size="small"
-                                onClick={() => alert(JSON.stringify(namapasien))}
+                                onClick={() => alert(JSON.stringify(nama_pasien))}
                             >
                                 Grouping
                             </Button>
@@ -51,7 +51,7 @@ export default function Index({ namapasien, nomer_rm, kode_reg }) {
                             <Button
                                 block
                                 size="small"
-                                onClick={() => alert(JSON.stringify(namapasien))}
+                                onClick={() => alert(JSON.stringify(nama_pasien))}
                             >
                                 Klaim
                             </Button>

@@ -337,7 +337,7 @@ export default function Index({ auth, bangsal }) {
                                             Tampilkan
                                         </Button>
                                     </a>{" "}
-                                    <ButtonKlaimInapOnList pasien={record} />
+                                    <ButtonKlaimInapOnList nama_pasien={record?.NAMAPASIEN} nomer_rm={record?.FTKD_PASIEN} kode_reg={record?.FTNO_TRANSAKSI} />
                                 </>
                             ),
                         },
