@@ -10,13 +10,13 @@ import {
     DatePicker,
     Input,
     Select,
-    Typography
+    Typography, Popover,
 } from "antd";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
 
-import ButtonKlaimInapOnList from "../../Klaim/Ranap/ButtonKlaimInapOnList";
+import KumpulanButtonKlaimInapOnList from "../../Klaim/Ranap/KumpulanButtonKlaimInapOnList";
 
 export default function Index({ auth, bangsal }) {
     const queryParams = new URLSearchParams(window.location.search);
@@ -337,7 +337,23 @@ export default function Index({ auth, bangsal }) {
                                             Tampilkan
                                         </Button>
                                     </a>{" "}
-                                    <ButtonKlaimInapOnList nama_pasien={record?.NAMAPASIEN} nomer_rm={record?.FTKD_PASIEN} kode_reg={record?.FTNO_TRANSAKSI} />
+                                    <Popover
+                                        title={`${record?.NAMAPASIEN} - ${record?.FTKD_PASIEN}`}
+                                        trigger="click"
+                                        content={
+                                            <KumpulanButtonKlaimInapOnList
+                                                nama_pasien={record?.NAMAPASIEN}
+                                                nomer_rm={record?.FTKD_PASIEN}
+                                                kode_reg={
+                                                    record?.FTNO_TRANSAKSI
+                                                }
+                                            />
+                                        }
+                                    >
+                                        <Button type="primary" size="small">
+                                            Klaim
+                                        </Button>
+                                    </Popover>
                                 </>
                             ),
                         },
