@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Popover, Row, Col, Button  } from "antd";
 
-export default function Index({ pasien }) {
+export default function Index({ namapasien, nomer_rm, kode_reg }) {
     const [open, setOpen] = useState(false);
     const hide = () => {
         setOpen(false);
@@ -13,7 +13,7 @@ export default function Index({ pasien }) {
     return (
         <>
             <Popover
-                title={`${pasien.FTKD_PASIEN} - ${pasien.NAMAPASIEN}`}
+                title={`${namapasien} - ${nomer_rm}`}
                 trigger="click"
                 content={
                     <Row gutter={[8, 8]} style={{ width: 250 }}>
@@ -21,7 +21,7 @@ export default function Index({ pasien }) {
                             <Button
                                 block
                                 size="small"
-                                onClick={() => alert(JSON.stringify(pasien))}
+                                onClick={() => alert(JSON.stringify({ kode_reg }))}
                             >
                                 SEP
                             </Button>
@@ -31,7 +31,7 @@ export default function Index({ pasien }) {
                             <Button
                                 block
                                 size="small"
-                                onClick={() => alert(JSON.stringify(pasien))}
+                                onClick={() => alert(JSON.stringify(namapasien))}
                             >
                                 Resume
                             </Button>
@@ -41,7 +41,7 @@ export default function Index({ pasien }) {
                             <Button
                                 block
                                 size="small"
-                                onClick={() => alert(JSON.stringify(pasien))}
+                                onClick={() => alert(JSON.stringify(namapasien))}
                             >
                                 Grouping
                             </Button>
@@ -51,7 +51,7 @@ export default function Index({ pasien }) {
                             <Button
                                 block
                                 size="small"
-                                onClick={() => alert(JSON.stringify(pasien))}
+                                onClick={() => alert(JSON.stringify(namapasien))}
                             >
                                 Klaim
                             </Button>
