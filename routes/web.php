@@ -67,5 +67,6 @@ Route::get('/hasil_lab', function () {
 
 // Muat file routes rm.php
 require_once __DIR__ . '/rm.php';
+require_once __DIR__ . '/klaim.php';
 
 require __DIR__ . '/auth.php';
