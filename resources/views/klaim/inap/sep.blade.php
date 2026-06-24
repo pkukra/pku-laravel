@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; }
         .page { width:100%; margin:0; padding:5mm; }
         .page_header { width:100%; }
         .page_header img { float:left }
         .content { width:100%; border-collapse:collapse; font-size:10px; }
-        .content td { padding:4px; vertical-align:top }
+        .content td { padding:1px; vertical-align:top }
         .fjpp { width:100%; border-collapse:collapse; font-size:10px; }
-        .fjpp th, .fjpp td { border:1px solid #000; padding:5px }
+        .fjpp th, .fjpp td { border:1px solid #000; padding:1px }
         .center { text-align:center }
         .right { text-align:right }
     </style>
@@ -20,7 +20,7 @@
     <table class="page_header">
         <tr>
             <td style="width:33%">
-                <img src="{{ public_path('resource/doc/images/icon/logo-bpjs.png') }}" width="200" height="35" alt="logo">
+                <img src="{{ public_path('statics/bpjs_logo.png') }}" width="200" height="35" alt="logo">
             </td>
             <td class="center" style="width:33%">
                 <div style="font-size:12px">SURAT ELEGIBILITAS PESERTA<br><br>RS PKU Muhammadiyah Karanganyar</div>
@@ -143,7 +143,7 @@
     <br>
     <table class="fjpp">
         <tr>
-            <td class="center" colspan="4"><strong>FORMULIR JAMINAN PELAYANAN PASIEN JAMINAN KESEHATAN NASIONAL</strong></td>
+            <td class="center" colspan="3"><strong>FORMULIR JAMINAN PELAYANAN PASIEN JAMINAN KESEHATAN NASIONAL</strong></td>
         </tr>
         <tr>
             <td class="center" colspan="2"><b>DIAGNOSIS</b></td>
@@ -202,7 +202,7 @@
         @foreach($tindakans as $tindakan)
             <tr style="vertical-align:top;">
                 <td style="text-align:left; width:55%; vertical-align:top;"><div style="white-space: normal; word-break: break-word;">{{ $tindakan['FMI9KETERANGAN'] }}</div></td>
-                <td style="text-align:center;">{{ $tindakan['MRTKD_TINDAKAN'] }}<br><br></td>
+                <td style="text-align:center;">{{ $tindakan['MRTKD_TINDAKAN'] }}</td>
                 <td></td>
                 <td></td>
             </tr>
@@ -217,7 +217,7 @@
             <td class="center"><b>Paraf Pasien/Klg</b></td>
         </tr>
         <tr>
-            <td class="center"><br><br><br><br><br><br></td>
+            <td class="center"><br><br><br></td>
             <td class="center"></td>
         </tr>
 

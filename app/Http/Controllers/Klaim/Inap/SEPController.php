@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Klaim\Inap;
 
 use App\Http\Controllers\Controller;
-use App\Models\Student;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -20,9 +19,18 @@ class SEPController extends Controller
         $this->sepRepo = $sepRepo;
     }
 
+    public function viewHtml()
+    {
+        $data = $this->sepRepo->getDummyData();
+
+        return view('klaim.inap.sep', $data);
+    }
+
     public function index()
     {
         $data = $this->sepRepo->getDummyData();
+
+        // return view('klaim.inap.sep', $data);
 
         $pdf = Pdf::loadView(
             'klaim.inap.sep',
