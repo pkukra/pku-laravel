@@ -25,9 +25,12 @@ class SEPController extends Controller
 
     public function index($kode_reg)
     {
-        $data = (array)$this->sepRepo->getSEPDetail($kode_reg);
+        $data = $this->sepRepo->getSEPDetail($kode_reg);
+        $diagnosis = $this->sepRepo->getAllDiagnosis($data->FMNOSEP);
+        $procedures = $this->sepRepo->getAllProcedures($data->FMNOSEP);
+        $data = (array) $data;
 
-        // return response()->json($data);
+        // return response()->json($diagnosis);
         // return view('klaim.inap.sep', $data);
 
         $qrDPJP = Builder::create()
@@ -45,9 +48,9 @@ class SEPController extends Controller
         $data['qrDPJP'] = base64_encode($qrDPJP->getString());
         $data['qrPasien'] = base64_encode($qrPasien->getString());
 
-        $data['penyakit_premiers'] = [];
-        $data['penyakit_sekunders'] = [];
-        $data['tindakans'] = [];
+        $data['penyakit_premiers'] = $diagnosis->where('is_primary', '1')->values()->all();
+        $data['penyakit_sekunders'] = $diagnosis->where('is_primary', '0')->values()->all();
+        $data['tindakans'] = $procedures->values()->all();
         $data['catatans'] = [];
 
         $pdf = Pdf::loadView(

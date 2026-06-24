@@ -197,8 +197,8 @@
             @foreach($penyakit_premiers as $penyakit_premier)
             <tr>
                 <td style="text-align:left; width:20%; vertical-align:top;"><b>{{ $i == 1 ? 'Diagnosa Primer' : '' }}</b></td>
-                <td style="text-align:left; width:60%;">{{ $penyakit_premier['PENYAKIT'] }}</td>
-                <td style="text-align:center; width:20%;">{{ $penyakit_premier['MRPKD_PENYAKIT'] }}</td>
+                <td style="text-align:left; width:60%;">{{ $penyakit_premier->description }}</td>
+                <td style="text-align:center; width:20%;">{{ $penyakit_premier->code }}</td>
             </tr>
             @php $i++; @endphp
             @endforeach
@@ -215,8 +215,8 @@
             @foreach($penyakit_sekunders as $penyakit_sekunder)
             <tr>
                 <td style="text-align:left; width:20%; vertical-align:top;"><b>{{ $i == 1 ? 'Diagnosa Sekunder' : '' }}</b></td>
-                <td style="text-align:left; width:60%;">{{ $penyakit_sekunder['PENYAKIT'] }}</td>
-                <td style="text-align:center; width:20%;">{{ $penyakit_sekunder['MRPKD_PENYAKIT'] }}</td>
+                <td style="text-align:left; width:60%;">{{ $penyakit_sekunder->description }}</td>
+                <td style="text-align:center; width:20%;">{{ $penyakit_sekunder->code }}</td>
             </tr>
             @php $i++; @endphp
             @endforeach
@@ -244,9 +244,9 @@
             @foreach($tindakans as $tindakan)
             <tr style="vertical-align:top;">
                 <td style="text-align:left; width:55%; vertical-align:top;">
-                    <div style="white-space: normal; word-break: break-word;">{{ $tindakan['FMI9KETERANGAN'] }}</div>
+                    <div style="white-space: normal; word-break: break-word;">{{ $tindakan->description }}</div>
                 </td>
-                <td style="text-align:center;">{{ $tindakan['MRTKD_TINDAKAN'] }}</td>
+                <td style="text-align:center;">{{ $tindakan->code }}</td>
                 <td></td>
                 <td></td>
             </tr>

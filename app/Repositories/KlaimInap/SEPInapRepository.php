@@ -27,4 +27,34 @@ class SEPInapRepository
 
         return $sep;
     }
+    
+    public function getAllDiagnosis($no_sep)
+    {
+        $data = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_DIAGNOSA_IM')
+            ->leftJoin('ICD', 'PASIEN_DIAGNOSA_IM.code', '=', 'ICD.code')
+            ->select(
+                'PASIEN_DIAGNOSA_IM.*',
+                'ICD.description'
+            )
+            ->where('no_sep', $no_sep)
+            ->get();
+
+        return $data;
+    }
+    
+    public function getAllProcedures($no_sep)
+    {
+        $data = DB::connection('sqlsrvsimrs')
+            ->table('PASIEN_TINDAKAN_IM')
+            ->leftJoin('ICD', 'PASIEN_TINDAKAN_IM.code', '=', 'ICD.code')
+            ->select(
+                'PASIEN_TINDAKAN_IM.*',
+                'ICD.description'
+            )
+            ->where('no_sep', $no_sep)
+            ->get();
+
+        return $data;
+    }
 }
