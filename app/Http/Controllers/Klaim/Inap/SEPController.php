@@ -7,6 +7,10 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Repositories\KlaimInap\SEPInapRepository;
 
@@ -19,23 +23,32 @@ class SEPController extends Controller
         $this->sepRepo = $sepRepo;
     }
 
-    public function viewHtml()
-    {
-        $data = $this->sepRepo->getDummyData();
-
-        return view('klaim.inap.sep', $data);
-    }
-
     public function index($kode_reg)
     {
         $data = (array)$this->sepRepo->getSEPDetail($kode_reg);
-        
+
         // return response()->json($data);
         // return view('klaim.inap.sep', $data);
-        $data['penyakit_premiers']= [];
-        $data['penyakit_sekunders']= [];
-        $data['tindakans']= [];
-        $data['catatans']= [];
+
+        $qrDPJP = Builder::create()
+            ->writer(new PngWriter())
+            ->data($data['dpjpn'].' - '.$data['FMTGL_SEP'])
+            ->size(100)
+            ->build();
+
+        $qrPasien = Builder::create()
+            ->writer(new PngWriter())
+            ->data($data['NAMAPASIEN'] . ' - ' . $data['FMTGL_LAHIR'])
+            ->size(100)
+            ->build();
+
+        $data['qrDPJP'] = base64_encode($qrDPJP->getString());
+        $data['qrPasien'] = base64_encode($qrPasien->getString());
+
+        $data['penyakit_premiers'] = [];
+        $data['penyakit_sekunders'] = [];
+        $data['tindakans'] = [];
+        $data['catatans'] = [];
 
         $pdf = Pdf::loadView(
             'klaim.inap.sep',
