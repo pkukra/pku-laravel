@@ -149,7 +149,7 @@
             <tr>
                 <td>Diagnosa Awal</td>
                 <td>:</td>
-                <td>{{ $FMDIAGNOSA }}</td>
+                <td>{{ $FMDIAGNOSA }} - {{ $DX_AWAL }}</td>
                 <td>Penjamin</td>
                 <td>:</td>
                 <td>-</td>

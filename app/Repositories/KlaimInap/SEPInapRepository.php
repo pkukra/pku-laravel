@@ -4,11 +4,6 @@ namespace App\Repositories\KlaimInap;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
-use Bpjs\Bridging\Vclaim\BridgeVclaim;
-use App\Repositories\RM\RMAuditTrail;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class SEPInapRepository
 {
@@ -16,11 +11,11 @@ class SEPInapRepository
     {
         $sep = DB::connection('sqlsrvsimrs')
             ->table('BPJS_SEP')
-            // ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'TPI.FTNO_TRANSAKSI', '=', 'BPJS_SEP.FMNOTRANSAKSI')
+            ->leftJoin('ICD', 'BPJS_SEP.FMDIAGNOSA', '=', 'ICD.code')
             ->leftJoin('PASIEN', 'BPJS_SEP.FMPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
             ->select(
                 'BPJS_SEP.*',
-                'PASIEN.*'
+                'PASIEN.*', 'ICD.description as DX_AWAL'
             )
             ->where('FMNOTRANSAKSI', $kode_reg)
             ->first();
