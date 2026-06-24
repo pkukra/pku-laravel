@@ -236,7 +236,7 @@
             </tr>
             <tr>
                 <td style="width:55%;" class="center"><b>TINDAKAN PRIMER</b></td>
-                <td style="width:15%;" class="center"><b>CODE ICD 9 CM</b></td>
+                <td style="width:15%;" class="center"><b>CODE ICD 9</b></td>
                 <td style="width:15%;" class="center"><b>Paraf Petugas</b></td>
                 <td style="width:15%;" class="center"><b>Paraf Pasien/Klg</b></td>
             </tr>
