@@ -15,7 +15,7 @@ import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
 import PasienInapNotFound from "./PasienInapNotFound";
 
-import ButtonKlaimInapOnList from "../../Klaim/Ranap/ButtonKlaimInapOnList";
+import KumpulanButtonKlaimInapOnList from "../../Klaim/Ranap/KumpulanButtonKlaimInapOnList";
 
 import EKlaim from "../Eklaim";
 
@@ -79,7 +79,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                                         pasien={pasien}
                                     />
                                     <Card title="Berkas Klaim">
-                                        <ButtonKlaimInapOnList
+                                        <KumpulanButtonKlaimInapOnList
                                             nama_pasien={pasien?.NAMAPASIEN}
                                             nomer_rm={pasien?.FTKD_PASIEN}
                                             kode_reg={pasien?.FTNO_TRANSAKSI}
