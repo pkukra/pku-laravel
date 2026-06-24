@@ -16,7 +16,7 @@ import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
 
-import KumpulanButtonKlaimInapOnList from "../../Klaim/Ranap/KumpulanButtonKlaimInapOnList";
+import KumpulanButtonKlaimInapOnList from "../../Klaim/Inap/KumpulanButtonKlaimInapOnList";
 
 export default function Index({ auth, bangsal }) {
     const queryParams = new URLSearchParams(window.location.search);

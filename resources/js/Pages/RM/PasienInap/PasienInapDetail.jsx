@@ -15,7 +15,7 @@ import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
 import PasienInapNotFound from "./PasienInapNotFound";
 
-import KumpulanButtonKlaimInapOnList from "../../Klaim/Ranap/KumpulanButtonKlaimInapOnList";
+import KumpulanButtonKlaimInapOnList from "../../Klaim/Inap/KumpulanButtonKlaimInapOnList";
 
 import EKlaim from "../Eklaim";
 
