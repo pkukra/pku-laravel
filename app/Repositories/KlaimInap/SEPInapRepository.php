@@ -12,6 +12,21 @@ use Carbon\Carbon;
 
 class SEPInapRepository
 {
+    public function getSEPDetail($kode_reg)
+    {
+        $sep = DB::connection('sqlsrvsimrs')
+            ->table('BPJS_SEP')
+            // ->leftJoin('TRANSAKSIPASIENINAP AS TPI', 'TPI.FTNO_TRANSAKSI', '=', 'BPJS_SEP.FMNOTRANSAKSI')
+            ->leftJoin('PASIEN', 'BPJS_SEP.FMPASIEN_ID', '=', 'PASIEN.KD_PASIEN')
+            ->select(
+                'BPJS_SEP.*',
+                'PASIEN.*'
+            )
+            ->where('FMNOTRANSAKSI', $kode_reg)
+            ->first();
+
+        return $sep;
+    }
     public function getDummyData()
     {
         return [

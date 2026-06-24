@@ -26,11 +26,16 @@ class SEPController extends Controller
         return view('klaim.inap.sep', $data);
     }
 
-    public function index()
+    public function index($kode_reg)
     {
-        $data = $this->sepRepo->getDummyData();
-
+        $data = (array)$this->sepRepo->getSEPDetail($kode_reg);
+        
+        // return response()->json($data);
         // return view('klaim.inap.sep', $data);
+        $data['penyakit_premiers']= [];
+        $data['penyakit_sekunders']= [];
+        $data['tindakans']= [];
+        $data['catatans']= [];
 
         $pdf = Pdf::loadView(
             'klaim.inap.sep',

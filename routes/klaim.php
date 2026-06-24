@@ -10,7 +10,7 @@ Route::prefix('klaim')->group(function () {
         })->name('klaim.inap.list_kamar_bangsal');
 
         Route::get('/sep/html', [SEPController::class, 'viewHtml'])->name('klaim.inap.sep.html');
-        Route::get('/sep', [SEPController::class, 'index'])->name('klaim.inap.sep');
+        Route::get('/sep/{kode_reg}', [SEPController::class, 'index'])->name('klaim.inap.sep');
 
     });
 });

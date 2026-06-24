@@ -26,7 +26,7 @@
                 <div style="font-size:12px">SURAT ELEGIBILITAS PESERTA<br><br>RS PKU Muhammadiyah Karanganyar</div>
             </td>
             <td style="width:33%">
-                <p><strong>,{{ $sep->FMPRB }}</strong></p>
+                <p><strong>,{{ $FMPRB }}</strong></p>
             </td>
         </tr>
     </table>
@@ -36,7 +36,7 @@
         <tr>
             <td style="width:19%">No. SEP</td>
             <td style="width:1%">:</td>
-            <td style="width:40%"><strong style="font-size:15px">{{ $sep->FMNOSEP }}</strong></td>
+            <td style="width:40%"><strong style="font-size:15px">{{ $FMNOSEP }}</strong></td>
             <td style="width:10%"></td>
             <td style="width:1%"></td>
             <td style="width:25%"></td>
@@ -44,15 +44,15 @@
         <tr>
             <td>Tgl. SEP</td>
             <td>:</td>
-            <td>{{ $sep->FMTGL_SEP_FORMATTED }}</td>
+            <td>{{ $FMTGL_SEP }}</td>
             <td>Peserta</td>
             <td>:</td>
-            <td><strong style="font-size:11px">{{ $pasien->FMPESERTA }}</strong></td>
+            <td><strong style="font-size:11px">{{ $FMPESERTA }}</strong></td>
         </tr>
         <tr>
             <td>No. Kartu</td>
             <td>:</td>
-            <td>{{ $sep->FMNO_KARTU }} <span style="margin-left:70px">( MR. : <strong style="font-size:13px">{{ $sep->FMPASIEN_ID }}</strong>)</span></td>
+            <td>{{ $FMNO_KARTU }} <span style="margin-left:70px">( MR. : <strong style="font-size:13px">{{ $FMPASIEN_ID }}</strong>)</span></td>
             <td>C O B</td>
             <td>:</td>
             <td></td>
@@ -60,23 +60,23 @@
         <tr>
             <td>Nama Peserta</td>
             <td>:</td>
-            <td>{{ $sep->FMNAMA_PESERTA }}</td>
+            <td>{{ $NAMAPASIEN }}</td>
             <td>Jns Rawat</td>
             <td>:</td>
-            <td>{{ $sep->FMJENISRAWAT == 2 ? 'Rawat jalan' : 'Rawat Inap' }}</td>
+            <td>{{ $FMJENISRAWAT == 2 ? 'Rawat jalan' : 'Rawat Inap' }}</td>
         </tr>
         <tr>
             <td>Tgl. Lahir</td>
             <td>:</td>
-            <td>{{ $sep->FMTGL_LAHIR_FORMATTED }} <span style="margin-left:50px">( Kelamin : {{ $sep->FMJENIS_KELAMIN == 'L' ? 'Laki-Laki' : 'Perempuan' }} )</span></td>
+            <td>{{ $FMTGL_LAHIR }} <span style="margin-left:50px">( Kelamin : {{ $FMJENIS_KELAMIN == 'L' ? 'Laki-Laki' : 'Perempuan' }} )</span></td>
             <td>Jns Kunjung</td>
             <td>:</td>
-            <td>{{ $sep->TUJ_KUNJUNGAN }}</td>
+            <td>{{ $TUJ_KUNJUNGAN }}</td>
         </tr>
         <tr>
             <td>No. Telepon</td>
             <td>:</td>
-            <td>{{ $sep->telp ?? $sep->FMNOTELP }}</td>
+            <td>{{ $telp ?? $FMNOTELP }}</td>
             <td></td>
             <td></td>
             <td></td>
@@ -84,7 +84,7 @@
         <tr>
             <td>Sub/Spesialis</td>
             <td>:</td>
-            <td>{{ $sep->FMPOLYN }}</td>
+            <td>{{ $FMPOLYN }}</td>
             <td>Poli Perujuk</td>
             <td>:</td>
             <td></td>
@@ -92,15 +92,15 @@
         <tr>
             <td>Dokter</td>
             <td>:</td>
-            <td>{{ $sep->dpjpn }}</td>
+            <td>{{ $dpjpn }}</td>
             <td>Hak Rawat</td>
             <td>:</td>
-            <td><strong style="font-size:13px">{{ $pasien->FMNAMA_KELAS }}</strong></td>
+            <td><strong style="font-size:13px">{{ $FMNAMA_KELAS }}</strong></td>
         </tr>
         <tr>
             <td>Faskes Perujuk</td>
             <td>:</td>
-            <td>{{ $sep->FMPPK_RUJUKANN }}</td>
+            <td>{{ $FMPPK_RUJUKANN }}</td>
             <td>Kls Rawat</td>
             <td>:</td>
             <td>-</td>
@@ -108,7 +108,7 @@
         <tr>
             <td>Diagnosa Awal</td>
             <td>:</td>
-            <td>{{ $sep->DIAGNOSA_AWAL }}</td>
+            <td>{{ $FMDIAGNOSA }}</td>
             <td>Penjamin</td>
             <td>:</td>
             <td>-</td>
@@ -116,7 +116,7 @@
         <tr>
             <td>Catatan</td>
             <td>:</td>
-            <td>{{ $sep->FMCATATAN }}</td>
+            <td>{{ $FMCATATAN }}</td>
             <td></td>
             <td></td>
             <td></td>
@@ -128,15 +128,15 @@
             <td></td>
             <td></td>
             <td class="center">Pasien / Keluarga Pasien <br><br>
-                <div style="font-size:10px;">QR: {{ $sep->FMNO_KARTU }}</div>
+                <div style="font-size:10px;">QR: {{ $FMNO_KARTU }}</div>
                 __________________
             </td>
         </tr>
         <tr>
-            <td colspan="3">Cetakan ke &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $sep->FMPCETAK }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ $sep->JAM_TANGGAL_SEP }}</td>
+            <td colspan="3">Cetakan ke &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $FMPCETAK }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ $FMTGL_SEP }}</td>
             <td></td>
             <td></td>
-            <td class="center">{{ $sep->FMNAMA_PESERTA }}</td>
+            <td class="center">{{ $FMNAMA_PESERTA }}</td>
         </tr>
     </table>
 
@@ -236,9 +236,9 @@
                 </table>
             </td>
             <td class="center" colspan="2">Dokter <br>
-                <div style="font-size:10px;">QR: {{ $sep->dpjpn }}, {{ $sep->JAM_TANGGAL_SEP }}</div>
+                <div style="font-size:10px;">QR: {{ $dpjpn }}, {{ $FMTGL_SEP }}</div>
                 __________________ <br><br>
-                {{ $sep->dpjpn }}
+                {{ $dpjpn }}
             </td>
         </tr>
 
