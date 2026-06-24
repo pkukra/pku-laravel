@@ -17,7 +17,6 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
-        "simplesoftwareio/simple-qrcode": "^4.2",
         "tightenco/ziggy": "^2.0",
         "virusphp/bridging-bpjs": "^2.1"
     },
