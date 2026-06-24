@@ -85,7 +85,7 @@
             <tr>
                 <td>Tgl. SEP</td>
                 <td>:</td>
-                <td>{{ $FMTGL_SEP }}</td>
+                <td>{{ \Carbon\Carbon::parse($FMTGL_SEP)->translatedFormat('d F Y') }}</td>
                 <td>Peserta</td>
                 <td>:</td>
                 <td><strong style="font-size:11px">{{ $FMPESERTA }}</strong></td>
@@ -109,7 +109,7 @@
             <tr>
                 <td>Tgl. Lahir</td>
                 <td>:</td>
-                <td>{{ $FMTGL_LAHIR }} <span style="margin-left:50px">( {{ $FMJENIS_KELAMIN == 'L' ? 'Laki-Laki' : 'Perempuan' }} )</span></td>
+                <td>{{ \Carbon\Carbon::parse($FMTGL_LAHIR)->translatedFormat('d F Y') }} <span style="margin-left:50px">( {{ $FMJENIS_KELAMIN == 'L' ? 'Laki-Laki' : 'Perempuan' }} )</span></td>
                 <td>Jns Kunjung</td>
                 <td>:</td>
                 <td>{{ $TUJ_KUNJUNGAN }}</td>
@@ -175,7 +175,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="3">Cetakan ke &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $FMPCETAK }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ $FMTGL_SEP }}</td>
+                <td colspan="3">Cetakan ke &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $FMPCETAK }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ \Carbon\Carbon::parse($FMTGL_SEP)->translatedFormat('d F Y H:i:s') }}</td>
                 <td></td>
                 <td></td>
                 <td class="center">{{ $FMNAMA_PESERTA }}</td>
