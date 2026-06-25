@@ -119,8 +119,6 @@
         </tr>
     </table> <br> <!-- TABEL MONITORING -->
     <table class="monitoring">
-
-        ```
         {{-- JAM --}}
         <tr>
             <th colspan="2">Jam</th>
@@ -230,10 +228,196 @@
             <td>{{ $row['etco2'] }}</td>
             @endforeach
         </tr>
-        ```
+    </table>
+
+    <table>
+
+        <tr>
+            <th width="20%">
+                Teknik Anestesi
+            </th>
+
+            <th colspan="2">
+                Obat Sedasi & Anestesi
+            </th>
+
+            <th colspan="4">
+                Obat Anestesi (SAB)
+            </th>
+        </tr>
+
+        <tr>
+
+            <td rowspan="8">
+                {{ $jenis_anestesi }}
+            </td>
+
+            <td width="15%">
+                1. Premedikasi
+            </td>
+
+            <td width="20%">
+                {{ $premedikasi }}
+            </td>
+
+            <td width="15%">
+                Nama Obat
+            </td>
+
+            <td colspan="3">
+                {{ $nama_obat }}
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>2. Analgesik</td>
+            <td>{{ $analgesik }}</td>
+
+            <td>Adjuvan</td>
+            <td colspan="3">
+                {{ $adjuvan }}
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>3. Induksi</td>
+            <td>{{ $induksi }}</td>
+
+            <td>Spinocan No</td>
+            <td>{{ $spinocan }}</td>
+
+            <td>Lokasi</td>
+            <td>{{ $lokasi }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>4. Msc Relaxan</td>
+            <td>{{ $msc_relaxan }}</td>
+
+            <th colspan="4">
+                Oksigenasi
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <td>5. Agent Anest.</td>
+            <td>{{ $agent_anest }}</td>
+
+            <td colspan="2" rowspan="3">
+                {{ $oksigenasi }}
+            </td>
+
+            <td colspan="2" rowspan="3"
+                class="text-center">
+
+                Level O₂
+                <br>
+
+                {{ $level_o2 }} lpm
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td>6. Reversal</td>
+            <td>{{ $reversal }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td>7. Antidote</td>
+            <td>{{ $antidote }}</td>
+
+        </tr>
+
+        <tr>
+
+            <td colspan="2">
+                Catatan :
+                <br>
+                {!! nl2br($catatan) !!}
+            </td>
+
+            <th colspan="2">
+                Perawat Anestesi
+            </th>
+
+            <th colspan="2">
+                Dokter Anestesi
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <td colspan="3" rowspan="2">
+
+                {{ $catatan }}
+
+            </td>
+
+            <td colspan="2"
+                height="70"
+                class="text-center">
+
+                @if(!empty($ttd_perawat))
+                <img
+                    src="{{ $ttd_perawat }}"
+                    width="120">
+                @endif
+
+            </td>
+
+            <td colspan="2"
+                class="text-center">
+
+                @if(!empty($ttd_dokter))
+                <img
+                    src="{{ $ttd_dokter }}"
+                    width="120">
+                @endif
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td colspan="2"
+                class="text-center">
+
+                {{ $nama_perawat }}
+
+            </td>
+
+            <td colspan="2"
+                class="text-center">
+
+                {{ $nama_dokter }}
+
+            </td>
+
+        </tr>
 
     </table>
 
+    <table>
+        <tr>
+            <th width="15%">TTV Akhir</th>
+            <td> TD : {{ $td_sistole_akhir }}/{{ $td_diastole_akhir }} mmHg &nbsp;&nbsp;&nbsp; Nadi : {{ $nadi_akhir }} x/menit &nbsp;&nbsp;&nbsp; RR : {{ $rr_akhir }} x/menit &nbsp;&nbsp;&nbsp; Suhu : {{ $suhu_akhir }} °C </td>
+        </tr>
+    </table> <br>
     <table>
         <tr>
             <th>Perawat Anestesi</th>
@@ -248,6 +432,8 @@
             <td align="center"> {{ $nama_dokter }} </td>
         </tr>
     </table>
+
+
 </body>
 
 </html>
