@@ -7,6 +7,7 @@ import SPRI from "./SPRI";
 import Triase from "./Triase";
 import LabRadiologi from "./LabRadiologi";
 import Kwitansi from "./Kwitansi";
+import LaporanOperasi from "./LaporanOperasi";
 
 export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
     return (
@@ -23,7 +24,7 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
                     <Kwitansi kode_reg={kode_reg} />
                 </Col>
                 <Col span={8}>
-                    <Triase kode_reg={kode_reg} />
+                    <LaporanOperasi kode_reg={kode_reg} />
                 </Col>
             </Row>
         </>
