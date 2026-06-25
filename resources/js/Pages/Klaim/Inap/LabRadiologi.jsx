@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Modal, Skeleton } from "antd";
 
-export default function Index({ kode_reg }) {
+export default function Index({ kode_reg, nomer_rm }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [loadingPdf, setLoadingPdf] = useState(true); // Tambahkan state loading
 
@@ -13,12 +13,12 @@ export default function Index({ kode_reg }) {
                 onClick={() => setModalOpen(true)}
                 style={{ margin: "2px" }}
             >
-                SEP
+                Penungjang
             </Button>
 
             {/* Modal  */}
             <Modal
-                title="Preview  SEP"
+                title="Preview  Hasil Penunjang"
                 open={modalOpen}
                 onCancel={() => setModalOpen(false)}
                 footer={null}
@@ -33,7 +33,7 @@ export default function Index({ kode_reg }) {
 
                 {/* PDF Viewer */}
                 <iframe
-                    src={`http://10.10.10.10/emr/index.php/penunjang/lab_no_auth/hasil_laborat_ranap_lis/${kode_reg}/2`}
+                    src={`http://10.10.10.10/emr/index.php/penunjang/cetak_hasil_penunjang/pdf2/${kode_reg}/${nomer_rm}`}
                     width="100%"
                     height="600px"
                     style={{

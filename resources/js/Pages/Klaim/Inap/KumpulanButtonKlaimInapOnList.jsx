@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import {  Row, Col, Button } from "antd";
+import { Row, Col, Button } from "antd";
 
 import SEP from "./SEP";
 import Resume from "./Resume";
 import SPRI from "./SPRI";
 import Triase from "./Triase";
-
+import LabRadiologi from "./LabRadiologi";
 
 export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
     return (
@@ -15,14 +15,11 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
                     <SEP kode_reg={kode_reg} />
                     <Resume kode_reg={kode_reg} />
                     <SPRI kode_reg={kode_reg} />
-                </Col>
-
-                <Col span={8}>
                     <Triase kode_reg={kode_reg} />
                 </Col>
 
                 <Col span={8}>
-                    <SPRI kode_reg={kode_reg} />
+                    <LabRadiologi kode_reg={kode_reg} nomer_rm={nomer_rm} />
                 </Col>
 
                 <Col span={8}>
