@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Klaim\Inap\SEPController;
 use App\Http\Controllers\Klaim\Inap\LaporanOKController;
+use App\Http\Controllers\Klaim\Inap\LaporanAnastesiController;
 
 Route::prefix('klaim')->group(function () {
     Route::prefix('inap')->group(function () {
@@ -14,5 +15,6 @@ Route::prefix('klaim')->group(function () {
 
         Route::get('/sep/html', [SEPController::class, 'viewHtml'])->name('klaim.inap.sep.html');
         Route::get('/sep/{kode_reg}', [SEPController::class, 'index'])->name('klaim.inap.sep');
+        Route::get('/laporan_anastesi/{kode_reg}', [LaporanAnastesiController::class, 'generatePdf'])->name('klaim.inap.laporan_anastesi');
     });
 });
