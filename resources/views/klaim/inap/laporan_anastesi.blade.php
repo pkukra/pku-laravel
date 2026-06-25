@@ -237,6 +237,14 @@
             @endforeach
         </tr>
     </table>
+    <br>
+    <table>
+        <tr>
+            <th width="15%">TTV Akhir</th>
+            <td> TD : {{ data_get($data_anastesi, 'TD_SISTOLE_AKHIR', '') }}/{{ data_get($data_anastesi, 'TD_DIASTOLE_AKHIR', '') }} mmHg &nbsp;&nbsp;&nbsp; Nadi : {{ data_get($data_anastesi, 'NADI2', data_get($data_anastesi, 'NADI', '')) }} x/menit &nbsp;&nbsp;&nbsp; RR : {{ data_get($data_anastesi, 'RR2', data_get($data_anastesi, 'RR', '')) }} x/menit &nbsp;&nbsp;&nbsp; Suhu : {{ data_get($data_anastesi, 'SUHU2', data_get($data_anastesi, 'SUHU', '')) }} °C </td>
+        </tr>
+    </table>
+    <br>
 
     <table>
 
@@ -256,7 +264,7 @@
 
         <tr>
 
-            <td rowspan="8">
+            <td rowspan="7">
                 {{ data_get($data_anastesi, 'JENIS_ANESTESI', '') }}
             </td>
 
@@ -351,19 +359,11 @@
 
         <tr>
 
-            <td colspan="2">
+            <td colspan="7">
                 Catatan :
                 <br>
                 {!! nl2br(data_get($data_anastesi, 'CATATAN', '')) !!}
             </td>
-
-            <th colspan="2">
-                Perawat Anestesi
-            </th>
-
-            <th colspan="2">
-                Dokter Anestesi
-            </th>
 
         </tr>
 
@@ -378,7 +378,7 @@
             <td colspan="2"
                 height="70"
                 class="text-center">
-
+                Perawat Anastesi
                 @if(!empty(data_get($ttd_parawat, 'NM_FILE')))
                 <img
                     src="{{ data_get($ttd_parawat, 'NM_FILE') }}"
@@ -389,6 +389,7 @@
 
             <td colspan="2"
                 class="text-center">
+                Dokter Anastesi
 
                 @if(!empty(data_get($ttd, 'NM_FILE')))
                 <img
@@ -419,14 +420,7 @@
         </tr>
 
     </table>
-
-    <table>
-        <tr>
-            <th width="15%">TTV Akhir</th>
-            <td> TD : {{ data_get($data_anastesi, 'TD_SISTOLE_AKHIR', '') }}/{{ data_get($data_anastesi, 'TD_DIASTOLE_AKHIR', '') }} mmHg &nbsp;&nbsp;&nbsp; Nadi : {{ data_get($data_anastesi, 'NADI2', data_get($data_anastesi, 'NADI', '')) }} x/menit &nbsp;&nbsp;&nbsp; RR : {{ data_get($data_anastesi, 'RR2', data_get($data_anastesi, 'RR', '')) }} x/menit &nbsp;&nbsp;&nbsp; Suhu : {{ data_get($data_anastesi, 'SUHU2', data_get($data_anastesi, 'SUHU', '')) }} °C </td>
-        </tr>
-    </table> <br>
-    <table>
+    <!-- <table>
         <tr>
             <th>Perawat Anestesi</th>
             <th>Dokter Anestesi</th>
@@ -439,7 +433,7 @@
             <td align="center"> {{ data_get($ttd_parawat, 'nama_lengkap', '') }} </td>
             <td align="center"> {{ data_get($ttd, 'FMDDOKTERN', '') }} </td>
         </tr>
-    </table>
+    </table> -->
 
 
 </body>

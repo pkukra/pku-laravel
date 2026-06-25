@@ -119,7 +119,7 @@ class LaporanAnastesiController extends Controller
             ],
         ];
 
-        $data['chart'] = [];
+        $data['chart'] = $chart;
 
         $pdf = Pdf::loadView(
             'klaim.inap.laporan_anastesi',
