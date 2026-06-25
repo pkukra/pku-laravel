@@ -54,6 +54,13 @@
         .monitoring th {
             font-weight: bold;
         }
+
+        .monitoring th[rowspan] {
+            writing-mode: vertical-rl;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 7px;
+        }
     </style>
 </head>
 
