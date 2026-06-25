@@ -7,13 +7,18 @@ export default function Index({ kode_reg }) {
 
     return (
         <>
-            <Button block size="small" onClick={() => setModalOpen(true)} style={{ margin: "2px" }}>
-                Resume
+            <Button
+                block
+                size="small"
+                onClick={() => setModalOpen(true)}
+                style={{ margin: "2px" }}
+            >
+                SEP
             </Button>
 
             {/* Modal  */}
             <Modal
-                title="Preview  Resume"
+                title="Preview  SEP"
                 open={modalOpen}
                 onCancel={() => setModalOpen(false)}
                 footer={null}
@@ -28,7 +33,7 @@ export default function Index({ kode_reg }) {
 
                 {/* PDF Viewer */}
                 <iframe
-                    src={`http://10.10.10.10/emr/index.php/rm/rawat_inap_no_auth/cetak_rm/${kode_reg}/2`}
+                    src={`http://10.10.10.10/emr/index.php/penunjang/lab_no_auth/hasil_laborat_ranap_lis/${kode_reg}/2`}
                     width="100%"
                     height="600px"
                     style={{

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Button, Modal, Skeleton  } from "antd";
+import { Button, Modal, Skeleton } from "antd";
 
 export default function Index({ kode_reg }) {
     const [modalOpen, setModalOpen] = useState(false);
-    const [loadingPdf, setLoadingPdf] = useState(true); // Tambahkan state loading  
+    const [loadingPdf, setLoadingPdf] = useState(true); // Tambahkan state loading
 
     return (
         <>
-            <Button block size="small" onClick={() => setModalOpen(true)}>
+            <Button block size="small" onClick={() => setModalOpen(true)} style={{ margin: "2px" }}>
                 SEP
             </Button>
 

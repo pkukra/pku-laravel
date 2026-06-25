@@ -8,7 +8,7 @@ export default function Index({ kode_reg }) {
 
     return (
         <>
-            <Button block size="small" onClick={() => setModalOpen(true)}>
+            <Button block size="small" onClick={() => setModalOpen(true)} style={{ margin: "2px" }}>
                 Triase
             </Button>
 

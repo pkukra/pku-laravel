@@ -13,10 +13,12 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
             <Row gutter={[8, 8]} style={{ width: 350 }}>
                 <Col span={8}>
                     <SEP kode_reg={kode_reg} />
+                    <Resume kode_reg={kode_reg} />
+                    <SPRI kode_reg={kode_reg} />
                 </Col>
 
                 <Col span={8}>
-                    <Resume kode_reg={kode_reg} />
+                    <Triase kode_reg={kode_reg} />
                 </Col>
 
                 <Col span={8}>
