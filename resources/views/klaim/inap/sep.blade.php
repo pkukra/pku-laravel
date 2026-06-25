@@ -125,7 +125,7 @@
             <tr>
                 <td>Sub/Spesialis</td>
                 <td>:</td>
-                <td>{{ $FMPOLYN }}</td>
+                <td>{{ $SPESIALISASI }}</td>
                 <td>Poli Perujuk</td>
                 <td>:</td>
                 <td></td>
@@ -133,7 +133,7 @@
             <tr>
                 <td>Dokter</td>
                 <td>:</td>
-                <td>{{ $dpjpn }}</td>
+                <td>{{ $FMDDOKTERN }}</td>
                 <td>Hak Rawat</td>
                 <td>:</td>
                 <td><strong style="font-size:13px">{{ $FMNAMA_KELAS }}</strong></td>
@@ -285,7 +285,7 @@
                     <div style="font-size:10px;">
                         <img src="data:image/png;base64,{{ $qrDPJP }}" width="65">
                     </div>
-                    {{ $dpjpn }}
+                    {{ $FMDDOKTERN }}
                 </td>
             </tr>
 

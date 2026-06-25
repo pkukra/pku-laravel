@@ -35,7 +35,7 @@ class SEPController extends Controller
 
         $qrDPJP = Builder::create()
             ->writer(new PngWriter())
-            ->data($data['dpjpn'].' - '.$data['FMTGL_SEP'])
+            ->data($data['FMDDOKTERN'].' - '.$data['FMTGL_SEP'])
             ->size(100)
             ->build();
 
