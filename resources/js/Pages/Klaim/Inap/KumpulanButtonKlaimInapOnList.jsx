@@ -3,6 +3,8 @@ import {  Row, Col, Button } from "antd";
 
 import SEP from "./SEP";
 import Resume from "./Resume";
+import SPRI from "./SPRI";
+import Triase from "./Triase";
 
 
 export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
@@ -18,15 +20,11 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
                 </Col>
 
                 <Col span={8}>
-                    <Button block size="small">
-                        Grouping
-                    </Button>
+                    <SPRI kode_reg={kode_reg} />
                 </Col>
 
                 <Col span={8}>
-                    <Button block size="small">
-                        Klaim
-                    </Button>
+                    <Triase kode_reg={kode_reg} />
                 </Col>
             </Row>
         </>
