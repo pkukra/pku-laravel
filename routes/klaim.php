@@ -9,8 +9,9 @@ Route::prefix('klaim')->group(function () {
             return "hallo from klaim/inap";
         })->name('klaim.inap.list_kamar_bangsal');
 
+        Route::get('/get_all_jok/{kode_reg}', [SEPController::class, 'index'])->name('klaim.inap.get_all_jok');
+
         Route::get('/sep/html', [SEPController::class, 'viewHtml'])->name('klaim.inap.sep.html');
         Route::get('/sep/{kode_reg}', [SEPController::class, 'index'])->name('klaim.inap.sep');
-
     });
 });

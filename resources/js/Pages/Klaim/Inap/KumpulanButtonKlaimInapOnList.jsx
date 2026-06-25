@@ -18,12 +18,10 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
                     <SPRI kode_reg={kode_reg} />
                     <Triase kode_reg={kode_reg} />
                 </Col>
-
                 <Col span={8}>
                     <LabRadiologi kode_reg={kode_reg} nomer_rm={nomer_rm} />
                     <Kwitansi kode_reg={kode_reg} />
                 </Col>
-
                 <Col span={8}>
                     <Triase kode_reg={kode_reg} />
                 </Col>
