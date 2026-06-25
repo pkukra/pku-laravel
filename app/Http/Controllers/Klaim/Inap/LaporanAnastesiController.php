@@ -5,14 +5,17 @@ namespace App\Http\Controllers\Klaim\Inap;
 use App\Http\Controllers\Controller;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Repositories\KlaimInap\KlaimInapRepository;
+use App\Repositories\KlaimInap\LaporanAnastesiRepository;
 
 class LaporanAnastesiController extends Controller
 {
     protected $klaimInapRepo;
+    protected $lapAnastesiRepo;
 
-    public function __construct(KlaimInapRepository $klaimInapRepo)
+    public function __construct(KlaimInapRepository $klaimInapRepo, LaporanAnastesiRepository $lapAnastesiRepo)
     {
         $this->klaimInapRepo = $klaimInapRepo;
+        $this->lapAnastesiRepo = $lapAnastesiRepo;
     }
 
     public function get_all_jok($kode_reg)
@@ -23,6 +26,15 @@ class LaporanAnastesiController extends Controller
 
     public function generatePdf($kode_reg)
     {
+        $data['data_anastesi'] = $this->lapAnastesiRepo->getLaporanAnestesi($kode_reg);
+        $data['ttd_parawat'] = $this->lapAnastesiRepo->getTTDPerawat($kode_reg, 'ANESTESI');
+        $data['rs_pasien'] = $this->lapAnastesiRepo->getJadwalOK($kode_reg);
+        $data['jenis_tindakan'] = $this->lapAnastesiRepo->getAnestesiSedasi($kode_reg);
+        $data['ttd'] = $this->lapAnastesiRepo->getTTDAnestesi($kode_reg);
+        $data['op'] = $this->lapAnastesiRepo->getTacRiOkByFjok($kode_reg);
+
+        // return response()->json($data);
+
 
         $chart = [
             [
@@ -107,49 +119,11 @@ class LaporanAnastesiController extends Controller
             ],
         ];
 
-        $data = [
-            'nama' => "a",
-            'tanggal' => "a",
-            'tgl_lahir' => "a",
-            'ruang' => "a",
-            'norm' => "a",
-            'operator' => "a",
-            'posisi' => "a",
-            'anestesi' => "a",
-            'bb' => "a",
-            'perawat' => "a",
-            'tb' => "a",
-            'diagnosa_pre' => "a",
-            'hb' => "a",
-            'operasi' => "a",
-            'goldarah' => "a",
-            'nama_perawat' => "a",
-            'nama_dokter' => "a",
-            'chart' => $chart,
-            'td_sistole_akhir' => 120,
-            'td_diastole_akhir' => 80,
-            'nadi_akhir' => 80,
-            'rr_akhir' => 18,
-            'suhu_akhir' => 37,
-            'jenis_anestesi' => "kjkj",
-            'premedikasi' => "kjkj",
-            'nama_obat' => "kjkj",
-            'analgesik' => "kjkj",
-            'adjuvan' => "kjkj",
-            'spinocan' => "kjkj",
-            'lokasi' => "kjkj",
-            'induksi' => "kjkj",
-            'msc_relaxan' => "kjkj",
-            'agent_anest' => "kjkj",
-            'oksigenasi' => "kjkj",
-            'level_o2' => "kjkj",
-            'reversal' => "kjkj",
-            'antidote' => "kjkj",
-            'catatan' => "kjkj",
-        ];
+        $data['chart'] = [];
+
         $pdf = Pdf::loadView(
             'klaim.inap.laporan_anastesi',
-            $data
+            (array)$data
         );
 
         $pdf->setPaper('a4', 'portrait');

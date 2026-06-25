@@ -64,7 +64,8 @@
     </style>
 </head>
 
-<body> <!-- HEADER -->
+<body>
+    <!-- HEADER -->
     <table>
         <tr>
             <td class="no-border" width="60"> <img src="{{ public_path('statics/logo.png') }}" width="60"> </td>
@@ -76,19 +77,19 @@
     <table>
         <tr>
             <td width="15%">Nama</td>
-            <td width="35%">: {{ $nama }}</td>
+            <td width="35%"> {{ data_get($rs_pasien, 'NAMAPASIEN', '') }}</td>
             <td width="15%">Tanggal</td>
-            <td width="35%">: {{ $tanggal }}</td>
+            <td width="35%"> {{ data_get($data_anastesi, 'TANGGAL', data_get($data_anastesi, 'ANEST_MULAI', data_get($rs_pasien, 'FJOKTGL_OP', ''))) }}</td>
         </tr>
         <tr>
             <td>Tgl Lahir</td>
-            <td>: {{ $tgl_lahir }}</td>
+            <td> {{ data_get($rs_pasien, 'TGL_LAHIR', '') }}</td>
             <td>Ruang</td>
-            <td>: {{ $ruang }}</td>
+            <td> {{ data_get($rs_pasien, 'FJOKNO_KAMAR', '') }}</td>
         </tr>
         <tr>
             <td>No RM</td>
-            <td>: {{ $norm }}</td>
+            <td> {{ data_get($rs_pasien, 'KD_PASIEN', '') }}</td>
             <td></td>
             <td></td>
         </tr>
@@ -96,33 +97,33 @@
     <table>
         <tr>
             <td width="20%">Dokter Operator</td>
-            <td width="30%">{{ $operator }}</td>
+            <td width="30%">{{ data_get($op, 'DokterOp', data_get($op, 'FMDDOKTERN', '')) }}</td>
             <td width="20%">Posisi Pasien</td>
-            <td width="30%">{{ $posisi }}</td>
+            <td width="30%">{{ data_get($data_anastesi, 'POSISI_PASIEN', '') }}</td>
         </tr>
         <tr>
             <td>Dokter Anestesi</td>
-            <td>{{ $anestesi }}</td>
+            <td>{{ data_get($op, 'Anastesis', data_get($data_anastesi, 'DOKTER_ANESTESI', data_get($data_anastesi, 'dokter_anestesi', ''))) }}</td>
             <td>BB</td>
-            <td>{{ $bb }} Kg</td>
+            <td>{{ data_get($data_anastesi, 'BB', data_get($rs_pasien, 'FS_BB', '')) }} Kg</td>
         </tr>
         <tr>
             <td>Perawat Anestesi</td>
-            <td>{{ $perawat }}</td>
+            <td>{{ data_get($ttd_parawat, 'nama_lengkap', '') }}</td>
             <td>TB</td>
-            <td>{{ $tb }} Cm</td>
+            <td>{{ data_get($data_anastesi, 'TB', data_get($rs_pasien, 'FS_TB', '')) }} Cm</td>
         </tr>
         <tr>
             <td>Diagnosa Pre OP</td>
-            <td>{{ $diagnosa_pre }}</td>
+            <td>{{ data_get($op, 'FS_DIAGNOSIS', data_get($rs_pasien, 'FMOKDIAG', '')) }}</td>
             <td>Hb</td>
-            <td>{{ $hb }}</td>
+            <td>{{ data_get($data_anastesi, 'HB', '') }}</td>
         </tr>
         <tr>
             <td>Nama Operasi</td>
-            <td>{{ $operasi }}</td>
+            <td>{{ data_get($op, 'NAMA_OPERASI', data_get($op, 'FS_TINDAKAN_OP', '')) }}</td>
             <td>Gol Darah</td>
-            <td>{{ $goldarah }}</td>
+            <td>{{ data_get($data_anastesi, 'GOL_DARAH', '') }}</td>
         </tr>
     </table> <br> <!-- TABEL MONITORING -->
     <table class="monitoring">
@@ -256,7 +257,7 @@
         <tr>
 
             <td rowspan="8">
-                {{ $jenis_anestesi }}
+                {{ data_get($data_anastesi, 'JENIS_ANESTESI', '') }}
             </td>
 
             <td width="15%">
@@ -264,7 +265,7 @@
             </td>
 
             <td width="20%">
-                {{ $premedikasi }}
+                {{ data_get($data_anastesi, 'PRE_MEDIKASI', '') }}
             </td>
 
             <td width="15%">
@@ -272,7 +273,7 @@
             </td>
 
             <td colspan="3">
-                {{ $nama_obat }}
+                {{ data_get($data_anastesi, 'NAMA_OBAT', '') }}
             </td>
 
         </tr>
@@ -280,11 +281,11 @@
         <tr>
 
             <td>2. Analgesik</td>
-            <td>{{ $analgesik }}</td>
+            <td>{{ data_get($data_anastesi, 'ANALGESI', '') }}</td>
 
             <td>Adjuvan</td>
             <td colspan="3">
-                {{ $adjuvan }}
+                {{ data_get($data_anastesi, 'ADJUVAN', '') }}
             </td>
 
         </tr>
@@ -292,20 +293,20 @@
         <tr>
 
             <td>3. Induksi</td>
-            <td>{{ $induksi }}</td>
+            <td>{{ data_get($data_anastesi, 'INDUKSI', '') }}</td>
 
             <td>Spinocan No</td>
-            <td>{{ $spinocan }}</td>
+            <td>{{ data_get($data_anastesi, 'SPINOCAN', '') }}</td>
 
             <td>Lokasi</td>
-            <td>{{ $lokasi }}</td>
+            <td>{{ data_get($data_anastesi, 'LOKASI', '') }}</td>
 
         </tr>
 
         <tr>
 
             <td>4. Msc Relaxan</td>
-            <td>{{ $msc_relaxan }}</td>
+            <td>{{ data_get($data_anastesi, 'MSC_RELAXAN', '') }}</td>
 
             <th colspan="4">
                 Oksigenasi
@@ -316,10 +317,10 @@
         <tr>
 
             <td>5. Agent Anest.</td>
-            <td>{{ $agent_anest }}</td>
+            <td>{{ data_get($data_anastesi, 'AGEN_ANEST', '') }}</td>
 
             <td colspan="2" rowspan="3">
-                {{ $oksigenasi }}
+                {{ data_get($data_anastesi, 'OKSIGENASI', '') }}
             </td>
 
             <td colspan="2" rowspan="3"
@@ -328,7 +329,7 @@
                 Level O₂
                 <br>
 
-                {{ $level_o2 }} lpm
+                {{ data_get($data_anastesi, 'LEVEL_O2', '') }} lpm
 
             </td>
 
@@ -337,14 +338,14 @@
         <tr>
 
             <td>6. Reversal</td>
-            <td>{{ $reversal }}</td>
+            <td>{{ data_get($data_anastesi, 'REVERSAL', '') }}</td>
 
         </tr>
 
         <tr>
 
             <td>7. Antidote</td>
-            <td>{{ $antidote }}</td>
+            <td>{{ data_get($data_anastesi, 'ANTIDOTE', '') }}</td>
 
         </tr>
 
@@ -353,7 +354,7 @@
             <td colspan="2">
                 Catatan :
                 <br>
-                {!! nl2br($catatan) !!}
+                {!! nl2br(data_get($data_anastesi, 'CATATAN', '')) !!}
             </td>
 
             <th colspan="2">
@@ -370,7 +371,7 @@
 
             <td colspan="3" rowspan="2">
 
-                {{ $catatan }}
+                {{ data_get($data_anastesi, 'CATATAN', '') }}
 
             </td>
 
@@ -378,9 +379,9 @@
                 height="70"
                 class="text-center">
 
-                @if(!empty($ttd_perawat))
+                @if(!empty(data_get($ttd_parawat, 'NM_FILE')))
                 <img
-                    src="{{ $ttd_perawat }}"
+                    src="{{ data_get($ttd_parawat, 'NM_FILE') }}"
                     width="120">
                 @endif
 
@@ -389,9 +390,9 @@
             <td colspan="2"
                 class="text-center">
 
-                @if(!empty($ttd_dokter))
+                @if(!empty(data_get($ttd, 'NM_FILE')))
                 <img
-                    src="{{ $ttd_dokter }}"
+                    src="{{ data_get($ttd, 'NM_FILE') }}"
                     width="120">
                 @endif
 
@@ -404,14 +405,14 @@
             <td colspan="2"
                 class="text-center">
 
-                {{ $nama_perawat }}
+                {{ data_get($ttd_parawat, 'nama_lengkap', '') }}
 
             </td>
 
             <td colspan="2"
                 class="text-center">
 
-                {{ $nama_dokter }}
+                {{ data_get($ttd, 'FMDDOKTERN', '') }}
 
             </td>
 
@@ -422,7 +423,7 @@
     <table>
         <tr>
             <th width="15%">TTV Akhir</th>
-            <td> TD : {{ $td_sistole_akhir }}/{{ $td_diastole_akhir }} mmHg &nbsp;&nbsp;&nbsp; Nadi : {{ $nadi_akhir }} x/menit &nbsp;&nbsp;&nbsp; RR : {{ $rr_akhir }} x/menit &nbsp;&nbsp;&nbsp; Suhu : {{ $suhu_akhir }} °C </td>
+            <td> TD : {{ data_get($data_anastesi, 'TD_SISTOLE_AKHIR', '') }}/{{ data_get($data_anastesi, 'TD_DIASTOLE_AKHIR', '') }} mmHg &nbsp;&nbsp;&nbsp; Nadi : {{ data_get($data_anastesi, 'NADI2', data_get($data_anastesi, 'NADI', '')) }} x/menit &nbsp;&nbsp;&nbsp; RR : {{ data_get($data_anastesi, 'RR2', data_get($data_anastesi, 'RR', '')) }} x/menit &nbsp;&nbsp;&nbsp; Suhu : {{ data_get($data_anastesi, 'SUHU2', data_get($data_anastesi, 'SUHU', '')) }} °C </td>
         </tr>
     </table> <br>
     <table>
@@ -435,8 +436,8 @@
             <td align="center"> TTD </td>
         </tr>
         <tr>
-            <td align="center"> {{ $nama_perawat }} </td>
-            <td align="center"> {{ $nama_dokter }} </td>
+            <td align="center"> {{ data_get($ttd_parawat, 'nama_lengkap', '') }} </td>
+            <td align="center"> {{ data_get($ttd, 'FMDDOKTERN', '') }} </td>
         </tr>
     </table>
 
