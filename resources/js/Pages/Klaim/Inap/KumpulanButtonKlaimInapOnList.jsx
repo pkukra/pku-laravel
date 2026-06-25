@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {  Row, Col, Button } from "antd";
 
 import SEP from "./SEP";
+import Resume from "./Resume";
 
 
 export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
@@ -13,9 +14,7 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
                 </Col>
 
                 <Col span={8}>
-                    <Button block size="small">
-                        Resume
-                    </Button>
+                    <Resume kode_reg={kode_reg} />
                 </Col>
 
                 <Col span={8}>
