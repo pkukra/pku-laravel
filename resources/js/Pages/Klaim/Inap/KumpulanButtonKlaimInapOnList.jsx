@@ -14,6 +14,13 @@ import LaporanVK from "./LaporanVK";
 import EKlaim from "./EKlaim";
 
 export default function Index({ no_sep, nomer_rm, kode_reg }) {
+    const hadleCetakEKlaim = () => {
+        const url = route("klaim.inap.cetak_all", {
+            kode_reg_rbi: kode_reg,
+        });
+
+        window.open(url, "_blank");
+    };
     return (
         <>
             <Row gutter={[8, 8]} style={{ width: 450 }}>
@@ -38,6 +45,14 @@ export default function Index({ no_sep, nomer_rm, kode_reg }) {
                 <Col span={6}>
                     <Kwitansi kode_reg={kode_reg} />
                     <EKlaim no_sep={no_sep} />
+                    <Button
+                        block
+                        size="small"
+                        style={{ margin: "2px" }}
+                        onClick={hadleCetakEKlaim}
+                    >
+                        Cetal All
+                    </Button>
                 </Col>
             </Row>
         </>

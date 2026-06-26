@@ -25,4 +25,9 @@ class KlaimController extends Controller
         $is_partus = $this->inapRepo->checkIsPersalinan($kode_reg_rbi);
         return response()->json((object)['is_partus' => $is_partus]);
     }
+    
+    public function cetakAll($kode_reg_rbi)
+    {
+        
+    }
 }
