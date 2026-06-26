@@ -51,7 +51,7 @@ export default function Index({ no_sep, nomer_rm, kode_reg }) {
                         style={{ margin: "2px" }}
                         onClick={hadleCetakEKlaim}
                     >
-                        Cetal All
+                        Cetak All
                     </Button>
                 </Col>
             </Row>
