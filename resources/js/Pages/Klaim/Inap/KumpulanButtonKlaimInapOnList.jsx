@@ -8,6 +8,7 @@ import Triase from "./Triase";
 import LabRadiologi from "./LabRadiologi";
 import Kwitansi from "./Kwitansi";
 import LaporanOperasi from "./LaporanOperasi";
+import Anastesi from "./Anastesi";
 
 export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
     return (
@@ -25,6 +26,7 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
                 </Col>
                 <Col span={8}>
                     <LaporanOperasi kode_reg={kode_reg} />
+                    <Anastesi kode_reg={kode_reg} />
                 </Col>
             </Row>
         </>
