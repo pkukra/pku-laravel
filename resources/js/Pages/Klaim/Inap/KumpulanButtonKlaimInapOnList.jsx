@@ -23,7 +23,7 @@ export default function Index({ no_sep, nomer_rm, kode_reg }) {
 
                 <Col span={6}>
                     <SPRI kode_reg={kode_reg} nomer_rm={nomer_rm} />
-                    <Triase kode_reg={kode_reg} />
+                    <Triase kode_reg={kode_reg} nomer_rm={nomer_rm}/>
                 </Col>
 
                 <Col span={6}>
