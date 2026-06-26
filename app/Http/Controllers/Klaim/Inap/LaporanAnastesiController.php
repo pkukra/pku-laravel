@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Repositories\KlaimInap\KlaimInapRepository;
 use App\Repositories\KlaimInap\LaporanAnastesiRepository;
+use Spatie\Browsershot\Browsershot;
 
 class LaporanAnastesiController extends Controller
 {
@@ -32,8 +33,6 @@ class LaporanAnastesiController extends Controller
         $data['jenis_tindakan'] = $this->lapAnastesiRepo->getAnestesiSedasi($kode_reg);
         $data['ttd'] = $this->lapAnastesiRepo->getTTDAnestesi($kode_reg);
         $data['op'] = $this->lapAnastesiRepo->getTacRiOkByFjok($kode_reg);
-
-        // return response()->json($data);
 
 
         $chart = [
@@ -132,5 +131,72 @@ class LaporanAnastesiController extends Controller
 
         // kalau mau langsung download:
         // return $pdf->download('Laporan_Anastesi.pdf');
+    }
+
+    public function snapshot2($kode_reg)
+    {
+        $jok_arr = $this->klaimInapRepo->getAllJOK($kode_reg);
+        if (!$jok_arr) {
+            return "kosong";
+        }
+        $file = storage_path('app/anestesi.png');
+
+        \Spatie\Browsershot\Browsershot::url(
+            'http://10.10.10.10/emr/index.php/ok/ok_no_auth/cetak_laporan_anestesi/' . $jok_arr[0]->FJOKNO_JADWAL
+        )
+            ->setNodeBinary('C:\Program Files\nodejs\node.exe')
+            ->setNpmBinary('C:\Program Files\nodejs\npm.cmd')
+            ->fullPage()
+            ->setDelay(5000)
+            ->save($file);
+
+        return response()->file($file);
+    }
+
+    public function snapshot($kode_reg)
+    {
+        $jok_arr = $this->klaimInapRepo->getAllJOK($kode_reg);
+
+        if (empty($jok_arr)) {
+            abort(404, 'Data JOK tidak ditemukan');
+        }
+
+        $folder = storage_path('app/public/anestesi');
+
+        if (!file_exists($folder)) {
+            mkdir($folder, 0777, true);
+        }
+
+        $images = [];
+
+        foreach ($jok_arr as $jok) {
+
+            $fjok = $jok->FJOKNO_JADWAL;
+
+            $file = $folder . DIRECTORY_SEPARATOR . $fjok . '.png';
+
+            // Capture hanya jika file belum ada
+            if (!file_exists($file)) {
+
+                \Spatie\Browsershot\Browsershot::url(
+                    'http://10.10.10.10/emr/index.php/ok/ok_no_auth/cetak_laporan_anestesi/' . $fjok
+                )
+                    ->setNodeBinary('C:\Program Files\nodejs\node.exe')
+                    ->setNpmBinary('C:\Program Files\nodejs\npm.cmd')
+                    ->fullPage()
+                    ->setDelay(5000)
+                    ->save($file);
+            }
+
+            $images[] = [
+                'fjok' => $fjok,
+                'path' => $file,
+            ];
+        }
+
+        return view('klaim.inap.anestesi-snapshot', [
+            'kode_reg' => $kode_reg,
+            'images'   => $images,
+        ]);
     }
 }

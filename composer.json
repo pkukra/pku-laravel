@@ -17,6 +17,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
+        "spatie/browsershot": "^5.4",
         "tightenco/ziggy": "^2.0",
         "virusphp/bridging-bpjs": "^2.1"
     },

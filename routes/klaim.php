@@ -16,5 +16,6 @@ Route::prefix('klaim')->group(function () {
         Route::get('/sep/html', [SEPController::class, 'viewHtml'])->name('klaim.inap.sep.html');
         Route::get('/sep/{kode_reg}', [SEPController::class, 'index'])->name('klaim.inap.sep');
         Route::get('/laporan_anastesi/{kode_reg}', [LaporanAnastesiController::class, 'generatePdf'])->name('klaim.inap.laporan_anastesi');
+        Route::get('/laporan_anastesi_snapshot/{kode_reg}', [LaporanAnastesiController::class, 'snapshot'])->name('klaim.inap.laporan_anastesi_snapshot');
     });
 });
