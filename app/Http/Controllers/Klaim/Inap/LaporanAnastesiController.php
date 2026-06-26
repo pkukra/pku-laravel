@@ -141,14 +141,14 @@ class LaporanAnastesiController extends Controller
         }
         $file = storage_path('app/anestesi.png');
 
-        \Spatie\Browsershot\Browsershot::url(
+        $shot = \Spatie\Browsershot\Browsershot::url(
             'http://10.10.10.10/emr/index.php/ok/ok_no_auth/cetak_laporan_anestesi/' . $jok_arr[0]->FJOKNO_JADWAL
         )
-            ->setNodeBinary('C:\Program Files\nodejs\node.exe')
-            ->setNpmBinary('C:\Program Files\nodejs\npm.cmd')
             ->fullPage()
-            ->setDelay(5000)
-            ->save($file);
+            ->setDelay(5000);
+
+        $shot = $this->configureBrowsershotBinary($shot);
+        $shot->save($file);
 
         return response()->file($file);
     }
@@ -176,16 +176,15 @@ class LaporanAnastesiController extends Controller
             $file = $folder . DIRECTORY_SEPARATOR . $fjok . '.png';
 
             if (!file_exists($file)) {
+            $shot = Browsershot::url(
+                'http://10.10.10.10/emr/index.php/ok/ok_no_auth/cetak_laporan_anestesi/' . $fjok
+            )
+                ->fullPage()
+                ->setDelay(5000);
 
-                Browsershot::url(
-                    'http://10.10.10.10/emr/index.php/ok/ok_no_auth/cetak_laporan_anestesi/' . $fjok
-                )
-                    ->setNodeBinary('C:\Program Files\nodejs\node.exe')
-                    ->setNpmBinary('C:\Program Files\nodejs\npm.cmd')
-                    ->fullPage()
-                    ->setDelay(5000)
-                    ->save($file);
-            }
+            $shot = $this->configureBrowsershotBinary($shot);
+            $shot->save($file);
+        }
 
             $images[] = [
                 'fjok' => $fjok,
@@ -200,5 +199,23 @@ class LaporanAnastesiController extends Controller
         $pdf->setPaper('a4', 'portrait');
 
         return $pdf->stream("anestesi-{$kode_reg}.pdf");
+    }
+
+    protected function configureBrowsershotBinary($shot)
+    {
+        $linuxNode = trim(shell_exec('which node 2>/dev/null')) ?: null;
+        $linuxNpm = trim(shell_exec('which npm 2>/dev/null')) ?: null;
+
+        if ($linuxNode && $linuxNpm) {
+            return $shot->setNodeBinary($linuxNode)->setNpmBinary($linuxNpm);
+        }
+
+        if (str_starts_with(PHP_OS_FAMILY, 'Windows')) {
+            return $shot
+                ->setNodeBinary('C:\\Program Files\\nodejs\\node.exe')
+                ->setNpmBinary('C:\\Program Files\\nodejs\\npm.cmd');
+        }
+
+        return $shot;
     }
 }
