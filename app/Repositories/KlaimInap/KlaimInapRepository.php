@@ -58,4 +58,19 @@ class KlaimInapRepository
 
         return $data;
     }
+
+    public function checkIsPersalinan($kode_reg_rbi)
+    {
+        $data = DB::connection('sqlsrvemr')
+            ->table('laporan_tindakan_persalinan')
+            ->select('*')
+            ->where('KD_REG', $kode_reg_rbi)
+            ->first();
+
+        if ($data) {
+            return true;
+        }
+
+        return false;
+    }
 }

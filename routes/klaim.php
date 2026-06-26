@@ -16,6 +16,7 @@ Route::prefix('klaim')->group(function () {
 
         Route::get('/get_all_jok/{kode_reg}', [LaporanOKController::class, 'get_all_jok'])->name('klaim.inap.get_all_jok');
         Route::get('/get_kode_reg_jalan/{kode_reg_rbi}', [KlaimController::class, 'getKodeRegRJByInap'])->name('klaim.inap.get_kode_reg_jalan');
+        Route::get('/check_is_persalinan/{kode_reg_rbi}', [KlaimController::class, 'checkIsPersalinan'])->name('klaim.inap.check_is_persalinan');
 
         Route::get('/sep/html', [SEPController::class, 'viewHtml'])->name('klaim.inap.sep.html');
         Route::get('/sep/{kode_reg}', [SEPController::class, 'index'])->name('klaim.inap.sep');

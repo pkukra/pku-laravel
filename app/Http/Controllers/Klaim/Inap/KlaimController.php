@@ -19,4 +19,10 @@ class KlaimController extends Controller
         $data = $this->inapRepo->getKodeRegRJByInap($kode_reg_rbi);
         return response()->json($data);
     }
+
+    public function checkIsPersalinan($kode_reg_rbi)
+    {
+        $is_partus = $this->inapRepo->checkIsPersalinan($kode_reg_rbi);
+        return response()->json((object)['is_partus' => $is_partus]);
+    }
 }
