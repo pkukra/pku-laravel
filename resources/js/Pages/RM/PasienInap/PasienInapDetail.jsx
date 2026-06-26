@@ -81,6 +81,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                                     <Card title="Berkas Klaim">
                                         <KumpulanButtonKlaimInapOnList
                                             pasien={pasien}
+                                            no_sep={pasien?.FMNOSEP}
                                             nama_pasien={pasien?.NAMAPASIEN}
                                             nomer_rm={pasien?.FTKD_PASIEN}
                                             kode_reg={pasien?.FTNO_TRANSAKSI}
