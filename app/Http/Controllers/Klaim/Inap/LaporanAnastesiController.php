@@ -175,10 +175,9 @@ class LaporanAnastesiController extends Controller
 
             $file = $folder . DIRECTORY_SEPARATOR . $fjok . '.png';
 
-            // Capture hanya jika file belum ada
             if (!file_exists($file)) {
 
-                \Spatie\Browsershot\Browsershot::url(
+                Browsershot::url(
                     'http://10.10.10.10/emr/index.php/ok/ok_no_auth/cetak_laporan_anestesi/' . $fjok
                 )
                     ->setNodeBinary('C:\Program Files\nodejs\node.exe')
@@ -190,13 +189,16 @@ class LaporanAnastesiController extends Controller
 
             $images[] = [
                 'fjok' => $fjok,
-                'path' => $file,
             ];
         }
 
-        return view('klaim.inap.anestesi-snapshot', [
+        $pdf = Pdf::loadView('klaim.inap.anestesi-snapshot', [
             'kode_reg' => $kode_reg,
             'images'   => $images,
         ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        return $pdf->stream("anestesi-{$kode_reg}.pdf");
     }
 }

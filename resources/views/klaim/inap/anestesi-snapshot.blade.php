@@ -3,31 +3,28 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Laporan Anestesi</title>
 
     <style>
         @page {
-            margin: 10px;
+            size: A4 portrait;
+            margin: 0;
         }
 
         body {
             margin: 0;
             padding: 0;
-            font-family: DejaVu Sans, sans-serif;
         }
 
         .page {
-            width: 100%;
+            width: 210mm;
+            height: 297mm;
+            page-break-after: always;
         }
 
         .page img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .page-break {
-            page-break-after: always;
+            width: 210mm;
+            height: 297mm;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -36,9 +33,9 @@
 
     @foreach($images as $image)
 
-    <div class="page">
-        <img src="{{ asset('storage/anestesi/' . $image['fjok'] . '.png') }}">
-    </div>
+    <img
+        src="{{ public_path('storage/anestesi/' . $image['fjok'] . '.png') }}"
+        style="width:210mm;height:297mm;">
 
     @if(!$loop->last)
     <div class="page-break"></div>
