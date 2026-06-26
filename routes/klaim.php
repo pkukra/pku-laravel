@@ -5,6 +5,7 @@ use App\Http\Controllers\Klaim\Inap\SEPController;
 use App\Http\Controllers\Klaim\Inap\LaporanOKController;
 use App\Http\Controllers\Klaim\Inap\LaporanAnastesiController;
 use App\Http\Controllers\Klaim\Inap\PenunjangLainController;
+use App\Http\Controllers\RM\PasienInapController;
 
 Route::prefix('klaim')->group(function () {
     Route::prefix('inap')->group(function () {
@@ -23,5 +24,6 @@ Route::prefix('klaim')->group(function () {
         Route::post('/penunjang_lain/{kode_reg}', [PenunjangLainController::class, 'upload'])->name('klaim.inap.penunjang_lain.upload');
         Route::get('/penunjang_lain/{kode_reg}/{id}', [PenunjangLainController::class, 'download'])->name('klaim.inap.penunjang_lain.download');
         Route::delete('/penunjang_lain/{kode_reg}/{id}', [PenunjangLainController::class, 'delete'])->name('klaim.inap.penunjang_lain.delete');
+        Route::get('/cetak_klaim/{no_sep}', [PasienInapController::class, 'bridging_cetak_klaim'])->name('klaim.inap.cetak_klaim');
     });
 });

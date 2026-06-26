@@ -10,8 +10,9 @@ import Kwitansi from "./Kwitansi";
 import LaporanOperasi from "./LaporanOperasi";
 import Anastesi from "./Anastesi";
 import PenunjangLain from "./PenunjangLain";
+import EKlaim from "./EKlaim";
 
-export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
+export default function Index({ pasien, sep, nomer_rm, kode_reg }) {
     return (
         <>
             <Row gutter={[8, 8]} style={{ width: 350 }}>
@@ -29,6 +30,7 @@ export default function Index({ nama_pasien, nomer_rm, kode_reg }) {
                     <LaporanOperasi kode_reg={kode_reg} />
                     <Anastesi kode_reg={kode_reg} />
                     <PenunjangLain kode_reg={kode_reg} />
+                    <EKlaim no_sep={pasien?.FMNOSEP} />
                 </Col>
             </Row>
         </>
