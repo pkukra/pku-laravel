@@ -10,11 +10,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "endroid/qr-code": "^5.0",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
+        "spatie/browsershot": "^5.4",
         "tightenco/ziggy": "^2.0",
         "virusphp/bridging-bpjs": "^2.1"
     },

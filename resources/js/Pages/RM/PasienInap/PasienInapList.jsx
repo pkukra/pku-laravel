@@ -11,10 +11,13 @@ import {
     Input,
     Select,
     Typography,
+    Popover,
 } from "antd";
 import axios from "axios";
 import moment from "moment";
 import dayjs from "dayjs";
+
+import KumpulanButtonKlaimInapOnList from "../../Klaim/Inap/KumpulanButtonKlaimInapOnList";
 
 export default function Index({ auth, bangsal }) {
     const queryParams = new URLSearchParams(window.location.search);
@@ -53,7 +56,7 @@ export default function Index({ auth, bangsal }) {
 
     const fetchDataPasienInap = async (
         pageVal = page,
-        perPageVal = perPage
+        perPageVal = perPage,
     ) => {
         setLoading(true);
         try {
@@ -72,7 +75,7 @@ export default function Index({ auth, bangsal }) {
 
             const response = await axios.get(
                 route("rm.pasien-inap.list_inap_data"),
-                { params: paramObj }
+                { params: paramObj },
             );
 
             setDataPasienInaps(response?.data?.data?.data || []);
@@ -206,7 +209,7 @@ export default function Index({ auth, bangsal }) {
                                 window.history.replaceState(
                                     null,
                                     "",
-                                    `?${queryStr}`
+                                    `?${queryStr}`,
                                 );
 
                                 setPage(1);
@@ -222,7 +225,7 @@ export default function Index({ auth, bangsal }) {
                             block
                             onClick={() => {
                                 window.location.replace(
-                                    `${route("rm.pasien-inap.list_inap")}`
+                                    `${route("rm.pasien-inap.list_inap")}`,
                                 );
                             }}
                         >
@@ -244,7 +247,7 @@ export default function Index({ auth, bangsal }) {
                             render: (_, record) => (
                                 <>
                                     {moment(record?.FTTGL_TRANSAKSI).format(
-                                        "DD/MM/YYYY"
+                                        "DD/MM/YYYY",
                                     )}
                                 </>
                             ),
@@ -256,7 +259,7 @@ export default function Index({ auth, bangsal }) {
                                 <>
                                     {record?.TGL_KELUAR &&
                                         moment(record?.TGL_KELUAR).format(
-                                            "DD/MM/YYYY"
+                                            "DD/MM/YYYY",
                                         )}
                                 </>
                             ),
@@ -290,7 +293,7 @@ export default function Index({ auth, bangsal }) {
                             dataIndex: "PRWIKD_CUSTOMER",
                             render: (value) => {
                                 const cust = customerData?.find(
-                                    (c) => c?.CUSID === value
+                                    (c) => c?.CUSID === value,
                                 );
                                 const name = cust ? cust?.NAME : value;
                                 const isBPJS =
@@ -322,17 +325,38 @@ export default function Index({ auth, bangsal }) {
                         },
                         {
                             title: "Action",
+                            align: "center",
                             dataIndex: "action",
                             render: (_, record) => (
-                                <a
-                                    href={route("rm.pasien-inap.detail", {
-                                        kode_reg: record?.FTNO_TRANSAKSI,
-                                    })}
-                                >
-                                    <Button type="primary" size="small">
-                                        Tampilkan
-                                    </Button>
-                                </a>
+                                <>
+                                    <a
+                                        href={route("rm.pasien-inap.detail", {
+                                            kode_reg: record?.FTNO_TRANSAKSI,
+                                        })}
+                                    >
+                                        <Button type="primary" size="small">
+                                            Tampilkan
+                                        </Button>
+                                    </a>{" "}
+                                    <Popover
+                                        title={`${record?.NAMAPASIEN} - ${record?.FTKD_PASIEN}`}
+                                        trigger="click"
+                                        content={
+                                            <KumpulanButtonKlaimInapOnList
+                                                no_sep={record?.no_sep}
+                                                nama_pasien={record?.NAMAPASIEN}
+                                                nomer_rm={record?.FTKD_PASIEN}
+                                                kode_reg={
+                                                    record?.FTNO_TRANSAKSI
+                                                }
+                                            />
+                                        }
+                                    >
+                                        <Button type="primary" size="small">
+                                            Klaim
+                                        </Button>
+                                    </Popover>
+                                </>
                             ),
                         },
                     ]}

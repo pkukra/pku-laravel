@@ -14,6 +14,9 @@ import PasienInapDetailAssesmenAwal from "./PasienInapDetailAssesmenAwal";
 import PasienInapDetailBerkasPenunjang from "./PasienInapDetailBerkasPenunjang";
 import PasienInapDetailPerawatan from "./PasienInapDetailPerawatan";
 import PasienInapNotFound from "./PasienInapNotFound";
+
+import KumpulanButtonKlaimInapOnList from "../../Klaim/Inap/KumpulanButtonKlaimInapOnList";
+
 import EKlaim from "../Eklaim";
 
 function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
@@ -27,7 +30,7 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
             .get(route("rm.pasien-inap.detail_data", { kode_reg }))
             .then((response) => setPasien(response?.data?.pasien))
             .catch((error) =>
-                console.error("Error fetching data pasien:", error)
+                console.error("Error fetching data pasien:", error),
             )
             .finally(() => setPasienLoading(false));
     };
@@ -75,6 +78,15 @@ function PasienInapDetail({ auth, pasien: initialPasien, kode_reg }) {
                                     <PasienInapDetailBerkasPenunjang
                                         pasien={pasien}
                                     />
+                                    <Card title="Berkas Klaim">
+                                        <KumpulanButtonKlaimInapOnList
+                                            pasien={pasien}
+                                            no_sep={pasien?.FMNOSEP}
+                                            nama_pasien={pasien?.NAMAPASIEN}
+                                            nomer_rm={pasien?.FTKD_PASIEN}
+                                            kode_reg={pasien?.FTNO_TRANSAKSI}
+                                        />
+                                    </Card>
                                 </Col>
                             </Row>
                         </Col>
