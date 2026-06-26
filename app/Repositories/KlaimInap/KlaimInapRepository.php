@@ -43,4 +43,19 @@ class KlaimInapRepository
 
         return $laporan_ok_arr;
     }
+
+    public function getKodeRegRJByInap($kode_reg_rbi)
+    {
+        $data = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIENINAPD')
+            ->select('FDTNO_FAKTUR')
+            ->where('FDTNO_TRANSAKSI', $kode_reg_rbi)
+            ->where(function ($q) {
+                $q->where('FDTNO_FAKTUR', 'like', 'RGD%')
+                    ->orWhere('FDTNO_FAKTUR', 'like', 'RJR%');
+            })
+            ->first();
+
+        return $data;
+    }
 }
