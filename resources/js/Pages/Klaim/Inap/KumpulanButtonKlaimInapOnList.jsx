@@ -12,25 +12,30 @@ import Anastesi from "./Anastesi";
 import PenunjangLain from "./PenunjangLain";
 import EKlaim from "./EKlaim";
 
-export default function Index({ pasien, sep, nomer_rm, kode_reg }) {
+export default function Index({ no_sep, nomer_rm, kode_reg }) {
     return (
         <>
-            <Row gutter={[8, 8]} style={{ width: 350 }}>
-                <Col span={8}>
+            <Row gutter={[8, 8]} style={{ width: 450 }}>
+                <Col span={6}>
                     <SEP kode_reg={kode_reg} />
                     <Resume kode_reg={kode_reg} />
+                </Col>
+
+                <Col span={6}>
                     <SPRI kode_reg={kode_reg} />
                     <Triase kode_reg={kode_reg} />
                 </Col>
-                <Col span={8}>
+
+                <Col span={6}>
                     <LabRadiologi kode_reg={kode_reg} nomer_rm={nomer_rm} />
                     <Kwitansi kode_reg={kode_reg} />
+                    <PenunjangLain kode_reg={kode_reg} />
                 </Col>
-                <Col span={8}>
+
+                <Col span={6}>
                     <LaporanOperasi kode_reg={kode_reg} />
                     <Anastesi kode_reg={kode_reg} />
-                    <PenunjangLain kode_reg={kode_reg} />
-                    <EKlaim no_sep={pasien?.FMNOSEP} />
+                    <EKlaim no_sep={no_sep} />
                 </Col>
             </Row>
         </>

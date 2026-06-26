@@ -3,40 +3,51 @@ import { Button, Modal, Skeleton } from "antd";
 
 export default function Index({ no_sep }) {
     const [modalOpen, setModalOpen] = useState(false);
-    const [loadingPdf, setLoadingPdf] = useState(true); // Tambahkan state loading
+    const [loadingPdf, setLoadingPdf] = useState(true);
+
+    const handleOpen = () => {
+        if (!no_sep) return;
+
+        setLoadingPdf(true);
+        setModalOpen(true);
+    };
+
+    const pdfUrl = no_sep ? route("klaim.inap.cetak_klaim", { no_sep }) : null;
 
     return (
         <>
-            <Button block size="small" onClick={() => setModalOpen(true)} style={{ margin: "2px" }}>
-                EKlaim
+            <Button
+                block
+                size="small"
+                style={{ margin: "2px" }}
+                disabled={!no_sep}
+                onClick={handleOpen}
+            >
+                {no_sep ? "Eklaim" : "Invalid SEP"}
             </Button>
 
-            {/* Modal  */}
             <Modal
-                title="Preview  Berkas EKlaim"
+                title="Preview Berkas EKlaim"
                 open={modalOpen}
                 onCancel={() => setModalOpen(false)}
                 footer={null}
                 width={800}
+                destroyOnClose
             >
-                {/* Loading Indicator */}
-                {loadingPdf && (
-                    <>
-                        <Skeleton active />
-                    </>
-                )}
+                {loadingPdf && <Skeleton active />}
 
-                {/* PDF Viewer */}
-                <iframe
-                    src={route("klaim.inap.cetak_klaim", { no_sep })}
-                    width="100%"
-                    height="600px"
-                    style={{
-                        border: "none",
-                        display: loadingPdf ? "none" : "block",
-                    }}
-                    onLoad={() => setLoadingPdf(false)}
-                ></iframe>
+                {pdfUrl && (
+                    <iframe
+                        src={pdfUrl}
+                        width="100%"
+                        height="600px"
+                        style={{
+                            border: "none",
+                            display: loadingPdf ? "none" : "block",
+                        }}
+                        onLoad={() => setLoadingPdf(false)}
+                    />
+                )}
             </Modal>
         </>
     );

@@ -10,7 +10,8 @@ import {
     DatePicker,
     Input,
     Select,
-    Typography, Popover,
+    Typography,
+    Popover,
 } from "antd";
 import axios from "axios";
 import moment from "moment";
@@ -342,6 +343,7 @@ export default function Index({ auth, bangsal }) {
                                         trigger="click"
                                         content={
                                             <KumpulanButtonKlaimInapOnList
+                                                no_sep={record?.no_sep}
                                                 nama_pasien={record?.NAMAPASIEN}
                                                 nomer_rm={record?.FTKD_PASIEN}
                                                 kode_reg={

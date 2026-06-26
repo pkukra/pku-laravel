@@ -80,6 +80,7 @@ class PasienInapRepository
             ->leftJoin('PASIEN AS P', 'TPI.FTKD_PASIEN', '=', 'P.KD_PASIEN')
             ->leftJoin('KAMAR AS K', 'PRI.PRWIKD_KAMAR', '=', 'K.FMKKAMAR_ID')
             ->leftJoin('DOKTER AS DR', 'PRI.PRWIKD_DOKTER', '=', 'DR.FMDDOKTER_ID')
+            ->leftJoin('BPJS_SEP', 'BPJS_SEP.FMNOTRANSAKSI', '=', 'TPI.FTNO_TRANSAKSI')
             ->when($kode_bangsal, function ($query, $kode_bangsal) {
                 return $query->where('K.FMKKAMARINDUK', $kode_bangsal);
             })
@@ -109,6 +110,7 @@ class PasienInapRepository
 
         $data = $baseQuery
             ->select(
+                'BPJS_SEP.FMNOSEP AS no_sep',
                 'P.NAMAPASIEN',
                 'TPI.*',
                 'K.FMKNAMA_KAMAR',
