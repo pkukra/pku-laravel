@@ -193,9 +193,7 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                         const imagePdf = await PDFDocument.create();
                         const img = await imagePdf
                             .embedPng(bytes)
-                            .catch(
-                                async () => await imagePdf.embedJpg(bytes),
-                            );
+                            .catch(async () => await imagePdf.embedJpg(bytes));
 
                         const page = imagePdf.addPage([img.width, img.height]);
                         page.drawImage(img, {
@@ -226,6 +224,31 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                 }
             }
 
+            // Nota Farmasi
+            try {
+                const FarmasiUrl = route("klaim.inap.faktur_farmasi", { kode_reg });
+                const response = await fetch(FarmasiUrl);
+
+                if (response.ok) {
+                    const bytesfarmasi = await response.arrayBuffer();
+                    const pdfFarmasi = await PDFDocument.load(bytesfarmasi);
+                    const pagesFarmasi = await mergedPdf.copyPages(
+                        pdfFarmasi,
+                        pdfFarmasi.getPageIndices(),
+                    );
+                    pagesFarmasi.forEach((page) => mergedPdf.addPage(page));
+                    console.log(`✅ Farmasi added`);
+                } else {
+                    console.warn(`⚠️ Cannot fetch Farmasi`);
+                }
+            } catch (e) {
+                console.warn(`⚠️ Error saat tambah Farmasi:`, e.message);
+            }
+
+            if (mergedPdf.getPageCount() === 0) {
+                message.error("Tidak ada PDF yang berhasil digabung");
+                return;
+            }
 
             // Tambahkan Kwitansi (sebelum E-Klaim)
             try {
@@ -248,9 +271,7 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                         const imagePdf = await PDFDocument.create();
                         const img = await imagePdf
                             .embedPng(bytes)
-                            .catch(
-                                async () => await imagePdf.embedJpg(bytes),
-                            );
+                            .catch(async () => await imagePdf.embedJpg(bytes));
 
                         const page = imagePdf.addPage([img.width, img.height]);
                         page.drawImage(img, {
