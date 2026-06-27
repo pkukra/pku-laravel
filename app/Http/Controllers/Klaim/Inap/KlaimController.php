@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 class KlaimController extends Controller
 {
@@ -24,6 +27,37 @@ class KlaimController extends Controller
     {
         $this->inapRepo = $inapRepo;
         $this->penunjangRepo = $penunjangRepo;
+    }
+
+    public function cetakAllNew()
+    {
+        return Inertia::render('Klaim/Inap/CetakAll');
+    }
+
+    public function proxyPdf(Request $request)
+    {
+        $url = $request->query('url');
+
+        if (!$url) {
+            abort(400, 'URL wajib diisi');
+        }
+
+        $response = Http::timeout(60)
+            ->withoutVerifying()
+            ->get($url);
+
+        if (!$response->successful()) {
+            abort($response->status(), 'Gagal mengambil PDF');
+        }
+
+        return response(
+            $response->body(),
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="document.pdf"',
+            ]
+        );
     }
 
     public function getKodeRegRJByInap($kode_reg_rbi)
@@ -275,7 +309,7 @@ class KlaimController extends Controller
                 ->table('TRANSAKSIPASIENINAP AS TPI')
                 ->leftJoin('PASIENRAWATINAP AS PRI', function ($join) {
                     $join->on('TPI.FTNO_TRANSAKSI', '=', 'PRI.PRWINO_TRANSAKSI')
-                         ->on('TPI.FTNO_URUT', '=', 'PRI.PRWINO_URUT');
+                        ->on('TPI.FTNO_URUT', '=', 'PRI.PRWINO_URUT');
                 })
                 ->select('PRI.PRWIKD_PASIEN')
                 ->where('TPI.FTNO_TRANSAKSI', $kode_reg_rbi)
