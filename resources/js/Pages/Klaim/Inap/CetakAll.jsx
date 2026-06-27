@@ -3,7 +3,7 @@ import { PDFDocument } from "pdf-lib";
 import { Skeleton, Button, message } from "antd";
 import axios from "axios";
 
-export default function Index({ kode_reg = "RBI-26-05-1380", nomer_rm="0108668" }) {
+export default function Index({ kode_reg = "RBI-26-05-1380", nomer_rm="0108668", no_sep="0153R0030526V014612" }) {
     const [pdfUrl, setPdfUrl] = useState(null);
     const [loadingPdf, setLoadingPdf] = useState(true);
 
@@ -33,16 +33,10 @@ export default function Index({ kode_reg = "RBI-26-05-1380", nomer_rm="0108668" 
                     }),
                 );
 
-                console.log("🔍 FULL RESPONSE:", data);
-                console.log("🔑 ALL KEYS:", Object.keys(data || {}));
-                console.log("FDTNO_FAKTUR value:", data?.FDTNO_FAKTUR);
-
                 // Cari key yang berisi kode_reg jalan
                 const kodeRegJalan = data?.FDTNO_FAKTUR || data?.kode_reg || data?.kodeRegJalan || Object.values(data || {})[0];
-                console.log("🎯 kodeRegJalan hasil:", kodeRegJalan);
 
                 if (kodeRegJalan) {
-                    console.log("✅ Kode Reg Jalan ditemukan:", kodeRegJalan);
 
                     // SPRI
                     pdfs.push(
@@ -57,29 +51,73 @@ export default function Index({ kode_reg = "RBI-26-05-1380", nomer_rm="0108668" 
                             url: `http://10.10.10.10/emr/index.php/igd/cetak_triase/pdf/${kodeRegJalan}/${nomer_rm}`,
                         }),
                     );
-                    console.log("✅ SPRI & Triase ditambahkan ke PDFs");
-                } else {
-                    console.warn("⚠️ FDTNO_FAKTUR tidak ditemukan atau kosong");
+
+                    // Laporan Operasi
+                    pdfs.push(
+                        route("klaim.inap.proxy_pdf", {
+                            url: `http://10.10.10.10/emr/index.php/rm/rawat_inap_no_auth/cetak_laporan_operasi/${kode_reg}`,
+                        }),
+                    );
+
+                    // Laporan Persalinan (hanya jika persalinan)
+                    try {
+                        const { data: partusData } = await axios.get(
+                            route("klaim.inap.check_is_persalinan", {
+                                kode_reg_rbi: kode_reg,
+                            }),
+                        );
+
+                        if (partusData?.is_partus) {
+                            pdfs.push(
+                                route("klaim.inap.proxy_pdf", {
+                                    url: `http://10.10.10.10/emr/index.php/rm/rawat_inap_no_auth/cetak_laporan_persalinan/${kode_reg}`,
+                                }),
+                            );
+                        }
+                    } catch (partusErr) {
+                        // Error check persalinan - lanjut tanpa laporan persalinan
+                    }
+
+                    // Penunjang
+                    pdfs.push(
+                        route("klaim.inap.proxy_pdf", {
+                            url: `http://10.10.10.10/emr/index.php/penunjang/cetak_hasil_penunjang/pdf2/${kode_reg}/${nomer_rm}`,
+                        }),
+                    );
+
+                    // Kwitansi
+                    const kwitansiUrl = route("klaim.inap.proxy_pdf", {
+                        url: `http://10.10.10.10/emr/index.php/vedika/cetak_billing_ri?faktur_id=${kode_reg}`,
+                    });
+                    pdfs.push(kwitansiUrl);
+                    console.log("🧾 Kwitansi Proxy URL:", kwitansiUrl);
+
                 }
-                console.log("📋 PDFS setelah tambah SPRI/TRIASE:", pdfs);
             } catch (e) {
-                console.error("❌ Error saat fetch SPRI:", e);
+                // Error saat fetch SPRI - lanjut tanpa SPRI/Triase
+            }
+
+            // Tambahkan Anastesi (route internal Laravel)
+            try {
+                pdfs.push(route("klaim.inap.laporan_anastesi_snapshot", { kode_reg }));
+            } catch (e) {
+                // Error saat tambah Anastesi
+            }
+
+            // Tambahkan E-Klaim (route internal Laravel)
+            try {
+                pdfs.push(route("klaim.inap.cetak_klaim", { no_sep }));
+            } catch (e) {
+                // Error saat tambah E-Klaim
             }
 
             const mergedPdf = await PDFDocument.create();
 
             for (const url of pdfs) {
                 try {
-                    console.log("Fetch PDF:", url);
-
                     const response = await fetch(url);
 
                     if (!response.ok) {
-                        console.error(
-                            "Gagal mengambil PDF:",
-                            url,
-                            response.status,
-                        );
                         continue;
                     }
 
@@ -94,7 +132,7 @@ export default function Index({ kode_reg = "RBI-26-05-1380", nomer_rm="0108668" 
 
                     pages.forEach((page) => mergedPdf.addPage(page));
                 } catch (err) {
-                    console.error("Gagal merge PDF:", url, err);
+                    // Error merge PDF - lanjut ke PDF berikutnya
                 }
             }
 
@@ -113,7 +151,6 @@ export default function Index({ kode_reg = "RBI-26-05-1380", nomer_rm="0108668" 
 
             setPdfUrl(objectUrl);
         } catch (err) {
-            console.error(err);
             message.error("Gagal membuat PDF gabungan");
         } finally {
             setLoadingPdf(false);
@@ -128,8 +165,6 @@ export default function Index({ kode_reg = "RBI-26-05-1380", nomer_rm="0108668" 
         a.download = `klaim-${kode_reg}.pdf`;
         a.click();
     };
-
-    console.log(pdfUrl);
 
     return (
         <>
