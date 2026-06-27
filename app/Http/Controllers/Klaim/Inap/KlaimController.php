@@ -29,9 +29,13 @@ class KlaimController extends Controller
         $this->penunjangRepo = $penunjangRepo;
     }
 
-    public function cetakAllNew()
+    public function cetakAllNew($kode_reg, $nomer_rm, $no_sep)
     {
-        return Inertia::render('Klaim/Inap/CetakAll');
+        return Inertia::render('Klaim/Inap/CetakAll', [
+            'kode_reg' => $kode_reg,
+            'nomer_rm' => $nomer_rm,
+            'no_sep' => $no_sep,
+        ]);
     }
 
     public function proxyPdf(Request $request)

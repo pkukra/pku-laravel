@@ -33,6 +33,6 @@ Route::prefix('klaim')->group(function () {
 
         Route::get('/cetak_all_new/{kode_reg}', [KlaimController::class, 'cetakAllNew'])->name('klaim.inap.cetak_all_new');
 
-        Route::get('/proxy-pdf', [KlaimController::class, 'proxyPdf'])->name('klaim.inap.proxy_pdf');
+        Route::get('/proxy-pdf/{kode_reg}/{nomer_rm}/{no_sep}', [KlaimController::class, 'proxyPdf'])->name('klaim.inap.proxy_pdf');
     });
 });
