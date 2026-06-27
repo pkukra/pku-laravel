@@ -15,8 +15,10 @@ import EKlaim from "./EKlaim";
 
 export default function Index({ no_sep, nomer_rm, kode_reg }) {
     const hadleCetakEKlaim = () => {
-        const url = route("klaim.inap.cetak_all", {
-            kode_reg_rbi: kode_reg,
+        const url = route("klaim.inap.cetak_all_new", {
+            kode_reg: kode_reg,
+            nomer_rm: nomer_rm,
+            no_sep: no_sep,
         });
 
         window.open(url, "_blank");
