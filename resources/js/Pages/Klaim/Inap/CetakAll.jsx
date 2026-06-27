@@ -79,6 +79,17 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                         // Tidak ada JOK - skip Laporan Operasi
                     }
 
+                    // Tambahkan Anastesi (route internal Laravel)
+                    try {
+                        pdfs.push(
+                            route("klaim.inap.laporan_anastesi_snapshot", {
+                                kode_reg,
+                            }),
+                        );
+                    } catch (e) {
+                        // Error saat tambah Anastesi
+                    }
+
                     // Laporan Persalinan (hanya jika persalinan)
                     try {
                         const { data: partusData } = await axios.get(
@@ -114,15 +125,6 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                 }
             } catch (e) {
                 // Error saat fetch SPRI - lanjut tanpa SPRI/Triase
-            }
-
-            // Tambahkan Anastesi (route internal Laravel)
-            try {
-                pdfs.push(
-                    route("klaim.inap.laporan_anastesi_snapshot", { kode_reg }),
-                );
-            } catch (e) {
-                // Error saat tambah Anastesi
             }
 
             // Tambahkan E-Klaim (route internal Laravel)
