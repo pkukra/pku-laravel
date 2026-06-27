@@ -32,24 +32,9 @@ Route::prefix('klaim')->group(function () {
         Route::delete('/penunjang_lain/{kode_reg}/{id}', [PenunjangLainController::class, 'delete'])->name('klaim.inap.penunjang_lain.delete');
         Route::get('/cetak_klaim/{no_sep}', [PasienInapController::class, 'bridging_cetak_klaim'])->name('klaim.inap.cetak_klaim');
 
-        // Route::get('/test-browser', function () {
+        Route::get('/cetak_all_new/{kode_reg}/{nomer_rm}/{no_sep}', [KlaimController::class, 'cetakAllNew'])->name('klaim.inap.cetak_all_new'); //init
+    
 
-        //     Spatie\Browsershot\Browsershot::url('https://google.com')
-        //         ->setNodeBinary('/usr/bin/node')
-        //         ->setNpmBinary('/usr/bin/npm')
-        //         ->setChromePath('/usr/bin/google-chrome')
-        //         ->noSandbox()
-        //         ->save(storage_path('app/test.png'));
-
-        //     return 'OK';
-        // });
-
-        // Route::get('/test-pdfcpu', function () {
-        //     return [
-        //         'exists' => file_exists('/usr/local/bin/pdfcpu'),
-        //         'is_executable' => is_executable('/usr/local/bin/pdfcpu'),
-        //         'realpath' => realpath('/usr/local/bin/pdfcpu'),
-        //     ];
-        // });
+        Route::get('/proxy-pdf', [KlaimController::class, 'proxyPdf'])->name('klaim.inap.proxy_pdf');
     });
 });
