@@ -23,7 +23,7 @@ class FakturFarmasiController extends Controller
     {
         $reseps = $this->pasienInapRepo->getListAllObatByTransaksi($kode_reg);
         $viewData = (array)$this->sepRepo->getSEPDetail($kode_reg);
-        // return response()->json($reseps);
+        // return response()->json($viewData);
 
         $viewData['data'] = $reseps;
 
