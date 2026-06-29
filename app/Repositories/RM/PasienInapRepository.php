@@ -1004,17 +1004,19 @@ class PasienInapRepository
     public function getListAllObatByTransaksi($kode_reg)
     {
         $inkota = DB::connection('sqlsrvsimrs')
-            ->table('FJINKOTA')
-            ->select('FHFJBUKTI_ID', 'FHFJDATE','FHFJDOKTERN')
-            ->where('FHFJNO_TRANSAKSI', $kode_reg)
-            ->orderByDesc('FHFJDATE')
+            ->table('TRANSAKSIPASIENINAPD')
+            ->select('FDTNO_FAKTUR', 'FDTKREDIT', 'FDTJENISTRANSAKSI','FDTTGL_TRANSAKSI','FHFJDOKTERN','FHFJRACIK','FHFJRESEP','FHFJBULAT')
+            ->leftJoin('FJINKOTA', 'FJINKOTA.FHFJBUKTI_ID', '=', 'FDTNO_FAKTUR')
+            ->where('FDTNO_TRANSAKSI', $kode_reg)
+            ->where('FDTKD_PRODUK', 'ADL002')
+            ->orderBy('FDTTGL_TRANSAKSI')
             ->get();
 
         return $inkota->map(function ($data_detail) {
             $items = DB::connection('sqlsrvsimrs')
                 ->table('FJINKOTAD')
                 ->select('*')
-                ->where('FDFJBUKTI_ID', $data_detail->FHFJBUKTI_ID)
+                ->where('FDFJBUKTI_ID', $data_detail->FDTNO_FAKTUR)
                 ->get();
 
             $data_detail->items = $items;
