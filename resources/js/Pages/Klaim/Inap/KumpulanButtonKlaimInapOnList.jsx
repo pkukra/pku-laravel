@@ -7,6 +7,7 @@ import SPRI from "./SPRI";
 import Triase from "./Triase";
 import LabRadiologi from "./LabRadiologi";
 import Kwitansi from "./Kwitansi";
+import Farmasi from "./Farmasi";
 import LaporanOperasi from "./LaporanOperasi";
 import Anastesi from "./Anastesi";
 import PenunjangLain from "./PenunjangLain";
@@ -45,6 +46,7 @@ export default function Index({ no_sep, nomer_rm, kode_reg }) {
                 </Col>
 
                 <Col span={6}>
+                    <Farmasi kode_reg={kode_reg} />
                     <Kwitansi kode_reg={kode_reg} />
                     <EKlaim no_sep={no_sep} />
                     <Button

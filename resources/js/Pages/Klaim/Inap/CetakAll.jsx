@@ -115,27 +115,54 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                             url: `http://10.10.10.10/emr/index.php/penunjang/cetak_hasil_penunjang/pdf2/${kode_reg}/${nomer_rm}`,
                         }),
                     );
-
-                    // Kwitansi
-                    const kwitansiUrl = route("klaim.inap.proxy_pdf", {
-                        url: `http://10.10.10.10/emr/index.php/vedika/cetak_billing_ri?faktur_id=${kode_reg}`,
-                    });
-                    pdfs.push(kwitansiUrl);
-                    console.log("🧾 Kwitansi Proxy URL:", kwitansiUrl);
                 }
             } catch (e) {
                 // Error saat fetch SPRI - lanjut tanpa SPRI/Triase
             }
 
-            // Tambahkan E-Klaim (route internal Laravel)
+            // Penunjang Lain (hasil upload) - process sebelum merge
             try {
-                pdfs.push(route("klaim.inap.cetak_klaim", { no_sep }));
-            } catch (e) {
-                // Error saat tambah E-Klaim
+                const { data: penunjangLainData } = await axios.get(
+                    route("klaim.inap.penunjang_lain.list", {
+                        kode_reg,
+                    }),
+                );
+
+                if (
+                    penunjangLainData?.data &&
+                    penunjangLainData.data.length > 0
+                ) {
+                    console.log(
+                        `📋 Found ${penunjangLainData.data.length} Penunjang Lain`,
+                    );
+
+                    for (const doc of penunjangLainData.data) {
+                        const downloadUrl = route(
+                            "klaim.inap.penunjang_lain.download",
+                            {
+                                kode_reg,
+                                id: doc.ID,
+                            },
+                        );
+
+                        // Jika PDF, tambahkan ke pdfs array
+                        // Jika gambar, akan diproses langsung saat merge
+                        pdfs.push(downloadUrl);
+                        console.log(`✅ Queued Penunjang Lain: ${doc.ID}`);
+                    }
+                } else {
+                    console.log(`ℹ️ Tidak ada Penunjang Lain`);
+                }
+            } catch (penunjangLainErr) {
+                console.log(
+                    `ℹ️ Error fetching Penunjang Lain:`,
+                    penunjangLainErr.message,
+                );
             }
 
             const mergedPdf = await PDFDocument.create();
 
+            // Process semua PDF dari pdfs array
             for (const url of pdfs) {
                 try {
                     console.log("📄 Fetching:", url);
@@ -153,18 +180,148 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                     const bytes = await response.arrayBuffer();
                     console.log(`✅ Success - Size: ${bytes.byteLength} bytes`);
 
-                    const pdf = await PDFDocument.load(bytes);
+                    const contentType = response.headers.get("content-type");
 
+                    // Jika format gambar, convert ke PDF
+                    if (
+                        contentType?.includes("image/") ||
+                        contentType?.includes("jpeg") ||
+                        contentType?.includes("png")
+                    ) {
+                        console.log(`🖼️ Converting image to PDF`);
+
+                        const imagePdf = await PDFDocument.create();
+                        const img = await imagePdf
+                            .embedPng(bytes)
+                            .catch(async () => await imagePdf.embedJpg(bytes));
+
+                        const page = imagePdf.addPage([img.width, img.height]);
+                        page.drawImage(img, {
+                            x: 0,
+                            y: 0,
+                            width: img.width,
+                            height: img.height,
+                        });
+
+                        const pages = await mergedPdf.copyPages(
+                            imagePdf,
+                            imagePdf.getPageIndices(),
+                        );
+                        pages.forEach((p) => mergedPdf.addPage(p));
+                        console.log(`✅ Image converted & added`);
+                    } else {
+                        // PDF format
+                        const pdf = await PDFDocument.load(bytes);
+                        const pages = await mergedPdf.copyPages(
+                            pdf,
+                            pdf.getPageIndices(),
+                        );
+                        pages.forEach((page) => mergedPdf.addPage(page));
+                        console.log(`✅ Added ${pages.length} pages`);
+                    }
+                } catch (err) {
+                    console.error("❌ Error merge PDF:", url, err.message);
+                }
+            }
+
+            // Nota Farmasi
+            try {
+                const FarmasiUrl = route("klaim.inap.faktur_farmasi", { kode_reg });
+                const response = await fetch(FarmasiUrl);
+
+                if (response.ok) {
+                    const bytesfarmasi = await response.arrayBuffer();
+                    const pdfFarmasi = await PDFDocument.load(bytesfarmasi);
+                    const pagesFarmasi = await mergedPdf.copyPages(
+                        pdfFarmasi,
+                        pdfFarmasi.getPageIndices(),
+                    );
+                    pagesFarmasi.forEach((page) => mergedPdf.addPage(page));
+                    console.log(`✅ Farmasi added`);
+                } else {
+                    console.warn(`⚠️ Cannot fetch Farmasi`);
+                }
+            } catch (e) {
+                console.warn(`⚠️ Error saat tambah Farmasi:`, e.message);
+            }
+
+            if (mergedPdf.getPageCount() === 0) {
+                message.error("Tidak ada PDF yang berhasil digabung");
+                return;
+            }
+
+            // Tambahkan Kwitansi (sebelum E-Klaim)
+            try {
+                const kwitansiUrl = route("klaim.inap.proxy_pdf", {
+                    url: `http://10.10.10.10/emr/index.php/vedika/cetak_billing_ri?faktur_id=${kode_reg}`,
+                });
+                console.log("🧾 Kwitansi Proxy URL:", kwitansiUrl);
+
+                const response = await fetch(kwitansiUrl);
+
+                if (response.ok) {
+                    const bytes = await response.arrayBuffer();
+                    const contentType = response.headers.get("content-type");
+
+                    if (
+                        contentType?.includes("image/") ||
+                        contentType?.includes("jpeg") ||
+                        contentType?.includes("png")
+                    ) {
+                        const imagePdf = await PDFDocument.create();
+                        const img = await imagePdf
+                            .embedPng(bytes)
+                            .catch(async () => await imagePdf.embedJpg(bytes));
+
+                        const page = imagePdf.addPage([img.width, img.height]);
+                        page.drawImage(img, {
+                            x: 0,
+                            y: 0,
+                            width: img.width,
+                            height: img.height,
+                        });
+
+                        const pages = await mergedPdf.copyPages(
+                            imagePdf,
+                            imagePdf.getPageIndices(),
+                        );
+                        pages.forEach((p) => mergedPdf.addPage(p));
+                    } else {
+                        const pdf = await PDFDocument.load(bytes);
+                        const pages = await mergedPdf.copyPages(
+                            pdf,
+                            pdf.getPageIndices(),
+                        );
+                        pages.forEach((page) => mergedPdf.addPage(page));
+                    }
+
+                    console.log(`✅ Kwitansi added`);
+                } else {
+                    console.warn(`⚠️ Cannot fetch Kwitansi`);
+                }
+            } catch (e) {
+                console.warn(`⚠️ Error saat tambah Kwitansi:`, e.message);
+            }
+
+            // Tambahkan E-Klaim (route internal Laravel)
+            try {
+                const ekClaimUrl = route("klaim.inap.cetak_klaim", { no_sep });
+                const response = await fetch(ekClaimUrl);
+
+                if (response.ok) {
+                    const bytes = await response.arrayBuffer();
+                    const pdf = await PDFDocument.load(bytes);
                     const pages = await mergedPdf.copyPages(
                         pdf,
                         pdf.getPageIndices(),
                     );
-
                     pages.forEach((page) => mergedPdf.addPage(page));
-                    console.log(`✅ Added ${pages.length} pages`);
-                } catch (err) {
-                    console.error("❌ Error merge PDF:", url, err.message);
+                    console.log(`✅ E-Klaim added`);
+                } else {
+                    console.warn(`⚠️ Cannot fetch E-Klaim`);
                 }
+            } catch (e) {
+                console.warn(`⚠️ Error saat tambah E-Klaim:`, e.message);
             }
 
             if (mergedPdf.getPageCount() === 0) {

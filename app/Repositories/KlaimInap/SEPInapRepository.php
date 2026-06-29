@@ -25,7 +25,9 @@ class SEPInapRepository
                 'DR.FMDDOKTERN',
                 'PS.FMSPESIALISASIN as SPESIALISASI',
                 'PASIEN.*',
-                'ICD.description as DX_AWAL'
+                'ICD.description as DX_AWAL',
+                'PRI.PRWITGL_MASUK',
+                'PRI.PRWITGL_KELUAR',
             )
             ->where('FMNOTRANSAKSI', $kode_reg)
             ->first();

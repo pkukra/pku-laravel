@@ -1003,27 +1003,23 @@ class PasienInapRepository
      */
     public function getListAllObatByTransaksi($kode_reg)
     {
-        $cacheKey = "obat_by_transaksi:$kode_reg";
+        $inkota = DB::connection('sqlsrvsimrs')
+            ->table('FJINKOTA')
+            ->select('FHFJBUKTI_ID', 'FHFJDATE','FHFJDOKTERN')
+            ->where('FHFJNO_TRANSAKSI', $kode_reg)
+            ->orderByDesc('FHFJDATE')
+            ->get();
 
-        return Cache::remember($cacheKey, 300, function () use ($kode_reg) {
-            $inkota = DB::connection('sqlsrvsimrs')
-                ->table('FJINKOTA')
-                ->select('FHFJBUKTI_ID', 'FHFJDATE')
-                ->where('FHFJNO_TRANSAKSI', $kode_reg)
-                ->orderByDesc('FHFJDATE')
+        return $inkota->map(function ($data_detail) {
+            $items = DB::connection('sqlsrvsimrs')
+                ->table('FJINKOTAD')
+                ->select('*')
+                ->where('FDFJBUKTI_ID', $data_detail->FHFJBUKTI_ID)
                 ->get();
 
-            return $inkota->map(function ($data_detail) {
-                $items = DB::connection('sqlsrvsimrs')
-                    ->table('FJINKOTAD')
-                    ->select('FDFJNOM', 'FDFJBRG_ID', 'FDFJBRGN', 'FDFJSATUAN', 'FDFJQTY')
-                    ->where('FDFJBUKTI_ID', $data_detail->FHFJBUKTI_ID)
-                    ->get();
+            $data_detail->items = $items;
 
-                $data_detail->items = $items;
-
-                return $data_detail;
-            });
+            return $data_detail;
         });
     }
 

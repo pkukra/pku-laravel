@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Klaim\Inap\SEPController;
+use App\Http\Controllers\Klaim\Inap\FakturFarmasiController;
 use App\Http\Controllers\Klaim\Inap\LaporanOKController;
 use App\Http\Controllers\Klaim\Inap\LaporanAnastesiController;
 use App\Http\Controllers\Klaim\Inap\PenunjangLainController;
@@ -22,6 +23,7 @@ Route::prefix('klaim')->group(function () {
 
         Route::get('/sep/html', [SEPController::class, 'viewHtml'])->name('klaim.inap.sep.html');
         Route::get('/sep/{kode_reg}', [SEPController::class, 'index'])->name('klaim.inap.sep');
+        Route::get('/faktur_farmasi/{kode_reg}', [FakturFarmasiController::class, 'index'])->name('klaim.inap.faktur_farmasi');
         Route::get('/laporan_anastesi/{kode_reg}', [LaporanAnastesiController::class, 'generatePdf'])->name('klaim.inap.laporan_anastesi');
         Route::get('/laporan_anastesi_snapshot/{kode_reg}', [LaporanAnastesiController::class, 'snapshot'])->name('klaim.inap.laporan_anastesi_snapshot');
         Route::get('/laporan_ok_snapshot/{kode_reg}', [LaporanOKController::class, 'snapshot'])->name('klaim.inap.laporan_ok_snapshot');
