@@ -18,6 +18,7 @@
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 3px;
+            text-align: center;
         }
 
         .title {
@@ -88,6 +89,35 @@
 <body>
     <div class="title-rs"> RS. PKU MUHAMMADIYAH KARANGANYAR </div>
     <div class="title"> PERINCIAN BIAYA FARMASI </div>
+    <table>
+        <thead>
+            <tr>
+                <td>Nama Pasien</td>
+                <td>:</td>
+                <td>{{ $FMNAMA_PESERTA }}</td>
+                <td>No Transaksi</td>
+                <td>:</td>
+                <td>{{ $FMNOTRANSAKSI }}</td>
+            </tr>
+            <tr>
+                <td>Nomer RM</td>
+                <td>:</td>
+                <td>{{ $FMPASIEN_ID }}</td>
+                <td>Tgl Rawat</td>
+                <td>:</td>
+                <td>{{ \Carbon\Carbon::parse($PRWITGL_MASUK)->translatedFormat('d/m/Y') }} - {{ \Carbon\Carbon::parse($PRWITGL_KELUAR)->translatedFormat('d/m/Y') }}</td>
+            </tr>
+            <tr>
+                <td>Tgl Lahir</td>
+                <td>:</td>
+                <td>{{ \Carbon\Carbon::parse($FMTGL_LAHIR)->translatedFormat('d/m/Y') }}</td>
+                <td>Nomer RM</td>
+                <td>:</td>
+                <td>{{ $ALAMAT }}</td>
+            </tr>
+        </thead>
+    </table>
+    <br>
 
     <table class="table-obat">
         <thead>
