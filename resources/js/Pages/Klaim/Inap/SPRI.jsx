@@ -24,8 +24,9 @@ export default function Index({ kode_reg, nomer_rm }) {
             }
 
             const kodeRegJalan = data.FDTNO_FAKTUR;
+            const kode_rek_rrj = data?.FRPNOTRANSAKSI
 
-            const url = `http://10.10.10.10/emr/index.php/igd/cetak_spri/pdf2/${kodeRegJalan}/${nomer_rm}`;
+            const url = `http://10.10.10.10/emr/index.php/igd/cetak_spri/pdf2/${kode_rek_rrj}/${nomer_rm}`;
 
             setPdfUrl(url);
             setModalOpen(true);

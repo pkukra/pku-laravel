@@ -44,7 +44,7 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                     // SPRI
                     pdfs.push(
                         route("klaim.inap.proxy_pdf", {
-                            url: `http://10.10.10.10/emr/index.php/igd/cetak_spri/pdf2/${kodeRegJalan}/${nomer_rm}`,
+                            url: `http://10.10.10.10/emr/index.php/igd/cetak_spri/pdf2/${kode_rek_rrj}/${nomer_rm}`,
                         }),
                     );
 
