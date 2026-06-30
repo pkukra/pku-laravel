@@ -48,13 +48,15 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                 return (
                     <>
                         {text}
-                        {(role === "klaim" || role === "superadmin") && (
+                        {(role === "klaim" ||
+                            role === "superadmin" ||
+                            role === "koder") && (
                             <>
                                 <br />
                                 <small style={{ fontSize: 10 }}>
                                     created_at:{" "}
                                     {moment(record.created_at).format(
-                                        "D MMMM YYYY HH:mm:ss"
+                                        "D MMMM YYYY HH:mm:ss",
                                     )}{" "}
                                     created_by: {record.created_by}
                                 </small>
@@ -193,15 +195,15 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                 route("rm.pasien-rujukan.list_procedure_idrg", {
                     kode_reg: kode_reg,
                     no_sep: no_sep,
-                })
+                }),
             )
             .then((response) => {
                 setSelectedProcedure(
-                    response.data.data.map((item) => item.code)
+                    response.data.data.map((item) => item.code),
                 );
                 setProcedure(response?.data?.data || []); // Simpan data yang diterima ke dalam state
                 const procedureCodesArr = response?.data?.data?.map(
-                    (item) => item.code
+                    (item) => item.code,
                 );
                 fetchAlertProcedure(procedureCodesArr);
             })
@@ -243,7 +245,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                 {
                     query,
                     page: pageNumber,
-                }
+                },
             );
             // If no results, mark hasMore as false
             if (response.data.data.length === 0) {
@@ -297,7 +299,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_procedure_idrg"),
-                payload
+                payload,
             );
 
             if (response?.data?.status == "ok") {
@@ -345,12 +347,12 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
             .delete(
                 route("rm.pasien-rujukan.delete_procedure_idrg", {
                     id: id,
-                })
+                }),
             )
             .then((response) => {
                 // Menghapus kode procedure dari selectedProcedure setelah berhasil dihapus
                 setSelectedProcedure((prevSelectedProcedure) =>
-                    prevSelectedProcedure.filter((item) => item !== kode)
+                    prevSelectedProcedure.filter((item) => item !== kode),
                 );
                 fetchIDRGData(); // Fetch the latest IDRG data after saving
                 fetchProcedure(); // Memanggil ulang untuk mendapatkan data procedure terbaru
@@ -370,7 +372,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
             .post(
                 route("rm.pasien-rujukan.procedure_idrg_set_primary", {
                     id: id,
-                })
+                }),
             )
             .then(() => {
                 fetchIDRGData(); // Fetch the latest IDRG data after saving
@@ -392,7 +394,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                 {
                     id: multiplicityProcedureData?.id,
                     multiplicity: multiplicityUpdate,
-                }
+                },
             );
             fetchIDRGData(); // Fetch the latest IDRG data after saving
             fetchProcedure();
@@ -539,7 +541,7 @@ export default function Index({ pasien, isFinalIDRG, fetchIDRGData }) {
                         deleteProcedureId &&
                             deleteProcedure(
                                 deleteProcedureId,
-                                selectedProcedureForm
+                                selectedProcedureForm,
                             );
                     }}
                     onCancel={handleCancelDelProcedure}

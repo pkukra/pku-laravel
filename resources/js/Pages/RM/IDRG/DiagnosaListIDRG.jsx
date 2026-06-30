@@ -59,12 +59,14 @@ export default function Index({
                                 </strong>
                             </>
                         )}
-                        {(role === "klaim" || role === "superadmin") && (
+                        {(role === "klaim" ||
+                            role === "superadmin" ||
+                            role === "koder") && (
                             <>
                                 <small style={{ fontSize: 10 }}>
                                     created_at:{" "}
                                     {moment(record.created_at).format(
-                                        "D MMMM YYYY HH:mm:ss"
+                                        "D MMMM YYYY HH:mm:ss",
                                     )}{" "}
                                     created_by: {record.created_by}
                                 </small>
@@ -185,16 +187,16 @@ export default function Index({
                 route("rm.pasien-rujukan.list_diagnosa_idrg", {
                     kode_reg: kode_reg,
                     no_sep: no_sep,
-                })
+                }),
             )
             .then((response) => {
                 setSelectedDiagnosa(
-                    response.data.data.map((item) => item.code)
+                    response.data.data.map((item) => item.code),
                 );
                 setDiagnosa(response?.data?.data || []); // Simpan data yang diterima ke dalam state
                 setDiagnosaTab(response?.data?.data || []); // Simpan data yang diterima ke dalam state parent component
                 const diagnosaCodesArr = response?.data?.data?.map(
-                    (item) => item.code
+                    (item) => item.code,
                 );
                 fetchAlertDiagnosa(diagnosaCodesArr);
             })
@@ -210,7 +212,7 @@ export default function Index({
         if (diagnosaCodes.length === 0) {
             setDiagnosaAlert([]);
             return;
-        };
+        }
 
         setLoadingDiagnosaAlert(true);
 
@@ -238,7 +240,7 @@ export default function Index({
                 {
                     query,
                     page: pageNumber,
-                }
+                },
             );
 
             // If no results, mark hasMore as false
@@ -303,7 +305,7 @@ export default function Index({
         try {
             const response = await axios.post(
                 route("rm.pasien-rujukan.save_diagnosa_idrg"),
-                payload
+                payload,
             );
 
             if (response?.data?.status === "ok") {
@@ -356,12 +358,12 @@ export default function Index({
             .delete(
                 route("rm.pasien-rujukan.delete_diagnosa_idrg", {
                     id: id,
-                })
+                }),
             )
             .then((response) => {
                 // Menghapus kode diagnosa dari selectedDiagnosa setelah berhasil dihapus
                 setSelectedDiagnosa((prevSelectedDiagnosa) =>
-                    prevSelectedDiagnosa.filter((item) => item !== kode)
+                    prevSelectedDiagnosa.filter((item) => item !== kode),
                 );
                 fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
                 fetchIDRGData();
@@ -381,7 +383,7 @@ export default function Index({
             .post(
                 route("rm.pasien-rujukan.diagnosa_idrg_set_primary", {
                     id: id,
-                })
+                }),
             )
             .then((response) => {
                 fetchDiagnosa(); // Memanggil ulang untuk mendapatkan data diagnosa terbaru
@@ -471,7 +473,7 @@ export default function Index({
                                     setSelectedDiagnosaForm(kdPenyakit); // Store only the code
                                     setSelectedDiagnosaDisplay(displayValue); // Display both the code and name
                                     setSelectedDiagnosaAcceptedPrimaryForm(
-                                        accpdx
+                                        accpdx,
                                     );
                                 }}
                                 onSearch={(text) => {
@@ -531,7 +533,7 @@ export default function Index({
                         deleteDiagnosaId &&
                             deleteDiagnosa(
                                 deleteDiagnosaId,
-                                selectedDiagnosaForm
+                                selectedDiagnosaForm,
                             );
                     }}
                     onCancel={handleCancelDelDiagnosa}
