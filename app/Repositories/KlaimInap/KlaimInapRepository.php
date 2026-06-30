@@ -48,7 +48,8 @@ class KlaimInapRepository
     {
         $data = DB::connection('sqlsrvsimrs')
             ->table('TRANSAKSIPASIENINAPD')
-            ->select('FDTNO_FAKTUR')
+            ->leftJoin('PASIEN_RUJUKAN', 'PASIEN_RUJUKAN.FRPNOTRANSAKSIKJ', '=', 'TRANSAKSIPASIENINAPD.FDTNO_FAKTUR')
+            ->select('FDTNO_FAKTUR','PASIEN_RUJUKAN.FRPNOTRANSAKSI')
             ->where('FDTNO_TRANSAKSI', $kode_reg_rbi)
             ->where(function ($q) {
                 $q->where('FDTNO_FAKTUR', 'like', 'RGD%')
