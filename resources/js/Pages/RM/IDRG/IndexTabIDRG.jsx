@@ -33,6 +33,12 @@ function Index({
         customer_id = pasien?.PRWIKD_CUSTOMER;
     }
 
+    const RupiahFormat = (x) => {
+        const number = Number(x);
+        const formatted = new Intl.NumberFormat("id-ID").format(number);
+        return formatted;
+    };
+
     const handleBridgingData = async () => {
         setBridgingLoading(true);
         let routeName = "rm.pasien-rujukan.bridging_data_idrg";
@@ -43,7 +49,7 @@ function Index({
             const response = await axios.post(
                 route(routeName, {
                     no_sep: no_sep,
-                })
+                }),
             );
 
             if (response?.data?.status === "nok") {
@@ -85,7 +91,7 @@ function Index({
             const response = await axios.post(
                 route(routeName, {
                     no_sep: no_sep,
-                })
+                }),
             );
 
             if (response?.data?.status === "nok") {
@@ -120,8 +126,7 @@ function Index({
         if (diagnosaTab.length < 1) {
             return notification.warning({
                 placement: "topRight",
-                description:
-                    "Belum ada diagnosa.",
+                description: "Belum ada diagnosa.",
             });
         }
         setFinalUmumLoading(true);
@@ -170,7 +175,7 @@ function Index({
             const response = await axios.post(
                 route(routeName, {
                     no_sep: no_sep,
-                })
+                }),
             );
 
             if (response?.data?.status == "nok") {
@@ -247,7 +252,7 @@ function Index({
     }, [idrgGroupData]);
 
     const eklaim_group_data = JSON.parse(
-        idrgGroupData?.response_eklaim || "{}"
+        idrgGroupData?.response_eklaim || "{}",
     );
 
     return (
@@ -277,7 +282,11 @@ function Index({
                     (customer_id != "X002" && customer_id != "X003") ? (
                         <div style={{ marginBottom: 8 }}>
                             <p>
-                                {pasien?.LANJUT_RANAP == true ? <strong>Pasien Lanjut Ranap</strong> : <strong>Pasien Non BPJS</strong>}
+                                {pasien?.LANJUT_RANAP == true ? (
+                                    <strong>Pasien Lanjut Ranap</strong>
+                                ) : (
+                                    <strong>Pasien Non BPJS</strong>
+                                )}
                             </p>
                             <p>
                                 <strong>Status :</strong>{" "}
@@ -372,6 +381,57 @@ function Index({
                                             <td>
                                                 {
                                                     eklaim_group_data?.drg_description
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>DRG Cost Weight</td>
+                                            <td>
+                                                {
+                                                    eklaim_group_data?.cost_weight
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>NBR</td>
+                                            <td>
+                                                Rp{" "}
+                                                {RupiahFormat(
+                                                    eklaim_group_data?.nbr,
+                                                )}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Klaim</td>
+                                            <td>
+                                                Rp{" "}
+                                                {RupiahFormat(
+                                                    eklaim_group_data?.total_tarif,
+                                                )} - Total Cost Weight:{" "}
+                                                {eklaim_group_data?.total_cost_weight}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>KRIS Cost Weight</td>
+                                            <td>
+                                                {
+                                                    eklaim_group_data?.kris_cost_weight
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sub-Acute Weight</td>
+                                            <td>
+                                                {
+                                                    eklaim_group_data?.sub_acute_weight
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chronic Weight</td>
+                                            <td>
+                                                {
+                                                    eklaim_group_data?.chronic_weight
                                                 }
                                             </td>
                                         </tr>
