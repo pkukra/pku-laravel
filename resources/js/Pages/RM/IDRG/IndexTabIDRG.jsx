@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Button, Modal, notification, Divider } from "antd";
+import { Row, Col, Button, Modal, notification, Divider, Tag } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 import DiagnosaListIDRG from "./DiagnosaListIDRG";
@@ -26,6 +27,8 @@ function Index({
 
     const [modalReEditIDRGOpen, setModalReEditIDRGOpen] = useState(false);
     const [reeditLoading, setReeditLoading] = useState(false);
+
+    const [selectedTopupOption, setSelectedTopupOption] = useState([]);
 
     const no_sep = pasien?.FMNOSEP || null;
     let customer_id = pasien?.FRPCUSTOMER_ID;
@@ -387,9 +390,7 @@ function Index({
                                         <tr>
                                             <td>DRG Cost Weight</td>
                                             <td>
-                                                {
-                                                    eklaim_group_data?.cost_weight
-                                                }
+                                                {eklaim_group_data?.cost_weight}
                                             </td>
                                         </tr>
                                         <tr>
@@ -407,8 +408,11 @@ function Index({
                                                 Rp{" "}
                                                 {RupiahFormat(
                                                     eklaim_group_data?.total_tarif,
-                                                )} - Total Cost Weight:{" "}
-                                                {eklaim_group_data?.total_cost_weight}
+                                                )}{" "}
+                                                - Total Cost Weight:{" "}
+                                                {
+                                                    eklaim_group_data?.total_cost_weight
+                                                }
                                             </td>
                                         </tr>
                                         <tr>
@@ -437,6 +441,215 @@ function Index({
                                         </tr>
                                     </tbody>
                                 </table>
+                            )}
+
+                            {JSON.stringify(eklaim_group_data?.topup_options)}
+
+                            {eklaim_group_data?.topup_options?.length == 0 ||
+                            isFinalIDRG ? (
+                                <></>
+                            ) : (
+                                <>
+                                    <Divider> Pilihan Topup </Divider>
+                                    <table
+                                        style={{
+                                            borderCollapse: "collapse",
+                                            width: "100%",
+                                            marginBottom: "10px",
+                                        }}
+                                    >
+                                        <tbody>
+                                            <tr style={{ marginBottom: 10 }}>
+                                                <th
+                                                    style={{
+                                                        textAlign: "left",
+                                                        border: "1px solid #ccc",
+                                                        padding: 8,
+                                                    }}
+                                                >
+                                                    Selected Topup
+                                                </th>
+                                                <th
+                                                    style={{
+                                                        textAlign: "left",
+                                                        border: "1px solid #ccc",
+                                                        padding: 8,
+                                                        height: 30,
+                                                    }}
+                                                >
+                                                    {selectedTopupOption.length ===
+                                                    0 ? (
+                                                        <span>
+                                                            Tidak ada CMG
+                                                            dipilih
+                                                        </span>
+                                                    ) : (
+                                                        selectedTopupOption.map(
+                                                            (cmg) => (
+                                                                <Tag
+                                                                    key={
+                                                                        cmg.code
+                                                                    }
+                                                                    closable
+                                                                    onClose={() =>
+                                                                        setSelectedTopupOption(
+                                                                            (
+                                                                                prev,
+                                                                            ) =>
+                                                                                prev.filter(
+                                                                                    (
+                                                                                        item,
+                                                                                    ) =>
+                                                                                        item.code !==
+                                                                                        cmg.code,
+                                                                                ),
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        marginBottom: 5,
+                                                                    }}
+                                                                >
+                                                                    {cmg.code} -{" "}
+                                                                    {
+                                                                        cmg.description
+                                                                    }{" "}
+                                                                    <br />
+                                                                    {
+                                                                        cmg.description
+                                                                    }
+                                                                </Tag>
+                                                            ),
+                                                        )
+                                                    )}
+                                                </th>
+                                                <th
+                                                    style={{
+                                                        border: "1px solid #ccc",
+                                                    }}
+                                                ></th>
+                                            </tr>
+                                            <tr>
+                                                <th
+                                                    width={"15%"}
+                                                    style={{
+                                                        textAlign: "left",
+                                                        border: "1px solid #ccc",
+                                                        padding: 8,
+                                                    }}
+                                                >
+                                                    Code
+                                                </th>
+                                                <th
+                                                    width={"40%"}
+                                                    style={{
+                                                        textAlign: "left",
+                                                        border: "1px solid #ccc",
+                                                        padding: 8,
+                                                    }}
+                                                >
+                                                    Description / Type
+                                                </th>
+                                                <th
+                                                    width={"10%"}
+                                                    style={{
+                                                        textAlign: "center",
+                                                        border: "1px solid #ccc",
+                                                        padding: 8,
+                                                    }}
+                                                >
+                                                    Action
+                                                </th>
+                                            </tr>
+                                            {eklaim_group_data?.topup_options?.map(
+                                                (item) => (
+                                                    <tr key={item?.code}>
+                                                        <td
+                                                            style={{
+                                                                verticalAlign:
+                                                                    "top",
+                                                                border: "1px solid #ccc",
+                                                                padding: 8,
+                                                            }}
+                                                        >
+                                                            {item?.code}
+                                                        </td>
+                                                        <td
+                                                            style={{
+                                                                verticalAlign:
+                                                                    "top",
+                                                                border: "1px solid #ccc",
+                                                                padding: 8,
+                                                            }}
+                                                        >
+                                                            {item?.description}{" "}
+                                                            <br />
+                                                            <small>
+                                                                {item?.type}
+                                                            </small>
+                                                        </td>
+                                                        <td
+                                                            style={{
+                                                                verticalAlign:
+                                                                    "top",
+                                                                textAlign:
+                                                                    "center",
+                                                                border: "1px solid #ccc",
+                                                                padding: 8,
+                                                            }}
+                                                        >
+                                                            <a
+                                                                onClick={() => {
+                                                                    const exists =
+                                                                        selectedTopupOption.find(
+                                                                            (
+                                                                                selected,
+                                                                            ) =>
+                                                                                selected.code ===
+                                                                                item.code,
+                                                                        );
+                                                                    const sameType =
+                                                                        selectedTopupOption.find(
+                                                                            (
+                                                                                selected,
+                                                                            ) =>
+                                                                                selected.type ===
+                                                                                item.type,
+                                                                        );
+
+                                                                    if (
+                                                                        !exists &&
+                                                                        !sameType
+                                                                    ) {
+                                                                        setSelectedTopupOption(
+                                                                            (
+                                                                                prev,
+                                                                            ) => [
+                                                                                ...prev,
+                                                                                item,
+                                                                            ],
+                                                                        );
+                                                                    } else if (
+                                                                        sameType
+                                                                    ) {
+                                                                        return notification.warning(
+                                                                            {
+                                                                                placement:
+                                                                                    "top",
+                                                                                description: `CMG dengan tipe "${item.type}" sudah dipilih`,
+                                                                            },
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <PlusOutlined />
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </>
                             )}
 
                             <Button
