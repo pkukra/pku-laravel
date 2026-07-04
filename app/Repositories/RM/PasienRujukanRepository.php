@@ -1915,12 +1915,12 @@ class PasienRujukanRepository
     }
 
     /**
-     * Get response grouping inacbg  by kode reg kj
+     * Get response grouping inacbg  by nomer SEP
      *
      * @param string $no_sep
      * @return \Illuminate\Support\Collection
      */
-    public function getINACBGGroupDataByTransaksi($no_sep)
+    public function getINACBGGroupDataBySEP($no_sep)
     {
         return DB::connection('sqlsrvsimrs')
             ->table('PASIEN_INACBG AS A')

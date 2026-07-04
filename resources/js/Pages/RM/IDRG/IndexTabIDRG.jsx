@@ -17,7 +17,7 @@ function Index({
     reFetchPasien,
 }) {
     const [modalBridgeOpen, setModalBridgeOpen] = useState(false);
-    const [bridgingLoading, setBridgingLoading] = useState(false);
+    const [grupingLoading, setGrupingLoading] = useState(false);
     const [diagnosaTab, setDiagnosaTab] = useState([]);
 
     const [modalFinalOpen, setModalFinalOpen] = useState(false);
@@ -29,6 +29,7 @@ function Index({
     const [reeditLoading, setReeditLoading] = useState(false);
 
     const [selectedTopupOption, setSelectedTopupOption] = useState([]);
+    const [modalGroupingDuaOpen, setModalGroupingDuaOpen] = useState(false);
 
     const no_sep = pasien?.FMNOSEP || null;
     let customer_id = pasien?.FRPCUSTOMER_ID;
@@ -43,7 +44,7 @@ function Index({
     };
 
     const handleBridgingData = async () => {
-        setBridgingLoading(true);
+        setGrupingLoading(true);
         let routeName = "rm.pasien-rujukan.bridging_data_idrg";
         if (pasien?.JENIS_RAWAT == "ranap") {
             routeName = "rm.pasien-inap.bridging_data_idrg";
@@ -77,7 +78,7 @@ function Index({
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
-            setBridgingLoading(false);
+            setGrupingLoading(false);
             setModalBridgeOpen(false);
             fetchIDRGData();
         }
@@ -213,6 +214,9 @@ function Index({
     const isFinalIDRG = idrgGroupData?.is_final == 1;
 
     const disableBridgeButton = () => {
+        if (eklaim_group_data?.hasOwnProperty("mdc_number")) {
+            return true; // Disable if already grouped
+        }
         if (isFinalIDRG) {
             return true; // Disable if already finalized
         }
@@ -664,12 +668,33 @@ function Index({
                                     backgroundColor: " #33cc33",
                                 }}
                             >
-                                Bridge & Grouping iDRG
+                                Bridge & Grouping Stage-1
                                 {pasien?.JENIS_RAWAT == "rajal" &&
                                     !pasien?.SUDAH_DIKREDIT && (
                                         <small>(Belum Dikredit)</small>
                                     )}
                             </Button>
+
+                            <Button
+                                disabled={
+                                    // tambhan karena stage 2 untuk top up, tentunya jika topup kosong maka disable
+                                    eklaim_group_data?.topup_options?.length ==
+                                        0 ||
+                                    selectedTopupOption.length == 0 ||
+                                    isFinalIDRG
+                                }
+                                type="primary"
+                                onClick={() => {
+                                    setModalGroupingDuaOpen(true);
+                                    return;
+                                }}
+                                style={{
+                                    marginRight: 5,
+                                }}
+                            >
+                                Grouping Stage-2
+                            </Button>
+
                             {!isFinalIDRG ? (
                                 <Button
                                     type="primary"
@@ -708,14 +733,14 @@ function Index({
                     <Button
                         key="back"
                         onClick={() => setModalBridgeOpen(false)}
-                        loading={bridgingLoading}
+                        loading={grupingLoading}
                     >
                         Cancel
                     </Button>,
                     <Button
                         key="submit"
                         type="primary"
-                        loading={bridgingLoading}
+                        loading={grupingLoading}
                         disabled={!no_sep}
                         onClick={handleBridgingData}
                         style={{ background: "#33cc33" }}
@@ -784,6 +809,69 @@ function Index({
                     <strong>Nomor SEP:</strong>{" "}
                     {no_sep || <span>Belum ada data SEP</span>}
                 </p>
+            </Modal>
+
+            <Modal
+                closable={false}
+                open={modalGroupingDuaOpen}
+                title="Grouping IDRG Stage Dua"
+                onCancel={() => setModalGroupingDuaOpen(false)}
+                footer={[
+                    <Button
+                        disabled={grupingLoading}
+                        loading={grupingLoading}
+                        key="back"
+                        onClick={() => setModalGroupingDuaOpen(false)}
+                    >
+                        Cancel
+                    </Button>,
+                    <Button
+                        loading={grupingLoading}
+                        disabled={grupingLoading || selectedTopupOption.length === 0}
+                        key="submit"
+                        type="primary"
+                        onClick={() => {
+                            handleGroupingStageDua();
+                            return;
+                        }}
+                        style={{ backgroundColor: " #33cc33" }}
+                    >
+                        Ok, Grouping IDRG Stage Dua
+                    </Button>,
+                ]}
+            >
+                <br />
+                {no_sep ? (
+                    <div>
+                        <strong>Nomor SEP:</strong> {no_sep}
+                    </div>
+                ) : (
+                    <strong>Belum ada data SEP</strong>
+                )}
+                <br />
+                Selected Special CMG
+                <br />
+                {selectedTopupOption.length === 0 ? (
+                    <span>Tidak ada CMG dipilih</span>
+                ) : (
+                    selectedTopupOption.map((cmg) => (
+                        <Tag
+                            key={cmg.code}
+                            closable
+                            onClose={() =>
+                                setSelectedTopupOption((prev) =>
+                                    prev.filter(
+                                        (item) => item.code !== cmg.code,
+                                    ),
+                                )
+                            }
+                            style={{ marginBottom: 5 }}
+                        >
+                            {cmg.code} <br />
+                            {cmg.description}
+                        </Tag>
+                    ))
+                )}
             </Modal>
         </>
     );

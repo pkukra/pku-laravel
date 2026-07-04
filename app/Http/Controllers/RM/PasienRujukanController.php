@@ -1064,7 +1064,7 @@ class PasienRujukanController extends Controller
      */
     public function get_inacbg_group_data($no_sep)
     {
-        $data = $this->pasienRujukanRepo->getINACBGGroupDataByTransaksi($no_sep);
+        $data = $this->pasienRujukanRepo->getINACBGGroupDataBySEP($no_sep);
 
         return response()->json($data);
     }
