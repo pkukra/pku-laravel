@@ -247,6 +247,55 @@ function Index({
         return false; // Enable otherwise
     };
 
+    const handleGroupingStageDua = async () => {
+        setGrupingLoading(true);
+        let routeName = "rm.pasien-rujukan.grouping_inacbg_stage_dua";
+        if (pasien?.JENIS_RAWAT == "ranap") {
+            routeName = "rm.pasien-inap.grouping_idrg_stage_dua";
+        }
+
+        try {
+            const selectedTopupOptionFormatted = selectedTopupOption
+                .map((item) => item.code)
+                .join("#");
+
+            const response = await axios.post(
+                route(routeName, {
+                    no_sep: no_sep,
+                }),
+                {
+                    topup_options: selectedTopupOptionFormatted,
+                },
+            );
+
+            if (response?.data?.status === "nok") {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.error,
+                });
+            }
+
+            if (response?.data?.response?.metadata?.code != 200) {
+                return notification.warning({
+                    placement: "topRight",
+                    description: response?.data?.response?.metadata?.message,
+                });
+            }
+
+            return notification.success({
+                placement: "topRight",
+                message: "Sukses!",
+                description: "Sukses grouping stage dua IDRG",
+            });
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            fetchIDRGData();
+            setModalGroupingDuaOpen(false);
+            setGrupingLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (no_sep) {
             fetchIDRGData();
@@ -420,6 +469,129 @@ function Index({
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td>Topup</td>
+                                            <td>
+                                                {eklaim_group_data?.topup
+                                                    ?.length ? (
+                                                    <table
+                                                        style={{
+                                                            width: "100%",
+                                                            borderCollapse:
+                                                                "collapse",
+                                                            border: "1px solid #000",
+                                                        }}
+                                                    >
+                                                        <thead>
+                                                            <tr>
+                                                                <th
+                                                                    style={{
+                                                                        border: "1px solid #000",
+                                                                        padding:
+                                                                            "4px",
+                                                                    }}
+                                                                >
+                                                                    Kode
+                                                                </th>
+                                                                <th
+                                                                    style={{
+                                                                        border: "1px solid #000",
+                                                                        padding:
+                                                                            "4px",
+                                                                    }}
+                                                                >
+                                                                    Deskripsi
+                                                                </th>
+                                                                <th
+                                                                    style={{
+                                                                        border: "1px solid #000",
+                                                                        padding:
+                                                                            "4px",
+                                                                    }}
+                                                                >
+                                                                    Qty
+                                                                </th>
+                                                                <th
+                                                                    style={{
+                                                                        border: "1px solid #000",
+                                                                        padding:
+                                                                            "4px",
+                                                                    }}
+                                                                >
+                                                                    Tarif
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {eklaim_group_data.topup.map(
+                                                                (
+                                                                    item,
+                                                                    index,
+                                                                ) => (
+                                                                    <tr
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                    >
+                                                                        <td
+                                                                            style={{
+                                                                                border: "1px solid #000",
+                                                                                padding:
+                                                                                    "4px",
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                item.code
+                                                                            }
+                                                                        </td>
+                                                                        <td
+                                                                            style={{
+                                                                                border: "1px solid #000",
+                                                                                padding:
+                                                                                    "4px",
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                item.description
+                                                                            }
+                                                                        </td>
+                                                                        <td
+                                                                            style={{
+                                                                                border: "1px solid #000",
+                                                                                padding:
+                                                                                    "4px",
+                                                                                textAlign:
+                                                                                    "center",
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                item.qty
+                                                                            }
+                                                                        </td>
+                                                                        <td
+                                                                            style={{
+                                                                                border: "1px solid #000",
+                                                                                padding:
+                                                                                    "4px",
+                                                                                textAlign:
+                                                                                    "right",
+                                                                            }}
+                                                                        >
+                                                                            Rp{" "}
+                                                                            {RupiahFormat(
+                                                                                item.tariff,
+                                                                            )}
+                                                                        </td>
+                                                                    </tr>
+                                                                ),
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                ) : (
+                                                    "-"
+                                                )}
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>KRIS Cost Weight</td>
                                             <td>
                                                 {
@@ -446,8 +618,6 @@ function Index({
                                     </tbody>
                                 </table>
                             )}
-
-                            {JSON.stringify(eklaim_group_data?.topup_options)}
 
                             {eklaim_group_data?.topup_options?.length == 0 ||
                             isFinalIDRG ? (
@@ -827,7 +997,9 @@ function Index({
                     </Button>,
                     <Button
                         loading={grupingLoading}
-                        disabled={grupingLoading || selectedTopupOption.length === 0}
+                        disabled={
+                            grupingLoading || selectedTopupOption.length === 0
+                        }
                         key="submit"
                         type="primary"
                         onClick={() => {
