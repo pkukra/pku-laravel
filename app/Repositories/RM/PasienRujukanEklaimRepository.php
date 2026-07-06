@@ -1470,6 +1470,80 @@ class PasienRujukanEklaimRepository
     }
 
     /**
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingGroupingIDRGStageDua($no_sep, $topup_codes)
+    {
+        $semua_transaksi = $this->allTransactionsBySep($no_sep);
+        if (!$semua_transaksi || count($semua_transaksi) < 1) {
+            return false;
+        }
+
+        $transaksi_utama = $semua_transaksi[0];
+        foreach ($semua_transaksi as $transaksi) {
+            if ($transaksi->RUBBER == 0) {
+                $transaksi_utama = $transaksi;
+                break;
+            }
+        }
+
+        $user = Auth::user();
+        $now = Carbon::now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        $data = json_encode([
+            'metadata' => [
+                'method'  => 'grouper',
+                'grouper' => 'idrg',
+                'stage'   => 2,
+            ],
+            'data' => [
+                'nomor_sep'   => $no_sep,
+                'topup_codes' => $topup_codes,
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $result   = sendRequest($user->eklaim_key, $data);
+        $response = $result->response->response_idrg ?? null;
+
+        $db = DB::connection('sqlsrvsimrs');
+        $db->beginTransaction();
+
+        try {
+            $db->table('PASIEN_IDRG')->updateOrInsert(
+                [
+                    'no_sep'    => $no_sep,
+                    'pasien_id' => $transaksi_utama->FRPPASIEN_ID,
+                ],
+                [
+                    'response_eklaim' => json_encode($response),
+                    'is_final'      => 0,
+                    'updated_at'    => $now,
+                    'updated_by'    => $user->email,
+                ]
+            );
+
+            $this->auditTrail->insert([
+                'object_id'  => $no_sep,
+                'action_id'  => 22,
+                'user_email' => $user->email,
+                'user_id'    => $user->id,
+                'created_at' => $now,
+                'data'       => $data,
+            ]);
+
+            $db->commit();
+        } catch (\Throwable $e) {
+            $db->rollBack();
+            Log::error("PasienRujukanEklaimRepository bridgingGroupingIDRGStageDua err: {$e->getMessage()}");
+
+            return false;
+        }
+
+        return $result;
+    }
+
+    /**
      * Process bridgingFinalINACBG by no_sep
      * 
      * @param string $no_sep

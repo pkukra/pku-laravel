@@ -964,6 +964,21 @@ class PasienRujukanController extends Controller
     }
 
     /**
+     * grouping_idrg_stage_dua
+     * Menampilkan procedure berdasarkan kode transaksi
+     */
+    public function grouping_idrg_stage_dua(Request $request, $no_sep)
+    {
+        $validated = $request->validate([
+            'topup_options' => 'required|string',
+        ]);
+        $topup_options = $validated['topup_options'];
+
+        $data = $this->bridgingEKlaimRepo->bridgingGroupingIDRGStageDua($no_sep, $topup_options);
+        return response()->json($data);
+    }
+
+    /**
      * list_all_raber
      * Menampilkan procedure berdasarkan kode transaksi
      */

@@ -249,7 +249,7 @@ function Index({
 
     const handleGroupingStageDua = async () => {
         setGrupingLoading(true);
-        let routeName = "rm.pasien-rujukan.grouping_inacbg_stage_dua";
+        let routeName = "rm.pasien-rujukan.grouping_idrg_stage_dua";
         if (pasien?.JENIS_RAWAT == "ranap") {
             routeName = "rm.pasien-inap.grouping_idrg_stage_dua";
         }
