@@ -21,29 +21,41 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
         try {
             setLoading(true);
 
-            const [kodeRes, jokRes, partusRes] = await Promise.all([
-                axios.get(
-                    route("klaim.inap.get_kode_reg_jalan", {
-                        kode_reg_rbi: kode_reg,
-                    }),
-                ),
-                axios.get(
-                    route("klaim.inap.get_all_jok", {
-                        kode_reg,
-                    }),
-                ),
-                axios.get(
-                    route("klaim.inap.check_is_persalinan", {
-                        kode_reg_rbi: kode_reg,
-                    }),
-                ),
-            ]);
+            const [kodeRes, jokRes, partusRes, penunjangRes] =
+                await Promise.all([
+                    axios.get(
+                        route("klaim.inap.get_kode_reg_jalan", {
+                            kode_reg_rbi: kode_reg,
+                        }),
+                    ),
+                    axios.get(
+                        route("klaim.inap.get_all_jok", {
+                            kode_reg,
+                        }),
+                    ),
+                    axios.get(
+                        route("klaim.inap.check_is_persalinan", {
+                            kode_reg_rbi: kode_reg,
+                        }),
+                    ),
+                    axios.get(
+                        route("klaim.inap.penunjang_lain.list", {
+                            kode_reg,
+                        }),
+                    ),
+                ]);
 
             const kodeRekRrj = kodeRes.data?.FRPNOTRANSAKSI ?? null;
             const jokList = jokRes.data || [];
             const isPartus = partusRes.data?.is_partus ?? false;
-
-            const urls = buildUrls(kodeRekRrj, jokList, isPartus, no_sep);
+            const penunjangList = penunjangRes.data || [];
+            const urls = buildUrls(
+                kodeRekRrj,
+                jokList,
+                isPartus,
+                no_sep,
+                penunjangList,
+            );
 
             await mergePdf(urls);
         } catch (error) {
@@ -53,7 +65,13 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
         }
     };
 
-    const buildUrls = (kode_rek_rrj, jokList, isPartus, no_sep) => {
+    const buildUrls = (
+        kode_rek_rrj,
+        jokList,
+        isPartus,
+        no_sep,
+        penunjangList,
+    ) => {
         const urls = [];
 
         // SEP
@@ -108,11 +126,23 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
             );
         }
 
+        // penunjang
         urls.push(
             route("klaim.inap.proxy_pdf", {
                 url: `http://10.10.10.10/emr/index.php/penunjang/cetak_hasil_penunjang/pdf2/${kode_reg}/${nomer_rm}`,
             }),
         );
+
+        // penunjang lain
+        for (const doc of penunjangList.data) {
+            const downloadUrl = route("klaim.inap.penunjang_lain.download", {
+                kode_reg,
+                id: doc.ID,
+            });
+
+            urls.push(downloadUrl);
+            console.log(`✅ Queued Penunjang Lain: ${doc.ID}`);
+        }
 
         // farmasi
         urls.push(route("klaim.inap.faktur_farmasi", kode_reg));
@@ -132,20 +162,71 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
         return urls;
     };
 
+    const appendToMergedPdf = async (merged, response) => {
+        const contentType = (
+            response.headers["content-type"] || ""
+        ).toLowerCase();
+
+        // PDF
+        if (contentType.includes("application/pdf")) {
+            const pdf = await PDFDocument.load(response.data);
+
+            const pages = await merged.copyPages(pdf, pdf.getPageIndices());
+
+            pages.forEach((page) => merged.addPage(page));
+            return;
+        }
+
+        // JPEG
+        if (
+            contentType.includes("image/jpeg") ||
+            contentType.includes("image/jpg")
+        ) {
+            const image = await merged.embedJpg(response.data);
+
+            const page = merged.addPage([image.width, image.height]);
+
+            page.drawImage(image, {
+                x: 0,
+                y: 0,
+                width: image.width,
+                height: image.height,
+            });
+
+            return;
+        }
+
+        // PNG
+        if (contentType.includes("image/png")) {
+            const image = await merged.embedPng(response.data);
+
+            const page = merged.addPage([image.width, image.height]);
+
+            page.drawImage(image, {
+                x: 0,
+                y: 0,
+                width: image.width,
+                height: image.height,
+            });
+
+            return;
+        }
+
+        console.warn("Format tidak didukung:", contentType);
+    };
+
     const mergePdf = async (urls) => {
         try {
+            setLoading(true);
+
             const merged = await PDFDocument.create();
 
             for (const url of urls) {
-                const res = await axios.get(url, {
+                const response = await axios.get(url, {
                     responseType: "arraybuffer",
                 });
 
-                const pdf = await PDFDocument.load(res.data);
-
-                const pages = await merged.copyPages(pdf, pdf.getPageIndices());
-
-                pages.forEach((page) => merged.addPage(page));
+                await appendToMergedPdf(merged, response);
             }
 
             const bytes = await merged.save();
