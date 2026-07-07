@@ -2035,4 +2035,71 @@ class PasienInapEklaimRepository
             'total_los_icu' => $los,
         ];
     }
+
+    /**
+     * 
+     * @param string $no_sep
+     */
+    public function bridgingGroupingIDRGStageDua($no_sep, $topup_codes)
+    {
+        $transaksi = $this->getDetailTransactionBySep($no_sep);
+
+        if (!$transaksi) {
+            return false;
+        }
+
+        $user = Auth::user();
+        $now  = Carbon::now('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        $data = json_encode([
+            'metadata' => [
+                'method'  => 'grouper',
+                'grouper' => 'idrg',
+                'stage'   => 2,
+            ],
+            'data' => [
+                'nomor_sep'   => $no_sep,
+                'topup_codes' => $topup_codes,
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $result   = sendRequest($user->eklaim_key, $data);
+        $response = $result->response->response_idrg ?? null;
+
+        $db = DB::connection('sqlsrvsimrs');
+        $db->beginTransaction();
+
+        try {
+            $db->table('PASIEN_IDRG')->updateOrInsert(
+                [
+                    'no_sep'    => $no_sep,
+                    'pasien_id' => $transaksi->KD_PASIEN,
+                ],
+                [
+                    'response_eklaim' => json_encode($response),
+                    'is_final'      => 0,
+                    'updated_at'    => $now,
+                    'updated_by'    => $user->email,
+                ]
+            );
+
+            $this->auditTrail->insert([
+                'object_id'  => $no_sep,
+                'action_id'  => 22,
+                'user_email' => $user->email,
+                'user_id'    => $user->id,
+                'created_at' => $now,
+                'data'       => $data,
+            ]);
+
+            $db->commit();
+        } catch (\Throwable $e) {
+            $db->rollBack();
+            Log::error("PasienInapEklaimRepository bridgingGroupingIDRGStageDua err: {$e->getMessage()}");
+
+            return false;
+        }
+
+        return $result;
+    }
 }
