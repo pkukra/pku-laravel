@@ -12,7 +12,7 @@ export default function Index({ dataTransaksi }) {
         setLoadingHasilObat(true);
         try {
             const response = await axios.get(
-                route("rm.pasien-inap.get_all_obat", {
+                route("rm.pasien-rujukan.get_all_obat", {
                     kode_reg: dataTransaksi.FRPNOTRANSAKSIKJ,
                 })
             );
