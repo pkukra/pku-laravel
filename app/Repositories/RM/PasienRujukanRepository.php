@@ -2290,38 +2290,44 @@ class PasienRujukanRepository
     /**
      * Get list of laporan ok by kode reg
      *
-     * @param string $kode_reg
+     * @param string $nomer_rm
      * @return \Illuminate\Support\Collection
      */
-    public function getListLaporanOKByTransaksi($kode_reg)
+    public function getListLaporanOKByTransaksi($nomer_rm)
     {
         $transaksi = DB::connection('sqlsrvemr')
             ->table('PERMINTAAN_OPERASI')
             ->select('*')
-            ->where('FS_KD_REG', $kode_reg)
+            ->where('FS_KD_REG', $nomer_rm)
             ->get();
 
-        // N+1: query ke OK_JADWAL per transaksi
-        $jadwal_arr = [];
-        foreach ($transaksi as $item) {
-            $jadwal = DB::connection('sqlsrvsimrs')
-                ->table('OK_JADWAL')
-                ->select('*')
-                ->where('FJOKNO_JADWAL', $item->FJOK)
-                ->first();
+        $jadwal_arr = DB::connection('sqlsrvsimrs')
+            ->table('OK_JADWAL')
+            ->select('*')
+            ->where('FJOKKD_PASIEN', $nomer_rm)
+            ->get();
 
-            $jadwal_arr[] = [
-                'FJOKNO_JADWAL' => $jadwal ? $jadwal->FJOKNO_JADWAL : null,
-                'FJOKKD_TINDAKAN' => $jadwal ? $jadwal->FJOKKD_TINDAKAN : null,
-            ];
-        }
+        // // N+1: query ke OK_JADWAL per transaksi
+        // $jadwal_arr = [];
+        // foreach ($transaksi as $item) {
+        //     $jadwal = DB::connection('sqlsrvsimrs')
+        //         ->table('OK_JADWAL')
+        //         ->select('*')
+        //         ->where('FJOKNO_JADWAL', $item->FJOK)
+        //         ->first();
+
+        //     $jadwal_arr[] = [
+        //         'FJOKNO_JADWAL' => $jadwal ? $jadwal->FJOKNO_JADWAL : null,
+        //         'FJOKKD_TINDAKAN' => $jadwal ? $jadwal->FJOKKD_TINDAKAN : null,
+        //     ];
+        // }
 
         $laporan_ok_arr = [];
         foreach ($jadwal_arr as $jadwal) {
             $laporan_ok_arr[] = DB::connection('sqlsrvemr')
                 ->table('TAC_RI_OK')
                 ->select('*')
-                ->where('FJOKNO_JADWAL', $jadwal['FJOKNO_JADWAL'])
+                ->where('FJOKNO_JADWAL', $jadwal->FJOKNO_JADWAL)
                 ->first();
         }
 

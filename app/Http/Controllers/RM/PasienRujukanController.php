@@ -1162,9 +1162,9 @@ class PasienRujukanController extends Controller
     }
 
     // get_laporan_ok
-    public function get_laporan_ok($kode_reg)
+    public function get_laporan_ok($nomer_rm)
     {
-        $data = $this->pasienRujukanRepo->getListLaporanOKByTransaksi($kode_reg);
+        $data = $this->pasienRujukanRepo->getListLaporanOKByTransaksi($nomer_rm);
         return response()->json([
             'status' => "ok",
             'data' => $data,
