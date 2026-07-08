@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { PDFDocument } from "pdf-lib";
-import { Skeleton, message } from "antd";
+import { Skeleton, message, Button } from "antd";
 import axios from "axios";
 
 export default function Index({ kode_reg, nomer_rm, no_sep }) {
     const [loading, setLoading] = useState(true);
     const [pdfUrl, setPdfUrl] = useState(null);
+    const [pdfBlob, setPdfBlob] = useState(null);
 
     useEffect(() => {
         init();
@@ -235,6 +236,8 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
                 type: "application/pdf",
             });
 
+            setPdfBlob(blob);
+
             const objectUrl = URL.createObjectURL(blob);
 
             setPdfUrl((oldUrl) => {
@@ -251,19 +254,48 @@ export default function Index({ kode_reg, nomer_rm, no_sep }) {
         }
     };
 
+    const downloadPdf = () => {
+        if (!pdfBlob) return;
+
+        const url = URL.createObjectURL(pdfBlob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${no_sep}.pdf`;
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        URL.revokeObjectURL(url);
+    };
+
     if (loading) {
         return <Skeleton active />;
     }
 
     return (
-        <iframe
-            src={pdfUrl}
-            title="Merged PDF"
-            style={{
-                width: "100%",
-                height: "100vh",
-                border: "none",
-            }}
-        />
+        <>
+            <div
+                style={{
+                    padding: 10,
+                    borderBottom: "1px solid #f0f0f0",
+                }}
+            >
+                <Button type="primary" onClick={downloadPdf}>
+                    Download PDF
+                </Button>
+            </div>
+
+            <iframe
+                src={pdfUrl}
+                title="Merged PDF"
+                style={{
+                    width: "100%",
+                    height: "calc(100vh - 55px)",
+                    border: "none",
+                }}
+            />
+        </>
     );
 }
