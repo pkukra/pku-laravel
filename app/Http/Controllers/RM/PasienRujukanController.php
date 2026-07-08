@@ -1170,4 +1170,14 @@ class PasienRujukanController extends Controller
             'data' => $data,
         ]);
     }
+
+    // get_all_obat
+    public function get_all_obat($kode_reg)
+    {
+        $data = $this->pasienRujukanRepo->getListAllObatByTransaksi($kode_reg);
+        return response()->json([
+            'status' => "ok",
+            'data' => $data,
+        ]);
+    }
 }

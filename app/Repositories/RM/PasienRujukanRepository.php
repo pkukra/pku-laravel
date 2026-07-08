@@ -2288,6 +2288,34 @@ class PasienRujukanRepository
     }
 
     /**
+     * Get list of receipt all no faktur by kode_reg
+     *
+     * @param string $kode_reg
+     * @return \Illuminate\Support\Collection
+     */
+    public function getListAllObatByTransaksi($kode_reg)
+    {
+        $inkota = DB::connection('sqlsrvsimrs')
+            ->table('TRANSAKSIPASIEND')
+            ->select('FDTNO_FAKTUR')
+            ->where('FDTNO_TRANSAKSI', $kode_reg)
+            ->where('FDTKD_PRODUK', 'ADL002')
+            ->get();
+
+        return $inkota->map(function ($data_detail) {
+            $items = DB::connection('sqlsrvsimrs')
+                ->table('FJINKOTAD')
+                ->select('*')
+                ->where('FDFJBUKTI_ID', $data_detail->FDTNO_FAKTUR)
+                ->get();
+
+            $data_detail->items = $items;
+
+            return $data_detail;
+        });
+    }
+
+    /**
      * Get list of laporan ok by kode reg
      *
      * @param string $nomer_rm

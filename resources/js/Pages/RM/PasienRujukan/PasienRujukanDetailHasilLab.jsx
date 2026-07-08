@@ -6,6 +6,7 @@ import PasienRujukanDetailObat from "./PasienRujukanDetailObat";
 import PasienRujukanDetailIMR from "./PasienRujukanDetailIMR";
 import PasienRujukanDetailIHistoricalProcedure from "./PasienRujukanDetailIHistoricalProcedure";
 import PasienRujukanDetailLaporanOK from "./PasienRujukanDetailLaporanOK";
+import PasienRujukanKwitansi from "./PasienRujukanKwitansi";
 
 export default function Index({ dataTransaksi, pasien }) {
     const [hasilLabUrl, setHasilLabUrl] = useState(null);
@@ -19,7 +20,7 @@ export default function Index({ dataTransaksi, pasien }) {
         try {
             const response = await axios.get(route("common.lab_url"));
             setHasilLabUrl(
-                response?.data?.data + dataTransaksi?.FRPNOTRANSAKSI
+                response?.data?.data + dataTransaksi?.FRPNOTRANSAKSI,
             );
         } catch (error) {
             console.error("Error fetching lab data:", error);
@@ -32,7 +33,7 @@ export default function Index({ dataTransaksi, pasien }) {
             const response = await axios.get(
                 route("rm.get_permintaan_rad_n_lab", {
                     kode_reg: dataTransaksi?.FRPNOTRANSAKSI,
-                })
+                }),
             );
             setDataPermintaan(response?.data || []);
         } catch (error) {
@@ -89,7 +90,6 @@ export default function Index({ dataTransaksi, pasien }) {
                 >
                     Hasil Lab
                 </Button>
-
                 <PasienRujukanDetailObat dataTransaksi={dataTransaksi} />
                 <PasienRujukanDetailHasilRadiologi
                     dataTransaksi={dataTransaksi}
@@ -97,6 +97,7 @@ export default function Index({ dataTransaksi, pasien }) {
                 <PasienRujukanDetailIMR dataTransaksi={dataTransaksi} />
                 <PasienRujukanDetailIHistoricalProcedure pasien={pasien} />
                 <PasienRujukanDetailLaporanOK pasien={pasien} />
+                <PasienRujukanKwitansi pasien={pasien} />
 
                 {/* Modal Ant Design */}
                 <Modal
