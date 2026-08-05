@@ -81,7 +81,7 @@ export default function Index({ auth }) {
             render: (code) => (
                 <a
                     href={
-                        route("rm_report.by_code.index") +
+                        route("rm_report.ranap_by_code") +
                         `?tanggal_awal=${tanggalRange[0].format("YYYY-MM-DD")}` +
                         `&tanggal_akhir=${tanggalRange[1].format("YYYY-MM-DD")}` +
                         `&kode=${encodeURIComponent(code)}`

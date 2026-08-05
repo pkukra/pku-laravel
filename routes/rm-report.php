@@ -19,4 +19,9 @@ Route::prefix('rm-report')->group(function () {
     //ranap
     Route::get('/ranap', [RL51RanapController::class, 'all_penyakit_index'])->name('rm_report.all_penyakit_ranap_index');
     Route::get('/ranap/all_penyakit_data', [RL51RanapController::class, 'all_penyakit_data'])->name('rm_report.all_penyakit_ranap_index_data');
+    
+    Route::get('/ranap/by_code', [RL51RanapController::class, 'index'])->name('rm_report.ranap_by_code');
+    Route::get('/ranap/by_code_data', [RL51RanapController::class, 'index_data'])->name('rm_report.ranap_by_code_data');
+
+    
 });
