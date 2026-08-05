@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
-class RL51Repository
+class RL51RajalRepository
 {
     public function getAllPenyakitData($date_start, $date_end)
     {
