@@ -20,7 +20,7 @@ class RL51RajalController extends Controller
 
     public function index()
     {
-        return Inertia::render('ReportRM/RL51/Index');
+        return Inertia::render('ReportRM/RL51Rajal/Index');
     }
 
     public function index_data(Request $request)
@@ -35,7 +35,7 @@ class RL51RajalController extends Controller
 
     public function all_penyakit_index()
     {
-        return Inertia::render('ReportRM/RL51/AllPenyakitIndex');
+        return Inertia::render('ReportRM/RL51Rajal/AllPenyakitIndex');
     }
 
     public function all_penyakit_data(Request $request)

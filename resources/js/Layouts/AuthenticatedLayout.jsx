@@ -52,12 +52,17 @@ const items = [
     {
         key: "laporan-rm", // Untuk `/rm` dan turunannya
         icon: <BookOutlined />,
-        label: <a href={route("rm_report.all_penyakit_index")}>Report</a>,
         children: [
             {
-                key: "report-rm",
+                key: "rl-51-rajal",
                 label: (
                     <a href={route("rm_report.all_penyakit_index")}>Show Penyakit Group Rajal</a>
+                ),
+            },
+            {
+                key: "rl-51-ranap",
+                label: (
+                    <a href={route("rm_report.all_penyakit_ranap_index")}>Show Penyakit Group Ranap</a>
                 ),
             },
             
