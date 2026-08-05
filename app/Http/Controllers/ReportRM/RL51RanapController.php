@@ -7,13 +7,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
-use App\Repositories\ReportRM\RL51RajalRepository;
+use App\Repositories\ReportRM\RL51RanapRepository;
 
 class RL51RanapController extends Controller
 {
     protected $repo;
 
-    public function __construct(RL51RajalRepository $repo)
+    public function __construct(RL51RanapRepository $repo)
     {
         $this->repo = $repo;
     }
