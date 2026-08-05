@@ -13,6 +13,7 @@ class RL51Repository
     {
         return DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM as d')
+            ->leftJoin('BPJS_SEP as sep', 'sep.FMNOSEP', '=', 'd.no_sep')
             ->select(
                 'd.code',
                 DB::raw('COUNT(*) as jumlah_pasien')
@@ -21,6 +22,21 @@ class RL51Repository
                 DB::raw('CAST(d.created_at AS DATE)'),
                 [$date_start, $date_end]
             )
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->whereNotNull('d.no_transaksi')
+                        ->where('d.no_transaksi', '<>', '')
+                        ->where('d.no_transaksi', 'not like', 'RBI%');
+                })
+                    ->orWhere(function ($q2) {
+                        $q2->where(function ($q3) {
+                            $q3->whereNull('d.no_transaksi')
+                                ->orWhere('d.no_transaksi', '');
+                        })
+                            ->whereNotNull('sep.FMNOTRANSAKSI')
+                            ->where('sep.FMNOTRANSAKSI', 'not like', 'RBI%');
+                    });
+            })
             ->groupBy('d.code')
             ->orderByDesc('jumlah_pasien')
             ->get();
@@ -31,6 +47,7 @@ class RL51Repository
         $rows = DB::connection('sqlsrvsimrs')
             ->table('PASIEN_DIAGNOSA_IM as d')
             ->leftJoin('PASIEN as p', 'p.KD_PASIEN', '=', 'd.pasien_id')
+            ->leftJoin('BPJS_SEP as sep', 'sep.FMNOSEP', '=', 'd.no_sep')
             ->select(
                 'd.created_at',
                 'p.TGL_LAHIR',
@@ -41,6 +58,25 @@ class RL51Repository
                 DB::raw('CAST(d.created_at AS DATE)'),
                 [$date_start, $date_end]
             )
+            ->where(function ($q) {
+
+                // Pasien non-BPJS / transaksi lokal
+                $q->where(function ($q2) {
+                    $q2->whereNotNull('d.no_transaksi')
+                        ->where('d.no_transaksi', '<>', '')
+                        ->where('d.no_transaksi', 'not like', 'RBI%');
+                })
+
+                    // Pasien BPJS (no_transaksi kosong)
+                    ->orWhere(function ($q2) {
+                        $q2->where(function ($q3) {
+                            $q3->whereNull('d.no_transaksi')
+                                ->orWhere('d.no_transaksi', '');
+                        })
+                            ->whereNotNull('sep.FMNOTRANSAKSI')
+                            ->where('sep.FMNOTRANSAKSI', 'not like', 'RBI%');
+                    });
+            })
             ->get();
 
         $groups = [
