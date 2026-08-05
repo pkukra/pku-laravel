@@ -26,6 +26,7 @@ Route::prefix('klaim')->group(function () {
         Route::get('/faktur_farmasi/{kode_reg}', [FakturFarmasiController::class, 'index'])->name('klaim.inap.faktur_farmasi');
         Route::get('/laporan_anastesi/{kode_reg}', [LaporanAnastesiController::class, 'generatePdf'])->name('klaim.inap.laporan_anastesi');
         Route::get('/laporan_anastesi_snapshot/{kode_reg}', [LaporanAnastesiController::class, 'snapshot'])->name('klaim.inap.laporan_anastesi_snapshot');
+        Route::get('/laporan_ok_snapshot/{kode_reg}', [LaporanOKController::class, 'snapshot'])->name('klaim.inap.laporan_ok_snapshot');
 
         Route::get('/penunjang_lain/{kode_reg}', [PenunjangLainController::class, 'list'])->name('klaim.inap.penunjang_lain.list');
         Route::post('/penunjang_lain/{kode_reg}', [PenunjangLainController::class, 'upload'])->name('klaim.inap.penunjang_lain.upload');

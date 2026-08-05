@@ -349,63 +349,98 @@ class KlaimController extends Controller
         }
     }
 
-    protected function mergePdfs(array $files, $outFile)
+    protected function mergePdfs(array $files, string $outFile): bool
     {
         $pdfcpu = $this->findPdfcpuBinary();
-        if (!$pdfcpu) {
-            Log::error('pdfcpu tidak ditemukan untuk menggabungkan PDF');
-            return false;
-        }
 
-        try {
-            $process = Process::path(dirname($pdfcpu))
-                ->timeout(120)
-                ->run([$pdfcpu, 'merge', '-bookmarks=false', $outFile, ...$files]);
+        $validFiles = [];
 
-            if (!$process->successful()) {
-                Log::error('pdfcpu merge gagal: ' . $process->errorOutput());
-                return false;
+        foreach ($files as $file) {
+
+            if (!file_exists($file) || filesize($file) === 0) {
+                Log::warning("PDF tidak ditemukan atau kosong: {$file}");
+                continue;
             }
 
-            return true;
-        } catch (\Throwable $e) {
-            Log::error('pdfcpu merge exception: ' . $e->getMessage());
+            $validate = Process::run([
+                $pdfcpu,
+                'validate',
+                $file,
+            ]);
+
+            if ($validate->successful()) {
+                $validFiles[] = $file;
+            } else {
+                Log::warning("Skip PDF tidak valid: {$file}", [
+                    'error' => $validate->errorOutput(),
+                ]);
+            }
+        }
+
+        Log::info('VALID FILES', $validFiles);
+
+        if (empty($validFiles)) {
+            Log::error('Tidak ada PDF valid untuk digabung');
             return false;
         }
+
+        if (file_exists($outFile)) {
+            unlink($outFile);
+        }
+
+        $merge = Process::timeout(120)->run([
+            $pdfcpu,
+            'merge',
+            $outFile,
+            ...$validFiles,
+        ]);
+
+        Log::info([
+            'merge_success' => $merge->successful(),
+            'merge_output' => $merge->output(),
+            'merge_error' => $merge->errorOutput(),
+            'out_exists' => file_exists($outFile),
+            'out_size' => file_exists($outFile) ? filesize($outFile) : 0,
+        ]);
+
+        if (!$merge->successful()) {
+            Log::error('pdfcpu merge gagal: ' . $merge->errorOutput());
+            return false;
+        }
+
+        return true;
     }
 
     protected function findPdfcpuBinary()
     {
+            return '/usr/local/bin/pdfcpu';
+    }
+
+    protected function findPdfcpuBinary2()
+    {
         $candidates = [
+            '/home/pkukra/go/bin/pdfcpu',
             'pdfcpu',
             'pdfcpu.exe',
             'C:\\Users\\PERSONAL\\go\\bin\\pdfcpu.exe',
         ];
 
         foreach ($candidates as $candidate) {
+
+            if (!file_exists($candidate) && str_contains($candidate, '/')) {
+                continue;
+            }
+
             try {
-                $process = Process::path(dirname($candidate))
-                    ->timeout(10)
+                $process = Process::timeout(10)
                     ->run([$candidate, 'version']);
+
                 if ($process->successful()) {
                     return $candidate;
                 }
             } catch (\Throwable $e) {
                 continue;
             }
-        }
-
-        try {
-            $process = Process::timeout(10)
-                ->run(['where', 'pdfcpu']);
-            if ($process->successful()) {
-                $path = trim($process->output());
-                if (!empty($path)) {
-                    return strtok($path, "\r\n");
-                }
-            }
-        } catch (\Throwable $e) {
-            // Ignore; if where.exe fails, fallback to null.
         }
 
         return null;
