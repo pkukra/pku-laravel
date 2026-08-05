@@ -54,7 +54,7 @@ export default function Index({ auth }) {
             setLoading(true);
 
             const res = await axios.get(
-                route("rm_report.all_penyakit_index_data"),
+                route("rm_report.all_penyakit_ranap_index_data"),
                 {
                     params: {
                         date_start: tanggalAwal,
