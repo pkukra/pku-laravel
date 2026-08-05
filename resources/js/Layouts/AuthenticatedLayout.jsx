@@ -6,6 +6,7 @@ import {
     HomeOutlined,
     MonitorOutlined,
     PoweroffOutlined,
+    BookOutlined 
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 
