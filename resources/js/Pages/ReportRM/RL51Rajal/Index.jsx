@@ -109,9 +109,9 @@ export default function Index({ auth }) {
             user={auth.user}
             header={<p>Laporan Per Penyakit Show Group Rajal</p>}
         >
-            <Head title="Laporan Per Penyakit Show Group" />
+            <Head title="Laporan Per Penyakit Show Group Rajal" />
 
-            <Card title="Laporan Per Penyakit Show Group">
+            <Card title="Laporan Per Penyakit Show Group Rajal">
                 <Row gutter={16} style={{ marginBottom: 10 }}>
                     <Col span={4}>
                         <Typography.Text strong>Tanggal</Typography.Text>
