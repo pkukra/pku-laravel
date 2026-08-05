@@ -117,7 +117,7 @@ export default function Index({ auth }) {
         >
             <Head title="Daftar Penyakit" />
 
-            <Card title="Daftar Penyakit Berdasarkan Periode">
+            <Card title="Daftar Penyakit Berdasarkan Periode Rajal">
                 <Row gutter={16} style={{ marginBottom: 16 }}>
                     <Col span={5}>
                         <Typography.Text strong>

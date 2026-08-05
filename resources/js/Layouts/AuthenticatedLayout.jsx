@@ -57,7 +57,7 @@ const items = [
             {
                 key: "report-rm",
                 label: (
-                    <a href={route("rm_report.all_penyakit_index")}>Show Penyakit Group</a>
+                    <a href={route("rm_report.all_penyakit_index")}>Show Penyakit Group Rajal</a>
                 ),
             },
             

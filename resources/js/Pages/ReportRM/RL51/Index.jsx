@@ -107,7 +107,7 @@ export default function Index({ auth }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<p>Laporan Per Penyakit Show Group</p>}
+            header={<p>Laporan Per Penyakit Show Group Rajal</p>}
         >
             <Head title="Laporan Per Penyakit Show Group" />
 
