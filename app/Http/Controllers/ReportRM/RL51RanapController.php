@@ -18,21 +18,6 @@ class RL51RanapController extends Controller
         $this->repo = $repo;
     }
 
-    public function index()
-    {
-        return Inertia::render('ReportRM/RL51Ranap/Index');
-    }
-
-    public function index_data(Request $request)
-    {
-        $date_start = $request->get('date_start');
-        $date_end = $request->get('date_end');
-        $icd10 = $request->get('icd10');
-
-        $data = $this->repo->getData($date_start, $date_end, $icd10);
-        return response()->json(['data' => $data]);
-    }
-
     public function all_penyakit_index()
     {
         return Inertia::render('ReportRM/RL51Ranap/AllPenyakitIndex');
@@ -48,5 +33,20 @@ class RL51RanapController extends Controller
         return response()->json([
             'data' => $data
         ]);
+    }
+
+    public function index()
+    {
+        return Inertia::render('ReportRM/RL51Ranap/Index');
+    }
+
+    public function index_data(Request $request)
+    {
+        $date_start = $request->get('date_start');
+        $date_end = $request->get('date_end');
+        $icd10 = $request->get('icd10');
+
+        $data = $this->repo->getData($date_start, $date_end, $icd10);
+        return response()->json(['data' => $data]);
     }
 }
