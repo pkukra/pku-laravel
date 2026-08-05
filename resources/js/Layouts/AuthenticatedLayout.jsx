@@ -49,6 +49,20 @@ const items = [
         ],
     },
     {
+        key: "laporan-rm", // Untuk `/rm` dan turunannya
+        icon: <BookOutlined />,
+        label: <a href={route("rm_report.all_penyakit_index")}>Report</a>,
+        children: [
+            {
+                key: "report-rm",
+                label: (
+                    <a href={route("rm_report.all_penyakit_index")}>Show Penyakit Group</a>
+                ),
+            },
+            
+        ],
+    },
+    {
         key: "casemix", // Untuk `/casemix` dan turunannya
         icon: <MonitorOutlined />,
         label: (
